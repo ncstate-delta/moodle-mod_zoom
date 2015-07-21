@@ -28,5 +28,5 @@ $plugin->component = 'mod_zoom';
 $plugin->version = 2015072000;
 $plugin->release = 'v0.0';
 $plugin->requires = 2014051200;
-$plugin->maturity = MATURITY_ALPHA;
+$plugin->maturity = MATURITY_BETA;
 $plugin->cron = 0;
