@@ -1,0 +1,82 @@
+<?php
+// This file is part of the Zoom plugin for Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
+/**
+ * English strings for zoom.
+ *
+ * @package    mod_zoom
+ * @copyright  2015 UC Regents
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+$string['apikey'] = 'Zoom API key';
+$string['apikey_desc'] = '';
+$string['apisecret'] = 'Zoom API secret';
+$string['apisecret_desc'] = '';
+$string['apiurl'] = 'Zoom API url';
+$string['apiurl_desc'] = '';
+$string['duration'] = 'Duration';
+$string['invalidstatus'] = 'Status invalid, check the database.';
+$string['meetingfinished'] = 'Finished';
+$string['meetingnotstarted'] = 'Not started';
+$string['meetingstarted'] = 'Started';
+$string['minutes'] = '{$a} min';
+$string['modulename'] = 'Zoom meeting';
+$string['modulenameplural'] = 'Zoom meetings';
+$string['modulename_help'] = 'Zoom is the web and app based video conferencing '
+        . 'service. Zoom offers voice and video conferencing, screen sharing, '
+        . 'and co-annotation. Up to 25 attendees can be in a Zoom meeting.';
+<<<<<<< HEAD
+$string['pluginname'] = 'Zoom Meeting';
+$string['starttime'] = 'Start time';
+$string['status'] = 'Status';
+$string['timezone'] = 'Timezone';
+$string['topic'] = 'Topic';
+$string['type'] = 'Type';
+$string['updatemeetings'] = 'Update meeting statuses';
+=======
+$string['pluginname'] = 'Zoom meeting';
+$string['pluginadministration'] = 'Manage Zoom meeting';
+
+// Strings for creating a new meeting.
+$string['topic'] = 'Topic';
+$string['start_time'] = 'When';
+$string['duration'] = 'Duration';
+$string['option_video_host'] = 'Host video';
+$string['option_video_participants'] = 'Participants video';
+$string['on'] = 'On';
+$string['off'] = 'Off';
+$string['option_audio'] = 'Audio options';
+$string['audio_telephony'] = 'Telephony only';
+$string['audio_voip'] = 'Voip only';
+$string['audio_both'] = 'Both';
+$string['meetingoptions'] = 'Meeting options';
+$string['requirepassword'] = 'Require meeting password';
+$string['option_jbh'] = 'Enable join before host';
+$string['usepersonalmeeting'] = 'Use personal meeting ID {$a}';
+
+// Custom validation strings.
+$string['err_duration_nonpositive'] = 'The duration must be positive.';
+$string['err_duration_too_long'] = 'The duration cannot exceed 150 hours.';
+
+// API strings.
+// Generic error.
+$string['zoomerr'] = 'An error occured with Zoom.';
+$string['zoomerr_usernotfound'] = 'Please <a href="https://ucla.zoom.us" target="_blank">make an account on Zoom</a> by signing in with your UCLA credentials. The user {$a} was not found on Zoom.';
+>>>>>>> 310c4f2a01bdeb06ef134d54d2053b4e70ac189b

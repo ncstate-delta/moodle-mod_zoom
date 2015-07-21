@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/zoom/db" VERSION="20150720" COMMENT="Zoom module"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="zoom" COMMENT="Zoom meetings">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Moodle course that this meeting belongs to."/>
+        <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="false" SEQUENCE="false" COMMENT="Format of description field"/>
+        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Maximum grade (points possible) for this activity. Negative value indicates a scale being used."/>
+        <FIELD NAME="uuid" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="start_url" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="join_url" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="created_at" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="ISO datetime format"/>
+        <FIELD NAME="host_id" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="Meeting host user ID. Can be any user under this account. Cannot be updated after creation."/>
+        <FIELD NAME="name" TYPE="char" LENGTH="300" NOTNULL="true" SEQUENCE="false" COMMENT="Meeting topic. Max of 300 characters."/>
+        <FIELD NAME="start_time" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting start time (Unix timestamp, seconds). For scheduled meeting only."/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp when the instance was last modified."/>
+        <FIELD NAME="type" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Meeting type. 1 means instance meeting. 2 means scheduled meeting. 3 means a recurring meeting."/>
+        <FIELD NAME="duration" TYPE="int" LENGTH="6" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting duration (seconds). For scheduled meeting only."/>
+        <FIELD NAME="timezone" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Timezone to format start_time, like &quot;America/Los_Angeles&quot;. For scheduled meeting only."/>
+        <FIELD NAME="password" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting password. Password may only contain the following characters: [a-zA-Z0-9@-_*]. Max of 10 characters"/>
+        <FIELD NAME="option_jbh" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Join meeting before host start the meeting."/>
+        <FIELD NAME="option_start_type" TYPE="char" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting start type. Can be &quot;video&quot; or &quot;screen_share&quot;. (deprecated)"/>
+        <FIELD NAME="option_host_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Start video when host joins meeting."/>
+        <FIELD NAME="option_participants_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Start video when participants join meeting."/>
+        <FIELD NAME="option_audio" TYPE="char" LENGTH="9" NOTNULL="false" DEFAULT="both" SEQUENCE="false" COMMENT="Meeting audio options. Can be &quot;both&quot;, &quot;telephony&quot;, &quot;voip&quot;."/>
+        <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="0 means meeting not started. 1 means meeting starting. 2 means meeting finished."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="meeting_id_idx" UNIQUE="false" FIELDS="meeting_id"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
