@@ -85,7 +85,6 @@ function zoom_update_records(Traversable $zooms) {
             foreach ($z as $field => $value) {
                 // The start_url has a parameter that always changes, so it doesn't really count as a change.
                 if ($field != 'start_url' && $service->lastresponse->$field != $value) {
-                    var_dump($field);
                     $service->lastresponse->timemodified = time();
                     break;
                 }
