@@ -412,14 +412,28 @@ function zoom_update_grades(stdClass $zoom, $userid = 0) {
 
     // Populate array of grade objects indexed by userid.
     $grademax = grade_get_grades($zoom->course, 'mod', 'zoom', $zoom->id)->items[0]->grademax;
-    $grades = array('rawgrade' => $grademax,
-                    'userid' => $USER->id,
-                    'usermodified' => $USER->id,
+    if ($userid != 0) {
+        $grades = array('rawgrade' => $grademax,
+                    'userid' => $userid,
+                    'usermodified' => $userid,
                     'dategraded' => '',
                     'feedbackformat' => '',
                     'feedback' => '');
-
-    grade_update('mod/zoom', $zoom->course, 'mod', 'zoom', $zoom->id, 0, $grades);
+        grade_update('mod/zoom', $zoom->course, 'mod', 'zoom', $zoom->id, 0, $grades);
+    } else {
+        // Assign full credits for all users.
+        $context = context_course::instance($zoom->course);
+        $enrollusers = get_enrolled_users($context);
+        foreach ($enrollusers as $user) {
+            $grades = array('rawgrade' => $grademax,
+                            'userid' => $user->id,
+                            'usermodified' => $USER->id,
+                            'dategraded' => '',
+                            'feedbackformat' => '',
+                            'feedback' => '');
+            grade_update('mod/zoom', $zoom->course, 'mod', 'zoom', $zoom->id, 0, $grades);
+        }
+    }
 }
 
 /* File API */
