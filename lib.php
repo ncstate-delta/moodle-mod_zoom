@@ -51,7 +51,7 @@ function zoom_supports($feature) {
         case FEATURE_GRADE_HAS_GRADE:
             return true;
         case FEATURE_BACKUP_MOODLE2:
-            return false;
+            return true;
         default:
             return null;
     }
