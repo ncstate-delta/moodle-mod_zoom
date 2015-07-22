@@ -407,33 +407,22 @@ function zoom_grade_item_delete($zoom) {
  * @param int $userid update grade of specific user only, 0 means all participants
  */
 function zoom_update_grades(stdClass $zoom, $userid = 0) {
-    global $CFG, $DB, $USER;
+    global $CFG;
     require_once($CFG->libdir.'/gradelib.php');
 
+    $grades = null;
+
     // Populate array of grade objects indexed by userid.
-    $grademax = grade_get_grades($zoom->course, 'mod', 'zoom', $zoom->id)->items[0]->grademax;
     if ($userid != 0) {
+        $grademax = $zoom->grade;
         $grades = array('rawgrade' => $grademax,
                     'userid' => $userid,
                     'usermodified' => $userid,
                     'dategraded' => '',
                     'feedbackformat' => '',
                     'feedback' => '');
-        grade_update('mod/zoom', $zoom->course, 'mod', 'zoom', $zoom->id, 0, $grades);
-    } else {
-        // Assign full credits for all users.
-        $context = context_course::instance($zoom->course);
-        $enrollusers = get_enrolled_users($context);
-        foreach ($enrollusers as $user) {
-            $grades = array('rawgrade' => $grademax,
-                            'userid' => $user->id,
-                            'usermodified' => $USER->id,
-                            'dategraded' => '',
-                            'feedbackformat' => '',
-                            'feedback' => '');
-            grade_update('mod/zoom', $zoom->course, 'mod', 'zoom', $zoom->id, 0, $grades);
-        }
     }
+    grade_update('mod/zoom', $zoom->course, 'mod', 'zoom', $zoom->id, 0, $grades);
 }
 
 /* File API */
