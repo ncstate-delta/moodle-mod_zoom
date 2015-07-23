@@ -118,3 +118,24 @@ function zoom_update_records(Traversable $zooms) {
         rebuild_course_cache($course, true);
     }
 }
+
+/**
+ * Determine if a zoom meeting is in progress, is available, and/or is finished.
+ *
+ * @param stdClass $zoom
+ * @return array Array of booleans: [in progress, available, finished].
+ */
+function zoom_get_state($zoom) {
+    $config = get_config('mod_zoom');
+    $now = time();
+
+    $firstavailable = $zoom->start_time - ($config->firstabletojoin * 60);
+    $lastavailable = $zoom->start_time + $zoom->duration;
+    $inprogress = ($firstavailable <= $now && $now <= $lastavailable);
+
+    $available = $zoom->type == ZOOM_RECURRING_MEETING || $inprogress;
+
+    $finished = $zoom->type != ZOOM_RECURRING_MEETING && $now > $lastavailable;
+
+    return array($inprogress, $available, $finished);
+}

@@ -25,8 +25,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// Replace zoom with the name of your module and remove this line.
-
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
@@ -116,20 +114,20 @@ $table->attributes['class'] = 'generaltable mod_view';
 $table->align = array('center', 'left');
 $numcolumns = 2;
 
-$now = time();
-$ttostart = $zoom->start_time - $now;
-$ttoend = $zoom->start_time + $zoom->duration - $now;
+list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
-$available = $zoom->type == 3 ||
-        (0 < $ttoend && $ttostart < $config->firstabletojoin * 60);
 if ($available) {
     if ($userishost) {
-        $link = html_writer::link($zoom->start_url, $strstart);
+        $buttonhtml = html_writer::tag('button', $strstart,
+                array('type' => 'submit', 'class' => 'btn btn-success'));
+        $aurl = new moodle_url($zoom->start_url);
     } else {
-        $loadmeetingurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
-        $link = html_writer::link($loadmeetingurl, $strjoin);
+        $buttonhtml = html_writer::tag('button', $strjoin,
+                array('type' => 'submit', 'class' => 'btn btn-primary'));
+        $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
     }
-    $link = html_writer::tag('span', $link, array('style' => 'font-size:20px'));
+    $buttonhtml .= html_writer::input_hidden_params($aurl);
+    $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring()));
 } else {
     $link = html_writer::tag('span', $strunavailable, array('style' => 'font-size:20px'));
 }
@@ -174,18 +172,14 @@ $table->data[] = array($strstartvideopart, $strparticipantsvideo);
 $table->data[] = array($straudioopt, $zoom->option_audio);
 
 if ($zoom->type != ZOOM_RECURRING_MEETING) {
-
-    if ($zoom->type != ZOOM_MEETING_EXPIRED) {
-        $now = time();
-        if ($now < $zoom->start_time) {
-            $status = get_string('meeting_not_started', 'mod_zoom');
-        } else if ($zoom->start_time + $zoom->duration < $now) {
-            $status = get_string('meeting_started', 'mod_zoom');
-        } else {
-            $status = get_string('meeting_finished', 'mod_zoom');
-        }
-    } else {
+    if ($zoom->type == ZOOM_MEETING_EXPIRED) {
         $status = get_string('meeting_expired', 'mod_zoom');
+    } else if ($finished) {
+        $status = get_string('meeting_finished', 'mod_zoom');
+    } else if ($inprogress) {
+        $status = get_string('meeting_started', 'mod_zoom');
+    } else {
+        $status = get_string('meeting_not_started', 'mod_zoom');
     }
 
     $table->data[] = array($strstatus, $status);

@@ -26,8 +26,6 @@ require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
 
-$config = get_config('mod_zoom');
-
 $id = required_param('id', PARAM_INT); // Course.
 
 $course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
@@ -111,7 +109,7 @@ $modinfo = get_fast_modinfo($course);
 $cms = $modinfo->instances['zoom'];
 foreach ($zooms as $z) {
     $row = array();
-    $expired = $z->type != ZOOM_RECURRING_MEETING && $z->start_time + $z->duration < $now;
+    list($inprogress, $available, $finished) = zoom_get_state($z);
 
     $cm = $cms[$z->id];
     if ($usesections && isset($cm->sectionnum)) {
@@ -124,16 +122,10 @@ foreach ($zooms as $z) {
     $displaytime = ($z->type == ZOOM_RECURRING_MEETING) ?
             get_string('recurringmeetinglong', 'mod_zoom') : userdate($z->start_time);
 
-    if ($expired) {
+    if ($finished) {
         $row[2] = $displaytime;
         $oldtable->data[] = $row;
     } else {
-        $firstavailable = $z->start_time - ($config->firstabletojoin * 60);
-        $lastavailable = $z->start_time + $z->duration;
-        $inprogress = ($firstavailable < $now && $now < $lastavailable);
-
-        $available = $z->type == ZOOM_RECURRING_MEETING || $inprogress;
-
         if ($inprogress) {
             $label = html_writer::tag('span', $strmeetingstarted,
                     array('class' => 'label label-info zoom-info'));
@@ -147,16 +139,16 @@ foreach ($zooms as $z) {
 
         if ($available) {
             if ($zoomuserid === false || $zoomuserid != $z->host_id) {
-                $button = html_writer::tag('button', $strjoin,
+                $buttonhtml = html_writer::tag('button', $strjoin,
                         array('type' => 'submit', 'class' => 'btn btn-primary'));
-                $aurl = new moodle_url($z->join_url,
-                        array('uname' => $USER->firstname.' '.$USER->lastname));
+                $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
             } else {
-                $button = html_writer::tag('button', $strstart,
+                $buttonhtml = html_writer::tag('button', $strstart,
                         array('type' => 'submit', 'class' => 'btn btn-success'));
-                $aurl = $z->start_url;
+                $aurl = new moodle_url($z->start_url);
             }
-            $row[4] = html_writer::tag('form', $button, array('action' => $aurl));
+            $buttonhtml .= html_writer::input_hidden_params($aurl);
+            $row[4] = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring()));
         } else {
             $row[4] = '--';
         }
