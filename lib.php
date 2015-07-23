@@ -354,10 +354,10 @@ function zoom_scale_used_anywhere($scaleid) {
  * Needed by {@link grade_update_mod_grades()}.
  *
  * @param stdClass $zoom instance object with extra cmidnumber and modname property
- * @param bool $reset reset grades in the gradebook
+ * @param array $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
  * @return void
  */
-function zoom_grade_item_update(stdClass $zoom, $reset=false) {
+function zoom_grade_item_update(stdClass $zoom, $grades=null) {
     global $CFG;
     require_once($CFG->libdir.'/gradelib.php');
 
@@ -376,12 +376,13 @@ function zoom_grade_item_update(stdClass $zoom, $reset=false) {
         $item['gradetype'] = GRADE_TYPE_NONE;
     }
 
-    if ($reset) {
+    if ($grades === 'reset') {
         $item['reset'] = true;
+        $grades = null;
     }
 
     grade_update('mod/zoom', $zoom->course, 'mod', 'zoom',
-            $zoom->id, 0, null, $item);
+            $zoom->id, 0, $grades, $item);
 }
 
 /**
@@ -410,19 +411,30 @@ function zoom_update_grades(stdClass $zoom, $userid = 0) {
     global $CFG;
     require_once($CFG->libdir.'/gradelib.php');
 
-    $grades = null;
-
     // Populate array of grade objects indexed by userid.
-    if ($userid != 0) {
-        $grademax = $zoom->grade;
-        $grades = array('rawgrade' => $grademax,
-                    'userid' => $userid,
-                    'usermodified' => $userid,
-                    'dategraded' => '',
-                    'feedbackformat' => '',
-                    'feedback' => '');
+    if ($zoom->grade == 0) {
+        zoom_grade_item_update($zoom);
+    } else if ($userid != 0) {
+        $grade = grade_get_grades($zoom->course, 'mod', 'zoom', $zoom->id, $userid)->items[0]->grades[$userid];
+        $grade->userid = $userid;
+        if ($grade->grade == -1) {
+            $grade->grade = null;
+        }
+        zoom_grade_item_update($zoom, $grade);
+    } else if ($userid == 0) {
+        $context = context_course::instance($zoom->course);
+        $enrollusersid = array_keys(get_enrolled_users($context));
+        $grades = grade_get_grades($zoom->course, 'mod', 'zoom', $zoom->id, $enrollusersid)->items[0]->grades;
+        foreach ($grades as $k => $v) {
+            $grades[$k]->userid = $k;
+            if ($v->grade == -1) {
+                $grades[$k]->grade = null;
+            }
+        }
+        zoom_grade_item_update($zoom, $grades);
+    } else {
+        zoom_grade_item_update($zoom);
     }
-    grade_update('mod/zoom', $zoom->course, 'mod', 'zoom', $zoom->id, 0, $grades);
 }
 
 /* File API */

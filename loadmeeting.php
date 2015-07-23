@@ -47,9 +47,18 @@ require_capability('mod/zoom:view', $context);
 
 // Check whether user had a grade. If no, then assign full credits to him or her.
 $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
+
 // Assign full credits for user who has no grade yet.
 if (empty($gradelist->items[0]->grades[$USER->id]->grade)) {
-    zoom_update_grades($zoom, $USER->id);
+    $grademax = $zoom->grade;
+    $grades = array('rawgrade' => $grademax,
+                    'userid' => $USER->id,
+                    'usermodified' => $USER->id,
+                    'dategraded' => '',
+                    'feedbackformat' => '',
+                    'feedback' => '');
+
+    zoom_grade_item_update($zoom, $grades);
 }
 
 // Redirect user to join zoom meeting.
