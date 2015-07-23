@@ -45,7 +45,7 @@ class update_meetings extends \core\task\scheduled_task {
         global $DB;
 
         // Check all meetings, in case they were deleted/changed on Zoom.
-        $zooms = $DB->get_recordset('zoom');
+        $zooms = $DB->get_recordset_select('zoom', 'status <> ?', array(ZOOM_MEETING_EXPIRED));
 
         if (!isset($zooms)) {
             return true;

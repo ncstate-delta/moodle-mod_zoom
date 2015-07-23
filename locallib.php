@@ -99,18 +99,8 @@ function zoom_update_records(Traversable $zooms) {
                 $coursestoupdate[$z->course] = 1;
             }
         } else {
-            // If the meeting is gone, delete it.
-            if (is_meeting_gone_error($service->lasterror)) {
-                $z->status = ZOOM_MEETING_EXPIRED;
-                $DB->update_record('zoom', $z);
-                $mod = $DB->get_record('modules', array('name' => 'zoom'));
-                $cm = $DB->get_record('course_modules', array('module' => $mod->id, 'instance' => $z->id));
-                course_delete_module($cm->id);
-            } else {
-                // Otherwise, mark it as finished.
-                $z->status = ZOOM_MEETING_FINISHED;
-                $DB->update_record('zoom', $z, true);
-            }
+            $z->status = ZOOM_MEETING_EXPIRED;
+            $DB->update_record('zoom', $z);
         }
     }
 

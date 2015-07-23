@@ -120,8 +120,8 @@ $now = time();
 $ttostart = $zoom->start_time - $now;
 $ttoend = $zoom->start_time + $zoom->duration - $now;
 
-$available = $zoom->type == 3 ||
-        (0 < $ttoend && $ttostart < $config->firstabletojoin * 60);
+$available = $zoom->status != ZOOM_MEETING_EXPIRED && ($zoom->type == ZOOM_RECURRING_MEETING || 
+        (0 < $ttoend && $ttostart < $config->firstabletojoin * 60));
 if ($available) {
     if ($userishost) {
         $link = html_writer::link($zoom->start_url, $strstart);
@@ -176,10 +176,9 @@ $table->data[] = array($straudioopt, $zoom->option_audio);
 if ($zoom->type != ZOOM_RECURRING_MEETING) {
 
     if ($zoom->type != ZOOM_MEETING_EXPIRED) {
-        $now = time();
         if ($now < $zoom->start_time) {
             $status = get_string('meeting_not_started', 'mod_zoom');
-        } else if ($zoom->start_time + $zoom->duration < $now) {
+        } else if ($now < $zoom->start_time + $zoom->duration) {
             $status = get_string('meeting_started', 'mod_zoom');
         } else {
             $status = get_string('meeting_finished', 'mod_zoom');

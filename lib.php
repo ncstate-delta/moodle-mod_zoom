@@ -107,9 +107,22 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     // Update meeting on Zoom.
     $service = new mod_zoom_webservice();
-    if (!$service->meeting_update($zoom)) {
-        zoom_print_error('meeting/update', $service->lasterror);
+
+    try {
+        $service->meeting_update($zoom);
+    } catch (moodle_exception $e) {
+
+        if (is_meeting_gone_error($service->lasterror)) {
+
+            if (!$service->meeting_create($zoom)) {
+                zoom_print_error('meeting/create', $service->lasterror);
+            }
+
+        } else {
+            zoom_print_error('meeting/update', $service->lasterror);
+        }
     }
+
     $zoom = $service->lastresponse;
 
     // Update meeting in database.

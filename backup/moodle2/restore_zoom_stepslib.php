@@ -23,6 +23,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+
 /**
  * Structure step to restore one zoom activity
  *
@@ -40,6 +45,7 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
      */
     protected function define_structure() {
 
+        $userinfo = $this->get_setting_value('userinfo');
         $paths = array();
         $paths[] = new restore_path_element('zoom', '/activity/zoom');
 
@@ -59,10 +65,6 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
         $oldid = $data->id;
         $data->course = $this->get_courseid();
 
-        if (empty($data->timecreated)) {
-            $data->timecreated = time();
-        }
-
         if (empty($data->timemodified)) {
             $data->timemodified = time();
         }
@@ -70,6 +72,15 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
         if ($data->grade < 0) {
             // Scale found, get mapping.
             $data->grade = -($this->get_mappingid('scale', abs($data->grade)));
+        }
+
+        $service = new mod_zoom_webservice();
+
+        // Either get updated info, create a new meeting, or set meeting as expired, whichever comes first.
+        if ($service->get_meeting_info($data) || $service->meeting_create($data)) {
+            $data = $service->lastresponse;
+        } else {
+            $data->status = ZOOM_MEETING_EXPIRED;
         }
 
         // Create the zoom instance.

@@ -74,7 +74,7 @@ class restore_zoom_activity_task extends restore_activity_task {
         $rules = array();
 
         $rules[] = new restore_decode_rule('ZOOMVIEWBYID', '/mod/zoom/view.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('ZOOMINDEX', '/mod/zoom/index.php?id=$1', 'course');
+        $rules[] = new restore_decode_rule('ZOOMINDEX', '/mod/zoom/index.php?id=$1', 'course_module');
 
         return $rules;
 

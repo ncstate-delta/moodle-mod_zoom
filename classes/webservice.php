@@ -205,11 +205,8 @@ class mod_zoom_webservice {
             return false;
         }
 
-        try {
-            $this->make_call($url, $data);
-        } catch (moodle_exception $e) {
-            return false;
-        }
+        // Throws moodle_Exception.
+        $this->make_call($url, $data);
 
         // The only fields that need changing are id and updated_at.
         $zoom->id = $zoom->instance;
