@@ -73,6 +73,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addElement('advcheckbox', 'type', get_string('recurringmeeting', 'zoom'), '',
                 null, array(ZOOM_SCHEDULED_MEETING, ZOOM_RECURRING_MEETING));
         $mform->setDefault('type', ZOOM_SCHEDULED_MEETING);
+        $mform->addHelpButton('type', 'recurringmeeting', 'zoom');
 
         // Add password.
         $mform->addElement('passwordunmask', 'password', get_string('password', 'zoom'), array('maxlength' => '10'));
@@ -103,10 +104,10 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add meeting options.
         $mform->addGroup(array(
-            // TODO: meeting password.
             // Join before host.
             $mform->createElement('checkbox', 'option_jbh', '', get_string('option_jbh', 'zoom'))
-        ), null, get_string('meetingoptions', 'zoom'));
+        ), 'meetingoptions', get_string('meetingoptions', 'zoom'));
+        $mform->addHelpButton('meetingoptions', 'meetingoptions', 'zoom');
 
         // Add meeting id.
         $mform->addElement('hidden', 'meeting_id', -1);

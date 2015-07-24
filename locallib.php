@@ -85,7 +85,6 @@ function zoom_update_records(Traversable $zooms) {
             foreach ($z as $field => $value) {
                 // The start_url has a parameter that always changes, so it doesn't really count as a change.
                 if ($field != 'start_url' && $service->lastresponse->$field != $value) {
-                    var_dump($field);
                     $service->lastresponse->timemodified = time();
                     break;
                 }
@@ -108,4 +107,25 @@ function zoom_update_records(Traversable $zooms) {
     foreach (array_flip($coursestoupdate) as $course) {
         rebuild_course_cache($course, true);
     }
+}
+
+/**
+ * Determine if a zoom meeting is in progress, is available, and/or is finished.
+ *
+ * @param stdClass $zoom
+ * @return array Array of booleans: [in progress, available, finished].
+ */
+function zoom_get_state($zoom) {
+    $config = get_config('mod_zoom');
+    $now = time();
+
+    $firstavailable = $zoom->start_time - ($config->firstabletojoin * 60);
+    $lastavailable = $zoom->start_time + $zoom->duration;
+    $inprogress = ($firstavailable <= $now && $now <= $lastavailable);
+
+    $available = $zoom->type == ZOOM_RECURRING_MEETING || $inprogress;
+
+    $finished = $zoom->type != ZOOM_RECURRING_MEETING && $now > $lastavailable;
+
+    return array($inprogress, $available, $finished);
 }
