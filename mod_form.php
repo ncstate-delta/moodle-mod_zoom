@@ -119,6 +119,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add standard grading elements.
         $this->standard_grading_coursemodule_elements();
+        $mform->setDefault('grade',false);
 
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();

@@ -27,18 +27,15 @@
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once($CFG->libdir . '/gradelib.php');
+require_once($CFG->libdir . '/moodlelib.php');
 
-$id = optional_param('id', 0, PARAM_INT); // Course_module ID.
+$id = required_param('id', PARAM_INT); // Course_module ID.
 if ($id) {
     $cm         = get_coursemodule_from_id('zoom', $id, 0, false, MUST_EXIST);
-    $course     = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+    $course     = get_course($cm->course);
     $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
-} else if ($n) {
-    $zoom  = $DB->get_record('zoom', array('id' => $n), '*', MUST_EXIST);
-    $course     = $DB->get_record('course', array('id' => $zoom->course), '*', MUST_EXIST);
-    $cm         = get_coursemodule_from_instance('zoom', $zoom->id, $course->id, false, MUST_EXIST);
 } else {
-    error('You must specify a course_module ID or an instance ID');
+    error('You must specify a course_module ID');
 }
 
 require_login($course, true, $cm);
@@ -50,12 +47,20 @@ require_capability('mod/zoom:view', $context);
 
 // Check whether user had a grade. If no, then assign full credits to him or her.
 $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
+
 // Assign full credits for user who has no grade yet.
 if (empty($gradelist->items[0]->grades[$USER->id]->grade)) {
-    zoom_update_grades($zoom, 0);
+    $grademax = $zoom->grade;
+    $grades = array('rawgrade' => $grademax,
+                    'userid' => $USER->id,
+                    'usermodified' => $USER->id,
+                    'dategraded' => '',
+                    'feedbackformat' => '',
+                    'feedback' => '');
+
+    zoom_grade_item_update($zoom, $grades);
 }
 
 // Redirect user to join zoom meeting.
-$joinurl = new moodle_url($zoom->join_url, array('uname' => $USER->firstname.' '.$USER->lastname));
+$joinurl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
 redirect($joinurl);
-exit();
