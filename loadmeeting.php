@@ -50,7 +50,7 @@ $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->
 
 // Assign full credits for user who has no grade yet.
 if (empty($gradelist->items[0]->grades[$USER->id]->grade)) {
-    $grademax = $zoom->grade;
+    $grademax = $gradelist->items[0]->grademax;
     $grades = array('rawgrade' => $grademax,
                     'userid' => $USER->id,
                     'usermodified' => $USER->id,
