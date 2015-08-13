@@ -32,11 +32,11 @@ if ($ADMIN->fulltree) {
     $settings->add($apiurl);
 
     $apikey = new admin_setting_configtext('mod_zoom/apikey', get_string('apikey', 'mod_zoom'),
-            get_string('apikey_desc', 'mod_zoom'), '', PARAM_ALPHANUM);
+            get_string('apikey_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
     $settings->add($apikey);
 
     $apisecret = new admin_setting_configtext('mod_zoom/apisecret', get_string('apisecret', 'mod_zoom'),
-            get_string('apisecret_desc', 'mod_zoom'), '', PARAM_ALPHANUM);
+            get_string('apisecret_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
     $settings->add($apisecret);
 
     $zoomurl = new admin_setting_configtext('mod_zoom/zoomurl', get_string('zoomurl', 'mod_zoom'),
