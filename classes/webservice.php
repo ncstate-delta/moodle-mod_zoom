@@ -313,7 +313,7 @@ class mod_zoom_webservice {
      */
     protected function format_meeting_response($zoom) {
         $response = &$this->lastresponse;
-        // "Undoing" the transformations in parse_zoom_object.
+        // Undoing the transformations in parse_zoom_object.
         // Convert duration to seconds.
         $response->duration *= 60;
         // Convert string to timestamp.

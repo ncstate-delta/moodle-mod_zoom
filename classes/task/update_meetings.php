@@ -35,12 +35,29 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
+/**
+ * Scheduled task to sychronize meeting data.
+ *
+ * @package   mod_zoom
+ * @copyright 2015 UC Regents
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class update_meetings extends \core\task\scheduled_task {
 
+    /**
+     * Returns name of task.
+     *
+     * @return string
+     */
     public function get_name() {
         return get_string('updatemeetings', 'mod_zoom');
     }
 
+    /**
+     * Updates meetings that are not expired.
+     *
+     * @return boolean
+     */
     public function execute() {
         global $DB;
 

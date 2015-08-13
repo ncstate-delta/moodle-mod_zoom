@@ -15,7 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Define the complete zoom structure for backup, with file and id annotations
+ * Defines backup_zoom_activity_structure_step class.
+ *
+ * @package   mod_zoom
+ * @copyright 2015 UC Regents
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/**
+ * Define the complete zoom structure for backup, with file and id annotations.
  *
  * @package   mod_zoom
  * @category  backup
