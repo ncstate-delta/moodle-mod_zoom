@@ -233,7 +233,7 @@ class mod_zoom_webservice {
             // If meeting isn't found or has expired, that's fine.
             global $CFG;
             require_once($CFG->dirroot.'/mod/zoom/lib.php');
-            return is_meeting_gone_error($e->getMessage());
+            return zoom_is_meeting_gone_error($e->getMessage());
         }
 
         return true;

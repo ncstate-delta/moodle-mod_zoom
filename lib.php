@@ -112,7 +112,7 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         $service->meeting_update($zoom);
     } catch (moodle_exception $e) {
 
-        if (is_meeting_gone_error($service->lasterror)) {
+        if (zoom_is_meeting_gone_error($service->lasterror)) {
 
             if (!$service->meeting_create($zoom)) {
                 zoom_print_error('meeting/create', $service->lasterror);
@@ -576,7 +576,7 @@ function zoom_print_error($apicall, $error) {
             case 'meeting/get':
             case 'meeting/update':
             case 'meeting/delete':
-                if (is_meeting_gone_error($error)) {
+                if (zoom_is_meeting_gone_error($error)) {
                     $errstring = 'zoomerr_meetingnotfound';
                 }
                 break;
@@ -592,6 +592,6 @@ function zoom_print_error($apicall, $error) {
  * @param string $error
  * @return bool
  */
-function is_meeting_gone_error($error) {
+function zoom_is_meeting_gone_error($error) {
     return strpos($error, 'not found or has expired') !== false;
 }

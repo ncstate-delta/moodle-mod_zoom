@@ -54,15 +54,13 @@ $string['meeting_expired'] = 'Expired / Deleted';
 $string['meeting_finished'] = 'Finished';
 $string['meeting_not_started'] = 'Not started';
 $string['meetingoptions'] = 'Meeting option';
-$string['meetingoptions_help'] = '*Join before host* allows attendees to join the meeting before the host joins '
-        . 'or when the host cannot attend the meeting.';
+$string['meetingoptions_help'] = '*Join before host* allows attendees to join the meeting before the host joins or when the host cannot attend the meeting.';
 $string['meeting_started'] = 'In progress';
 $string['meeting_time'] = 'Start Time';
 $string['minutes'] = '{$a} min';
 $string['modulename'] = 'Zoom meeting';
 $string['modulenameplural'] = 'Zoom Meetings';
-$string['modulename_help'] = 'Zoom is a video and web conferencing platform that gives '
-        . 'authorized users the ability to host online meetings with up to 25 participants.';
+$string['modulename_help'] = 'Zoom is a video and web conferencing platform that gives authorized users the ability to host online meetings with up to 25 participants.';
 $string['newmeetings'] = 'New Meetings';
 $string['no'] = 'No';
 $string['nozooms'] = 'No meetings';
