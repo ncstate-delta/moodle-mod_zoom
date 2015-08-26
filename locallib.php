@@ -77,7 +77,7 @@ function zoom_update_records(Traversable $zooms) {
     require_once($CFG->dirroot.'/course/lib.php');
     require_once($CFG->dirroot.'/lib/modinfolib.php');
 
-    $service = new \mod_zoom_webservice();
+    $service = new mod_zoom_webservice();
     $coursestoupdate = array();
     foreach ($zooms as $z) {
         if ($service->get_meeting_info($z)) {

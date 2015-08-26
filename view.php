@@ -76,6 +76,7 @@ $cache = cache::make('mod_zoom', 'zoomid');
 if (!($zoomuserid = $cache->get($USER->id))) {
     $zoomuserid = false;
     $service = new mod_zoom_webservice();
+    // Not an error if this fails, since people don't need a Zoom account to view/join meetings.
     if ($service->user_getbyemail($USER->email)) {
         $zoomuserid = $service->lastresponse->id;
     }

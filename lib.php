@@ -167,7 +167,9 @@ function zoom_delete_instance($id) {
     // So don't bother with the webservice in this case.
     if ($zoom->status !== ZOOM_MEETING_EXPIRED) {
         $service = new mod_zoom_webservice();
-        $service->delete_meeting($zoom->meeting_id, $zoom->host_id);
+        if (!$service->delete_meeting($zoom->meeting_id, $zoom->host_id)) {
+            zoom_print_error('meeting/delete', $service->lasterror);
+        }
     }
 
     $DB->delete_records('zoom', array('id' => $zoom->id));
@@ -557,24 +559,41 @@ function zoom_extend_settings_navigation(settings_navigation $settingsnav, navig
  * @param string $error Error message (most likely from mod_zoom_webservice->lasterror)
  */
 function zoom_print_error($apicall, $error) {
+    global $CFG, $COURSE, $OUTPUT, $PAGE;
+
+    // Lang string for the error.
     $errstring = 'zoomerr';
+    // Parameter for the lang string.
     $param = null;
+    // Style of the error notification.
+    $style = 'notifyproblem';
+    // Link that the continue button points to.
+    if (isset($_SERVER['HTTP_REFERER'])) {
+        $nexturl = clean_param($_SERVER['HTTP_REFERER'], PARAM_LOCALURL);
+    } else {
+        $nexturl = '/';
+    }
 
     // This handles special error messages that aren't the generic zoomerr.
+    $settingsurl = '/admin/settings.php?section=modsettingzoom';
     if (strpos($error, 'Api key and secret are required') !== false) {
         $errstring = 'zoomerr_apisettings_missing';
+        $nexturl = $settingsurl;
     } else if (strpos($error, 'Invalid api key or secret') !== false) {
         $errstring = 'zoomerr_apisettings_invalid';
+        $nexturl = $settingsurl;
     } else {
         switch ($apicall) {
             case 'user/getbyemail':
                 if (strpos($error, 'not exist') !== false) {
-                    global $USER;
+                    // Assume user is using Zoom for the first time.
                     $errstring = 'zoomerr_usernotfound';
-                    $param = array(
-                        'email' => $USER->email,
-                        'zoomurl' => get_config('mod_zoom', 'zoomurl')
-                    );
+                    $param = get_config('mod_zoom', 'zoomurl');
+                    // Not an error.
+                    $style = 'notifymessage';
+                    // After they set up their account, the user should
+                    // continue to the page they were on.
+                    $nexturl = $PAGE->url;
                 }
                 break;
             case 'meeting/get':
@@ -587,7 +606,23 @@ function zoom_print_error($apicall, $error) {
         }
     }
 
-    print_error($errstring, 'zoom', '', $param, "$apicall: $error");
+    // Based on fatal_error() in lib/outputrenderers.php, but with Bootstrap notification.
+    $protocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
+    @header($protocol . ' 404 Not Found');
+
+    $PAGE->set_title(get_string('error'));
+    $PAGE->set_heading($COURSE->fullname);
+    echo $OUTPUT->header();
+
+    echo $OUTPUT->notification(get_string($errstring, 'mod_zoom', $param), $style);
+    if ($CFG->debugdeveloper) {
+        echo $OUTPUT->notification("<strong>Debug info:</strong> $apicall: $error", 'notifytiny');
+        echo $OUTPUT->notification('<strong>Stack trace:</strong> '.format_backtrace(debug_backtrace()), 'notifytiny');
+    }
+    echo $OUTPUT->continue_button($nexturl);
+
+    echo $OUTPUT->footer();
+    exit(1);
 }
 
 /**

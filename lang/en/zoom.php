@@ -95,7 +95,7 @@ $string['zoom:addinstance'] = 'Add a new Zoom meeting';
 $string['zoomerr'] = 'An error occured with Zoom.'; // Generic error.
 $string['zoomerr_apisettings_invalid'] = 'The Zoom API key and/or secret are invalid. Please ensure they are correct.';
 $string['zoomerr_apisettings_missing'] = 'Please configure the Zoom API key and secret.';
-$string['zoomerr_usernotfound'] = 'Cannot find user with email ({$a->email}) at Zoom. Please <a href="{$a->zoomurl}" target="_blank">login at Zoom</a> to create your account and try again.';
+$string['zoomerr_usernotfound'] = 'You are using Zoom for the first time, so you must enable your Zoom account by logging in to <a href="{$a}" target="_blank">{$a}</a> with your login credentials. Once you\'ve activated your Zoom account, reload this page and continue setting up your meeting.';
 $string['zoomerr_meetingnotfound'] = 'This meeting does not exist or has expired.';
 $string['zoomurl'] = 'Zoom home page URL';
 $string['zoomurl_desc'] = '';
