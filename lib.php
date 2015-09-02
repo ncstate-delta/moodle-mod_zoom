@@ -634,3 +634,13 @@ function zoom_print_error($apicall, $error) {
 function zoom_is_meeting_gone_error($error) {
     return strpos($error, 'not found or has expired') !== false;
 }
+
+/**
+ * Check if the error indicates that a user is not found.
+ *
+ * @param string $error
+ * @return bool
+ */
+function zoom_is_user_not_found_error($error) {
+    return strpos($error, 'User not exist') !== false;
+}

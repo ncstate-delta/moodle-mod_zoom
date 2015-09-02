@@ -138,21 +138,29 @@ class mod_zoom_webservice {
      * @param int $logintype Optional authentication method, defaults to ZOOM_SNS_SSO.
      * @return bool
      */
-    public function user_getbyemail($email, $logintype = ZOOM_SNS_SSO) {
+    public function user_getbyemail($email) {
+        $logintypes = get_config('mod_zoom', 'logintypes');
+        $allowedtypes = explode(',', $logintypes);
+
         $url = 'user/getbyemail';
 
-        $data = array(
-            'email' => $email,
-            'login_type' => $logintype
-        );
+        $data = array('email' => $email);
 
-        try {
-            $this->make_call($url, $data);
-        } catch (moodle_exception $e) {
-            return false;
+        foreach ($allowedtypes as $logintype) {
+            $data['login_type'] = $logintype;
+            try {
+                $this->make_call($url, $data);
+                return true;
+            } catch (moodle_exception $e) {
+                global $CFG;
+                require_once($CFG->dirroot.'/mod/zoom/lib.php');
+                if (!zoom_is_user_not_found_error($e->getMessage())) {
+                    return false;
+                }
+            }
         }
 
-        return true;
+        return false;
     }
 
     // Meeting API calls
