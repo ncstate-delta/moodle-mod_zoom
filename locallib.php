@@ -51,6 +51,109 @@ define('ZOOM_SNS_GOOGLE', 1);
 define('ZOOM_SNS_API', 99);
 define('ZOOM_SNS_ZOOM', 100);
 define('ZOOM_SNS_SSO', 101);
+// Number of meetings per page from zoom's get user report.
+define('ZOOM_DEFAULT_RECORDS_PER_CALL', 30);
+define('ZOOM_MAX_RECORDS_PER_CALL', 300);
+
+/**
+ * Get course/cm/zoom objects from url parameters, and check for login/permissions.
+ *
+ * @return array Array of ($course, $cm, $zoom)
+ */
+function zoom_get_instance_setup() {
+    global $DB;
+
+    $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
+    $n  = optional_param('n', 0, PARAM_INT);  // ... zoom instance ID - it should be named as the first character of the module.
+
+    if ($id) {
+        $cm         = get_coursemodule_from_id('zoom', $id, 0, false, MUST_EXIST);
+        $course     = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+        $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
+    } else if ($n) {
+        $zoom  = $DB->get_record('zoom', array('id' => $n), '*', MUST_EXIST);
+        $course     = $DB->get_record('course', array('id' => $zoom->course), '*', MUST_EXIST);
+        $cm         = get_coursemodule_from_instance('zoom', $zoom->id, $course->id, false, MUST_EXIST);
+    } else {
+        print_error('You must specify a course_module ID or an instance ID');
+    }
+
+    require_login($course, true, $cm);
+
+    $context = context_module::instance($cm->id);
+    require_capability('mod/zoom:view', $context);
+
+    return array($course, $cm, $zoom);
+}
+
+/**
+ * Get the user report for display and caching.
+ *
+ * @param stdClass $zoom
+ * @param string $from same format as webservice->get_user_report
+ * @param string $to
+ * @return class->sessions[hostid][meetingid][starttime]
+ *              ->reqfrom string same as param
+ *              ->reqto string same as param
+ *              ->resfrom array string "from" field of zoom response
+ */
+function zoom_get_sessions_for_display($zoom, $from, $to) {
+    $service = new mod_zoom_webservice();
+    $return = new stdClass();
+
+    // If the from or to fields change, report.php will issue a new request.
+    $return->reqfrom = $from;
+    $return->reqto = $to;
+
+    $hostsessions = array();
+
+    if ($service->get_user_report($zoom->host_id, $from, $to, ZOOM_MAX_RECORDS_PER_CALL, 1)) {
+        $result = $service->lastresponse;
+
+        // Zoom may return multiple pages of results.
+        $numpages = $result->page_count;
+        $i = $result->page_number;
+        do {
+            foreach ($result->meetings as $meet) {
+                $starttime = strtotime($meet->start_time);
+                $hostsessions[$meet->id][$starttime] = $meet;
+            }
+
+            $i++;
+        } while ($i <= $numpages && $result =
+                $service->get_user_report($zoom->host_id, $from, $to, ZOOM_MAX_RECORDS_PER_CALL, $i));
+
+        // If the time period is longer than a month, Zoom will only return the latest month in range.
+        // Return the response "from" field to check.
+        $return->resfrom = sscanf($result->from, '%u-%u-%u');
+    } else {
+        zoom_print_error('report/getuserreport', $service->lasterror);
+    }
+
+    $return->sessions = $hostsessions;
+    return $return;
+}
+
+/**
+ * Determine if a zoom meeting is in progress, is available, and/or is finished.
+ *
+ * @param stdClass $zoom
+ * @return array Array of booleans: [in progress, available, finished].
+ */
+function zoom_get_state($zoom) {
+    $config = get_config('mod_zoom');
+    $now = time();
+
+    $firstavailable = $zoom->start_time - ($config->firstabletojoin * 60);
+    $lastavailable = $zoom->start_time + $zoom->duration;
+    $inprogress = ($firstavailable <= $now && $now <= $lastavailable);
+
+    $available = $zoom->type == ZOOM_RECURRING_MEETING || $inprogress;
+
+    $finished = $zoom->type != ZOOM_RECURRING_MEETING && $now > $lastavailable;
+
+    return array($inprogress, $available, $finished);
+}
 
 /**
  * Get the Zoom id of the currently logged-in user.
@@ -107,25 +210,4 @@ function zoom_update_records(Traversable $zooms) {
     foreach (array_flip($coursestoupdate) as $course) {
         rebuild_course_cache($course, true);
     }
-}
-
-/**
- * Determine if a zoom meeting is in progress, is available, and/or is finished.
- *
- * @param stdClass $zoom
- * @return array Array of booleans: [in progress, available, finished].
- */
-function zoom_get_state($zoom) {
-    $config = get_config('mod_zoom');
-    $now = time();
-
-    $firstavailable = $zoom->start_time - ($config->firstabletojoin * 60);
-    $lastavailable = $zoom->start_time + $zoom->duration;
-    $inprogress = ($firstavailable <= $now && $now <= $lastavailable);
-
-    $available = $zoom->type == ZOOM_RECURRING_MEETING || $inprogress;
-
-    $finished = $zoom->type != ZOOM_RECURRING_MEETING && $now > $lastavailable;
-
-    return array($inprogress, $available, $finished);
 }

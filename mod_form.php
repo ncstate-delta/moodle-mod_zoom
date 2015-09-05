@@ -158,3 +158,25 @@ class mod_zoom_mod_form extends moodleform_mod {
         return $errors;
     }
 }
+
+/**
+ * Form to search for meeting reports.
+ *
+ * @package    mod_zoom
+ * @copyright  2015 UC Regents
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class mod_zoom_report_form extends moodleform {
+    /**
+     * Define form elements.
+     */
+    public function definition() {
+        $mform = $this->_form;
+
+        $mform->addElement('date_selector', 'from', get_string('from'));
+
+        $mform->addElement('date_selector', 'to', get_string('to'));
+
+        $mform->addElement('submit', 'submit', get_string('go'));
+    }
+}

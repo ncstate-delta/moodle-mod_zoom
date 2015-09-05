@@ -44,19 +44,14 @@ if ($ADMIN->fulltree) {
             get_string('zoomurl_desc', 'mod_zoom'), '', PARAM_URL);
     $settings->add($zoomurl);
 
-    $jointimechoices = array(
-        0 => get_string('minutes', 'mod_zoom', 0),
-        5 => get_string('minutes', 'mod_zoom', 5),
-        10 => get_string('minutes', 'mod_zoom', 10),
-        15 => get_string('minutes', 'mod_zoom', 15),
-        20 => get_string('minutes', 'mod_zoom', 20),
-        30 => get_string('minutes', 'mod_zoom', 30),
-        45 => get_string('minutes', 'mod_zoom', 45),
-        60 => get_string('minutes', 'mod_zoom', 60),
-    );
+    $jointimechoices = array(0, 5, 10, 15, 20, 30, 45, 60);
+    $jointimeselect = array();
+    foreach ($jointimechoices as $minutes) {
+        $jointimeselect[$minutes] = $minutes . ' ' . get_string('mins');
+    }
     $firstabletojoin = new admin_setting_configselect('mod_zoom/firstabletojoin',
             get_string('firstjoin', 'mod_zoom'), get_string('firstjoin_desc', 'mod_zoom'),
-            15, $jointimechoices);
+            15, $jointimeselect);
     $settings->add($firstabletojoin);
 
     $logintypes = array(ZOOM_SNS_SSO => get_string('login_sso', 'mod_zoom'),

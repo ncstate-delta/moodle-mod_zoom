@@ -268,6 +268,39 @@ class mod_zoom_webservice {
         return true;
     }
 
+    // Reporting API calls
+    // --------------------------------------------------------------------------
+    // See https://support.zoom.us/hc/en-us/articles/201363083-REST-Report-API .
+
+    /**
+     * Get user report for a specific period.
+     * "from" and "to" dates are of the form YYYY-MM-DD
+     * ex) 2015-07-15
+     *
+     * @param int $userid Id of user of interest
+     * @param string $from Start date of period
+     * @param string $to End date of period
+     * @param int $pagesize Optional; number of records per page
+     * @param int $pagenumber Optional; which page to request
+     * @return bool Success/Failure
+     */
+    public function get_user_report($userid, $from, $to,
+            $pagesize = ZOOM_DEFAULT_RECORDS_PER_CALL, $pagenumber = 1) {
+        $url = 'report/getuserreport';
+        $data = array('user_id' => $userid,
+                      'from' => $from,
+                      'to' => $to,
+                      'page_size' => $pagesize,
+                      'page_number' => $pagenumber);
+        try {
+            $this->make_call($url, $data);
+        } catch (moodle_exception $e) {
+            return false;
+        }
+
+        return true;
+    }
+
     // Helper functions
     // --------------------------------
 
