@@ -135,7 +135,6 @@ class mod_zoom_webservice {
      * Find a user via their email.
      *
      * @param string $email
-     * @param int $logintype Optional authentication method, defaults to ZOOM_SNS_SSO.
      * @return bool
      */
     public function user_getbyemail($email) {

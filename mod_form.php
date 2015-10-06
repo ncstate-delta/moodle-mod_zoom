@@ -102,11 +102,12 @@ class mod_zoom_mod_form extends moodleform_mod {
         ), null, get_string('option_audio', 'zoom'));
         $mform->setDefault('option_audio', ZOOM_AUDIO_BOTH);
 
-        // Add meeting options.
+        // Add meeting options. Make sure we pass $appendName as false
+        // so the options aren't nested in a 'meetingoptions' array.
         $mform->addGroup(array(
             // Join before host.
-            $mform->createElement('checkbox', 'option_jbh', '', get_string('option_jbh', 'zoom'))
-        ), 'meetingoptions', get_string('meetingoptions', 'zoom'));
+            $mform->createElement('advcheckbox', 'option_jbh', '', get_string('option_jbh', 'zoom'))
+        ), 'meetingoptions', get_string('meetingoptions', 'zoom'), null, false);
         $mform->addHelpButton('meetingoptions', 'meetingoptions', 'zoom');
 
         // Add meeting id.
