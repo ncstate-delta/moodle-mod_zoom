@@ -23,10 +23,41 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
 if ($ADMIN->fulltree) {
+    require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+    require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+
     $settings = new admin_settingpage('modsettingzoom', get_string('pluginname', 'mod_zoom'));
+
+    // Test connection if it is setup and user is on the settings page.
+    if (!CLI_SCRIPT && $PAGE->url == $CFG->wwwroot . '/' . $CFG->admin .
+            '/settings.php?section=modsettingzoom') {
+        $status = 'connectionok';
+        $notifyclass = 'notifysuccess';
+        $service = new mod_zoom_webservice();
+        if (!$service->user_getbyemail($USER->email)) {
+            $error = $service->lasterror;
+            if (strpos($error, 'Api key and secret are required') !== false) {
+                $status = 'zoomerr_apisettings_missing';
+                $notifyclass = 'notifymessage';
+            } else if (strpos($error, 'Invalid api key or secret') !== false) {
+                $status = 'zoomerr_apisettings_invalid';
+                $notifyclass = 'notifyproblem';
+            } else if (strpos($error, '404 Not Found') !== false) {
+                $status = 'zoomerr_apiurl_404';
+                $notifyclass = 'notifyproblem';
+            } else if (strpos($error, "Couldn't resolve host") !== false) {
+                $status = 'zoomerr_apiurl_unresolved';
+                $notifyclass = 'notifyproblem';
+            }
+        }
+        $statusmessage = $OUTPUT->notification(get_string('connectionstatus', 'zoom') .
+                ': ' . get_string($status, 'zoom'), $notifyclass);
+        $connectionstatus = new admin_setting_heading('mod_zoom/connectionstatus',
+                $statusmessage, '');
+        $settings->add($connectionstatus);
+    }
 
     $apiurl = new admin_setting_configtext('mod_zoom/apiurl', get_string('apiurl', 'mod_zoom'),
             get_string('apiurl_desc', 'mod_zoom'), 'https://api.zoom.us/v1/', PARAM_URL);
@@ -63,4 +94,5 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configmultiselect('mod_zoom/logintypes',
             get_string('logintypes', 'mod_zoom'), get_string('logintypesexplain', 'mod_zoom'),
             array(ZOOM_SNS_SSO), $logintypes));
+
 }

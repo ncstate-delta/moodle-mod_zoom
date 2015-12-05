@@ -582,6 +582,12 @@ function zoom_print_error($apicall, $error) {
     } else if (strpos($error, 'Invalid api key or secret') !== false) {
         $errstring = 'zoomerr_apisettings_invalid';
         $nexturl = $settingsurl;
+    } else if (strpos($error, '404 Not Found') !== false) {
+        $errstring = 'zoomerr_apiurl_404';
+        $nexturl = $settingsurl;
+    } else if (strpos($error, "Couldn't resolve host") !== false) {
+        $errstring = 'zoomerr_apiurl_unresolved';
+        $nexturl = $settingsurl;
     } else {
         switch ($apicall) {
             case 'user/getbyemail':
