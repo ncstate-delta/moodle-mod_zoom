@@ -12,3 +12,22 @@ Must set the following settings to enable the plugin:
 * Zoom API key (mod_zoom | apikey)
 * Zoom API secret (mod_zoom | apisecret)
 * Zoom home page URL (mod_zoom | zoomurl), Link to your organization's custom Zoom landing page.
+* Login types (mod_zoom | logintypes), Depending on your Zoom instance, how should the plug-in find users from Moodle in Zoom?
+
+## Changelog
+
+v1.3
+* Fixed join before host option.
+* Added Zoom user reports.
+* Added connection status checking on settings page.
+
+v1.2
+* Allowing Zoom users to be found by other login types than just SSO.
+
+v1.1
+* Issue #1: allow underscores in API key and secret.
+* Issue #2: Fix language strings to not use concatenation.
+* Added support for "group members only".
+
+v1.0
+* Initial release
