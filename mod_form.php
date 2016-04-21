@@ -28,6 +28,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot.'/mod/zoom/lib.php');
 require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
 /**
@@ -43,6 +44,13 @@ class mod_zoom_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
+        global $USER;
+        $service = new mod_zoom_webservice();
+        if (!$service->user_getbyemail($USER->email)) {
+            zoom_print_error('user/getbyemail', $service->lasterror);
+        }
+        $zoomuser = $service->lastresponse;
+
         $mform = $this->_form;
 
         // Adding the "general" fieldset, where all the common settings are showed.
@@ -60,26 +68,34 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Add date/time. Validation in validation().
         $mform->addElement('date_time_selector', 'start_time', get_string('start_time', 'zoom'));
         // Disable for recurring meetings.
-        $mform->disabledIf('start_time', 'type', 'checked');
+        $mform->disabledIf('start_time', 'recurring', 'checked');
 
         // Add duration.
         $mform->addElement('duration', 'duration', get_string('duration', 'zoom'), array('optional' => false));
         // Validation in validation(). Default to one hour.
         $mform->setDefault('duration', array('number' => 1, 'timeunit' => 3600));
         // Disable for recurring meetings.
-        $mform->disabledIf('duration', 'type', 'checked');
+        $mform->disabledIf('duration', 'recurring', 'checked');
 
-        // Add recurring meeting: map unchecked to ZOOM_SCHEDULED_MEETING, checked to type ZOOM_RECURRING_MEETING.
-        $mform->addElement('advcheckbox', 'type', get_string('recurringmeeting', 'zoom'), '',
-                null, array(ZOOM_SCHEDULED_MEETING, ZOOM_RECURRING_MEETING));
-        $mform->setDefault('type', ZOOM_SCHEDULED_MEETING);
-        $mform->addHelpButton('type', 'recurringmeeting', 'zoom');
+        // Add recurring.
+        $mform->addElement('advcheckbox', 'recurring', get_string('recurringmeeting', 'zoom'));
+        $mform->setDefault('recurring', 0);
+        $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
+
+        // Add webinar, disabled if the user cannot create webinars.
+        $webinarattr = null;
+        if (!$zoomuser->enable_webinar) {
+            $webinarattr = array('disabled' => true, 'group' => null);
+        }
+        $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '', $webinarattr);
+        $mform->setDefault('webinar', 0);
 
         // Add password.
         $mform->addElement('passwordunmask', 'password', get_string('password', 'zoom'), array('maxlength' => '10'));
         // Check password uses valid characters.
         $regex = '/^[a-zA-Z0-9@_*-]{1,10}$/';
         $mform->addRule('password', get_string('err_password', 'mod_zoom'), 'regex', $regex, 'client');
+        $mform->disabledIf('password', 'webinar', 'checked');
 
         // Add host/participants video (checked by default).
         $mform->addGroup(array(
@@ -87,12 +103,14 @@ class mod_zoom_mod_form extends moodleform_mod {
             $mform->createElement('radio', 'option_host_video', '', get_string('off', 'zoom'), false)
         ), null, get_string('option_host_video', 'zoom'));
         $mform->setDefault('option_host_video', true);
+        $mform->disabledIf('option_host_video', 'webinar', 'checked');
 
         $mform->addGroup(array(
             $mform->createElement('radio', 'option_participants_video', '', get_string('on', 'zoom'), true),
             $mform->createElement('radio', 'option_participants_video', '', get_string('off', 'zoom'), false)
         ), null, get_string('option_participants_video', 'zoom'));
         $mform->setDefault('option_participants_video', true);
+        $mform->disabledIf('option_participants_video', 'webinar', 'checked');
 
         // Add audio options.
         $mform->addGroup(array(
@@ -109,6 +127,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             $mform->createElement('advcheckbox', 'option_jbh', '', get_string('option_jbh', 'zoom'))
         ), 'meetingoptions', get_string('meetingoptions', 'zoom'), null, false);
         $mform->addHelpButton('meetingoptions', 'meetingoptions', 'zoom');
+        $mform->disabledIf('meetingoptions', 'webinar', 'checked');
 
         // Add meeting id.
         $mform->addElement('hidden', 'meeting_id', -1);
@@ -141,7 +160,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $errors = array();
 
         // Only check for scheduled meetings.
-        if ($data['type'] == ZOOM_SCHEDULED_MEETING) {
+        if (empty($data['recurring'])) {
             // Make sure start date is in the future.
             if ($data['start_time'] < strtotime('today')) {
                 $errors['start_time'] = get_string('err_start_time_past', 'zoom');

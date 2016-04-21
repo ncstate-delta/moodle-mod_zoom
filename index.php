@@ -48,7 +48,7 @@ $strnew = get_string('newmeetings', 'mod_zoom');
 $strold = get_string('oldmeetings', 'mod_zoom');
 
 $strtopic = get_string('topic', 'mod_zoom');
-$strtype = get_string('type', 'mod_zoom');
+$strwebinar = get_string('webinar', 'mod_zoom');
 $strtime = get_string('meeting_time', 'mod_zoom');
 $strduration = get_string('duration', 'mod_zoom');
 $stractions = get_string('actions', 'mod_zoom');
@@ -121,9 +121,11 @@ foreach ($zooms as $z) {
 
     $url = new moodle_url('view.php', array('id' => $cm->id));
     $row[1] = html_writer::link($url, $cm->get_formatted_name());
+    if ($z->webinar) {
+        $row[1] .= " ($strwebinar)";
+    }
     // Recurring meetings have no start time or duration.
-    $displaytime = ($z->type == ZOOM_RECURRING_MEETING) ?
-            get_string('recurringmeetinglong', 'mod_zoom') : userdate($z->start_time);
+    $displaytime = $z->recurring ? get_string('recurringmeetinglong', 'mod_zoom') : userdate($z->start_time);
 
     $report = new moodle_url('report.php', array('id' => $cm->id));
     $sessions = html_writer::link($report, $strsessions);
@@ -141,8 +143,7 @@ foreach ($zooms as $z) {
             $row[2] = $displaytime;
         }
 
-        $row[3] = ($z->type == ZOOM_RECURRING_MEETING) ?
-                '--' : format_time($z->duration);
+        $row[3] = $z->recurring ? '--' : format_time($z->duration);
 
         if ($available) {
             if ($zoomuserid === false || $zoomuserid != $z->host_id) {

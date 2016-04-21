@@ -127,7 +127,7 @@ $sessions = new html_table_cell($sessionslink);
 $sessions->colspan = $numcolumns;
 $table->data[] = array($sessions);
 
-if ($zoom->type == ZOOM_RECURRING_MEETING) {
+if ($zoom->recurring) {
     $recurringmessage = new html_table_cell(get_string('recurringmeetinglong', 'mod_zoom'));
     $recurringmessage->colspan = $numcolumns;
     $table->data[] = array($recurringmessage);
@@ -136,31 +136,35 @@ if ($zoom->type == ZOOM_RECURRING_MEETING) {
     $table->data[] = array($strduration, format_time($zoom->duration));
 }
 
-$haspassword = (isset($zoom->password) && $zoom->password !== '');
-$strhaspass = ($haspassword) ? $stryes : $strno;
-$table->data[] = array($strpassprotect, $strhaspass);
+if (!$zoom->webinar) {
+    $haspassword = (isset($zoom->password) && $zoom->password !== '');
+    $strhaspass = ($haspassword) ? $stryes : $strno;
+    $table->data[] = array($strpassprotect, $strhaspass);
 
-if ($zoomuserid === $zoom->host_id && $haspassword) {
-    $table->data[] = array($strpassword, $zoom->password);
+    if ($zoomuserid === $zoom->host_id && $haspassword) {
+        $table->data[] = array($strpassword, $zoom->password);
+    }
 }
 
 if ($userishost) {
     $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url));
 }
 
-$strjbh = ($zoom->option_jbh) ? $stryes : $strno;
-$table->data[] = array($strjoinbeforehost, $strjbh);
+if (!$zoom->webinar) {
+    $strjbh = ($zoom->option_jbh) ? $stryes : $strno;
+    $table->data[] = array($strjoinbeforehost, $strjbh);
 
-$strvideohost = ($zoom->option_host_video) ? $stryes : $strno;
-$table->data[] = array($strstartvideohost, $strvideohost);
+    $strvideohost = ($zoom->option_host_video) ? $stryes : $strno;
+    $table->data[] = array($strstartvideohost, $strvideohost);
 
-$strparticipantsvideo = ($zoom->option_participants_video) ? $stryes : $strno;
-$table->data[] = array($strstartvideopart, $strparticipantsvideo);
+    $strparticipantsvideo = ($zoom->option_participants_video) ? $stryes : $strno;
+    $table->data[] = array($strstartvideopart, $strparticipantsvideo);
+}
 
 $table->data[] = array($straudioopt, $zoom->option_audio);
 
-if ($zoom->type != ZOOM_RECURRING_MEETING) {
-    if ($zoom->type == ZOOM_MEETING_EXPIRED) {
+if (!$zoom->recurring) {
+    if ($zoom->status == ZOOM_MEETING_EXPIRED) {
         $status = get_string('meeting_expired', 'mod_zoom');
     } else if ($finished) {
         $status = get_string('meeting_finished', 'mod_zoom');

@@ -137,5 +137,24 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2015072000, 'zoom');
     }
 
+    if ($oldversion < 2016040100) {
+        // Add webinar.
+        $field = new xmldb_field('webinar', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'type');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Change type to recurring.
+        $field = new xmldb_field('type', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'timemodified');
+        $dbman->change_field_notnull($table, $field);
+        $dbman->change_field_default($table, $field);
+        // Meeting is recurring if type is 3.
+        $DB->execute('UPDATE {zoom} SET type = (type = 3)');
+        $dbman->rename_field($table, $field, 'recurring');
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2016040100, 'zoom');
+    }
+
     return true;
 }

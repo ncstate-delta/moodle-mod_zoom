@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/zoom/db" VERSION="20150720" COMMENT="Zoom module"
+<XMLDB PATH="mod/zoom/db" VERSION="20160401" COMMENT="Zoom module"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -20,7 +20,8 @@
         <FIELD NAME="name" TYPE="char" LENGTH="300" NOTNULL="true" SEQUENCE="false" COMMENT="Meeting topic. Max of 300 characters."/>
         <FIELD NAME="start_time" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting start time (Unix timestamp, seconds). For scheduled meeting only."/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp when the instance was last modified."/>
-        <FIELD NAME="type" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Meeting type. 1 means instance meeting. 2 means scheduled meeting. 3 means a recurring meeting."/>
+        <FIELD NAME="recurring" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Is the meeting or webinar recurring?"/>
+        <FIELD NAME="webinar" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Is this a webinar?"/>
         <FIELD NAME="duration" TYPE="int" LENGTH="6" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting duration (seconds). For scheduled meeting only."/>
         <FIELD NAME="timezone" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Timezone to format start_time, like &quot;America/Los_Angeles&quot;. For scheduled meeting only."/>
         <FIELD NAME="password" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting password. Password may only contain the following characters: [a-zA-Z0-9@-_*]. Max of 10 characters"/>
