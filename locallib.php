@@ -45,6 +45,8 @@ define('ZOOM_MEETING_EXPIRED', -1);
 define('ZOOM_INSTANT_MEETING', 1);
 define('ZOOM_SCHEDULED_MEETING', 2);
 define('ZOOM_RECURRING_MEETING', 3);
+define('ZOOM_WEBINAR', 5);
+define('ZOOM_RECURRING_WEBINAR', 6);
 // Authentication methods.
 define('ZOOM_SNS_FACEBOOK', 0);
 define('ZOOM_SNS_GOOGLE', 1);
@@ -92,7 +94,7 @@ function zoom_get_instance_setup() {
  * @param stdClass $zoom
  * @param string $from same format as webservice->get_user_report
  * @param string $to
- * @return class->sessions[hostid][meetingid][starttime]
+ * @return class->sessions[meetingid][starttime]
  *              ->reqfrom string same as param
  *              ->reqto string same as param
  *              ->resfrom array string "from" field of zoom response
@@ -107,7 +109,50 @@ function zoom_get_sessions_for_display($zoom, $from, $to) {
 
     $hostsessions = array();
 
-    if ($service->get_user_report($zoom->host_id, $from, $to, ZOOM_MAX_RECORDS_PER_CALL, 1)) {
+    if ($zoom->webinar) {
+        if (!$service->webinar_uuid_list($zoom)) {
+            zoom_print_error('webinar/uuid/list', $service->lasterror);
+        }
+        $result = $service->lastresponse;
+
+        foreach ($result->webinars as $session) {
+            // Get attendees for this particular uuid/session.
+            if (!$service->webinar_attendees_list($zoom, $session->uuid)) {
+                continue;
+            }
+            // Create a 'meeting' like the one from the report API.
+            $meeting = new stdClass();
+            $meeting->number = $zoom->meeting_id;
+            $meeting->topic = $zoom->name;
+            $meeting->start_time = $session->start_time;
+            $meeting->end_time = '';
+            // Format 'attendee' returned by webinar/attendees/list to be the same
+            // as 'participant' from meeting report API.
+            $meeting->participants = array_map(function($attendee) {
+                $participant = new stdClass();
+                $participant->name = $attendee->first_name;
+                if (!empty($attendee->last_name)) {
+                    $participant->name .= " {$attendee->last_name}";
+                }
+                $join = $attendee->join_time;
+                $leave = $attendee->leave_time;
+                // For some reason, the Zoom API returns the join/leave times in Pacific time
+                // (regardless of timezone settings) but marks them as UTC.
+                $join = substr($join, 0, strlen($join) - 1) . ' America/Los_Angeles';
+                $leave = substr($leave, 0, strlen($leave) - 1) . ' America/Los_Angeles';
+                $participant->join_time = $join;
+                $participant->leave_time = $leave;
+
+                return $participant;
+            }, $service->lastresponse->attendees);
+
+            $hostsessions[$zoom->meeting_id][strtotime($meeting->start_time)] = $meeting;
+        }
+        $return->resfrom = sscanf($from, '%u-%u-%u');
+    } else {
+        if (!$service->get_user_report($zoom->host_id, $from, $to, ZOOM_MAX_RECORDS_PER_CALL, 1)) {
+            zoom_print_error('report/getuserreport', $service->lasterror);
+        }
         $result = $service->lastresponse;
 
         // Zoom may return multiple pages of results.
@@ -120,14 +165,12 @@ function zoom_get_sessions_for_display($zoom, $from, $to) {
             }
 
             $i++;
-        } while ($i <= $numpages && $result =
-                $service->get_user_report($zoom->host_id, $from, $to, ZOOM_MAX_RECORDS_PER_CALL, $i));
+        } while ($i <= $numpages && $result = $service->get_user_report(
+                $zoom->host_id, $from, $to, ZOOM_MAX_RECORDS_PER_CALL, $i));
 
         // If the time period is longer than a month, Zoom will only return the latest month in range.
         // Return the response "from" field to check.
         $return->resfrom = sscanf($result->from, '%u-%u-%u');
-    } else {
-        zoom_print_error('report/getuserreport', $service->lasterror);
     }
 
     $return->sessions = $hostsessions;
@@ -148,9 +191,9 @@ function zoom_get_state($zoom) {
     $lastavailable = $zoom->start_time + $zoom->duration;
     $inprogress = ($firstavailable <= $now && $now <= $lastavailable);
 
-    $available = $zoom->type == ZOOM_RECURRING_MEETING || $inprogress;
+    $available = $zoom->recurring || $inprogress;
 
-    $finished = $zoom->type != ZOOM_RECURRING_MEETING && $now > $lastavailable;
+    $finished = !$zoom->recurring && $now > $lastavailable;
 
     return array($inprogress, $available, $finished);
 }

@@ -79,6 +79,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     // Create meeting on Zoom.
     $service = new mod_zoom_webservice();
+
     if (!$service->meeting_create($zoom)) {
         zoom_print_error('meeting/create', $service->lasterror);
     }
@@ -109,19 +110,24 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
+    $old = $DB->get_record('zoom', array('id' => $zoom->instance));
+
     // Update meeting on Zoom.
     $service = new mod_zoom_webservice();
 
-    try {
-        $service->meeting_update($zoom);
-    } catch (moodle_exception $e) {
-
+    // If the webinar setting changed, we have to delete and recreate.
+    if ($old->webinar != $zoom->webinar) {
+        if (!$service->meeting_delete($old)) {
+            zoom_print_error('meeting/delete', $service->lasterror);
+        }
+        if (!$service->meeting_create($zoom)) {
+            zoom_print_error('meeting/create', $service->lasterror);
+        }
+    } else if (!$service->meeting_update($zoom)) {
         if (zoom_is_meeting_gone_error($service->lasterror)) {
-
             if (!$service->meeting_create($zoom)) {
                 zoom_print_error('meeting/create', $service->lasterror);
             }
-
         } else {
             zoom_print_error('meeting/update', $service->lasterror);
         }
@@ -167,7 +173,7 @@ function zoom_delete_instance($id) {
     // So don't bother with the webservice in this case.
     if ($zoom->status !== ZOOM_MEETING_EXPIRED) {
         $service = new mod_zoom_webservice();
-        if (!$service->delete_meeting($zoom->meeting_id, $zoom->host_id)) {
+        if (!$service->meeting_delete($zoom)) {
             zoom_print_error('meeting/delete', $service->lasterror);
         }
     }
@@ -290,7 +296,7 @@ function zoom_calendar_item_update(stdClass $zoom) {
     }
     $event->timestart = $zoom->start_time;
     $event->timeduration = $zoom->duration;
-    $event->visible = $zoom->type != ZOOM_RECURRING_MEETING;
+    $event->visible = !$zoom->recurring;
 
     $eventid = $DB->get_field('event', 'id', array(
         'modulename' => 'zoom',
@@ -638,7 +644,7 @@ function zoom_print_error($apicall, $error) {
  * @return bool
  */
 function zoom_is_meeting_gone_error($error) {
-    return strpos($error, 'not found or has expired') !== false;
+    return strpos($error, 'not found') !== false;
 }
 
 /**

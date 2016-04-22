@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+
 /**
  * Web service class.
  *
@@ -165,29 +167,24 @@ class mod_zoom_webservice {
         return false;
     }
 
-    // Meeting API calls
+    // Meeting/webinar API calls
     // --------------------------------------------------------------------------
-    // See https://support.zoom.us/hc/en-us/articles/201363053-REST-Meeting-API .
+    // See https://support.zoom.us/hc/en-us/articles/201363053-REST-Meeting-API
+    // and https://support.zoom.us/hc/en-us/articles/204484645-REST-Webinar-API .
 
     /**
-     * Create a meeting on Zoom.
+     * Create a meeting/webinar on Zoom.
      * Take a $zoom object as returned from the Moodle form,
      * and respond with an object that can be saved to the database.
-     * Only scheduled meetings (ZOOM_SCHEDULED_MEETING) are supported at this time.
      *
      * @param object $zoom
      * @return bool
      */
     public function meeting_create($zoom) {
-        $url = 'meeting/create';
+        $url = $zoom->webinar ? 'webinar/create' : 'meeting/create';
 
         if (!$this->parse_zoom_object($zoom, array('topic', 'host_id'), $data)) {
             return false;
-        }
-
-        // Default to server timezone.
-        if (!isset($data['timezone'])) {
-            $data['timezone'] = date_default_timezone_get();
         }
 
         try {
@@ -202,21 +199,24 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Update a meeting on Zoom.
+     * Update a meeting/webinar on Zoom.
      * Interpret $zoom the same way as meeting_create().
      *
      * @param object $zoom
      * @return bool
      */
     public function meeting_update($zoom) {
-        $url = 'meeting/update';
+        $url = $zoom->webinar ? 'webinar/update' : 'meeting/update';
 
         if (!$this->parse_zoom_object($zoom, array('id', 'host_id'), $data)) {
             return false;
         }
 
-        // Throws moodle_Exception.
-        $this->make_call($url, $data);
+        try {
+            $this->make_call($url, $data);
+        } catch (moodle_exception $e) {
+            return false;
+        }
 
         // The only fields that need changing are id and updated_at.
         $zoom->id = $zoom->instance;
@@ -227,15 +227,14 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Delete a meeting on Zoom.
+     * Delete a meeting/webinar on Zoom.
      *
-     * @param int $id Id of meeting on zoom
-     * @param int $hostid Id of host on zoom
+     * @param object $zoom
      * @return bool Success/Failure
      */
-    public function delete_meeting($id, $hostid) {
-        $url = 'meeting/delete';
-        $data = array('id' => $id, 'host_id' => $hostid);
+    public function meeting_delete($zoom) {
+        $url = $zoom->webinar ? 'webinar/delete' : 'meeting/delete';
+        $data = array('id' => $zoom->meeting_id, 'host_id' => $zoom->host_id);
 
         try {
             $this->make_call($url, $data);
@@ -250,14 +249,14 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Get a meeting's information from Zoom.
+     * Get a meeting/webinar's information from Zoom.
      * Interpret $zoom the same way as meeting_create().
      *
      * @param object $zoom
      * @return bool Success/Failure
      */
     public function get_meeting_info($zoom) {
-        $url = 'meeting/get';
+        $url = $zoom->webinar ? 'webinar/get' : 'meeting/get';
         $data = array('id' => $zoom->meeting_id, 'host_id' => $zoom->host_id);
 
         try {
@@ -304,6 +303,59 @@ class mod_zoom_webservice {
         return true;
     }
 
+    /**
+     * List UUIDs ("sessions") for a webinar.
+     *
+     * @param object $zoom
+     * @return bool
+     */
+    public function webinar_uuid_list($zoom) {
+        if (!$zoom->webinar) {
+            $this->lasterror = 'Provided zoom must be a webinar.';
+            return false;
+        }
+
+        $url = 'webinar/uuid/list';
+        $data = array('id' => $zoom->meeting_id, 'host_id' => $zoom->host_id);
+
+        try {
+            $this->make_call($url, $data);
+        } catch (moodle_exception $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * List attendees for a particular UUID ("session") of a webinar.
+     * Default to the most recent UUID/session if none specified.
+     *
+     * @param object $zoom
+     * @param string $uuid
+     * @return bool
+     */
+    public function webinar_attendees_list($zoom, $uuid = '') {
+        if (!$zoom->webinar) {
+            $this->lasterror = 'Provided zoom must be a webinar.';
+            return false;
+        }
+
+        $url = 'webinar/attendees/list';
+        $data = array('id' => $zoom->meeting_id, 'host_id' => $zoom->host_id);
+        if (!empty($uuid)) {
+            $data['uuid'] = $uuid;
+        }
+
+        try {
+            $this->make_call($url, $data);
+        } catch (moodle_exception $e) {
+            return false;
+        }
+
+        return true;
+    }
+
     // Helper functions
     // --------------------------------
 
@@ -318,10 +370,12 @@ class mod_zoom_webservice {
      */
     protected function parse_zoom_object(&$zoom, $required, &$data) {
         // Convert $zoom to an array and extract only the relevant keys.
-        $data = array_intersect_key((array)$zoom, array_flip(array(
-            'host_id', 'type', 'start_time', 'duration', 'timezone', 'password',
-            'option_jbh', 'option_host_video', 'option_participants_video', 'option_audio'
-        )));
+        $keys = array('host_id', 'start_time', 'duration', 'timezone', 'option_audio');
+        // Add meeting-specific options if this is a meeting.
+        if (!$zoom->webinar) {
+            $keys = array_merge($keys, array('password', 'option_jbh', 'option_host_video', 'option_participants_video'));
+        }
+        $data = array_intersect_key((array)$zoom, array_flip($keys));
 
         // Rename/reformat properties for API call (assume these properties are set for now).
         // Convert duration to minutes.
@@ -332,10 +386,15 @@ class mod_zoom_webservice {
         $data['id'] = $zoom->meeting_id;
         // API uses 'topic' but database uses 'name'.
         $data['topic'] = $zoom->name;
-
-        // Default to scheduled meeting.
-        if (!isset($data['type'])) {
-            $data['type'] = ZOOM_SCHEDULED_MEETING;
+        // API uses 'type' but database uses 'recurring' and 'webinar'.
+        if ($zoom->webinar) {
+            $data['type'] = $zoom->recurring ? ZOOM_RECURRING_WEBINAR : ZOOM_WEBINAR;
+        } else {
+            $data['type'] = $zoom->recurring ? ZOOM_RECURRING_MEETING : ZOOM_SCHEDULED_MEETING;
+        }
+        // Webinar API uses 'agenda' but database uses 'intro'.
+        if ($zoom->webinar) {
+            $data['agenda'] = strip_tags($zoom->intro);
         }
 
         // Required parameters.
@@ -343,6 +402,11 @@ class mod_zoom_webservice {
             if (!isset($data[$field])) {
                 return false;
             }
+        }
+
+        // Default to server timezone.
+        if (!isset($data['timezone'])) {
+            $data['timezone'] = date_default_timezone_get();
         }
 
         return true;
@@ -370,9 +434,15 @@ class mod_zoom_webservice {
         } else {
             unset($response->id);
         }
+        // Database uses 'recurring' and 'webinar' but API uses 'type'.
+        $response->recurring = $response->type == ZOOM_RECURRING_MEETING || $response->type == ZOOM_RECURRING_WEBINAR;
+        $response->webinar = $response->type == ZOOM_WEBINAR || $response->type == ZOOM_RECURRING_WEBINAR;
+
         // Database uses 'name' but API uses 'topic'.
         $response->name = $response->topic;
         unset($response->topic);
+        // For now, we will not set our copy ("intro") of the description (Zoom's "agenda")
+        // in webinars, since we use HTML formatting but they use plain text.
 
         // Merge in other properties from $zoom object.
         foreach ($zoom as $key => $value) {

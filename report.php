@@ -81,7 +81,7 @@ if (!empty($todisplay)) {
                              get_string('starttime', 'mod_zoom'),
                              get_string('endtime', 'mod_zoom'),
                              get_string('duration', 'mod_zoom'),
-                             get_string('sessions', 'mod_zoom'));
+                             get_string('participants', 'mod_zoom'));
         $table->align = array('left', 'left', 'left', 'left', 'left');
 
         foreach ($meetsessions as $starttime => $meet) {
@@ -92,12 +92,16 @@ if (!empty($todisplay)) {
             $format = get_string('strftimedatetimeshort', 'langconfig');
 
             $start = strtotime($meet->start_time);
-            $end = strtotime($meet->end_time);
 
             $row[] = userdate($start, $format);
-            $row[] = userdate($end, $format);
-
-            $row[] = format_time($end - $start);
+            if (!empty($meet->end_time)) {
+                $end = strtotime($meet->end_time);
+                $row[] = userdate($end, $format);
+                $row[] = format_time($end - $start);
+            } else {
+                $row[] = '';
+                $row[] = '';
+            }
 
             $numparticipants = count($meet->participants);
 
