@@ -109,6 +109,7 @@ $string['unavailable'] = 'Unable to join at this time';
 $string['updatemeetings'] = 'Update meeting settings from Zoom';
 $string['usepersonalmeeting'] = 'Use personal meeting ID {$a}';
 $string['webinar'] = 'Webinar';
+$string['webinar_help'] = 'This option is only available to pre-authorized Zoom accounts.';
 $string['zoom:addinstance'] = 'Add a new Zoom meeting';
 $string['zoomerr'] = 'An error occured with Zoom.'; // Generic error.
 $string['zoomerr_apisettings_invalid'] = 'The Zoom API key and/or secret are invalid. Please ensure they are correct.';

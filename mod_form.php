@@ -89,6 +89,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         }
         $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '', $webinarattr);
         $mform->setDefault('webinar', 0);
+        $mform->addHelpButton('webinar', 'webinar', 'zoom');
 
         // Add password.
         $mform->addElement('passwordunmask', 'password', get_string('password', 'zoom'), array('maxlength' => '10'));
