@@ -39,19 +39,14 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_zoom_mod_form extends moodleform_mod {
+    /** @var stdClass Zoom user object from API */
+    private $zoomuser;
 
     /**
      * Defines forms elements
      */
     public function definition() {
-        global $USER;
-        $service = new mod_zoom_webservice();
-        if (!$service->user_getbyemail($USER->email)) {
-            zoom_print_error('user/getbyemail', $service->lasterror);
-        }
-        $zoomuser = $service->lastresponse;
-
-        $mform = $this->_form;
+        $mform = &$this->_form;
 
         // Adding the "general" fieldset, where all the common settings are showed.
         $mform->addElement('header', 'general', get_string('general', 'form'));
@@ -82,12 +77,8 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('recurring', 0);
         $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
 
-        // Add webinar, disabled if the user cannot create webinars.
-        $webinarattr = null;
-        if (!$zoomuser->enable_webinar) {
-            $webinarattr = array('disabled' => true, 'group' => null);
-        }
-        $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '', $webinarattr);
+        // Add webinar.
+        $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'));
         $mform->setDefault('webinar', 0);
         $mform->addHelpButton('webinar', 'webinar', 'zoom');
 
@@ -98,18 +89,18 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addRule('password', get_string('err_password', 'mod_zoom'), 'regex', $regex, 'client');
         $mform->disabledIf('password', 'webinar', 'checked');
 
-        // Add host/participants video (checked by default).
+        // Add host/participants video (checked by default) with $appendName as false.
         $mform->addGroup(array(
             $mform->createElement('radio', 'option_host_video', '', get_string('on', 'zoom'), true),
             $mform->createElement('radio', 'option_host_video', '', get_string('off', 'zoom'), false)
-        ), null, get_string('option_host_video', 'zoom'));
+        ), 'option_host_video', get_string('option_host_video', 'zoom'), null, false);
         $mform->setDefault('option_host_video', true);
         $mform->disabledIf('option_host_video', 'webinar', 'checked');
 
         $mform->addGroup(array(
             $mform->createElement('radio', 'option_participants_video', '', get_string('on', 'zoom'), true),
             $mform->createElement('radio', 'option_participants_video', '', get_string('off', 'zoom'), false)
-        ), null, get_string('option_participants_video', 'zoom'));
+        ), 'option_participants_video', get_string('option_participants_video', 'zoom'), null, false);
         $mform->setDefault('option_participants_video', true);
         $mform->disabledIf('option_participants_video', 'webinar', 'checked');
 
@@ -147,6 +138,35 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add standard buttons, common to all modules.
         $this->add_action_buttons();
+    }
+
+    /**
+     * Called after form data has been loaded from database.
+     */
+    public function definition_after_data() {
+        global $USER;
+        if (!isset($this->zoomuser)) {
+            $service = new mod_zoom_webservice();
+            if (!$service->user_getbyemail($USER->email)) {
+                zoom_print_error('user/getbyemail', $service->lasterror);
+            }
+            $this->zoomuser = $service->lastresponse;
+        }
+
+        // If the user cannot use webinars, remove the webinar element.
+        if (!$this->zoomuser->enable_webinar) {
+            $mform = &$this->_form;
+            $webinar = $mform->getElement('webinar')->getValue();
+
+            // If this is already a webinar, remove the elements that should be disabled.
+            if ($webinar) {
+                $mform->removeElement('password');
+                $mform->removeElement('option_host_video');
+                $mform->removeElement('option_participants_video');
+                $mform->removeElement('meetingoptions');
+            }
+            $mform->removeElement('webinar');
+        }
     }
 
     /**

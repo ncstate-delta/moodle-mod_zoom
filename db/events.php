@@ -15,18 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the version and other meta-info about the plugin.
+ * Define events to listen for and their observers.
  *
  * @package    mod_zoom
- * @copyright  2015 UC Regents
+ * @copyright  2016 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->component = 'mod_zoom';
-$plugin->version = 2016051700;
-$plugin->release = 'v1.4';
-$plugin->requires = 2014051200;
-$plugin->maturity = MATURITY_STABLE;
-$plugin->cron = 0;
+$observers = array(
+    array(
+        'eventname' => '\core\event\course_module_updated',
+        'callback' => 'mod_zoom_observer::course_module_updated',
+    ),
+);

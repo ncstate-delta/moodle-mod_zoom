@@ -77,6 +77,11 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
+    // Set webinar if user cannot use webinars.
+    if (!isset($zoom->webinar)) {
+        $zoom->webinar = 0;
+    }
+
     // Create meeting on Zoom.
     $service = new mod_zoom_webservice();
 
@@ -110,7 +115,14 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
-    $old = $DB->get_record('zoom', array('id' => $zoom->instance));
+    if (!$old = $DB->get_record('zoom', array('id' => $zoom->instance))) {
+        return false;
+    }
+
+    // Set webinar if user cannot use webinars.
+    if (!isset($zoom->webinar)) {
+        $zoom->webinar = $old->webinar;
+    }
 
     // Update meeting on Zoom.
     $service = new mod_zoom_webservice();
