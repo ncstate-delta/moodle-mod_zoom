@@ -149,7 +149,7 @@ function xmldb_zoom_upgrade($oldversion) {
         $dbman->change_field_notnull($table, $field);
         $dbman->change_field_default($table, $field);
         // Meeting is recurring if type is 3.
-        $DB->execute('UPDATE {zoom} SET type = (type = 3)');
+        $DB->execute('UPDATE {zoom} SET type = cast((type = 3) as int)');
         $dbman->rename_field($table, $field, 'recurring');
 
         // Zoom savepoint reached.
