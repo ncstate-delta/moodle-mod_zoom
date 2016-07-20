@@ -63,14 +63,16 @@ function xmldb_zoom_upgrade($oldversion) {
         // Rename option_no_video_host to option_host_video; change default to 1; invert values.
         $field = new xmldb_field('option_no_video_host', XMLDB_TYPE_INTEGER, '1', null, null, null,
                 '1', 'option_start_type');
-        $DB->execute('UPDATE {zoom} SET option_no_video_host = NOT option_no_video_host');
+	// Invert option_no_video_host.
+        $DB->execute('UPDATE {zoom} SET option_no_video_host = 1 - option_no_video_host');
         $dbman->change_field_default($table, $field);
         $dbman->rename_field($table, $field, 'option_host_video');
 
         // Rename option_no_video_participants to option_participants_video; change default to 1; invert values.
         $field = new xmldb_field('option_no_video_participants', XMLDB_TYPE_INTEGER, '1', null, null, null,
                 '1', 'option_host_video');
-        $DB->execute('UPDATE {zoom} SET option_no_video_participants = NOT option_no_video_participants');
+	// Invert option_no_video_participants.
+        $DB->execute('UPDATE {zoom} SET option_no_video_participants = 1 - option_no_video_participants');
         $dbman->change_field_default($table, $field);
         $dbman->rename_field($table, $field, 'option_participants_video');
 
@@ -149,7 +151,8 @@ function xmldb_zoom_upgrade($oldversion) {
         $dbman->change_field_notnull($table, $field);
         $dbman->change_field_default($table, $field);
         // Meeting is recurring if type is 3.
-        $DB->execute('UPDATE {zoom} SET type = (type = 3)');
+        $DB->set_field_select('zoom', 'type', 0, 'type <> 3');
+        $DB->set_field('zoom', 'type', 1, array('type' => 3));
         $dbman->rename_field($table, $field, 'recurring');
 
         // Zoom savepoint reached.
