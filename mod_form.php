@@ -63,7 +63,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addRule('name', get_string('maximumchars', '', 300), 'maxlength', 300, 'client');
 
         // Add description ('intro' and 'introformat').
-        $this->add_intro_editor();
+        $this->standard_intro_elements();
 
         // Add date/time. Validation in validation().
         $mform->addElement('date_time_selector', 'start_time', get_string('start_time', 'zoom'));
