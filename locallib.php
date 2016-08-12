@@ -225,23 +225,44 @@ function zoom_update_records(Traversable $zooms) {
 
     $service = new mod_zoom_webservice();
     $coursestoupdate = array();
+    $calendar_fields = array('intro',
+                             'introformat',
+                             'start_time',
+                             'duration',
+                             'recurring');
     foreach ($zooms as $z) {
         if ($service->get_meeting_info($z)) {
+            $response = &$service->lastresponse;
+
             // Check for changes.
+            $changed = false;
             foreach ($z as $field => $value) {
                 // The start_url has a parameter that always changes, so it doesn't really count as a change.
-                if ($field != 'start_url' && $service->lastresponse->$field != $value) {
-                    $service->lastresponse->timemodified = time();
+                if ($field != 'start_url' && $response->$field != $value) {
+                    $changed = true;
                     break;
                 }
             }
-            // Save in database.
-            $DB->update_record('zoom', $service->lastresponse);
-            // Update calendar.
-            zoom_calendar_item_update($service->lastresponse);
-            // If the topic/title was changed, mark this course for cache clearing.
-            if ($z->name != $service->lastresponse->name) {
-                $coursestoupdate[$z->course] = 1;
+            if ($changed) {
+                // Save in database.
+                $response->timemodified = time();
+                $DB->update_record('zoom', $response);
+                // If the topic/title was changed, mark this course for cache clearing.
+                if ($z->name != $response->name) {
+                    $coursestoupdate[$z->course] = 1;
+                }
+
+                // Check if calendar needs updating.
+                $calendar_changed = false;
+                foreach ($calendar_fields as $field) {
+                    if ($z->$field != $response->$field) {
+                        $calendar_changed = true;
+                    }
+                }
+                if ($calendar_changed) {
+                    // Update calendar.
+                    zoom_calendar_item_update($response);
+                }
             }
         } else {
             $z->status = ZOOM_MEETING_EXPIRED;

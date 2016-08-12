@@ -187,42 +187,6 @@ function zoom_delete_instance($id) {
 }
 
 /**
- * Returns a small object with summary information about what a
- * user has done with a given particular instance of this module
- * Used for user activity reports.
- *
- * $return->time = the time they did it
- * $return->info = a short text description
- *
- * @param stdClass $course The course record
- * @param stdClass $user The user record
- * @param cm_info|stdClass $mod The course module info object or record
- * @param stdClass $zoom The zoom instance record
- * @return stdClass|null
- */
-function zoom_user_outline($course, $user, $mod, $zoom) {
-
-    $return = new stdClass();
-    $return->time = 0;
-    $return->info = '';
-    return $return;
-}
-
-/**
- * Prints a detailed representation of what a user has done with
- * a given particular instance of this module, for user activity reports.
- *
- * It is supposed to echo directly without returning a value.
- *
- * @param stdClass $course the current course record
- * @param stdClass $user the record of the user we are generating report for
- * @param cm_info $mod course module info
- * @param stdClass $zoom the module instance record
- */
-function zoom_user_complete($course, $user, $mod, $zoom) {
-}
-
-/**
  * Given a course and a time, this module should find recent activity
  * that has occurred in zoom activities and print it out.
  *
