@@ -16,6 +16,18 @@ Must set the following settings to enable the plugin:
 
 ## Changelog
 
+v1.6
+* Addressed coding issues brought up by a MoodleRooms review done for CSUN.
+
+v1.5
+* Fixed upgrade issues with PostgreSQL
+
+v1.4
+* Added missing lang string for cache.
+* Updated activity chooser help text.
+* Added support for webinars.
+* Fixing Unicode issues.
+
 v1.3
 * Fixed join before host option.
 * Added Zoom user reports.
