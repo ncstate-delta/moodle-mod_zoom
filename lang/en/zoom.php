@@ -115,6 +115,7 @@ $string['zoomerr'] = 'An error occured with Zoom.'; // Generic error.
 $string['zoomerr_apisettings_invalid'] = 'The Zoom API key and/or secret are invalid. Please ensure they are correct.';
 $string['zoomerr_apisettings_missing'] = 'Please configure the Zoom API key and secret.';
 $string['zoomerr_apiurl_404'] = 'The Zoom API url could not be found; please check the setting.';
+$string['zoomerr_apiurl_error'] = 'The Zoom API could not be contacted; please check your server error log.';
 $string['zoomerr_apiurl_unresolved'] = 'The Zoom API url could not be resolved; please check the setting.';
 $string['zoomerr_meetingnotfound'] = 'This meeting does not exist or has expired.';
 $string['zoomerr_usernotfound'] = 'You are using Zoom for the first time, so you must enable your Zoom account by logging in to <a href="{$a}" target="_blank">{$a}</a> with your login credentials. Once you\'ve activated your Zoom account, reload this page and continue setting up your meeting.';

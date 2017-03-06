@@ -50,6 +50,10 @@ if ($ADMIN->fulltree) {
             } else if (strpos($error, "Couldn't resolve host") !== false) {
                 $status = 'zoomerr_apiurl_unresolved';
                 $notifyclass = 'notifyproblem';
+            } else if (strpos($error, "The requested URL returned error:") !== false) {
+                $status = 'zoomerr_apiurl_error';
+                $notifyclass = 'notifyproblem';
+                debugging('Zoom error: ' . $error, DEBUG_NORMAL);
             }
         }
         $statusmessage = $OUTPUT->notification(get_string('connectionstatus', 'zoom') .
