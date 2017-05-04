@@ -201,15 +201,65 @@ function zoom_get_state($zoom) {
 /**
  * Get the Zoom id of the currently logged-in user.
  *
+ * @param boolean $required If true, will error if the user doesn't have a Zoom account.
  * @return string
  */
-function zoom_get_user_id() {
+function zoom_get_user_id($required = true) {
     global $USER;
-    $service = new mod_zoom_webservice();
-    if (!$service->user_getbyemail($USER->email)) {
-        zoom_print_error('user/getbyemail', $service->lasterror);
+
+    $cache = cache::make('mod_zoom', 'zoomid');
+    if (!($zoomuserid = $cache->get($USER->id))) {
+        $zoomuserid = false;
+        $service = new mod_zoom_webservice();
+        if ($service->user_getbyemail($USER->email)) {
+            $zoomuserid = $service->lastresponse->id;
+        } else if ($required) {
+            zoom_print_error('user/getbyemail', $service->lasterror);
+        }
+        $cache->set($USER->id, $zoomuserid);
     }
-    return $service->lastresponse->id;
+
+    return $zoomuserid;
+}
+
+/**
+ * Check if the error indicates that a meeting is gone.
+ *
+ * @param string $error
+ * @return bool
+ */
+function zoom_is_meeting_gone_error($error) {
+    // If the meeting's owner/user cannot be found, we consider the meeting to be gone.
+    return strpos($error, 'not found') !== false || zoom_is_user_not_found_error($error);
+}
+
+/**
+ * Check if the error indicates that a user is not found.
+ *
+ * @param string $error
+ * @return bool
+ */
+function zoom_is_user_not_found_error($error) {
+    return strpos($error, 'User not exist') !== false;
+}
+
+/**
+ * Return the string parameter for zoomerr_meetingnotfound.
+ *
+ * @param string $cmid
+ * @return stdClass
+ */
+function zoom_meetingnotfound_param($cmid) {
+    // Provide links to recreate and delete.
+    $recreate = new moodle_url('/mod/zoom/recreate.php', array('id' => $cmid, 'sesskey' => sesskey()));
+    $delete = new moodle_url('/course/mod.php', array('delete' => $cmid, 'sesskey' => sesskey()));
+
+    // Convert links to strings and pass as error parameter.
+    $param = new stdClass();
+    $param->recreate = $recreate->out();
+    $param->delete = $delete->out();
+
+    return $param;
 }
 
 /**

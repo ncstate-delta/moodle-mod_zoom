@@ -46,11 +46,20 @@ class mod_zoom_mod_form extends moodleform_mod {
     public function definition() {
         global $USER;
         $service = new mod_zoom_webservice();
+        // Check if the logged-in user exists on Zoom.
         if (!$service->user_getbyemail($USER->email)) {
             zoom_print_error('user/getbyemail', $service->lasterror);
         }
         $zoomuser = $service->lastresponse;
 
+        // If updating, ensure we can get the meeting on Zoom.
+        // If the meeting can't be found, zoom_print_error will offer to recreate the meeting on Zoom.
+        $isnew = empty($this->_cm);
+        if (!$isnew && !$service->get_meeting_info($this->current)) {
+            zoom_print_error('meeting/get', $service->lasterror, $this->_cm->id);
+        }
+
+        // Start of form definition.
         $mform = $this->_form;
 
         // Adding the "general" fieldset, where all the common settings are showed.

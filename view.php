@@ -55,17 +55,11 @@ $PAGE->set_heading(format_string($course->fullname));
  * $PAGE->add_body_class('zoom-'.$somevar);
  */
 
-$cache = cache::make('mod_zoom', 'zoomid');
-if (!($zoomuserid = $cache->get($USER->id))) {
-    $zoomuserid = false;
-    $service = new mod_zoom_webservice();
-    // Not an error if this fails, since people don't need a Zoom account to view/join meetings.
-    if ($service->user_getbyemail($USER->email)) {
-        $zoomuserid = $service->lastresponse->id;
-    }
-    $cache->set($USER->id, $zoomuserid);
-}
+$zoomuserid = zoom_get_user_id(false);
 $userishost = ($zoomuserid == $zoom->host_id);
+
+$service = new mod_zoom_webservice();
+$showrecreate = !$service->get_meeting_info($zoom) && zoom_is_meeting_gone_error($service->lasterror);
 
 $stryes = get_string('yes');
 $strno = get_string('no');
@@ -86,6 +80,19 @@ $strall = get_string('allmeetings', 'mod_zoom');
 
 // Output starts here.
 echo $OUTPUT->header();
+
+if ($showrecreate) {
+    // Only show recreate/delete links in the message for users that can edit.
+    $context = context_module::instance($cm->id);
+    if (has_capability('mod/zoom:addinstance', $context)) {
+        $message = get_string('zoomerr_meetingnotfound', 'mod_zoom', zoom_meetingnotfound_param($cm->id));
+        $style = 'notifywarning';
+    } else {
+        $message = get_string('zoomerr_meetingnotfound_info', 'mod_zoom');
+        $style = 'notifymessage';
+    }
+    echo $OUTPUT->notification($message, $style);
+}
 
 echo $OUTPUT->heading(format_string($zoom->name), 2);
 if ($zoom->intro) {

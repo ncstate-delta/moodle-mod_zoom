@@ -25,6 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+require_once($CFG->dirroot.'/lib/filelib.php');
 
 /**
  * Web service class.
@@ -388,6 +389,7 @@ class mod_zoom_webservice {
         // Required parameters.
         foreach ($required as $field) {
             if (!isset($data[$field])) {
+                $this->lasterror = 'Missing required parameter.';
                 return false;
             }
         }

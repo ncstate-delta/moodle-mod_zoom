@@ -124,13 +124,7 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
             zoom_print_error('meeting/create', $service->lasterror);
         }
     } else if (!$service->meeting_update($zoom)) {
-        if (zoom_is_meeting_gone_error($service->lasterror)) {
-            if (!$service->meeting_create($zoom)) {
-                zoom_print_error('meeting/create', $service->lasterror);
-            }
-        } else {
-            zoom_print_error('meeting/update', $service->lasterror);
-        }
+        zoom_print_error('meeting/update', $service->lasterror, $zoom->coursemodule);
     }
 
     $zoom = $service->lastresponse;
@@ -168,7 +162,6 @@ function zoom_delete_instance($id) {
     // Include locallib.php for constants.
     require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
-    // Delete any dependent records here.
     // Status -1 means expired and missing from zoom.
     // So don't bother with the webservice in this case.
     if ($zoom->status !== ZOOM_MEETING_EXPIRED) {
@@ -180,6 +173,7 @@ function zoom_delete_instance($id) {
 
     $DB->delete_records('zoom', array('id' => $zoom->id));
 
+    // Delete any dependent records here.
     zoom_calendar_item_delete($zoom);
     zoom_grade_item_delete($zoom);
 
@@ -527,9 +521,13 @@ function zoom_extend_settings_navigation(settings_navigation $settingsnav, navig
  *
  * @param string $apicall API endpoint (e.g. meeting/get)
  * @param string $error Error message (most likely from mod_zoom_webservice->lasterror)
+ * @param int $cmid Optional (used for recreate links). Cmid of the instance that caused the error
  */
-function zoom_print_error($apicall, $error) {
+// TODO Can check defined('AJAX_SCRIPT') to print ajax error (see lib/yui/src/notification/js/ajaxexception.js)
+function zoom_print_error($apicall, $error, $cmid = -1) {
     global $CFG, $COURSE, $OUTPUT, $PAGE;
+
+    require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
     // Lang string for the error.
     $errstring = 'zoomerr';
@@ -541,7 +539,7 @@ function zoom_print_error($apicall, $error) {
     if (isset($_SERVER['HTTP_REFERER'])) {
         $nexturl = clean_param($_SERVER['HTTP_REFERER'], PARAM_LOCALURL);
     } else {
-        $nexturl = '/';
+        $nexturl = course_get_url($COURSE->id);
     }
 
     // This handles special error messages that aren't the generic zoomerr.
@@ -561,7 +559,7 @@ function zoom_print_error($apicall, $error) {
     } else {
         switch ($apicall) {
             case 'user/getbyemail':
-                if (strpos($error, 'not exist') !== false) {
+                if (zoom_is_user_not_found_error($error)) {
                     // Assume user is using Zoom for the first time.
                     $errstring = 'zoomerr_usernotfound';
                     $param = get_config('mod_zoom', 'zoomurl');
@@ -574,9 +572,10 @@ function zoom_print_error($apicall, $error) {
                 break;
             case 'meeting/get':
             case 'meeting/update':
-            case 'meeting/delete':
                 if (zoom_is_meeting_gone_error($error)) {
                     $errstring = 'zoomerr_meetingnotfound';
+                    $param = zoom_meetingnotfound_param($cmid);
+                    $nexturl = "/mod/zoom/view.php?id=$cmid";
                 }
                 break;
         }
@@ -599,24 +598,4 @@ function zoom_print_error($apicall, $error) {
 
     echo $OUTPUT->footer();
     exit(1);
-}
-
-/**
- * Check if the error indicates that a meeting is gone.
- *
- * @param string $error
- * @return bool
- */
-function zoom_is_meeting_gone_error($error) {
-    return strpos($error, 'not found') !== false;
-}
-
-/**
- * Check if the error indicates that a user is not found.
- *
- * @param string $error
- * @return bool
- */
-function zoom_is_user_not_found_error($error) {
-    return strpos($error, 'User not exist') !== false;
 }

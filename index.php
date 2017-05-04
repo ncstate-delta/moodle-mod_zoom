@@ -73,16 +73,7 @@ if (! $zooms = get_all_instances_in_course('zoom', $course)) {
 
 $usesections = course_format_uses_sections($course->format);
 
-$cache = cache::make('mod_zoom', 'zoomid');
-if (!($zoomuserid = $cache->get($USER->id))) {
-    $zoomuserid = false;
-    $service = new mod_zoom_webservice();
-    // Not an error if this fails, since people don't need a Zoom account to view/join meetings.
-    if ($service->user_getbyemail($USER->email)) {
-        $zoomuserid = $service->lastresponse->id;
-    }
-    $cache->set($USER->id, $zoomuserid);
-}
+$zoomuserid = zoom_get_user_id(false);
 
 $newtable = new html_table();
 $newtable->attributes['class'] = 'generaltable mod_index';
