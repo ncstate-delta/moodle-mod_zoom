@@ -29,6 +29,11 @@ require_once(dirname(__FILE__).'/../../lib/accesslib.php');
 require_once(dirname(__FILE__).'/../../lib/moodlelib.php');
 
 list($course, $cm, $zoom) = zoom_get_instance_setup();
+
+// Check capability.
+$context = context_module::instance($cm->id);
+require_capability('mod/zoom:addinstance', $context);
+
 $session = required_param('session', PARAM_INT); // Session.
 $export = optional_param('export', null, PARAM_ALPHA);
 

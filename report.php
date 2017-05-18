@@ -30,6 +30,10 @@ require_once(dirname(__FILE__).'/../../lib/moodlelib.php');
 
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 
+// Check capability.
+$context = context_module::instance($cm->id);
+require_capability('mod/zoom:addinstance', $context);
+
 $PAGE->set_url('/mod/zoom/report.php', array('id' => $cm->id));
 
 $strname = $zoom->name;

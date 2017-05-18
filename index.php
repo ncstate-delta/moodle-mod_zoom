@@ -35,6 +35,7 @@ require_course_login($course);
 
 $context = context_course::instance($course->id);
 require_capability('mod/zoom:view', $context);
+$iszoommanager = has_capability('mod/zoom:addinstance', $context);
 
 $params = array(
     'context' => $context
@@ -77,26 +78,34 @@ $zoomuserid = zoom_get_user_id(false);
 
 $newtable = new html_table();
 $newtable->attributes['class'] = 'generaltable mod_index';
-
-$newhead = array($strtopic, $strtime, $strduration, $stractions, $strsessions);
-$newalign = array('left', 'left', 'left', 'left', 'left');
+$newhead = array($strtopic, $strtime, $strduration, $stractions);
+$newalign = array('left', 'left', 'left', 'left');
 
 $oldtable = new html_table();
-$oldhead = array($strtopic, $strtime, $strsessions);
-$oldalign = array('left', 'left', 'left');
+$oldhead = array($strtopic, $strtime);
+$oldalign = array('left', 'left');
 
+// Show section column if there are sections.
 if ($usesections) {
     $strsectionname = get_string('sectionname', 'format_'.$course->format);
-    $newtable->head = array_merge(array($strsectionname), $newhead);
-    $newtable->align = array_merge(array('center'), $newalign);
-    $oldtable->head = array_merge(array($strsectionname), $oldhead);
-    $oldtable->align = array_merge(array('center'), $oldalign);
-} else {
-    $newtable->head = $newhead;
-    $newtable->align = $newalign;
-    $oldtable->head = $oldhead;
-    $oldtable->align = $oldalign;
+    array_unshift($newhead, $strsectionname);
+    array_unshift($newalign, 'center');
+    array_unshift($oldhead, $strsectionname);
+    array_unshift($oldalign, 'center');
 }
+
+// Show sessions column only if user can edit Zoom meetings.
+if ($iszoommanager) {
+    $newhead[] = $strsessions;
+    $newalign[] = 'left';
+    $oldhead[] = $strsessions;
+    $oldalign[] = 'left';
+}
+
+$newtable->head = $newhead;
+$newtable->align = $newalign;
+$oldtable->head = $oldhead;
+$oldtable->align = $oldalign;
 
 $now = time();
 $modinfo = get_fast_modinfo($course);
@@ -123,7 +132,9 @@ foreach ($zooms as $z) {
 
     if ($finished) {
         $row[2] = $displaytime;
-        $row[4] = $sessions;
+        if ($iszoommanager) {
+            $row[3] = $sessions;
+        }
         $oldtable->data[] = $row;
     } else {
         if ($inprogress) {
@@ -152,7 +163,10 @@ foreach ($zooms as $z) {
             $row[4] = '--';
         }
 
-        $row[] = $sessions;
+        if ($iszoommanager) {
+            $row[] = $sessions;
+        }
+
         $newtable->data[] = $row;
     }
 }
