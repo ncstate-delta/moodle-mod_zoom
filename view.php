@@ -34,6 +34,9 @@ $config = get_config('mod_zoom');
 
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 
+$context = context_module::instance($cm->id);
+$iszoommanager = has_capability('mod/zoom:addinstance', $context);
+
 $event = \mod_zoom\event\course_module_viewed::create(array(
     'objectid' => $PAGE->cm->instance,
     'context' => $PAGE->context,
@@ -83,8 +86,7 @@ echo $OUTPUT->header();
 
 if ($showrecreate) {
     // Only show recreate/delete links in the message for users that can edit.
-    $context = context_module::instance($cm->id);
-    if (has_capability('mod/zoom:addinstance', $context)) {
+    if ($iszoommanager) {
         $message = get_string('zoomerr_meetingnotfound', 'mod_zoom', zoom_meetingnotfound_param($cm->id));
         $style = 'notifywarning';
     } else {
@@ -128,11 +130,14 @@ $title->header = true;
 $title->colspan = $numcolumns;
 $table->data[] = array($title);
 
-$sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
-$sessionslink = html_writer::link($sessionsurl, get_string('sessions', 'mod_zoom'));
-$sessions = new html_table_cell($sessionslink);
-$sessions->colspan = $numcolumns;
-$table->data[] = array($sessions);
+// Only show sessions link to users with edit capability.
+if ($iszoommanager) {
+    $sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
+    $sessionslink = html_writer::link($sessionsurl, get_string('sessions', 'mod_zoom'));
+    $sessions = new html_table_cell($sessionslink);
+    $sessions->colspan = $numcolumns;
+    $table->data[] = array($sessions);
+}
 
 if ($zoom->recurring) {
     $recurringmessage = new html_table_cell(get_string('recurringmeetinglong', 'mod_zoom'));

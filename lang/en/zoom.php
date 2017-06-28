@@ -48,6 +48,7 @@ $string['err_long_timeframe'] = 'Requested time frame too long, showing results 
 $string['err_password'] = 'Password may only contain the following characters: [a-z A-Z 0-9 @ - _ *]. Max of 10 characters.';
 $string['err_start_time_past'] = 'The start date cannot be in the past.';
 $string['errorwebservice'] = 'Zoom webservice error: {$a}.';
+$string['export'] = 'Export';
 $string['firstjoin'] = 'First able to join';
 $string['firstjoin_desc'] = 'The earliest a user can join a scheduled meeting (minutes before start).';
 $string['invalid_status'] = 'Status invalid, check the database.';

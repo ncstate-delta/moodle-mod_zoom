@@ -113,60 +113,49 @@ function zoom_get_sessions_for_display($zoom, $from, $to) {
         if (!$service->webinar_uuid_list($zoom)) {
             zoom_print_error('webinar/uuid/list', $service->lasterror);
         }
-        $result = $service->lastresponse;
+        $uuidlist = $service->lastresponse;
 
-        foreach ($result->webinars as $session) {
-            // Get attendees for this particular uuid/session.
-            if (!$service->webinar_attendees_list($zoom, $session->uuid)) {
-                continue;
-            }
-            // Create a 'meeting' like the one from the report API.
-            $meeting = new stdClass();
-            $meeting->number = $zoom->meeting_id;
-            $meeting->topic = $zoom->name;
-            $meeting->start_time = $session->start_time;
-            $meeting->end_time = '';
-            // Format 'attendee' returned by webinar/attendees/list to be the same
-            // as 'participant' from meeting report API.
-            $meeting->participants = array_map(function($attendee) {
-                $participant = new stdClass();
-                $participant->name = $attendee->first_name;
-                if (!empty($attendee->last_name)) {
-                    $participant->name .= " {$attendee->last_name}";
+        foreach ($uuidlist->webinars as $session) {
+            // Get participants for this uuid/session. May have multiple pages.
+            $participants = array();
+            $pagenumber = 1;
+            do {
+                if (!$service->metrics_webinar_detail($session->uuid, ZOOM_MAX_RECORDS_PER_CALL, $pagenumber)) {
+                    zoom_print_error('metrics/webinardetail', $service->lasterror);
                 }
-                $join = $attendee->join_time;
-                $leave = $attendee->leave_time;
-                // For some reason, the Zoom API returns the join/leave times in Pacific time
-                // (regardless of timezone settings) but marks them as UTC.
-                $join = substr($join, 0, strlen($join) - 1) . ' America/Los_Angeles';
-                $leave = substr($leave, 0, strlen($leave) - 1) . ' America/Los_Angeles';
-                $participant->join_time = $join;
-                $participant->leave_time = $leave;
+                $result = $service->lastresponse;
+                $participants = array_merge($participants, $result->participants);
+            } while ($pagenumber++ < $result->page_count);
 
-                return $participant;
-            }, $service->lastresponse->attendees);
+            // Rename user_name to name to match report API.
+            foreach ($participants as $participant) {
+                // For some reason, the Dashboard API replaces ',' with '#' in names.
+                $participant->name = str_replace('#', ',', $participant->user_name);
+            }
 
-            $hostsessions[$zoom->meeting_id][strtotime($meeting->start_time)] = $meeting;
+            // Create a 'meeting' like the one from the report API.
+            $meeting = $result;
+            $meeting->topic = $zoom->name;
+            $meeting->participants = $participants;
+            $hostsessions[$meeting->id][strtotime($meeting->start_time)] = $meeting;
         }
+
+        // The webinar/uuid/list call doesn't actually use the from/to dates.
         $return->resfrom = sscanf($from, '%u-%u-%u');
     } else {
-        if (!$service->get_user_report($zoom->host_id, $from, $to, ZOOM_MAX_RECORDS_PER_CALL, 1)) {
-            zoom_print_error('report/getuserreport', $service->lasterror);
-        }
-        $result = $service->lastresponse;
-
         // Zoom may return multiple pages of results.
-        $numpages = $result->page_count;
-        $i = $result->page_number;
+        $pagenumber = 1;
         do {
+            if (!$service->get_user_report($zoom->host_id, $from, $to, ZOOM_MAX_RECORDS_PER_CALL, $pagenumber)) {
+                zoom_print_error('report/getuserreport', $service->lasterror);
+            }
+            $result = $service->lastresponse;
+
             foreach ($result->meetings as $meet) {
                 $starttime = strtotime($meet->start_time);
                 $hostsessions[$meet->id][$starttime] = $meet;
             }
-
-            $i++;
-        } while ($i <= $numpages && $result = $service->get_user_report(
-                $zoom->host_id, $from, $to, ZOOM_MAX_RECORDS_PER_CALL, $i));
+        } while ($pagenumber++ < $result->page_count);
 
         // If the time period is longer than a month, Zoom will only return the latest month in range.
         // Return the response "from" field to check.

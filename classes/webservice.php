@@ -345,6 +345,34 @@ class mod_zoom_webservice {
         return true;
     }
 
+    /**
+     * Get details about a particular webinar UUID/session
+     * using Dashboard API.
+     *
+     * @param string $uuid
+     * @param int $pagesize Optional; number of records per page
+     * @param int $pagenumber Optional; which page to request
+     * @return bool
+     */
+    public function metrics_webinar_detail($uuid,
+            $pagesize = ZOOM_DEFAULT_RECORDS_PER_CALL, $pagenumber = 1) {
+        $url = 'metrics/webinardetail';
+        $data = array(
+            'meeting_id' => $uuid,
+            'type' => 2,
+            'page_size' => $pagesize,
+            'page_number' => $pagenumber
+        );
+
+        try {
+            $this->make_call($url, $data);
+        } catch (moodle_exception $e) {
+            return false;
+        }
+
+        return true;
+    }
+
     // Helper functions
     // --------------------------------
 
