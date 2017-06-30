@@ -155,6 +155,16 @@ function zoom_get_sessions_for_display($zoom, $from, $to) {
                 $starttime = strtotime($meet->start_time);
                 $hostsessions[$meet->id][$starttime] = $meet;
             }
+
+            // Rename user_name to name to match report API.
+            foreach ($hostsessions as $session) {
+                foreach ($session as $sess) {
+                    foreach ($sess->participants as $participant) {
+                        // For some reason, the Dashboard API replaces ',' with '#' in names.
+                        $participant->name = str_replace('#', ',', $participant->name);
+                    }
+                }
+            }
         } while ($pagenumber++ < $result->page_count);
 
         // If the time period is longer than a month, Zoom will only return the latest month in range.
