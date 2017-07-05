@@ -274,7 +274,7 @@ function zoom_update_records(Traversable $zooms) {
 
     $service = new mod_zoom_webservice();
     $coursestoupdate = array();
-    $calendar_fields = array('intro',
+    $calendarfields = array('intro',
                              'introformat',
                              'start_time',
                              'duration',
@@ -302,13 +302,13 @@ function zoom_update_records(Traversable $zooms) {
                 }
 
                 // Check if calendar needs updating.
-                $calendar_changed = false;
-                foreach ($calendar_fields as $field) {
+                $calendarchanged = false;
+                foreach ($calendarfields as $field) {
                     if ($z->$field != $response->$field) {
-                        $calendar_changed = true;
+                        $calendarchanged = true;
                     }
                 }
-                if ($calendar_changed) {
+                if ($calendarchanged) {
                     // Update calendar.
                     zoom_calendar_item_update($response);
                 }
