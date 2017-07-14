@@ -519,11 +519,12 @@ function zoom_extend_settings_navigation(settings_navigation $settingsnav, navig
  * Print a user-friendly error message when a Zoom API call errors,
  * or fall back to a generic error message.
  *
+ * TODO Can check defined('AJAX_SCRIPT') to print ajax error (see lib/yui/src/notification/js/ajaxexception.js).
+ *
  * @param string $apicall API endpoint (e.g. meeting/get)
  * @param string $error Error message (most likely from mod_zoom_webservice->lasterror)
  * @param int $cmid Optional (used for recreate links). Cmid of the instance that caused the error
  */
-// TODO Can check defined('AJAX_SCRIPT') to print ajax error (see lib/yui/src/notification/js/ajaxexception.js)
 function zoom_print_error($apicall, $error, $cmid = -1) {
     global $CFG, $COURSE, $OUTPUT, $PAGE;
 

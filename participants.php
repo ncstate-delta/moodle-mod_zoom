@@ -21,7 +21,8 @@
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+// Login check require_login() is called in zoom_get_instance_setup();.
+// @codingStandardsIgnoreLine
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
@@ -144,7 +145,7 @@ if ($export != 'xls') {
     $boldformat->set_bold(true);
     $row = $col = 0;
 
-    foreach($table->head as $colname) {
+    foreach ($table->head as $colname) {
         $worksheet->write_string($row, $col++, $colname, $boldformat);
     }
     $row++; $col = 0;
