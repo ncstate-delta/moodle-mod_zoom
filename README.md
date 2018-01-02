@@ -2,8 +2,10 @@
 Zoom is the web and app based video conferencing service (http://zoom.us). This plugin offers tight integration with Moodle, supporting meeting creation, synchronization, grading, and backup/restore.
 
 ## Installation
-Requires zoom API key and secret.
-See https://support.zoom.us/hc/en-us/articles/201363043-Getting-Started-with-REST-API
+Requires Zoom API key and secret.
+See https://developer.zoom.us/docs/api/ and follow the link to "Get your API key pair from here (https://developer.zoom.us/me/#api)"
+
+You will need to have Zoom administrator access. Please note that the API key and secret is not the same as the LTI key/secret.
 
 ## Settings
 Must set the following settings to enable the plugin:
