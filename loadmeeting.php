@@ -35,7 +35,7 @@ if ($id) {
     $course     = get_course($cm->course);
     $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
 } else {
-    error('You must specify a course_module ID');
+    print_error('You must specify a course_module ID');
 }
 
 require_login($course, true, $cm);
