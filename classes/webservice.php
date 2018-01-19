@@ -26,6 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 require_once($CFG->dirroot.'/lib/filelib.php');
+require_once($CFG->dirroot.'/mod/zoom/jwt/JWT.php');
 
 /**
  * Web service class.
@@ -49,32 +50,143 @@ class mod_zoom_webservice {
     public $lastresponse = '';
 
     /**
+     * Plugin config object
+     * @var object
+     */
+    protected $_config = null;
+
+    /**
+     * API url
+     * @var string
+     */
+    protected $_apiurl = '';
+
+    /**
+     * API key
+     * @var string
+     */
+    protected $_apikey = '';
+
+    /**
+     * API secret
+     * @var string
+     */
+    protected $_apisecret = '';
+
+    /**
+     * Current API version
+     * @var string|int
+     */
+    protected $_version = '1';
+
+    /**
+     * API authorization token
+     * @var string
+     */
+    protected $_token = '';
+
+    /**
+     * Response code
+     * @var int
+     */
+    protected $_code = 0;
+    
+    /**
+     * Error message
+     * @var string
+     */
+    protected $_error_message = '';
+    
+    public $current_user = false;
+    
+    /**
+     * Min limit of paid users
+     * @var int
+     */
+    protected $_limitfrom = 5;
+
+    public function __construct() {
+        $this->_config = get_config('mod_zoom');
+        $this->_apiurl = (isset($this->_config->apiurl) &&
+                !empty($this->_config->apiurl)) ? $this->_config->apiurl : '';
+        $this->_apikey = (isset($this->_config->apikey) &&
+                !empty($this->_config->apikey)) ? $this->_config->apikey : '';
+        $this->_apisecret = (isset($this->_config->apisecret) &&
+                !empty($this->_config->apisecret)) ? $this->_config->apisecret : '';
+        $this->_version = $this->_get_version($this->_apiurl);
+    }
+
+    /**
+     * Get current API version by API url
+     *
+     * @param string|int $apiurl current API url
+     * @return string|int|boolean
+     */
+    protected function _get_version( $apiurl ) {
+        if ($apiurl) {
+            if ($arr = explode('/', trim($apiurl, '/'))) {
+                return str_ireplace('v', '', $arr[count($arr)-1]);
+            }
+            return 1;
+        }
+        return false;
+    }
+
+    /**
+     * Check API version by given $check
+     *
+     * @param int $check
+     * @param string $operator
+     * @return boolean
+     */
+    protected function _is_api_version($check, $operator = '=') {
+        return version_compare($this->_version, $check, $operator);
+    }
+
+    /**
      * Makes given REST call and returns result.
      *
      * See https://support.zoom.us/hc/en-us/articles/201811633-Sample-REST-API-via-PHP
      *
      * @param string $url   Will be appended to apiurl.
-     * @param array $data
+     * @param array|string $data
+     * @param $method HTTP method API call
      * @return array
      */
-    public function make_call($url, $data = array()) {
-        $config = get_config('mod_zoom');
-        if (!isset($config->apiurl) || !isset($config->apikey) ||
-                !isset($config->apisecret)) {
-            // Give error.
-            throw new moodle_exception('errorapikeynotfound', 'mod_zoom');
+    public function make_call($url, $data = array(), $method = 'get') {
+        $url = $this->_apiurl . $url;
+        $curl = new curl();
+        switch ($this->_version) {
+            case $this->_is_api_version(1):
+                $curl->setHeader('Content-Type: application/x-www-form-urlencoded; charset=utf-8');
+                $data['api_key'] = $this->_apikey;
+                $data['api_secret'] = $this->_apisecret;
+                $data['data_type'] = 'JSON';
+                $postfields = http_build_query($data, '', '&');
+                $response = $curl->post($url, $postfields, array('CURLOPT_FAILONERROR' => true));
+                break;
+            //version 2
+            case $this->_is_api_version(2):
+                $token = array(
+                    'iss' => $this->_apikey,
+                    'exp' => time() + 40
+                );
+                if ($this->_token = \Firebase\JWT\JWT::encode($token, $this->_apisecret)) {
+                    if (!empty($method)) {
+                        if (strtolower($method) == 'get') {
+                            $data['access_token'] = $this->_token;
+                        } else {
+                            $curl->setHeader('Authorization: Bearer '.$this->_token);
+                            $curl->setHeader('Content-Type: application/json');
+                            $data = is_array($data) ? json_encode($data) : $data;
+                        }
+                        $response = call_user_func_array(array($curl,
+                            strtolower($method)), array($url, $data));
+                    }
+                }
+                break;
         }
 
-        $url = $config->apiurl . $url;
-        $data['api_key'] = $config->apikey;
-        $data['api_secret'] = $config->apisecret;
-        $data['data_type'] = 'JSON';
-
-        $postfields = http_build_query($data, '', '&');
-
-        $curl = new curl();
-        $curl->setHeader('Content-Type: application/x-www-form-urlencoded; charset=utf-8');
-        $response = $curl->post($url, $postfields, array('CURLOPT_FAILONERROR' => true));
         if ($curl->get_errno()) {
             // Curl error.
             $this->lasterror = $curl->error;
@@ -82,10 +194,16 @@ class mod_zoom_webservice {
         }
 
         $response = json_decode($response);
-        if (isset($response->error)) {
+        if ($this->_is_api_version(1) && isset($response->error)) {
             // Web service error.
             $this->lasterror = $response->error->message;
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', $response->error->message);
+        }
+        if ($this->_is_api_version(2) && isset($response->code) && $response->code != 200) {
+            $this->_code = intval($response->code);
+            if (isset($response->message) && !empty($response->message)) {
+                $this->_error_message = $response->message;
+            }
         }
 
         $this->lastresponse = $response;
@@ -103,17 +221,31 @@ class mod_zoom_webservice {
      * @return bool
      */
     public function user_autocreate($user) {
-        $url = 'user/autocreate';
-
         $data = array();
-        $data['email'] = $user->email;
-        $data['type'] = 2;
-        $data['password'] = str_shuffle(uniqid());
-        $data['first_name'] = $user->firstname;
-        $data['last_name'] = $user->lastname;
+        switch ($this->_version) {
+            case $this->_is_api_version(1):
+                $url = 'user/autocreate';
+                $data['email'] = $user->email;
+                $data['type'] = 2;
+                $data['password'] = str_shuffle(uniqid());
+                $data['first_name'] = $user->firstname;
+                $data['last_name'] = $user->lastname;
+                break;
+            case $this->_is_api_version(2):
+                $url = 'users';
+                $data['action'] = 'autocreate';
+                $data['user_info'] = array(
+                    'email' => $user->email,
+                    'type' => 2,
+                    'first_name' => $user->firstname,
+                    'last_name' => $user->lastname,
+                    'password' => str_shuffle(uniqid())
+                );
+                break;
+        }
 
         try {
-            $this->make_call($url, $data);
+            $this->make_call($url, $data, 'post');
         } catch (moodle_exception $e) {
             // If user already exists, it will return "User already in the account".
             if (strpos($e->getMessage(), 'User already in the account') === false) {
@@ -126,34 +258,185 @@ class mod_zoom_webservice {
     }
 
     /**
+     * Get users list
+     *
+     * @return boolean|object
+     */
+    public function list_users() {
+        if($this->_is_api_version(2)) {
+            return $this->make_call('users');
+        }
+
+        return false;
+    }
+
+    /**
+     * Get active users with paid licences
+     *
+     * @param  int $type Licence type
+     * @return array [userid] => email
+     */
+    public function get_active_paid_users($type = 2) {
+        $arr = array();
+        $users_list = $this->list_users();
+        if (!empty($users_list) && isset($users_list->users) &&
+                !empty($users_list->users) && is_array($users_list->users)) {
+            foreach ($users_list->users as $user) {
+                if ((isset($user->verified) && $user->verified == 1 &&
+                        isset($user->type) && $user->type == $type) ||
+                        ((empty($type) && in_array($user->type, array(2 ,3)))
+                                || (!empty($type) && isset($user->type) &&
+                                $user->type == $type))) {
+                    $arr[$user->id] = $user->email;
+                }
+            }
+        }
+
+        return $arr;
+    }
+
+    /**
+     * Check for make utmost
+     *
+     * @param  int $type
+     * @return boolean
+     */
+    protected function _make_utmost($type = 2) {
+        if ($paid_users = $this->get_active_paid_users($type)) {
+            return $this->_config->utmost && (count($paid_users) >= $this->_limitfrom);
+        }
+
+        return false;
+    }
+
+    /**
+     * Get utmost user id
+     *
+     * @access protected
+     * @param $type Needle type to get
+     * @return bool|string
+     */
+    protected function _get_utmost_user_id($type = 2) {
+        $arr = array();
+        $users_list = $this->list_users();
+        if (!empty($users_list) && isset($users_list->users) &&
+                !empty($users_list->users) && is_array($users_list->users)) {
+            foreach ($users_list->users as $user) {
+                if ((($type && $user->type == $type) || empty($type)) &&
+                        isset($user->last_login_time)) {
+                    $arr[$user->id] = strtotime($user->last_login_time);
+                }
+            }
+            if (!empty($arr)) {
+                $min = min($arr);
+                $flip = array_flip($arr);
+
+                return $flip[$min];
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get user settings by user id
+     *
+     * @param  string $userid
+     * @return object
+     */
+    protected function _get_user_settings($userid) {
+        return $this->make_call('users/'.$userid.'/settings');
+    }
+
+    /**
      * Find a user via their email.
      *
      * @param string $email
      * @return bool
      */
     public function user_getbyemail($email) {
-        $logintypes = get_config('mod_zoom', 'logintypes');
-        $allowedtypes = explode(',', $logintypes);
+        global $CFG, $USER;
+        $data = array();
+        switch ($this->_version) {
+            case $this->_is_api_version(1):
+                $logintypes = get_config('mod_zoom', 'logintypes');
+                $allowedtypes = explode(',', $logintypes);
 
-        $url = 'user/getbyemail';
+                $url = 'user/getbyemail';
 
-        $data = array('email' => $email);
+                $data = array('email' => $email);
 
-        foreach ($allowedtypes as $logintype) {
-            $data['login_type'] = $logintype;
-            try {
-                $this->make_call($url, $data);
-                return true;
-            } catch (moodle_exception $e) {
-                global $CFG;
-                require_once($CFG->dirroot.'/mod/zoom/lib.php');
-                if (!zoom_is_user_not_found_error($e->getMessage())) {
-                    return false;
+                foreach ($allowedtypes as $logintype) {
+                    $data['login_type'] = $logintype;
+                    try {
+                        $this->make_call($url, $data);
+                        return true;
+                    } catch (moodle_exception $e) {
+                        require_once($CFG->dirroot.'/mod/zoom/lib.php');
+                        if (!zoom_is_user_not_found_error($e->getMessage())) {
+                            return false;
+                        }
+                    }
                 }
-            }
+                break;
+            case $this->_is_api_version(2):
+                $users_list = $this->list_users();
+                if (!empty($users_list) && isset($users_list->users) &&
+                        !empty($users_list->users) && is_array($users_list->users)) {
+                    foreach ($users_list->users as $apiuser) {
+                        if ($apiuser->email == $email) {
+                            $apiuser->settings = $this->_get_user_settings($apiuser->id);
+                            $apiuser->enable_webinar = $apiuser->settings->feature->webinar;
+                            if ($email == $USER->email) {
+                                $this->current_user = $apiuser;
+                            }
+                            $this->lastresponse = $apiuser;
+                            return $apiuser;
+                        }
+                    }
+                }
+                break;
         }
 
         return false;
+    }
+
+    /**
+     * Make request data for meeting object
+     *
+     * @param object $zoom
+     * @return array
+     */
+    protected function _make_meeting_data_v2($zoom) {
+        global $CFG;
+
+        $data = array(
+            'topic' => $zoom->name,
+            'start_time' => $zoom->start_time,
+            'duration' => intval($zoom->duration / 60),
+            'agenda' => strip_tags($zoom->intro),
+            'settings' => array(
+                'host_video' => $zoom->option_host_video ? true : false,
+                'participant_video' => $zoom->option_participants_video ? true : false,
+                'join_before_host' => $zoom->option_jbh ? true : false,
+                'audio' => $zoom->option_audio ? true : false
+            )
+        );
+        if (isset($CFG->timezone) && !empty($CFG->timezone)) {
+            $data['timezone'] = $CFG->timezone;
+        }
+        if ($zoom->password) {
+            $data['password'] = $zoom->password;
+        }
+        if ($zoom->recurring) {
+            $data['recurrence'] = array(
+                'type' => ZOOM_RECURRING_MEETING
+            );
+            unset($data['start_time']);
+            unset($data['duration']);
+        }
+
+        return $data;
     }
 
     // Meeting/webinar API calls
@@ -170,21 +453,59 @@ class mod_zoom_webservice {
      * @return bool
      */
     public function meeting_create($zoom) {
-        $url = $zoom->webinar ? 'webinar/create' : 'meeting/create';
+        if ( $this->get_active_paid_users() ) {
+            switch ($this->_version) {
+                case $this->_is_api_version(1):
+                    $url = $zoom->webinar ? 'webinar/create' : 'meeting/create';
 
-        if (!$this->parse_zoom_object($zoom, array('topic', 'host_id'), $data)) {
-            return false;
+                    if (!$this->parse_zoom_object($zoom,
+                            array('topic', 'host_id'), $data)) {
+                        return false;
+                    }
+                    try {
+                        $this->make_call($url, $data, 'post');
+                    } catch (moodle_exception $e) {
+                        return false;
+                    }
+                    $this->format_meeting_response($zoom);
+                    break;
+                case $this->_is_api_version(2):
+                    $createurl = $zoom->webinar ? 'users/'.$zoom->host_id.'/webinars' :
+                    'users/'.$zoom->host_id.'/meetings';
+                    if ($fresponse = $this->make_call($createurl,
+                            $this->_make_meeting_data_v2($zoom), 'post')) {
+                        if ($this->parse_zoom_object($zoom, array('topic', 'host_id'), $data)) {
+                            if ($this->_make_utmost()) {
+                                if ($utmost_user_id = $this->_get_utmost_user_id()) {
+                                    $url = 'users/'.$utmost_user_id;
+                                    $response = $this->make_call($url,
+                                            array('type' => 1), 'patch');
+                                    if (empty($response)) {
+                                        $url = 'users/'.$zoom->host_id;
+                                        $response = $this->make_call($url,
+                                                array('type' => 2), 'patch');
+                                        if (empty($response)) {
+                                            $this->lastresponse = $fresponse;
+                                            $this->format_meeting_response($zoom);
+                                        }
+                                    }
+                                } else {
+
+                                }
+                            }
+                        } else {
+                            
+                        }
+                    } else {
+                        
+                    }
+                    break;
+            }
+
+            return true;
         }
 
-        try {
-            $this->make_call($url, $data);
-        } catch (moodle_exception $e) {
-            return false;
-        }
-
-        $this->format_meeting_response($zoom);
-
-        return true;
+        return false;
     }
 
     /**
@@ -195,21 +516,29 @@ class mod_zoom_webservice {
      * @return bool
      */
     public function meeting_update($zoom) {
-        $url = $zoom->webinar ? 'webinar/update' : 'meeting/update';
+        switch ($this->_version) {
+            case $this->_is_api_version(1):
+                $url = $zoom->webinar ? 'webinar/update' : 'meeting/update';
 
-        if (!$this->parse_zoom_object($zoom, array('id', 'host_id'), $data)) {
-            return false;
+                if (!$this->parse_zoom_object($zoom, array('id', 'host_id'), $data)) {
+                    return false;
+                }
+
+                try {
+                    $this->make_call($url, $data);
+                    $zoom->updated_at = $this->lastresponse->updated_at;
+                } catch (moodle_exception $e) {
+                    return false;
+                }
+                break;
+            case $this->_is_api_version(2):
+                $url = $zoom->webinar ? 'webinars/'.$zoom->meeting_id : 'meetings/'.
+                    $zoom->meeting_id;
+                $this->make_call($url, $this->_make_meeting_data_v2($zoom), 'post');
+                break;
         }
 
-        try {
-            $this->make_call($url, $data);
-        } catch (moodle_exception $e) {
-            return false;
-        }
-
-        // The only fields that need changing are id and updated_at.
         $zoom->id = $zoom->instance;
-        $zoom->updated_at = $this->lastresponse->updated_at;
         $this->lastresponse = $zoom;
 
         return true;
@@ -222,16 +551,26 @@ class mod_zoom_webservice {
      * @return bool Success/Failure
      */
     public function meeting_delete($zoom) {
-        $url = $zoom->webinar ? 'webinar/delete' : 'meeting/delete';
-        $data = array('id' => $zoom->meeting_id, 'host_id' => $zoom->host_id);
+        global $CFG;
 
-        try {
-            $this->make_call($url, $data);
-        } catch (moodle_exception $e) {
-            // If meeting isn't found or has expired, that's fine.
-            global $CFG;
-            require_once($CFG->dirroot.'/mod/zoom/lib.php');
-            return zoom_is_meeting_gone_error($e->getMessage());
+        switch ($this->_version) {
+            case $this->_is_api_version(1):
+                $url = $zoom->webinar ? 'webinar/delete' : 'meeting/delete';
+                $data = array('id' => $zoom->meeting_id, 'host_id' => $zoom->host_id);
+
+                try {
+                    $this->make_call($url, $data, 'post');
+                } catch (moodle_exception $e) {
+                    // If meeting isn't found or has expired, that's fine.
+                    require_once($CFG->dirroot.'/mod/zoom/lib.php');
+                    return zoom_is_meeting_gone_error($e->getMessage());
+                }
+                break;
+            case $this->_is_api_version(2):
+                $url = $zoom->webinar ? 'webinars/'.$zoom->meeting_id : 'meetings/'.
+                    $zoom->meeting_id;
+                $this->make_call($url, null, 'delete');
+                break;
         }
 
         return true;
@@ -245,18 +584,27 @@ class mod_zoom_webservice {
      * @return bool Success/Failure
      */
     public function get_meeting_info($zoom) {
-        $url = $zoom->webinar ? 'webinar/get' : 'meeting/get';
-        $data = array('id' => $zoom->meeting_id, 'host_id' => $zoom->host_id);
+        $data = array();
+        switch ($this->_version) {
+            case $this->_is_api_version(1):
+                $url = $zoom->webinar ? 'webinar/get' : 'meeting/get';
+                $data = array('id' => $zoom->meeting_id, 'host_id' => $zoom->host_id);
 
-        try {
-            $this->make_call($url, $data);
-        } catch (moodle_exception $e) {
-            return false;
+                $this->format_meeting_response($zoom);
+                break;
+            case $this->_is_api_version(2):
+                $url = $zoom->webinar ? 'webinars/'.$zoom->meeting_id : 'meetings/'.
+                    $zoom->meeting_id;
+                break;
         }
 
-        $this->format_meeting_response($zoom);
+        try {
+            return $this->make_call($url, $data);
+        } catch (moodle_exception $e) {
+            
+        }
 
-        return true;
+        return false;
     }
 
     // Reporting API calls
@@ -277,12 +625,22 @@ class mod_zoom_webservice {
      */
     public function get_user_report($userid, $from, $to,
             $pagesize = ZOOM_DEFAULT_RECORDS_PER_CALL, $pagenumber = 1) {
-        $url = 'report/getuserreport';
-        $data = array('user_id' => $userid,
-                      'from' => $from,
-                      'to' => $to,
-                      'page_size' => $pagesize,
-                      'page_number' => $pagenumber);
+        switch ($this->_version) {
+            case $this->_is_api_version(1):
+                $url = 'report/getuserreport';
+                $data = array('user_id' => $userid,
+                              'from' => $from,
+                              'to' => $to,
+                              'page_size' => $pagesize,
+                              'page_number' => $pagenumber);
+                break;
+            case $this->_is_api_version(2):
+                $url = 'report/users/'.$userid.'/meetings';
+                $data = array('from' => $from,
+                              'to' => $to,
+                              'page_size' => $pagesize);
+                break;
+        }
         try {
             $this->make_call($url, $data);
         } catch (moodle_exception $e) {
@@ -304,8 +662,15 @@ class mod_zoom_webservice {
             return false;
         }
 
-        $url = 'webinar/uuid/list';
-        $data = array('id' => $zoom->meeting_id, 'host_id' => $zoom->host_id);
+        switch ($this->_version) {
+            case $this->_is_api_version(1):
+                $url = 'webinar/uuid/list';
+                $data = array('id' => $zoom->meeting_id, 'host_id' => $zoom->host_id);
+                break;
+            case $this->_is_api_version(2):
+                $url = 'users/'.$zoom->host_id.'/webinars';
+                break;
+        }
 
         try {
             $this->make_call($url, $data);
@@ -330,16 +695,27 @@ class mod_zoom_webservice {
             return false;
         }
 
-        $url = 'webinar/attendees/list';
-        $data = array('id' => $zoom->meeting_id, 'host_id' => $zoom->host_id);
-        if (!empty($uuid)) {
-            $data['uuid'] = $uuid;
-        }
-
-        try {
-            $this->make_call($url, $data);
-        } catch (moodle_exception $e) {
-            return false;
+        switch ($this->_version) {
+            case $this->_is_api_version(1):
+                $url = 'webinar/attendees/list';
+                $data = array('id' => $zoom->meeting_id, 'host_id' => $zoom->host_id);
+                if (!empty($uuid)) {
+                    $data['uuid'] = $uuid;
+                }
+                try {
+                    $this->make_call($url, $data);
+                } catch (moodle_exception $e) {
+                    return false;
+                }
+                return true;
+            case $this->_is_api_version(2):
+                $url = 'webinars/'.$zoom->meeting_id.'/registrants';
+                try {
+                    $response = $this->make_call($url, $data);
+                    return isset($response->registrants) ? $response->registrants : null;
+                } catch (moodle_exception $e) {
+                    return false;
+                }
         }
 
         return true;
@@ -356,13 +732,21 @@ class mod_zoom_webservice {
      */
     public function metrics_webinar_detail($uuid,
             $pagesize = ZOOM_DEFAULT_RECORDS_PER_CALL, $pagenumber = 1) {
-        $url = 'metrics/webinardetail';
-        $data = array(
-            'meeting_id' => $uuid,
-            'type' => 2,
-            'page_size' => $pagesize,
-            'page_number' => $pagenumber
-        );
+        $data = array();
+        switch ($this->_version) {
+            case $this->_is_api_version(1):
+                $url = 'metrics/webinardetail';
+                $data = array(
+                    'meeting_id' => $uuid,
+                    'type' => 2,
+                    'page_size' => $pagesize,
+                    'page_number' => $pagenumber
+                );
+                break;
+            case $this->_is_api_version(2):
+                $url = 'webinars/'.$uuid;
+                break;
+        }
 
         try {
             $this->make_call($url, $data);
