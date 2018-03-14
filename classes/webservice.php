@@ -534,7 +534,7 @@ class mod_zoom_webservice {
             case $this->_is_api_version(2):
                 $url = $zoom->webinar ? 'webinars/'.$zoom->meeting_id : 'meetings/'.
                     $zoom->meeting_id;
-                $this->make_call($url, $this->_make_meeting_data_v2($zoom), 'post');
+                $this->make_call($url, $this->_make_meeting_data_v2($zoom), 'patch');
                 break;
         }
 
