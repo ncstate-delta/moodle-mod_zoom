@@ -419,7 +419,8 @@ class mod_zoom_webservice {
                 'host_video' => $zoom->option_host_video ? true : false,
                 'participant_video' => $zoom->option_participants_video ? true : false,
                 'join_before_host' => $zoom->option_jbh ? true : false,
-                'audio' => $zoom->option_audio ? true : false
+                'audio' => $zoom->option_audio ? true : false,
+                'alternative_hosts' => $zoom->option_alternative_hosts
             )
         );
         if (isset($CFG->timezone) && !empty($CFG->timezone)) {
