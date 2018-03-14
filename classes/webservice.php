@@ -427,9 +427,7 @@ class mod_zoom_webservice {
             $data['password'] = $zoom->password;
         }
         if ($zoom->recurring) {
-            $data['recurrence'] = array(
-                'type' => ZOOM_RECURRING_MEETING
-            );
+            $data['type'] = ZOOM_RECURRING_MEETING;
             unset($data['start_time']);
             unset($data['duration']);
         }
