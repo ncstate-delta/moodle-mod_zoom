@@ -380,21 +380,18 @@ class mod_zoom_webservice {
                 }
                 break;
             case $this->_is_api_version(2):
-                $users_list = $this->list_users();
-                if (!empty($users_list) && isset($users_list->users) &&
-                        !empty($users_list->users) && is_array($users_list->users)) {
-                    foreach ($users_list->users as $apiuser) {
-                        if ($apiuser->email == $email) {
-                            $apiuser->settings = $this->_get_user_settings($apiuser->id);
-                            $apiuser->enable_webinar = $apiuser->settings->feature->webinar;
-                            if ($email == $USER->email) {
-                                $this->current_user = $apiuser;
-                            }
-                            $this->lastresponse = $apiuser;
-                            return $apiuser;
-                        }
+                $url = 'users/'.$email;
+                try {
+                    $user = $this -> make_call($url);
+                }catch (moodle_exception $e) {
+                    require_once($CFG->dirroot.'/mod/ncmzoom/lib.php');
+                    if (!zoom_is_user_not_found_error($e->getMessage())) {
+                        return false;
                     }
                 }
+                if(empty(!$user)){
+                    return true;
+                } 
                 break;
         }
 
