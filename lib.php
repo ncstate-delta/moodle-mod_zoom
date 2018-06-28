@@ -166,9 +166,9 @@ function zoom_delete_instance($id) {
     // So don't bother with the webservice in this case.
     if ($zoom->status !== ZOOM_MEETING_EXPIRED) {
         $service = new mod_zoom_webservice();
-        if (!$service->meeting_delete($zoom)) {
-            zoom_print_error('meeting/delete', $service->lasterror);
-        }
+        // Don't bother notifying user if cannot delete Zoom meeting, since user
+        // wants it gone from Moodle.
+        $service->meeting_delete($zoom);
     }
 
     $DB->delete_records('zoom', array('id' => $zoom->id));
@@ -519,8 +519,6 @@ function zoom_extend_settings_navigation(settings_navigation $settingsnav, navig
  * Print a user-friendly error message when a Zoom API call errors,
  * or fall back to a generic error message.
  *
- * TODO Can check defined('AJAX_SCRIPT') to print ajax error (see lib/yui/src/notification/js/ajaxexception.js).
- *
  * @param string $apicall API endpoint (e.g. meeting/get)
  * @param string $error Error message (most likely from mod_zoom_webservice->lasterror)
  * @param int $cmid Optional (used for recreate links). Cmid of the instance that caused the error
@@ -582,21 +580,5 @@ function zoom_print_error($apicall, $error, $cmid = -1) {
         }
     }
 
-    // Based on fatal_error() in lib/outputrenderers.php, but with Bootstrap notification.
-    $protocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
-    @header($protocol . ' 404 Not Found');
-
-    $PAGE->set_title(get_string('error'));
-    $PAGE->set_heading($COURSE->fullname);
-    echo $OUTPUT->header();
-
-    echo $OUTPUT->notification(get_string($errstring, 'mod_zoom', $param), $style);
-    if ($CFG->debugdeveloper) {
-        echo $OUTPUT->notification("<strong>Debug info:</strong> $apicall: $error", 'notifytiny');
-        echo $OUTPUT->notification('<strong>Stack trace:</strong> '.format_backtrace(debug_backtrace()), 'notifytiny');
-    }
-    echo $OUTPUT->continue_button($nexturl);
-
-    echo $OUTPUT->footer();
-    exit(1);
+    print_error($errstring, 'mod_zoom', $nexturl, $param, "$apicall : $error");
 }
