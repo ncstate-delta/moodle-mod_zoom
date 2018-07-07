@@ -64,7 +64,7 @@ if ($ADMIN->fulltree) {
     }
 
     $apiurl = new admin_setting_configtext('mod_zoom/apiurl', get_string('apiurl', 'mod_zoom'),
-            get_string('apiurl_desc', 'mod_zoom'), 'https://api.zoom.us/v1/', PARAM_URL);
+            get_string('apiurl_desc', 'mod_zoom'), 'https://api.zoom.us/v2/', PARAM_URL);
     $settings->add($apiurl);
 
     $apikey = new admin_setting_configtext('mod_zoom/apikey', get_string('apikey', 'mod_zoom'),
@@ -98,5 +98,13 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configmultiselect('mod_zoom/logintypes',
             get_string('logintypes', 'mod_zoom'), get_string('logintypesexplain', 'mod_zoom'),
             array(ZOOM_SNS_SSO), $logintypes));
+
+    $licensescount = new admin_setting_configtext('mod_zoom/licensesnumber', get_string('licensesnumber', 'mod_zoom'),
+            null, 0, PARAM_INT);
+    $settings->add($licensescount);
+
+    $utmost = new admin_setting_configcheckbox('mod_zoom/utmost', get_string('redefinelicenses', 'mod_zoom'),
+            get_string('lowlicenses', 'mod_zoom'), 0, 1);
+    $settings->add($utmost);
 
 }
