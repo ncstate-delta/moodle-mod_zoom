@@ -42,18 +42,12 @@ defined('MOODLE_INTERNAL') || die();
  * @return mixed true if the feature is supported, null if unknown
  */
 function zoom_supports($feature) {
-
     switch($feature) {
         case FEATURE_BACKUP_MOODLE2:
-            return true;
         case FEATURE_GRADE_HAS_GRADE:
-            return true;
         case FEATURE_GROUPINGS:
-            return true;
         case FEATURE_GROUPMEMBERSONLY:
-            return true;
         case FEATURE_MOD_INTRO:
-            return true;
         case FEATURE_SHOW_DESCRIPTION:
             return true;
         default:
@@ -62,31 +56,21 @@ function zoom_supports($feature) {
 }
 
 /**
- * Saves a new instance of the zoom into the database
+ * Saves a new instance of the zoom object into the database.
  *
- * Given an object containing all the necessary data,
- * (defined by the form in mod_form.php) this function
- * will create a new instance and return the id number
- * of the new instance.
+ * Given an object containing all the necessary data (defined by the form in mod_form.php), this function
+ * will create a new instance and return the id number of the new instance.
  *
  * @param stdClass $zoom Submitted data from the form in mod_form.php
- * @param mod_zoom_mod_form $mform The form instance itself (if needed)
+ * @param mod_zoom_mod_form $mform The form instance (included because the function is used as a callback)
  * @return int The id of the newly inserted zoom record
  */
 function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
-    // Create meeting on Zoom.
-    $service = new mod_zoom_webservice();
-
-    if (!$service->meeting_create($zoom)) {
-        zoom_print_error('meeting/create', $service->lasterror);
-    }
-    $zoom = $service->lastresponse;
-
-    // Create meeting in database.
-    $zoom->timemodified = time();
+    $zoom->course = (int) $zoom->course;
+    $zoom = add_meeting_to_zoom($zoom);
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
     zoom_calendar_item_update($zoom);
@@ -96,15 +80,14 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 }
 
 /**
- * Updates an instance of the zoom in the database
+ * Updates an instance of the zoom in the database and on Zoom servers.
  *
- * Given an object containing all the necessary data,
- * (defined by the form in mod_form.php) this function
+ * Given an object containing all the necessary data (defined by the form in mod_form.php), this function
  * will update an existing instance with new data.
  *
  * @param stdClass $zoom An object from the form in mod_form.php
- * @param mod_zoom_mod_form $mform The form instance itself (if needed)
- * @return boolean Success/Fail
+ * @param mod_zoom_mod_form $mform The form instance (included because the function is used as a callback)
+ * @return int The id of the newly inserted zoom record
  */
 function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
@@ -117,39 +100,54 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     // If the webinar setting changed, we have to delete and recreate.
     if ($old->webinar != $zoom->webinar) {
-        if (!$service->meeting_delete($old)) {
-            zoom_print_error('meeting/delete', $service->lasterror);
-        }
-        if (!$service->meeting_create($zoom)) {
-            zoom_print_error('meeting/create', $service->lasterror);
-        }
-    } else if (!$service->meeting_update($zoom)) {
-        zoom_print_error('meeting/update', $service->lasterror, $zoom->coursemodule);
+        $service->delete_meeting($old);
+        $zoom = add_meeting_to_zoom($zoom);
+    } else {
+        $service->update_meeting($zoom);
+        $zoom->timemodified = time();
     }
 
-    $zoom = $service->lastresponse;
-
-    // Update meeting in database.
-    $zoom->timemodified = time();
-    $result = $DB->update_record('zoom', $zoom);
+    // The object received from mod_form.php returns instance instead of id for some reason.
+    $zoom->id = $zoom->instance;
+    $DB->update_record('zoom', $zoom);
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
 
-    return $result;
+    return $zoom->id;
+}
+
+/**
+ * Adds a meeting to zoom and returns a database-addable object.
+ *
+ * Given a zoom meeting object from mod_form.php, this function adds that meeting to the zoom servers. It uses the response to
+ * repopulate some of the object properties entries so that it can be added to the database.
+ *
+ * @param stdClass $zoom An object from the form in mod_form.php
+ * @return stdClass A $zoom object ready to be added to the database.
+ */
+function add_meeting_to_zoom(stdClass $zoom) {
+    $service = new mod_zoom_webservice();
+    $response = $service->create_meeting($zoom);
+
+    $samefields = array('uuid', 'start_url', 'join_url', 'created_at', 'timezone');
+    foreach ($samefields as $field) {
+        $zoom->$field = $response->$field;
+    }
+    $zoom->meeting_id = $response->id;
+    $zoom->timemodified = time();
+
+    return $zoom;
 }
 
 /**
  * Removes an instance of the zoom from the database
  *
- * Given an ID of an instance of this module,
- * this function will permanently delete the instance
- * and any data that depends on it.
+ * Given an ID of an instance of this module, this function will permanently delete the instance and any data that depends on it.
  *
  * @param int $id Id of the module instance
  * @return boolean Success/Failure
- * @throws moodle_exception if failed to delete and zoom
- *         did not issue a not found/expired error
+ * @throws moodle_exception if failed to delete and zoom did not issue a not found/expired error
  */
 function zoom_delete_instance($id) {
     global $CFG, $DB;
@@ -162,13 +160,16 @@ function zoom_delete_instance($id) {
     // Include locallib.php for constants.
     require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
-    // Status -1 means expired and missing from zoom.
-    // So don't bother with the webservice in this case.
+    // If the meeting is expired and missing from zoom, don't bother with the webservice.
     if ($zoom->status !== ZOOM_MEETING_EXPIRED) {
         $service = new mod_zoom_webservice();
-        // Don't bother notifying user if cannot delete Zoom meeting, since user
-        // wants it gone from Moodle.
-        $service->meeting_delete($zoom);
+        try {
+            $service->delete_meeting($zoom);
+        } catch (moodle_exception $error) {
+            if (strpos($error, 'is not found or has expired') === false) {
+                throw $error;
+            }
+        }
     }
 
     $DB->delete_records('zoom', array('id' => $zoom->id));
@@ -188,6 +189,7 @@ function zoom_delete_instance($id) {
  * @param bool $viewfullnames Should we display full names
  * @param int $timestart Print activity since this timestamp
  * @return boolean True if anything was printed, otherwise false
+ * @todo implement this function
  */
 function zoom_print_recent_activity($course, $viewfullnames, $timestart) {
     return false;
@@ -209,6 +211,7 @@ function zoom_print_recent_activity($course, $viewfullnames, $timestart) {
  * @param int $cmid course module id
  * @param int $userid check for a particular user's activity only, defaults to 0 (all users)
  * @param int $groupid check for a particular group's activity only, defaults to 0 (all groups)
+ * @todo implement this function
  */
 function zoom_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid=0, $groupid=0) {
 }
@@ -221,6 +224,7 @@ function zoom_get_recent_mod_activity(&$activities, &$index, $timestart, $course
  * @param bool $detail print detailed report
  * @param array $modnames as returned by {@link get_module_types_names()}
  * @param bool $viewfullnames display users' full names
+ * @todo implement this function
  */
 function zoom_print_recent_mod_activity($activity, $courseid, $detail, $modnames, $viewfullnames) {
 }
@@ -232,6 +236,7 @@ function zoom_print_recent_mod_activity($activity, $courseid, $detail, $modnames
  * module uses that capability.
  *
  * @return array
+ * @todo implement this function
  */
 function zoom_get_extra_capabilities() {
     return array();
@@ -432,6 +437,7 @@ function zoom_update_grades(stdClass $zoom, $userid = 0) {
  * @param stdClass $cm
  * @param stdClass $context
  * @return array of [(string)filearea] => (string)description
+ * @todo implement this function
  */
 function zoom_get_file_areas($course, $cm, $context) {
     return array();
@@ -453,6 +459,7 @@ function zoom_get_file_areas($course, $cm, $context) {
  * @param string $filepath
  * @param string $filename
  * @return file_info instance or null if not found
+ * @todo implement this function
  */
 function zoom_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
     return null;
@@ -495,9 +502,9 @@ function zoom_pluginfile($course, $cm, $context, $filearea, array $args, $forced
  * @param stdClass $course current course record
  * @param stdClass $module current zoom instance record
  * @param cm_info $cm course module information
+ * @todo implement this function
  */
 function zoom_extend_navigation(navigation_node $navref, stdClass $course, stdClass $module, cm_info $cm) {
-    // TODO Delete this function and its docblock, or implement it.
 }
 
 /**
@@ -508,77 +515,7 @@ function zoom_extend_navigation(navigation_node $navref, stdClass $course, stdCl
  *
  * @param settings_navigation $settingsnav complete settings navigation tree
  * @param navigation_node $zoomnode zoom administration node
+ * @todo implement this function
  */
 function zoom_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $zoomnode=null) {
-    // TODO Delete this function and its docblock, or implement it.
-}
-
-/* Miscellaneous */
-
-/**
- * Print a user-friendly error message when a Zoom API call errors,
- * or fall back to a generic error message.
- *
- * @param string $apicall API endpoint (e.g. meeting/get)
- * @param string $error Error message (most likely from mod_zoom_webservice->lasterror)
- * @param int $cmid Optional (used for recreate links). Cmid of the instance that caused the error
- */
-function zoom_print_error($apicall, $error, $cmid = -1) {
-    global $CFG, $COURSE, $OUTPUT, $PAGE;
-
-    require_once($CFG->dirroot.'/mod/zoom/locallib.php');
-
-    // Lang string for the error.
-    $errstring = 'zoomerr';
-    // Parameter for the lang string.
-    $param = null;
-    // Style of the error notification.
-    $style = 'notifyproblem';
-    // Link that the continue button points to.
-    if (isset($_SERVER['HTTP_REFERER'])) {
-        $nexturl = clean_param($_SERVER['HTTP_REFERER'], PARAM_LOCALURL);
-    } else {
-        $nexturl = course_get_url($COURSE->id);
-    }
-
-    // This handles special error messages that aren't the generic zoomerr.
-    $settingsurl = '/admin/settings.php?section=modsettingzoom';
-    if (strpos($error, 'Api key and secret are required') !== false) {
-        $errstring = 'zoomerr_apisettings_missing';
-        $nexturl = $settingsurl;
-    } else if (strpos($error, 'Invalid api key or secret') !== false) {
-        $errstring = 'zoomerr_apisettings_invalid';
-        $nexturl = $settingsurl;
-    } else if (strpos($error, '404 Not Found') !== false) {
-        $errstring = 'zoomerr_apiurl_404';
-        $nexturl = $settingsurl;
-    } else if (strpos($error, "Couldn't resolve host") !== false) {
-        $errstring = 'zoomerr_apiurl_unresolved';
-        $nexturl = $settingsurl;
-    } else {
-        switch ($apicall) {
-            case 'user/getbyemail':
-                if (zoom_is_user_not_found_error($error)) {
-                    // Assume user is using Zoom for the first time.
-                    $errstring = 'zoomerr_usernotfound';
-                    $param = get_config('mod_zoom', 'zoomurl');
-                    // Not an error.
-                    $style = 'notifymessage';
-                    // After they set up their account, the user should
-                    // continue to the page they were on.
-                    $nexturl = $PAGE->url;
-                }
-                break;
-            case 'meeting/get':
-            case 'meeting/update':
-                if (zoom_is_meeting_gone_error($error)) {
-                    $errstring = 'zoomerr_meetingnotfound';
-                    $param = zoom_meetingnotfound_param($cmid);
-                    $nexturl = "/mod/zoom/view.php?id=$cmid";
-                }
-                break;
-        }
-    }
-
-    print_error($errstring, 'mod_zoom', $nexturl, $param, "$apicall : $error");
 }
