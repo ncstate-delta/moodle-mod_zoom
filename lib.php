@@ -73,7 +73,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom = add_meeting_to_zoom($zoom);
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
-    if(!$zoom->reccuring) {
+    if (!$zoom->recurring) {
         $end_time = $zoom->start_time + $zoom->duration;
         $new_meeting_queue_object = array(
             'meeting_webinar_instance_id' => $zoom->uuid,
@@ -81,7 +81,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
             'meeting_webinar_universal_id' => $zoom->meeting_id
         );
         $DB->insert_record('zoom_meetings_queue', $new_meeting_queue_object, false);
-    }    
+    }
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);

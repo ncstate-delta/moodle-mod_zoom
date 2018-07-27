@@ -29,6 +29,9 @@ require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once($CFG->libdir . '/gradelib.php');
 require_once($CFG->libdir . '/moodlelib.php');
 
+// For report queuing.
+define('RECCURING_MEETING_QUEUE_GRACE_PERIOD', 60);
+
 // Course_module ID.
 $id = required_param('id', PARAM_INT);
 // We cast because PARAM_BOOL doesn't actually return a boolean, it returns a 1 or 0.
@@ -49,6 +52,17 @@ $PAGE->set_context($context);
 require_capability('mod/zoom:view', $context);
 if ($userishost) {
     $nexturl = new moodle_url($zoom->start_url);
+
+    // Add recurring meetings to report queue.
+    if ($zoom->recurring) {
+        $end_time = time() + RECCURING_MEETING_QUEUE_GRACE_PERIOD * 60;
+        $new_meeting_queue_object = array(
+            'meeting_webinar_instance_id' => $zoom->uuid,
+            'end_time' => $end_time,
+            'meeting_webinar_universal_id' => $zoom->meeting_id
+        );
+        $DB->insert_record('zoom_meetings_queue', $new_meeting_queue_object, false);
+    }
 } else {
     // Check whether user had a grade. If no, then assign full credits to him or her.
     $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
