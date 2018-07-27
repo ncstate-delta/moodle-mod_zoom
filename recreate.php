@@ -42,13 +42,11 @@ $PAGE->set_url('/mod/zoom/recreate.php', array('id' => $cm->id));
 // in case the meeting's former owner no longer exists on Zoom.
 $zoom->host_id = zoom_get_user_id();
 $service = new mod_zoom_webservice();
-if (!$service->meeting_create($zoom)) {
-    zoom_print_error('meeting/create', $service->lasterror);
-}
 
 // Set the current zoom table entry to use the new meeting (meeting_id/etc).
-$zoom = $service->lastresponse;
+$response = $service->create_meeting($zoom);
 $zoom->timemodified = time();
+$zoom->meeting_id = $response->id;
 $DB->update_record('zoom', $zoom);
 
 // Return to course page.

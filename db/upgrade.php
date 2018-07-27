@@ -159,5 +159,11 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2016040100, 'zoom');
     }
 
+    if ($oldversion < 2018071900) {
+        // Removed apiurl option from settings.
+        set_config('apiurl', null, 'mod_zoom');
+        upgrade_mod_savepoint(true, 2018071900, 'zoom');
+    }
+
     return true;
 }

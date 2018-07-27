@@ -63,7 +63,12 @@ $zoomuserid = zoom_get_user_id(false);
 $userishost = ($zoomuserid == $zoom->host_id);
 
 $service = new mod_zoom_webservice();
-$showrecreate = !$service->get_meeting_info($zoom) && zoom_is_meeting_gone_error($service->lasterror);
+try {
+    $service->get_meeting_info($zoom);
+    $showrecreate = false;
+} catch (moodle_exception $error) {
+    $showrecreate = zoom_is_meeting_gone_error($error);
+}
 
 $stryes = get_string('yes');
 $strno = get_string('no');
