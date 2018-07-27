@@ -29,7 +29,10 @@ require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once($CFG->libdir . '/gradelib.php');
 require_once($CFG->libdir . '/moodlelib.php');
 
-$id = required_param('id', PARAM_INT); // Course_module ID.
+// Course_module ID.
+$id = required_param('id', PARAM_INT);
+// We cast because PARAM_BOOL doesn't actually return a boolean, it returns a 1 or 0.
+$userishost = (bool) required_param('userishost', PARAM_BOOL);
 if ($id) {
     $cm         = get_coursemodule_from_id('zoom', $id, 0, false, MUST_EXIST);
     $course     = get_course($cm->course);
@@ -44,24 +47,28 @@ $context = context_module::instance($cm->id);
 $PAGE->set_context($context);
 
 require_capability('mod/zoom:view', $context);
+if ($userishost) {
+    $nexturl = new moodle_url($zoom->start_url);
+} else {
+    // Check whether user had a grade. If no, then assign full credits to him or her.
+    $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
 
-// Check whether user had a grade. If no, then assign full credits to him or her.
-$gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
+    // Assign full credits for user who has no grade yet, if this meeting is gradable (i.e. the grade type is not "None").
+    if (!empty($gradelist->items) && empty($gradelist->items[0]->grades[$USER->id]->grade)) {
+        $grademax = $gradelist->items[0]->grademax;
+        $grades = array('rawgrade' => $grademax,
+                        'userid' => $USER->id,
+                        'usermodified' => $USER->id,
+                        'dategraded' => '',
+                        'feedbackformat' => '',
+                        'feedback' => '');
 
-// Assign full credits for user who has no grade yet, if this meeting is gradable
-// (i.e. the grade type is not "None").
-if (!empty($gradelist->items) && empty($gradelist->items[0]->grades[$USER->id]->grade)) {
-    $grademax = $gradelist->items[0]->grademax;
-    $grades = array('rawgrade' => $grademax,
-                    'userid' => $USER->id,
-                    'usermodified' => $USER->id,
-                    'dategraded' => '',
-                    'feedbackformat' => '',
-                    'feedback' => '');
+        zoom_grade_item_update($zoom, $grades);
+    }
 
-    zoom_grade_item_update($zoom, $grades);
+    $nexturl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
 }
 
-// Redirect user to join zoom meeting.
-$joinurl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
-redirect($joinurl);
+// Record user's clicking join.
+\mod_zoom\event\join_meeting_button_clicked::create(array('context' => $context, 'objectid' => $zoom->id, 'other' => array('cmid' => $id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
+redirect($nexturl);

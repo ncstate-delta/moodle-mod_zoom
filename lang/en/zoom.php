@@ -38,6 +38,7 @@ $string['audio_telephony'] = 'Telephony only';
 $string['audio_voip'] = 'Voip only';
 $string['cachedef_zoomid'] = 'The zoom user id of the user';
 $string['cachedef_sessions'] = 'Information from the zoom get user report request';
+$string['clickjoin'] = 'Clicked join meeting button';
 $string['connectionok'] = 'Connection working.';
 $string['connectionfailed'] = 'Connection failed: ';
 $string['connectionstatus'] = 'Connection status';
