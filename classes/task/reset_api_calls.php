@@ -15,18 +15,40 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the version and other meta-info about the plugin.
+ * Library of interface functions and constants for module zoom
+ *
+ * All the core Moodle functions, neeeded to allow the module to work
+ * integrated in Moodle should be placed here.
+ *
+ * All the zoom specific functions, needed to implement all the module
+ * logic, should go to locallib.php. This will help to save some memory when
+ * Moodle is performing actions across all modules.
  *
  * @package    mod_zoom
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_zoom\task;
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'mod_zoom';
-$plugin->version = 2018080700;
-$plugin->release = 'v2.0';
-$plugin->requires = 2017111304.00;
-$plugin->maturity = MATURITY_STABLE;
-$plugin->cron = 0;
+define('MAX_CALLS', 2000);
+
+class reset_api_calls extends \core\task\scheduled_task {
+    /**
+     * Resets the value of the counter that stores how many available API calls are left.
+     */
+    public function execute() {
+        set_config('calls_left', MAX_CALLS, 'zoom');
+    }
+
+    /**
+     * Returns name of task.
+     *
+     * @return string
+     */
+    public function get_name() {
+        return get_string('resetapicalls', 'mod_zoom');
+    }
+}

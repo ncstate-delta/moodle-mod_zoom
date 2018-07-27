@@ -35,10 +35,10 @@ list($course, $cm, $zoom) = zoom_get_instance_setup();
 $context = context_module::instance($cm->id);
 require_capability('mod/zoom:addinstance', $context);
 
-$session = required_param('session', PARAM_INT); // Session.
+$uuid = required_param('uuid', PARAM_RAW);
 $export = optional_param('export', null, PARAM_ALPHA);
 
-$PAGE->set_url('/mod/zoom/participants.php', array('id' => $cm->id, 'session' => $session, 'export' => $export));
+$PAGE->set_url('/mod/zoom/participants.php', array('id' => $cm->id, 'uuid' => $uuid, 'export' => $export));
 
 $strname = $zoom->name;
 $strtitle = get_string('participants', 'mod_zoom');
@@ -47,24 +47,8 @@ $PAGE->set_title("$course->shortname: $strname");
 $PAGE->set_heading($course->fullname);
 $PAGE->set_pagelayout('incourse');
 
-/* Cached structure: class->sessions[hostid][meetingid][starttime]
- *                        ->reqfrom
- *                        ->reqto
- *                        ->resfrom
- */
-$cache = cache::make('mod_zoom', 'sessions');
-if (!($todisplay = $cache->get($zoom->host_id)) || empty($todisplay->sessions[$zoom->meeting_id][$session])) {
-    $reqdate = getdate($session);
-    $reqdate['month'] = $reqdate['mon'];
-    $reqdate['day'] = $reqdate['mday'];
-
-    $fdate = sprintf('%u-%u-%u', $reqdate['year'], $reqdate['month'], $reqdate['day']);
-    $todisplay = zoom_get_sessions_for_display($zoom, $fdate, $fdate);
-
-    $cache->set(strval($zoom->host_id), $todisplay);
-}
-
-$participants = $todisplay->sessions[$zoom->meeting_id][$session]->participants;
+$sessions = zoom_get_sessions_for_display($zoom->meeting_id, $zoom->webinar, $zoom->host_id);
+$participants = $sessions[$uuid]['participants'];
 
 // Display the headers/etc if we're not exporting, or if there is no data.
 if (empty($export) || empty($participants)) {
@@ -97,28 +81,33 @@ $table->head = array(get_string('idnumber'),
                      get_string('name'),
                      get_string('jointime', 'mod_zoom'),
                      get_string('leavetime', 'mod_zoom'),
-                     get_string('duration', 'mod_zoom'));
+                     get_string('duration', 'mod_zoom'),
+                     get_string('attentiveness_score', 'mod_zoom'));
 
 foreach ($participants as $p) {
     $row = array();
 
-    // For some reason, the Zoom report may add a space to the end of the name.
-    $name = trim($p->name);
+    $name = $p->name;
 
     // ID number.
-    $row[] = empty($nametouids[strtoupper($name)]) ? '' : implode(', ', $nametouids[strtoupper($name)]);
+    if ($p->userid) {
+        $row[] = $p->userid;
+    } else {
+        $row[] = empty($nametouids[strtoupper($name)]) ? '' : implode(', ', $nametouids[strtoupper($name)]);
+    }
 
     // Name.
     $row[] = $name;
 
     // Join/leave times.
-    $join = strtotime($p->join_time);
-    $row[] = userdate($join);
-    $leave = strtotime($p->leave_time);
-    $row[] = userdate($leave);
+    $row[] = userdate($p->join_time);
+    $row[] = userdate($p->leave_time);
 
     // Duration.
-    $row[] = format_time($leave - $join);
+    $row[] = format_time($p->duration);
+
+    // Attentiveness Score.
+    $row[] = $p->attentiveness_score;
 
     $table->data[] = $row;
 }
@@ -128,7 +117,7 @@ if ($export != 'xls') {
 
     $exporturl = new moodle_url('/mod/zoom/participants.php', array(
             'id' => $cm->id,
-            'session' => $session,
+            'uuid' => $uuid,
             'export' => 'xls'
         ));
     $xlsstring = get_string('application/vnd.ms-excel', 'mimetypes');

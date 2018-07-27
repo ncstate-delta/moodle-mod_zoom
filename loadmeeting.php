@@ -25,9 +25,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+ global $CFG, $DB;
+
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once($CFG->libdir . '/gradelib.php');
 require_once($CFG->libdir . '/moodlelib.php');
+
+// For report queuing.
+define('RECCURING_MEETING_GRACE_PERIOD', 60);
 
 // Course_module ID.
 $id = required_param('id', PARAM_INT);

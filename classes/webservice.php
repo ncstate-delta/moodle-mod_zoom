@@ -71,6 +71,7 @@ class mod_zoom_webservice {
 
     /**
      * The constructor for the webservice class.
+     * @throws moodle_exception Moodle exception is thrown for missing config settings.
      */
     public function __construct() {
         $config = get_config('mod_zoom');
@@ -154,11 +155,18 @@ class mod_zoom_webservice {
     protected function _make_paginated_call($url, $data = array(), $datatoget) {
         $aggregatedata = array();
         $data['page_size'] = ZOOM_MAX_RECORDS_PER_CALL;
-
+        $reportcheck = explode('/', $url);
         // The $currentpage call parameter is 1-indexed.
         for ($currentpage = $numpages = 1; $currentpage <= $numpages; $currentpage++) {
             $data['page_number'] = $currentpage;
-            $callresult = $this->_make_call($url, $data);
+            $callresult = null;
+            $numcalls = get_config('zoom', 'calls_left');
+            if (in_array('report', $reportcheck) && $numcalls > 0) {
+                $callresult = $this->_make_call($url, $data);
+                set_config('calls_left', $numcalls - 1, 'zoom');
+            } else {
+                $callresult = $this->_make_call($url, $data);
+            }
             $aggregatedata += $callresult->$datatoget;
             // Note how continually updating $numpages accomodatess for the edge case that users are added in between calls.
             $numpages = $callresult->page_count;
@@ -263,15 +271,14 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Finds a user by their email.
+     * Gets a user.
      *
-     * @param string $email The user's email.
+     * @param string|int $identifier The user's email or the user's ID per Zoom API.
      * @return stdClass|false If user is found, returns the User object. Otherwise, returns false.
      * @link https://zoom.github.io/api/#users
      */
-    public function get_user_by_email($email) {
-        global $CFG, $USER;
-        $url = 'users/' . $email;
+    public function get_user($identifier) {
+        $url = 'users/' . $identifier;
         try {
             $user = $this->_make_call($url);
         } catch (moodle_exception $error) {
@@ -369,26 +376,26 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Delete a meeting/webinar on Zoom.
+     * Delete a meeting or webinar on Zoom.
      *
-     * @param stdClass $zoom The meeting to delete.
+     * @param int $id The meeting_id or webinar_id of the meeting or webinar to delete.
+     * @param bool $webinar Whether the meeting or webinar you want to delete is a webinar.
      * @return void
      */
-    public function delete_meeting($zoom) {
-        global $CFG;
-
-        $url = ($zoom->webinar ? 'webinars/' : 'meetings/') . $zoom->meeting_id;
+    public function delete_meeting($id, $webinar) {
+        $url = ($webinar ? 'webinars/' : 'meetings/') . $id;
         $this->_make_call($url, null, 'delete');
     }
 
     /**
-     * Get a meeting/webinar's information from Zoom.
+     * Get a meeting or webinar's information from Zoom.
      *
-     * @param stdClass $zoom The meeting to retrieve.
-     * @return stdClass The meeting's information.
+     * @param int $id The meeting_id or webinar_id of the meeting or webinar to retrieve.
+     * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
+     * @return stdClass The meeting's or webinar's information.
      */
-    public function get_meeting_info($zoom) {
-        $url = ($zoom->webinar ? 'webinars/' : 'meetings/') . $zoom->meeting_id;
+    public function get_meeting_webinar_info($id, $webinar) {
+        $url = ($webinar ? 'webinars/' : 'meetings/') . $id;
         return $this->_make_call($url);
     }
 
@@ -408,21 +415,18 @@ class mod_zoom_webservice {
     }
 
     /**
-     * List the UUIDs for all the webinars of a user.
+     * List all meeting or webinar information for a user.
      *
-     * @param string $userid The user whose webinars to retrieve.
-     * @return array An array of UUIDs as strings.
+     * @param string $userid The user whose meetings or webinars to retrieve.
+     * @param boolean $webinar Whether to list meetings or to list webinars.
+     * @return array An array of meeting information.
      * @link https://zoom.github.io/api/#list-webinars
+     * @link https://zoom.github.io/api/#list-meetings
      */
-    public function list_webinar_uuids($userid) {
-        $url = 'users/' . $userid . '/webinars';
-        $webinars = $this->_make_paginated_call($url, null, 'webinars');
-        $uuids = array();
-        foreach ($webinars as $webinar) {
-            $uuids[] = $webinar->uuid;
-        }
-
-        return $uuids;
+    public function list_meetings($userid, $webinar) {
+        $url = 'users/' . $userid . ($webinar ? '/webinars' : '/meetings');
+        $instances = $this->_make_paginated_call($url, null, ($webinar ? 'webinars' : 'meetings'));
+        return $instances;
     }
 
     /**
@@ -446,5 +450,41 @@ class mod_zoom_webservice {
      */
     public function get_metrics_webinar_detail($uuid) {
         return $this->_make_call('webinars/' . $uuid);
+    }
+
+    /**
+     * Get the participants who attended a meeting
+     * @param string $meetinguuid The meeting or webinar's UUID.
+     * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
+     * @return stdClass The meeting report.
+     */
+    public function get_meeting_participants($meetinguuid, $webinar) {
+        return $this->_make_paginated_call('report/' . ($webinar ? 'webinars' : 'meetings') . '/'
+                                           . $meetinguuid . '/participants', null, 'participants');
+    }
+
+    /**
+     * Retrieves ended webinar details report.
+     *
+     * @param string|int $identifier The webinar ID or webinar UUID. If given webinar ID, Zoom will take the last webinar instance.
+     */
+    public function get_webinar_details_report($identifier) {
+        return $this->_make_call('report/webinars/' . $identifier);
+    }
+
+    /**
+     * Retrieve the UUIDs of hosts that were active in the last 30 days.
+     *
+     * @param int $from The time to start the query from, in Unix timestamp format.
+     * @param int $to The time to end the query at, in Unix timestamp format.
+     * @return array An array of UUIDs.
+     */
+    public function get_active_hosts_uuids($from, $to) {
+        $users = $this->_make_paginated_call('report/users', array('type' => 'active', 'from' => $from, 'to' => $to), 'users');
+        $uuids = array();
+        foreach ($users as $user) {
+            $uuids[] = $user->id;
+        }
+        return $uuids;
     }
 }

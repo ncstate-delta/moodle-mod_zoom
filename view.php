@@ -64,7 +64,7 @@ $userishost = ($zoomuserid == $zoom->host_id);
 
 $service = new mod_zoom_webservice();
 try {
-    $service->get_meeting_info($zoom);
+    $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
     $showrecreate = false;
 } catch (moodle_exception $error) {
     $showrecreate = zoom_is_meeting_gone_error($error);
@@ -179,8 +179,8 @@ if (!$zoom->webinar) {
 $table->data[] = array($straudioopt, $zoom->option_audio);
 
 if (!$zoom->recurring) {
-    if ($zoom->status == ZOOM_MEETING_EXPIRED) {
-        $status = get_string('meeting_expired', 'mod_zoom');
+    if (!$zoom->exists_on_zoom) {
+        $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
     } else if ($finished) {
         $status = get_string('meeting_finished', 'mod_zoom');
     } else if ($inprogress) {
