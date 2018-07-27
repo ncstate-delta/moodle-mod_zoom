@@ -71,6 +71,7 @@ class mod_zoom_webservice {
 
     /**
      * The constructor for the webservice class.
+     * @throws moodle_exception Moodle exception is thrown for missing config settings.
      */
     public function __construct() {
         $config = get_config('mod_zoom');
@@ -263,15 +264,14 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Finds a user by their email.
+     * Gets a user.
      *
-     * @param string $email The user's email.
+     * @param string|int $identifier The user's email or the user's ID per Zoom API.
      * @return stdClass|false If user is found, returns the User object. Otherwise, returns false.
      * @link https://zoom.github.io/api/#users
      */
-    public function get_user_by_email($email) {
-        global $CFG, $USER;
-        $url = 'users/' . $email;
+    public function get_user($identifier) {
+        $url = 'users/' . $identifier;
         try {
             $user = $this->_make_call($url);
         } catch (moodle_exception $error) {
@@ -369,26 +369,26 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Delete a meeting/webinar on Zoom.
+     * Delete a meeting or webinar on Zoom.
      *
-     * @param stdClass $zoom The meeting to delete.
+     * @param int $id The meeting_id or webinar_id of the meeting or webinar to delete.
+     * @param bool $webinar Whether the meeting or webinar you want to delete is a webinar.
      * @return void
      */
-    public function delete_meeting($zoom) {
-        global $CFG;
-
-        $url = ($zoom->webinar ? 'webinars/' : 'meetings/') . $zoom->meeting_id;
+    public function delete_meeting($id, $webinar) {
+        $url = ($webinar ? 'webinars/' : 'meetings/') . $id;
         $this->_make_call($url, null, 'delete');
     }
 
     /**
-     * Get a meeting/webinar's information from Zoom.
+     * Get a meeting or webinar's information from Zoom.
      *
-     * @param stdClass $zoom The meeting to retrieve.
-     * @return stdClass The meeting's information.
+     * @param int $id The meeting_id or webinar_id of the meeting or webinar to retrieve.
+     * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
+     * @return stdClass The meeting's or webinar's information.
      */
-    public function get_meeting_info($zoom) {
-        $url = ($zoom->webinar ? 'webinars/' : 'meetings/') . $zoom->meeting_id;
+    public function get_meeting_webinar_info($id, $webinar) {
+        $url = ($webinar ? 'webinars/' : 'meetings/') . $id;
         return $this->_make_call($url);
     }
 
@@ -446,5 +446,15 @@ class mod_zoom_webservice {
      */
     public function get_metrics_webinar_detail($uuid) {
         return $this->_make_call('webinars/' . $uuid);
+    }
+
+    /**
+     * Get the participants who attended a meeting
+     * @param string The meeting or webinar's UUID.
+     * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
+     * @return stdClass The meeting report.
+     */
+    public function get_meeting_participants($meeting_webinar_uuid, $webinar) {
+        return $this->_make_paginated_call('report/' . ($webinar ? 'webinars' : 'meetings') . '/' . $meeting_webinar_uuid . '/participants', null, 'participants');
     }
 }

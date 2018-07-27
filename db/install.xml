@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/zoom/db" VERSION="20160401" COMMENT="Zoom module"
+<XMLDB PATH="mod/zoom/db" VERSION="20180727" COMMENT="Zoom module"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="zoom" COMMENT="Zoom meetings">
+    <TABLE NAME="zoom" COMMENT="Zoom meetings and webinars">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Moodle course that this meeting belongs to."/>
         <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="false" SEQUENCE="false" COMMENT="Format of description field"/>
         <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Maximum grade (points possible) for this activity. Negative value indicates a scale being used."/>
-        <FIELD NAME="uuid" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="start_url" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="join_url" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="created_at" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="ISO datetime format"/>
@@ -30,7 +29,7 @@
         <FIELD NAME="option_host_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Start video when host joins meeting."/>
         <FIELD NAME="option_participants_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Start video when participants join meeting."/>
         <FIELD NAME="option_audio" TYPE="char" LENGTH="9" NOTNULL="false" DEFAULT="both" SEQUENCE="false" COMMENT="Meeting audio options. Can be &quot;both&quot;, &quot;telephony&quot;, &quot;voip&quot;."/>
-        <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="0 means meeting not started. 1 means meeting starting. 2 means meeting finished."/>
+        <FIELD NAME="exists_on_zoom" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether the meeting can be found on Zoom servers. Usually should be true, should only be false if API call returned that meeting can't be found."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -38,6 +37,35 @@
       <INDEXES>
         <INDEX NAME="meeting_id_idx" UNIQUE="false" FIELDS="meeting_id"/>
       </INDEXES>
+    </TABLE>
+    <TABLE NAME="zoom_meetings_queue" COMMENT="A queue for the Cron to add meeting report info to zoom_meetings_participants table.">
+      <FIELDS>
+        <FIELD NAME="meeting_webinar_instance_id" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting UUID or webinar UUID per Zoom API."/>
+        <FIELD NAME="meeting_webinar_universal_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting_id or webinar_id per Zoom API."/>
+        <FIELD NAME="end_time" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="When the meeting ended/will end"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field. Other than that it's useless."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="meeting_webinar_instance_id_unique" TYPE="unique" FIELDS="meeting_webinar_instance_id"/>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key. Most database actions will be performed using meeting_webinar_instance_id."/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="zoom_meetings_participants" COMMENT="A list of each meeting existing on Moodle and when its participants entered/left.">
+      <FIELDS>
+        <FIELD NAME="participant_instance_id" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The user_id per Zoom API"/>
+        <FIELD NAME="participant_universal_id" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The participant UUID per Zoom API."/>
+        <FIELD NAME="participant_email" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The particpant's email per Zoom API."/>
+        <FIELD NAME="meeting_webinar_instance_id" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting UUID per Zoom API."/>
+        <FIELD NAME="join_time" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="When the particpant joined the meeting."/>
+        <FIELD NAME="leave_time" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="When the participant left the meeting."/>
+        <FIELD NAME="duration" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="The time for which the participant was in the meeting."/>
+        <FIELD NAME="attentiveness_score" TYPE="char" LENGTH="7" NOTNULL="true" SEQUENCE="false" COMMENT="How attentive the participant was during the meeting."/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field. Other than that it's useless."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="participant_universal_id_unique" TYPE="unique" FIELDS="participant_universal_id"/>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key. Most database actions will be performed using participant_universal_id."/>
+      </KEYS>
     </TABLE>
   </TABLES>
 </XMLDB>

@@ -36,11 +36,6 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 define('ZOOM_AUDIO_TELEPHONY', 'telephony');
 define('ZOOM_AUDIO_VOIP', 'voip');
 define('ZOOM_AUDIO_BOTH', 'both');
-// Meeting statuses.
-define('ZOOM_MEETING_NOT_STARTED', 0);
-define('ZOOM_MEETING_STARTED', 1);
-define('ZOOM_MEETING_FINISHED', 2);
-define('ZOOM_MEETING_EXPIRED', -1);
 // Meeting types.
 define('ZOOM_INSTANT_MEETING', 1);
 define('ZOOM_SCHEDULED_MEETING', 2);
@@ -196,7 +191,7 @@ function zoom_get_user_id($required = true) {
         $zoomuserid = false;
         $service = new mod_zoom_webservice();
         try {
-            $zoomuser = $service->get_user_by_email($USER->email);
+            $zoomuser = $service->get_user($USER->email);
             $zoomuserid = $zoomuser->id;
         } catch (moodle_exception $error) {
             if ($required) {
@@ -272,11 +267,15 @@ function zoom_update_records(Traversable $zooms) {
     foreach ($zooms as $z) {
         $gotinfo = false;
         try {
-            $response = $service->get_meeting_info($z);
+            $response = $service->get_meeting_webinar_info($z->meeting_id, $z->webinar);
             $gotinfo = true;
         } catch (moodle_exception $error) {
-            $z->status = ZOOM_MEETING_EXPIRED;
-            $DB->update_record('zoom', $z);
+            if (strpos($error, 'is not found or has expired') === false) {
+                throw $error;
+            } else {
+                $z->exists_on_zoom = false;
+                $DB->update_record('zoom', $z);
+            }
         }
         if ($gotinfo) {
             // Check for changes.
@@ -316,4 +315,38 @@ function zoom_update_records(Traversable $zooms) {
     foreach (array_flip($coursestoupdate) as $course) {
         rebuild_course_cache($course, true);
     }
+}
+
+/**
+ * Get the data of each user for the participants report.
+ * @param int The meeting ID that you want to get the participants report for.
+ * @return array The user data as an array of records (array of arrays).
+ */
+function zoom_get_participants_report(int $req_meeting_instance_id = -1) {  // Should probably move this function to locallib.php
+    global $DB;
+    require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+    $service = new mod_zoom_webservice();
+    $sql = 'SELECT zmp.participant_universal_id,
+                    zmp.meeting_webinar_instance_id,
+                    SUM(zmp.duration) as duration
+                FROM {zoom_meetings_participants} zmp
+                WHERE zmp.meeting_webinar_instance_id = :req_meeting_instance_id
+            GROUP BY zmp.participant_universal_id, zmp.meeting_webinar_instance_id
+    ';
+    $params = [
+        'req_meeting_instance_id' => $req_meeting_instance_id
+    ];
+    $participants = $DB->get_records_sql($sql, $params);
+    $userreport = array();
+    foreach ($participants as $participant) {
+        $userinfo = $service->get_user($participant->participant_email);
+        $userreport[] = array(
+            'first_name' => $userinfo->first_name,
+            'last_name' => $userinfo->last_name,
+            'email' => $userinfo->email,
+            'duration' => $participant->duration,
+            'attentiveness_score' => $participant->attentiveness_score
+        );
+    }
+    return $userreport;
 }

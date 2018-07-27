@@ -73,6 +73,16 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom = add_meeting_to_zoom($zoom);
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
+    if(!$zoom->reccuring) {
+        $end_time = $zoom->start_time + $zoom->duration;
+        $new_meeting_queue_object = array(
+            'meeting_webinar_instance_id' => $zoom->uuid,
+            'end_time' => $end_time,
+            'meeting_webinar_universal_id' => $zoom->meeting_id
+        );
+        $DB->insert_record('zoom_meetings_queue', $new_meeting_queue_object, false);
+    }    
+
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
 
@@ -93,23 +103,26 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
-    $old = $DB->get_record('zoom', array('id' => $zoom->instance));
+    // The object received from mod_form.php returns instance instead of id for some reason.
+    $zoom->id = $zoom->instance;
+    $zoom->timemodified = time();
+    $DB->update_record('zoom', $zoom);
+
+    $updatedzoomrecord = $DB->get_record('zoom', array('id' => $zoom->instance));
+    $zoom->meeting_id = $updatedzoomrecord->meeting_id;
+    $zoom->webinar = $updatedzoomrecord->webinar;
 
     // Update meeting on Zoom.
     $service = new mod_zoom_webservice();
+    $service->update_meeting($zoom);
 
-    // If the webinar setting changed, we have to delete and recreate.
-    if ($old->webinar != $zoom->webinar) {
-        $service->delete_meeting($old);
-        $zoom = add_meeting_to_zoom($zoom);
-    } else {
-        $service->update_meeting($zoom);
-        $zoom->timemodified = time();
-    }
-
-    // The object received from mod_form.php returns instance instead of id for some reason.
-    $zoom->id = $zoom->instance;
-    $DB->update_record('zoom', $zoom);
+    $end_time = $zoom->start_time + $zoom->duration;
+    $old_queue_object = $DB->get_record('zoom_meetings_queue', array('meeting_webinar_universal_id' => $zoom->meeting_id));
+    $new_meeting_queue_object = array(
+        'end_time' => $end_time,
+        'id' => $old_queue_object->id
+    );
+    $DB->update_record('zoom_meetings_queue', $new_meeting_queue_object);
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
@@ -130,7 +143,7 @@ function add_meeting_to_zoom(stdClass $zoom) {
     $service = new mod_zoom_webservice();
     $response = $service->create_meeting($zoom);
 
-    $samefields = array('uuid', 'start_url', 'join_url', 'created_at', 'timezone');
+    $samefields = array('start_url', 'join_url', 'created_at', 'timezone', 'uuid');
     foreach ($samefields as $field) {
         $zoom->$field = $response->$field;
     }
@@ -147,7 +160,7 @@ function add_meeting_to_zoom(stdClass $zoom) {
  *
  * @param int $id Id of the module instance
  * @return boolean Success/Failure
- * @throws moodle_exception if failed to delete and zoom did not issue a not found/expired error
+ * @throws moodle_exception if failed to delete and zoom did not issue a not found error
  */
 function zoom_delete_instance($id) {
     global $CFG, $DB;
@@ -160,11 +173,11 @@ function zoom_delete_instance($id) {
     // Include locallib.php for constants.
     require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
-    // If the meeting is expired and missing from zoom, don't bother with the webservice.
-    if ($zoom->status !== ZOOM_MEETING_EXPIRED) {
+    // If the meeting is missing from zoom, don't bother with the webservice.
+    if ($zoom->exists_on_zoom) {
         $service = new mod_zoom_webservice();
         try {
-            $service->delete_meeting($zoom);
+            $service->delete_meeting($zoom->meeting_id, $zoom->webinar);
         } catch (moodle_exception $error) {
             if (strpos($error, 'is not found or has expired') === false) {
                 throw $error;
@@ -174,6 +187,13 @@ function zoom_delete_instance($id) {
 
     $DB->delete_records('zoom', array('id' => $zoom->id));
 
+    // Report queue management.
+    $meetingsinqueue = $DB->get_records('zoom_meetings_queue', array('meeting_webinar_universal_id' => $zoom->meeting_id));
+    foreach ($meetingsinqueue as $meetinginqueue) {
+        $DB->delete_records('zoom_meetings_participants', array('meeting_webinar_instance_id' => $meetinginqueue->meeting_webinar_instance_id));
+    }
+    $DB->delete_records('zoom_meetings_queue', array('meeting_webinar_universal_id' => $zoom->meeting_id));
+
     // Delete any dependent records here.
     zoom_calendar_item_delete($zoom);
     zoom_grade_item_delete($zoom);
@@ -182,8 +202,7 @@ function zoom_delete_instance($id) {
 }
 
 /**
- * Given a course and a time, this module should find recent activity
- * that has occurred in zoom activities and print it out.
+ * Given a course and a time, this module should find recent activity that has occurred in zoom activities and print it out.
  *
  * @param stdClass $course The course record
  * @param bool $viewfullnames Should we display full names

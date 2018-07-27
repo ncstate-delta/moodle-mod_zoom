@@ -47,7 +47,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         global $USER;
         $service = new mod_zoom_webservice();
         try {
-            $zoomuser = $service->get_user_by_email($USER->email);
+            $zoomuser = $service->get_user($USER->email);
         } catch (moodle_exception $error) {
             if (zoom_is_user_not_found_error($error)) {
                 // Assume user is using Zoom for the first time.
@@ -65,7 +65,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $isnew = empty($this->_cm);
         if (!$isnew) {
             try {
-                $service->get_meeting_info($this->current);
+                $service->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
             } catch (moodle_exception $error) {
                 // If the meeting can't be found, offer to recreate the meeting on Zoom.
                 if (zoom_is_meeting_gone_error($error)) {
@@ -111,14 +111,20 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('recurring', 0);
         $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
 
-        // Add webinar, disabled if the user cannot create webinars.
-        $webinarattr = null;
-        if (!$service->_get_user_settings($zoomuser->id)->feature->webinar) {
-            $webinarattr = array('disabled' => true, 'group' => null);
+        if ($isnew) {
+            // Add webinar, disabled if the user cannot create webinars.
+            $webinarattr = null;
+            if (!$service->_get_user_settings($zoomuser->id)->feature->webinar) {
+                $webinarattr = array('disabled' => true, 'group' => null);
+            }
+            $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '', $webinarattr);
+            $mform->setDefault('webinar', 0);
+            $mform->addHelpButton('webinar', 'webinar', 'zoom');
+        } else if ($this->current->webinar) {
+            $mform->addElement('html', get_string('webinar_already_true', 'zoom'));
+        } else {
+            $mform->addElement('html', get_string('webinar_already_false', 'zoom'));
         }
-        $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '', $webinarattr);
-        $mform->setDefault('webinar', 0);
-        $mform->addHelpButton('webinar', 'webinar', 'zoom');
 
         // Add password.
         $mform->addElement('passwordunmask', 'password', get_string('password', 'zoom'), array('maxlength' => '10'));

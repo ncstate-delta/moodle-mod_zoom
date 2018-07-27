@@ -33,16 +33,15 @@ namespace mod_zoom\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+define('MAX_CALLS', 2000);
 
-/**
- * Scheduled task to sychronize meeting data.
- *
- * @package   mod_zoom
- * @copyright 2015 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class update_meetings extends \core\task\scheduled_task {
+class reset_api_calls extends \core\task\scheduled_task {
+    /**
+     * Resets the value of the counter that stores how many available API calls are left.
+     */
+    public function execute() {
+        set_config('calls_left', MAX_CALLS, 'zoom');
+    }
 
     /**
      * Returns name of task.
@@ -50,25 +49,6 @@ class update_meetings extends \core\task\scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('updatemeetings', 'mod_zoom');
-    }
-
-    /**
-     * Updates meetings that are not expired.
-     *
-     * @return boolean
-     */
-    public function execute() {
-        global $DB;
-
-        // Check all meetings, in case they were deleted/changed on Zoom.
-        $zooms = $DB->get_recordset_select('zoom', 'exists_on_zoom = 1');
-
-        if (isset($zooms)) {
-            zoom_update_records($zooms);
-            $zooms->close();
-        }
-
-        return true;
+        return get_string('resetapicalls', 'mod_zoom');
     }
 }
