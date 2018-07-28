@@ -51,7 +51,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
         $service = new \mod_zoom_webservice();
         $rawparticipants = $service->get_meeting_participants($meetingwebinarinstanceid, $webinar);
         foreach($rawparticipants as $rawparticipant) {
-            $participant = format_object_to_record($rawparticipant, $meetingwebinarinstanceid);
+            $participant = $this->format_object_to_record($rawparticipant, $meetingwebinarinstanceid);
             $DB->insert_record('zoom_meetings_participants', $participant);
             $numrecords += 1;
         }
@@ -166,7 +166,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
     private function delete_meeting_from_queue(string $meetingwebinarinstanceid) {
         global $DB;
         $condition = array('meeting_webinar_instance_id' => $meetingwebinarinstanceid);
-        $DB->delete_records('zoom_meeting_queue', $condition);
+        $DB->delete_records('zoom_meetings_queue', $condition);
     }
 
     /**

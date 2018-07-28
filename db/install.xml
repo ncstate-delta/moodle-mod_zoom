@@ -41,7 +41,7 @@
     <TABLE NAME="zoom_meetings_queue" COMMENT="A queue for the Cron to add meeting report info to zoom_meetings_participants table.">
       <FIELDS>
         <FIELD NAME="meeting_webinar_instance_id" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting UUID or webinar UUID per Zoom API."/>
-        <FIELD NAME="meeting_webinar_universal_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting_id or webinar_id per Zoom API."/>
+        <FIELD NAME="meeting_webinar_universal_id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting_id or webinar_id per Zoom API."/>
         <FIELD NAME="end_time" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="When the meeting ended/will end"/>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field. Other than that it's useless."/>
       </FIELDS>
@@ -52,10 +52,10 @@
     </TABLE>
     <TABLE NAME="zoom_meetings_participants" COMMENT="A list of each meeting existing on Moodle and when its participants entered/left.">
       <FIELDS>
-        <FIELD NAME="participant_instance_id" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The user_id per Zoom API"/>
+        <FIELD NAME="participant_instance_id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The user_id per Zoom API"/>
         <FIELD NAME="participant_universal_id" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The participant UUID per Zoom API."/>
         <FIELD NAME="participant_email" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The particpant's email per Zoom API."/>
-        <FIELD NAME="meeting_webinar_instance_id" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting UUID per Zoom API."/>
+        <FIELD NAME="meeting_webinar_instance_id" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting UUID per Zoom API."/>
         <FIELD NAME="join_time" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="When the particpant joined the meeting."/>
         <FIELD NAME="leave_time" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="When the participant left the meeting."/>
         <FIELD NAME="duration" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="The time for which the participant was in the meeting."/>
