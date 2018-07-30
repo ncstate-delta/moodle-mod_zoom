@@ -49,13 +49,16 @@ class get_meeting_reports extends \core\task\scheduled_task {
         require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
         $numrecords = 0;
         $service = new \mod_zoom_webservice();
-        $rawparticipants = $service->get_meeting_participants($meetingwebinarinstanceid, $webinar);
+        try {
+            $rawparticipants = $service->get_meeting_participants($meetingwebinarinstanceid, $webinar);
+        } catch (moodle_exception $error) {
+            $rawparticipants = array();
+        }
         foreach($rawparticipants as $rawparticipant) {
             $participant = $this->format_object_to_record($rawparticipant, $meetingwebinarinstanceid);
             $DB->insert_record('zoom_meetings_participants', $participant);
             $numrecords += 1;
         }
-        return $numrecords;
     }
 
     /**
