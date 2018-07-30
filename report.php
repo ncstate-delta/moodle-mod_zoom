@@ -50,8 +50,26 @@ $now['month'] = $now['mon'];
 $now['day'] = $now['mday'];
 $from = optional_param_array('from', $created, PARAM_INT);
 $to = optional_param_array('to', $now, PARAM_INT);
-$ffrom = sprintf('%u-%u-%u', $from['year'], $from['month'], $from['day']);
-$fto = sprintf('%u-%u-%u', $to['year'], $to['month'], $to['day']);
+$fto = null;
+$ffrom = null;
+if (array_key_exists('date_selector', $from)) {
+    $fromepoch = $from['date_selector'];
+    $fromdt = DateTime::createFromFormat('U', (string)$fromepoch);
+    $ffrom = $fromdt->format('Y-m-d');
+}
+else {
+    $ffrom = sprintf('%u-%u-%u', $from['year'], $from['month'], $from['day']);
+}
+if (array_key_exists('date_selector', $to)) {
+    $toepoch = $to['date_selector'];
+    $todt = DateTime::createFromFormat('U', (string)$toepoch);
+    $fto = $todt->format('Y-m-d');
+}
+else {
+    $fto = sprintf('%u-%u-%u', $to['year'], $to['month'], $to['day']);
+}
+// $ffrom = sprintf('%u-%u-%u', $from['year'], $from['month'], $from['day']);
+// $fto = sprintf('%u-%u-%u', $to['year'], $to['month'], $to['day']);
 
 /* Cached structure: class->sessions[hostid][meetingid][starttime]
  *                        ->reqfrom
