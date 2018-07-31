@@ -149,7 +149,12 @@ function zoom_get_sessions_for_display($zoom, $from, $to) {
 
         // If the time period is longer than a month, Zoom will only return the latest month in range.
         // Return the response "from" field to check.
-        $return->resfrom = sscanf($meetings->from, '%u-%u-%u');
+        if(!empty($meetings)) {
+            $return->resfrom = sscanf($meetings->from, '%u-%u-%u');
+        }
+        else {
+            $return->resfrom = sscanf($from, '%u-%u-%u');
+        }
     }
 
     $return->sessions = $hostsessions;

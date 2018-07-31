@@ -91,8 +91,8 @@ echo $OUTPUT->heading($strtitle, 4);
 if (!empty($todisplay)) {
     // If the time period is longer than a month, Zoom will only return the latest month in range.
     $resfrom = $todisplay->resfrom; // From field in zoom's response.
-
-    if ($resfrom[0] != $from['year'] || $resfrom[1] != $from['month'] || $resfrom[2] != $from['day']) {
+    $parsedfrom = date_parse($ffrom);
+    if ($resfrom[0] != $parsedfrom['year'] || $resfrom[1] != $parsedfrom['month'] || $resfrom[2] != $parsedfrom['day']) {
         echo $OUTPUT->notification(get_string('err_long_timeframe', 'mod_zoom'), 'notifymessage');
     }
 
