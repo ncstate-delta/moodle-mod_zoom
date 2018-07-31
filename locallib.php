@@ -30,6 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot.'/mod/zoom/lib.php');
 require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+require_once($CFG->dirroot.'/lib/weblib.php');
 
 // Constants.
 // Audio options.
@@ -316,4 +317,21 @@ function zoom_update_records(Traversable $zooms) {
     foreach (array_flip($coursestoupdate) as $course) {
         rebuild_course_cache($course, true);
     }
+}
+
+/**
+ * Gets the start url for a meeting or webinar.
+ *
+ * Calculates the start url by retrieving the most recent ZAK token and replacing the token in the existing start_url.
+ *
+ * @param int $meetingwebinarid The meeting_id or webinar_id of the respective meeting or webinar.
+ * @return moodle_url The newly calculated start_url.
+ */
+function zoom_get_start_url($meetingwebinarid) {
+    global $DB;
+    $existingmw = $DB->get_record('zoom', array('meeting_id' => $meetingwebinarid), 'start_url, host_id', MUST_EXIST);
+    $existingurl = $existingmw->start_url;
+    $service = new mod_zoom_webservice();
+    $newtoken = $service->get_user_token($existingmw->host_id);
+    return new moodle_url($existingmw->start_url, array('zak' => $newtoken));
 }

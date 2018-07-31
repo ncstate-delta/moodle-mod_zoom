@@ -44,6 +44,7 @@ $string['connectionfailed'] = 'Connection failed: ';
 $string['connectionstatus'] = 'Connection status';
 $string['duration'] = 'Duration';
 $string['endtime'] = 'End Time';
+$string['enforce_login'] = 'Enforce login';
 $string['err_duration_nonpositive'] = 'The duration must be positive.';
 $string['err_duration_too_long'] = 'The duration cannot exceed 150 hours.';
 $string['err_long_timeframe'] = 'Requested time frame too long, showing results of latest month in range.';

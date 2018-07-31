@@ -127,6 +127,13 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addRule('password', get_string('err_password', 'mod_zoom'), 'regex', $regex, 'client');
         $mform->disabledIf('password', 'webinar', 'checked');
 
+        // Add enforce login option.
+        $mform->addGroup(array(
+            $mform->createElement('radio', 'enforce_login', '', get_string('on', 'zoom'), true),
+            $mform->createElement('radio', 'enforce_login', '', get_string('off', 'zoom'), false)
+        ), null, get_string('enforce_login', 'zoom'));
+        $mform->setDefault('enforce_login', false);
+
         // Add host/participants video (checked by default).
         $mform->addGroup(array(
             $mform->createElement('radio', 'option_host_video', '', get_string('on', 'zoom'), true),

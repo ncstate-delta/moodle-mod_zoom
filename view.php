@@ -86,6 +86,7 @@ $strstartvideopart = get_string('startpartjoins', 'mod_zoom');
 $straudioopt = get_string('option_audio', 'mod_zoom');
 $strstatus = get_string('status', 'mod_zoom');
 $strall = get_string('allmeetings', 'mod_zoom');
+$strenforcelogin = get_string('enforce_login', 'mod_zoom');
 
 // Output starts here.
 echo $OUTPUT->header();
@@ -191,6 +192,8 @@ if (!$zoom->recurring) {
 
     $table->data[] = array($strstatus, $status);
 }
+
+$table->data[] = array($strenforcelogin, ($zoom->enforce_login) ? $stryes : $strno);
 
 $urlall = new moodle_url('/mod/zoom/index.php', array('id' => $course->id));
 $linkall = html_writer::link($urlall, $strall);

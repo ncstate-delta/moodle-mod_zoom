@@ -302,7 +302,8 @@ class mod_zoom_webservice {
             'topic' => $zoom->name,
             'settings' => array(
                 'host_video' => (bool) ($zoom->option_host_video),
-                'audio' => $zoom->option_audio
+                'audio' => $zoom->option_audio,
+                'enforce_login' => (bool) ($zoom->enforce_login)
             )
         );
         if (isset($zoom->intro)) {
@@ -446,5 +447,16 @@ class mod_zoom_webservice {
      */
     public function get_metrics_webinar_detail($uuid) {
         return $this->_make_call('webinars/' . $uuid);
+    }
+
+    /**
+     * Get a user's ZAK token.
+     *
+     * @param int $userid The user's ID.
+     * @return string The user's ZAK token.
+     * @link https://zoom.github.io/api/#retrieve-a-users-token
+     */
+    public function get_user_token($userid) {
+        return $this->_make_call('users/' . $userid . '/token')->token;
     }
 }

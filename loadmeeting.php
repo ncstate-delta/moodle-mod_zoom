@@ -28,6 +28,7 @@
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once($CFG->libdir . '/gradelib.php');
 require_once($CFG->libdir . '/moodlelib.php');
+require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
 // Course_module ID.
 $id = required_param('id', PARAM_INT);
@@ -48,7 +49,7 @@ $PAGE->set_context($context);
 
 require_capability('mod/zoom:view', $context);
 if ($userishost) {
-    $nexturl = new moodle_url($zoom->start_url);
+    $nexturl = zoom_get_start_url($zoom->meeting_id);
 } else {
     // Check whether user had a grade. If no, then assign full credits to him or her.
     $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
@@ -70,5 +71,8 @@ if ($userishost) {
 }
 
 // Record user's clicking join.
-\mod_zoom\event\join_meeting_button_clicked::create(array('context' => $context, 'objectid' => $zoom->id, 'other' => array('cmid' => $id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
+$meetinginfo = array('context' => $context,
+                     'objectid' => $zoom->id,
+                     'other' => array('cmid' => $id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost));
+\mod_zoom\event\join_meeting_button_clicked::create($meetinginfo)->trigger();
 redirect($nexturl);

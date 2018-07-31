@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/zoom/db" VERSION="20160401" COMMENT="Zoom module"
+<XMLDB PATH="mod/zoom/db" VERSION="20180731" COMMENT="Zoom module"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -31,6 +31,7 @@
         <FIELD NAME="option_participants_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Start video when participants join meeting."/>
         <FIELD NAME="option_audio" TYPE="char" LENGTH="9" NOTNULL="false" DEFAULT="both" SEQUENCE="false" COMMENT="Meeting audio options. Can be &quot;both&quot;, &quot;telephony&quot;, &quot;voip&quot;."/>
         <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="0 means meeting not started. 1 means meeting starting. 2 means meeting finished."/>
+        <FIELD NAME="enforce_login" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether to force users to log-in to Zoom, per Zoom API."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
