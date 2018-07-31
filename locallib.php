@@ -108,7 +108,7 @@ function zoom_get_sessions_for_display($zoom, $from, $to) {
     $return->reqto = $to;
 
     if ($zoom->webinar) {
-        $uuidlist = $service->list_webinar_uuids($zoom->host_id);
+        $uuidlist = $service->list_uuids($zoom->host_id, true);
 
         foreach ($uuidlist as $uuid) {
             // Get participants for this uuid/session.
@@ -131,6 +131,7 @@ function zoom_get_sessions_for_display($zoom, $from, $to) {
         $return->resfrom = sscanf($from, '%u-%u-%u');
     } else {
         $meetings = $service->get_user_report($zoom->host_id, $from, $to);
+        $uuidlist = $service->list_uuids($zoom->host_id, false);
 
         foreach ($meetings as $meet) {
             $starttime = strtotime($meet->start_time);
@@ -150,6 +151,7 @@ function zoom_get_sessions_for_display($zoom, $from, $to) {
         // If the time period is longer than a month, Zoom will only return the latest month in range.
         // Return the response "from" field to check.
         if(!empty($meetings)) {
+            var_dump($meetings);
             $return->resfrom = sscanf($meetings->from, '%u-%u-%u');
         }
         else {

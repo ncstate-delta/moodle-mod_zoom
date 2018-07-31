@@ -81,6 +81,7 @@ if (!($todisplay = $cache->get(strval($zoom->host_id))) || $ffrom != $todisplay-
         $fto != $todisplay->reqto || empty($todisplay->resfrom)) {
     // Send a new request if the from and to fields change from what we cached, or if the response is empty.
     $todisplay = zoom_get_sessions_for_display($zoom, $ffrom, $fto);
+    var_dump($zoom);
     $cache->set(strval($zoom->host_id), $todisplay);
 }
 
@@ -92,6 +93,9 @@ if (!empty($todisplay)) {
     // If the time period is longer than a month, Zoom will only return the latest month in range.
     $resfrom = $todisplay->resfrom; // From field in zoom's response.
     $parsedfrom = date_parse($ffrom);
+    var_dump($resfrom);
+    echo "------------------------------";
+    var_dump($parsedfrom);
     if ($resfrom[0] != $parsedfrom['year'] || $resfrom[1] != $parsedfrom['month'] || $resfrom[2] != $parsedfrom['day']) {
         echo $OUTPUT->notification(get_string('err_long_timeframe', 'mod_zoom'), 'notifymessage');
     }

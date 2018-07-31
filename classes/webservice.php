@@ -408,18 +408,20 @@ class mod_zoom_webservice {
     }
 
     /**
-     * List the UUIDs for all the webinars of a user.
+     * List the UUIDs for all the webinars/meetings of a user.
      *
      * @param string $userid The user whose webinars to retrieve.
+     * @param boolean $webinar Determines whether to list UUIDs for meetings or webinars.
      * @return array An array of UUIDs as strings.
      * @link https://zoom.github.io/api/#list-webinars
+     * @link https://zoom.github.io/api/#list-meetings
      */
-    public function list_webinar_uuids($userid) {
-        $url = 'users/' . $userid . '/webinars';
-        $webinars = $this->_make_paginated_call($url, null, 'webinars');
+    public function list_uuids($userid, $webinar) {
+        $url = 'users/' . $userid . ($webinar ? '/webinars' : '/meetings');
+        $instances = $this->_make_paginated_call($url, null, ($webinar ? 'webinars' : 'meetings'));
         $uuids = array();
-        foreach ($webinars as $webinar) {
-            $uuids[] = $webinar->uuid;
+        foreach ($instances as $instance) {
+            $uuids[] = $instance->uuid;
         }
 
         return $uuids;
