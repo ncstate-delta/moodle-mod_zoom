@@ -70,7 +70,11 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
     $zoom->course = (int) $zoom->course;
-    $zoom = add_meeting_to_zoom($zoom);
+
+    $service = new mod_zoom_webservice();
+    $response = $service->create_meeting($zoom);
+    $zoom = populate_zoom_from_response($zoom, $response);
+
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
     zoom_calendar_item_update($zoom);
@@ -101,7 +105,8 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     // If the webinar setting changed, we have to delete and recreate.
     if ($old->webinar != $zoom->webinar) {
         $service->delete_meeting($old);
-        $zoom = add_meeting_to_zoom($zoom);
+        $response = $service->create_meeting($zoom);
+        $zoom = populate_zoom_from_response($zoom, $response);
     } else {
         $service->update_meeting($zoom);
         $zoom->timemodified = time();
@@ -118,26 +123,49 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 }
 
 /**
- * Adds a meeting to zoom and returns a database-addable object.
+ * Populates a zoom meeting or webinar from a response object.
  *
- * Given a zoom meeting object from mod_form.php, this function adds that meeting to the zoom servers. It uses the response to
- * repopulate some of the object properties entries so that it can be added to the database.
+ * Given a zoom meeting object from mod_form.php, this function uses the response to repopulate some of the object properties.
  *
  * @param stdClass $zoom An object from the form in mod_form.php
+ * @param stdClass $response A response from an API call like 'create meeting' or 'update meeting'
  * @return stdClass A $zoom object ready to be added to the database.
  */
-function add_meeting_to_zoom(stdClass $zoom) {
-    $service = new mod_zoom_webservice();
-    $response = $service->create_meeting($zoom);
+function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
+    global $CFG;
+    // Inlcuded for constants.
+    require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
-    $samefields = array('uuid', 'start_url', 'join_url', 'created_at', 'timezone');
+    $newzoom = clone $zoom;
+
+    $samefields = array('start_url', 'join_url', 'created_at', 'timezone');
     foreach ($samefields as $field) {
-        $zoom->$field = $response->$field;
+        if (isset($response->$field)) {
+            $newzoom->$field = $response->$field;
+        }
     }
-    $zoom->meeting_id = $response->id;
-    $zoom->timemodified = time();
+    $newzoom->duration = $response->duration * 60;
+    $newzoom->meeting_id = $response->id;
+    $newzoom->name = $response->topic;
+    if (isset($response->agenda)) {
+        $newzoom->intro = $response->agenda;
+    }
+    if (isset($response->start_time)) {
+        $newzoom->start_time = strtotime($response->start_time);
+    }
+    $newzoom->recurring = $response->type == ZOOM_RECURRING_MEETING || $response->type == ZOOM_RECURRING_WEBINAR;
+    if (isset($response->password)) {
+        $newzoom->password = $response->password;
+    }
+    if (isset($response->settings->join_before_host)) {
+        $newzoom->option_jbh = $response->settings->join_before_host;
+    }
+    if (isset($response->settings->participant_video)) {
+        $newzoom->option_participants_video = $response->settings->participant_video;
+    }
+    $newzoom->timemodified = time();
 
-    return $zoom;
+    return $newzoom;
 }
 
 /**
