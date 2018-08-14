@@ -62,7 +62,18 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
         global $DB;
 
         $data = (object)$data;
-        $oldid = $data->id;
+        $service = new mod_zoom_webservice();
+
+        // Either create a new meeting or set meeting as expired.
+        $updateddata = $service->create_meeting($data);
+        if (!$updateddata) {
+            $updateddata = new stdClass;
+            $updateddata->status = ZOOM_MEETING_EXPIRED;
+        }
+
+        $data->start_url = $updateddata->start_url;
+        $data->join_url = $updateddata->join_url;
+        $data->meeting_id = $updateddata->id;
         $data->course = $this->get_courseid();
 
         if (empty($data->timemodified)) {
@@ -72,15 +83,6 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
         if ($data->grade < 0) {
             // Scale found, get mapping.
             $data->grade = -($this->get_mappingid('scale', abs($data->grade)));
-        }
-
-        $service = new mod_zoom_webservice();
-
-        // Either get updated info, create a new meeting, or set meeting as expired, whichever comes first.
-        if ($service->get_meeting_info($data) || $service->meeting_create($data)) {
-            $data = $service->lastresponse;
-        } else {
-            $data->status = ZOOM_MEETING_EXPIRED;
         }
 
         // Create the zoom instance.

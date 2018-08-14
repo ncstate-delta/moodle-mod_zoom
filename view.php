@@ -63,7 +63,12 @@ $zoomuserid = zoom_get_user_id(false);
 $userishost = ($zoomuserid == $zoom->host_id);
 
 $service = new mod_zoom_webservice();
-$showrecreate = !$service->get_meeting_info($zoom) && zoom_is_meeting_gone_error($service->lasterror);
+try {
+    $service->get_meeting_info($zoom);
+    $showrecreate = false;
+} catch (moodle_exception $error) {
+    $showrecreate = zoom_is_meeting_gone_error($error);
+}
 
 $stryes = get_string('yes');
 $strno = get_string('no');
@@ -112,14 +117,11 @@ list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
 if ($available) {
     if ($userishost) {
-        $buttonhtml = html_writer::tag('button', $strstart,
-                array('type' => 'submit', 'class' => 'btn btn-success'));
-        $aurl = new moodle_url($zoom->start_url);
+        $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
     } else {
-        $buttonhtml = html_writer::tag('button', $strjoin,
-                array('type' => 'submit', 'class' => 'btn btn-primary'));
-        $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
+        $buttonhtml = html_writer::tag('button', $strjoin, array('type' => 'submit', 'class' => 'btn btn-primary'));
     }
+    $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id, 'userishost' => $userishost));
     $buttonhtml .= html_writer::input_hidden_params($aurl);
     $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring()));
 } else {

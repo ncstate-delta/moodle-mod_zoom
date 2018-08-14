@@ -46,17 +46,37 @@ class mod_zoom_mod_form extends moodleform_mod {
     public function definition() {
         global $USER;
         $service = new mod_zoom_webservice();
-        // Check if the logged-in user exists on Zoom.
-        if (!$service->user_getbyemail($USER->email)) {
-            zoom_print_error('user/getbyemail', $service->lasterror);
+        try {
+            $zoomuser = $service->get_user_by_email($USER->email);
+        } catch (moodle_exception $error) {
+            if (zoom_is_user_not_found_error($error)) {
+                // Assume user is using Zoom for the first time.
+                $errstring = 'zoomerr_usernotfound';
+                $param = get_config('mod_zoom', 'zoomurl');
+                // After they set up their account, the user should continue to the page they were on.
+                $nexturl = $PAGE->url;
+                throw new moodle_exception($errstring, 'mod_zoom', $nexturl, $param, "user/getbyemail : $error");
+            } else {
+                throw $error;
+            }
         }
-        $zoomuser = $service->lastresponse;
 
         // If updating, ensure we can get the meeting on Zoom.
-        // If the meeting can't be found, zoom_print_error will offer to recreate the meeting on Zoom.
         $isnew = empty($this->_cm);
-        if (!$isnew && !$service->get_meeting_info($this->current)) {
-            zoom_print_error('meeting/get', $service->lasterror, $this->_cm->id);
+        if (!$isnew) {
+            try {
+                $service->get_meeting_info($this->current);
+            } catch (moodle_exception $error) {
+                // If the meeting can't be found, offer to recreate the meeting on Zoom.
+                if (zoom_is_meeting_gone_error($error)) {
+                    $errstring = 'zoomerr_meetingnotfound';
+                    $param = zoom_meetingnotfound_param($this->_cm->id);
+                    $nexturl = "/mod/zoom/view.php?id=" . $this->_cm->id;
+                    throw new moodle_exception($errstring, 'mod_zoom', $nexturl, $param, "meeting/get : $error");
+                } else {
+                    throw $error;
+                }
+            }
         }
 
         // Start of form definition.
@@ -93,7 +113,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add webinar, disabled if the user cannot create webinars.
         $webinarattr = null;
-        if (!$zoomuser->enable_webinar) {
+        if (!$service->_get_user_settings($zoomuser->id)->feature->webinar) {
             $webinarattr = array('disabled' => true, 'group' => null);
         }
         $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '', $webinarattr);
