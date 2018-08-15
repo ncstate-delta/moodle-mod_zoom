@@ -105,7 +105,8 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     // If the webinar setting changed, we have to delete and recreate.
     if ($old->webinar != $zoom->webinar) {
         $service->delete_meeting($old);
-        $zoom = add_meeting_to_zoom($zoom);
+        $response = $service->create_meeting($zoom);
+        $zoom = populate_zoom_from_response($zoom, $response);
     } else {
         $service->update_meeting($zoom);
         $zoom->timemodified = time();
