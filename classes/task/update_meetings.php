@@ -73,7 +73,7 @@ class update_meetings extends \core\task\scheduled_task {
         foreach ($zoomstoupdate as $zoom) {
             $gotinfo = false;
             try {
-                $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
+                $response = $service->get_meeting_info($zoom);
                 $gotinfo = true;
             } catch (moodle_exception $error) {
                 if (strpos($error, 'is not found or has expired') === false) {
@@ -117,9 +117,6 @@ class update_meetings extends \core\task\scheduled_task {
         foreach ($courseidstoupdate as $courseid) {
             rebuild_course_cache($courseid, true);
         }
-
-        zoom_update_records($zooms);
-        $zooms->close();
 
         return true;
     }
