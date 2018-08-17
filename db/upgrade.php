@@ -165,7 +165,7 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2018071900, 'zoom');
     }
 
-    if ($oldversion < 2018072000) {
+    if ($oldversion < 2018081700) {
         // Start zoom table modifications.
         $table = new xmldb_table('zoom');
 
@@ -194,7 +194,7 @@ function xmldb_zoom_upgrade($oldversion) {
         }
 
         // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2018072000, 'zoom');
+        upgrade_mod_savepoint(true, 2018081700, 'zoom');
     }
 
     return true;
