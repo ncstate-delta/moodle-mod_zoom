@@ -165,5 +165,37 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2018071900, 'zoom');
     }
 
+    if ($oldversion < 2018072000) {
+        // Start zoom table modifications.
+        $table = new xmldb_table('zoom');
+
+        // Define field status to be dropped from zoom.
+        $field = new xmldb_field('status');
+
+        // Conditionally launch drop field status.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Define field exists_on_zoom to be added to zoom.
+        $field = new xmldb_field('exists_on_zoom', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'option_audio');
+
+        // Conditionally launch add field exists_on_zoom.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field uuid to be dropped from zoom.
+        $field = new xmldb_field('uuid');
+
+        // Conditionally launch drop field uuid.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2018072000, 'zoom');
+    }
+
     return true;
 }
