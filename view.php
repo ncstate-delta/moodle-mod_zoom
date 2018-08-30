@@ -133,13 +133,18 @@ $title->header = true;
 $title->colspan = $numcolumns;
 $table->data[] = array($title);
 
-// Only show sessions link to users with edit capability.
 if ($iszoommanager) {
+    // Only show sessions link to users with edit capability.
     $sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
     $sessionslink = html_writer::link($sessionsurl, get_string('sessions', 'mod_zoom'));
     $sessions = new html_table_cell($sessionslink);
     $sessions->colspan = $numcolumns;
     $table->data[] = array($sessions);
+
+    // Display alternate hosts if they exist.
+    if (!empty($zoom->alternative_hosts)) {
+        $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts);
+    }
 }
 
 if ($zoom->recurring) {

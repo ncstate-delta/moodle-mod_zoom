@@ -157,6 +157,9 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->settings->participant_video)) {
         $newzoom->option_participants_video = $response->settings->participant_video;
     }
+    if (isset($response->settings->alternative_hosts)) {
+        $newzoom->alternative_hosts = $response->settings->alternative_hosts;
+    }
     $newzoom->timemodified = time();
 
     return $newzoom;
