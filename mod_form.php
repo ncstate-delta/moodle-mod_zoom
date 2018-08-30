@@ -45,6 +45,7 @@ class mod_zoom_mod_form extends moodleform_mod {
      */
     public function definition() {
         global $USER;
+        $config = get_config('mod_zoom');
         $service = new mod_zoom_webservice();
         try {
             $zoomuser = $service->get_user_by_email($USER->email);
@@ -52,7 +53,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             if (zoom_is_user_not_found_error($error)) {
                 // Assume user is using Zoom for the first time.
                 $errstring = 'zoomerr_usernotfound';
-                $param = get_config('mod_zoom', 'zoomurl');
+                $param = $config->zoomurl;
                 // After they set up their account, the user should continue to the page they were on.
                 $nexturl = $PAGE->url;
                 throw new moodle_exception($errstring, 'mod_zoom', $nexturl, $param, "user/getbyemail : $error");
@@ -108,7 +109,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add recurring.
         $mform->addElement('advcheckbox', 'recurring', get_string('recurringmeeting', 'zoom'));
-        $mform->setDefault('recurring', 0);
+        $mform->setDefault('recurring', $config->defaultrecurring);
         $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
 
         // Add webinar, disabled if the user cannot create webinars.
@@ -132,14 +133,14 @@ class mod_zoom_mod_form extends moodleform_mod {
             $mform->createElement('radio', 'option_host_video', '', get_string('on', 'zoom'), true),
             $mform->createElement('radio', 'option_host_video', '', get_string('off', 'zoom'), false)
         ), null, get_string('option_host_video', 'zoom'));
-        $mform->setDefault('option_host_video', true);
+        $mform->setDefault('option_host_video', $config->defaulthostvideo);
         $mform->disabledIf('option_host_video', 'webinar', 'checked');
 
         $mform->addGroup(array(
             $mform->createElement('radio', 'option_participants_video', '', get_string('on', 'zoom'), true),
             $mform->createElement('radio', 'option_participants_video', '', get_string('off', 'zoom'), false)
         ), null, get_string('option_participants_video', 'zoom'));
-        $mform->setDefault('option_participants_video', true);
+        $mform->setDefault('option_participants_video', $config->defaultparticipantsvideo);
         $mform->disabledIf('option_participants_video', 'webinar', 'checked');
 
         // Add audio options.
@@ -148,7 +149,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             $mform->createElement('radio', 'option_audio', '', get_string('audio_voip', 'zoom'), ZOOM_AUDIO_VOIP),
             $mform->createElement('radio', 'option_audio', '', get_string('audio_both', 'zoom'), ZOOM_AUDIO_BOTH)
         ), null, get_string('option_audio', 'zoom'));
-        $mform->setDefault('option_audio', ZOOM_AUDIO_BOTH);
+        $mform->setDefault('option_audio', $config->defaultaudiooption);
 
         // Add meeting options. Make sure we pass $appendName as false
         // so the options aren't nested in a 'meetingoptions' array.
@@ -156,6 +157,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             // Join before host.
             $mform->createElement('advcheckbox', 'option_jbh', '', get_string('option_jbh', 'zoom'))
         ), 'meetingoptions', get_string('meetingoptions', 'zoom'), null, false);
+        $mform->setDefault('option_jbh', $config->defaultjoinbeforehost);
         $mform->addHelpButton('meetingoptions', 'meetingoptions', 'zoom');
         $mform->disabledIf('meetingoptions', 'webinar', 'checked');
 

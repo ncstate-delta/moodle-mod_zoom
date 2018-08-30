@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+
 if ($ADMIN->fulltree) {
     require_once($CFG->dirroot.'/mod/zoom/locallib.php');
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
@@ -87,5 +89,28 @@ if ($ADMIN->fulltree) {
     $utmost = new admin_setting_configcheckbox('mod_zoom/utmost', get_string('redefinelicenses', 'mod_zoom'),
             get_string('lowlicenses', 'mod_zoom'), 0, 1);
     $settings->add($utmost);
+
+    $settings->add(new admin_setting_heading('defaultsettings', get_string('defaultsettings', 'mod_zoom'),
+            get_string('defaultsettings_help', 'mod_zoom')));
+
+    $defaultrecurring = new admin_setting_configcheckbox('mod_zoom/defaultrecurring', get_string('recurringmeeting', 'zoom'),
+            get_string('recurringmeeting_help', 'zoom'), 0, 1, 0);
+    $settings->add($defaultrecurring);
+
+    $defaulthostvideo = new admin_setting_configcheckbox('mod_zoom/defaulthostvideo', get_string('option_host_video', 'zoom'), '', 1, 1, 0);
+    $settings->add($defaulthostvideo);
+
+    $defaultparticipantsvideo = new admin_setting_configcheckbox('mod_zoom/defaultparticipantsvideo',
+            get_string('option_participants_video', 'zoom'), '', 1, 1, 0);
+    $settings->add($defaultparticipantsvideo);
+
+    $audiochoices = array(ZOOM_AUDIO_TELEPHONY => get_string('audio_telephony', 'zoom'),
+                          ZOOM_AUDIO_VOIP => get_string('audio_voip', 'zoom'),
+                          ZOOM_AUDIO_BOTH => get_string('audio_both', 'zoom'));
+    $defaultaudiooption = new admin_setting_configselect('mod_zoom/defaultaudiooption', get_string('option_audio', 'zoom'), '', ZOOM_AUDIO_BOTH, $audiochoices);
+    $settings->add($defaultaudiooption);
+
+    $defaultjoinbeforehost = new admin_setting_configcheckbox('mod_zoom/defaultjoinbeforehost', get_string('option_jbh', 'zoom'), '', 0, 1, 0);
+    $settings->add($defaultjoinbeforehost);
 
 }
