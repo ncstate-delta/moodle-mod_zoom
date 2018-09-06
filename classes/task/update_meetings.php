@@ -75,13 +75,11 @@ class update_meetings extends \core\task\scheduled_task {
             try {
                 $response = $service->get_meeting_info($zoom);
                 $gotinfo = true;
-            } catch (moodle_exception $error) {
-                if (strpos($error, 'is not found or has expired') === false) {
-                    throw $error;
-                } else {
-                    $zoom->exists_on_zoom = false;
-                    $DB->update_record('zoom', $zoom);
-                }
+            } catch (\moodle_exception $error) {
+                // Outputs error and then goes to next meeting.
+                $zoom->exists_on_zoom = false;
+                $DB->update_record('zoom', $zoom);
+                mtrace('Error updating Zoom meeting with meeting_id ' . $zoom->meeting_id . ': ' . $error);
             }
             if ($gotinfo) {
                 $changed = false;
