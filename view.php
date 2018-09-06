@@ -64,7 +64,7 @@ $userishost = ($zoomuserid == $zoom->host_id);
 
 $service = new mod_zoom_webservice();
 try {
-    $service->get_meeting_info($zoom);
+    $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
     $showrecreate = false;
 } catch (moodle_exception $error) {
     $showrecreate = zoom_is_meeting_gone_error($error);
@@ -121,9 +121,9 @@ if ($available) {
     } else {
         $buttonhtml = html_writer::tag('button', $strjoin, array('type' => 'submit', 'class' => 'btn btn-primary'));
     }
-    $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id, 'userishost' => $userishost));
+    $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
     $buttonhtml .= html_writer::input_hidden_params($aurl);
-    $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring()));
+    $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
 } else {
     $link = html_writer::tag('span', $strunavailable, array('style' => 'font-size:20px'));
 }
@@ -179,8 +179,8 @@ if (!$zoom->webinar) {
 $table->data[] = array($straudioopt, $zoom->option_audio);
 
 if (!$zoom->recurring) {
-    if ($zoom->status == ZOOM_MEETING_EXPIRED) {
-        $status = get_string('meeting_expired', 'mod_zoom');
+    if (!$zoom->exists_on_zoom) {
+        $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
     } else if ($finished) {
         $status = get_string('meeting_finished', 'mod_zoom');
     } else if ($inprogress) {
