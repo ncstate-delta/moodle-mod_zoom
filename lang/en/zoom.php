@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['actions'] = 'Actions';
+$string['addtocalendar'] = 'Add to calendar';
 $string['allmeetings'] = 'All meetings';
 $string['apikey'] = 'Zoom API key';
 $string['apikey_desc'] = '';
@@ -55,6 +56,8 @@ $string['errorwebservice'] = 'Zoom webservice error: {$a}.';
 $string['export'] = 'Export';
 $string['firstjoin'] = 'First able to join';
 $string['firstjoin_desc'] = 'The earliest a user can join a scheduled meeting (minutes before start).';
+$string['googlecalendar'] = 'Google Calendar';
+$string['googleiconalt'] = 'Google icon';
 $string['invalid_status'] = 'Status invalid, check the database.';
 $string['join'] = 'Join';
 $string['joinbeforehost'] = 'Join meeting before host';
@@ -93,6 +96,7 @@ $string['option_audio'] = 'Audio options';
 $string['option_host_video'] = 'Host video';
 $string['option_jbh'] = 'Enable join before host';
 $string['option_participants_video'] = 'Participants video';
+$string['outlook'] = 'Outlook';
 $string['participants'] = 'Participants';
 $string['password'] = 'Password';
 $string['passwordprotected'] = 'Password Protected';
@@ -118,6 +122,7 @@ $string['updatemeetings'] = 'Update meeting settings from Zoom';
 $string['usepersonalmeeting'] = 'Use personal meeting ID {$a}';
 $string['webinar'] = 'Webinar';
 $string['webinar_help'] = 'This option is only available to pre-authorized Zoom accounts.';
+$string['windowsiconalt'] = 'Windows icon';
 $string['zoom:addinstance'] = 'Add a new Zoom meeting';
 $string['zoomerr'] = 'An error occured with Zoom.'; // Generic error.
 $string['zoomerr_apikey_missing'] = 'Zoom API key not found';

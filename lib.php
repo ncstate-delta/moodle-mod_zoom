@@ -547,3 +547,15 @@ function zoom_extend_navigation(navigation_node $navref, stdClass $course, stdCl
  */
 function zoom_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $zoomnode=null) {
 }
+
+/**
+ * Get icon mapping for font-awesome.
+ *
+ * @see https://docs.moodle.org/dev/Moodle_icons
+ */
+function mod_zoom_get_fontawesome_icon_map() {
+    return [
+        'mod_zoom:i/google' => 'fa-google',
+        'mod_zoom:i/windows' => 'fa-windows'
+    ];
+}
