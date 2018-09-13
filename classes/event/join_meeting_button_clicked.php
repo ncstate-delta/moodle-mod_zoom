@@ -73,7 +73,8 @@ class join_meeting_button_clicked extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "User '$this->userid' " . ($this->other['userishost'] ? 'started' : 'joined') . " meeting with meeting_id '" . $this->other['meetingid'] . "' in course '$this->courseid'";
+        return "User '$this->userid' " . ($this->other['userishost'] ? 'started' : 'joined') . " meeting with meeting_id '" .
+                $this->other['meetingid'] . "' in course '$this->courseid'";
     }
 
     /**

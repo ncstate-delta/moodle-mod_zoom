@@ -38,8 +38,8 @@ $functions = array(
         'capabilities'  => 'mod/zoom:view',
         'services'      => array(MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'),
     ),
-	
-	'mod_zoom_grade_item_update' => array(
+
+    'mod_zoom_grade_item_update' => array(
         'classname'     => 'mod_zoom_external',
         'methodname'    => 'grade_item_update',
         'classpath'     => 'mod/zoom/classes/external.php',

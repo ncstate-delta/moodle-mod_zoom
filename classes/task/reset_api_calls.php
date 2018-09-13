@@ -25,7 +25,8 @@
  * Moodle is performing actions across all modules.
  *
  * @package    mod_zoom
- * @copyright  2015 UC Regents
+ * @copyright  2018 UC Regents
+ * @author     Kubilay Agi
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -35,6 +36,13 @@ defined('MOODLE_INTERNAL') || die();
 
 define('MAX_CALLS', 2000);
 
+/**
+ * Scheduled task to reset the number of allotted Zoom Report API calls we have left each day.
+ *
+ * @package   mod_zoom
+ * @copyright 2018 UC Regents
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class reset_api_calls extends \core\task\scheduled_task {
     /**
      * Resets the value of the counter that stores how many available API calls are left.

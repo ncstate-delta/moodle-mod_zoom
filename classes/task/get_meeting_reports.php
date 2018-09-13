@@ -25,7 +25,8 @@
  * Moodle is performing actions across all modules.
  *
  * @package    mod_zoom
- * @copyright  2015 UC Regents
+ * @copyright  2018 UC Regents
+ * @author     Kubilay Agi
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -33,6 +34,13 @@ namespace mod_zoom\task;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Scheduled task to get the meeting participants for each .
+ *
+ * @package   mod_zoom
+ * @copyright 2018 UC Regents
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class get_meeting_reports extends \core\task\scheduled_task {
     /**
      * Formats participants array as a record for the database.

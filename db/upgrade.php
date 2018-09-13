@@ -159,13 +159,16 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2016040100, 'zoom');
     }
 
-    if ($oldversion < 2018071900) {
+    if ($oldversion < 2018091200) {
         // Removed apiurl option from settings.
         set_config('apiurl', null, 'mod_zoom');
-        upgrade_mod_savepoint(true, 2018071900, 'zoom');
-    }
 
-    if ($oldversion < 2018081700) {
+        // Set the starting number of API calls.
+        set_config('calls_left', 2000, 'mod_zoom');
+
+        // Set the time at which to start looking for meeting reports.
+        set_config('last_call_made_at', time() - (60 * 60 * 12), 'mod_zoom');
+
         // Start zoom table modifications.
         $table = new xmldb_table('zoom');
 
@@ -193,317 +196,62 @@ function xmldb_zoom_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
 
-        // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2018081700, 'zoom');
-    }
+        // Define table zoom_meeting_details to be created.
+        $table = new xmldb_table('zoom_meeting_details');
 
-    // Database changes from CCLE-7741.
-    if ($oldversion < 2018082100) {
-        // Define table zoom_meetings_queue to be created.
-        $table = new xmldb_table('zoom_meetings_queue');
-
-        // Adding fields to table zoom_meetings_queue.
-        $table->add_field('meeting_webinar_instance_id', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('meeting_webinar_universal_id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('end_time', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
+        // Adding fields to table zoom_meeting_details.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('uuid', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('meeting_id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('end_time', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
         $table->add_field('duration', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('start_time', XMLDB_TYPE_INTEGER, '12', null, null, null, null);
+        $table->add_field('topic', XMLDB_TYPE_CHAR, '300', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('total_minutes', XMLDB_TYPE_INTEGER, '12', null, null, null, '0');
+        $table->add_field('participants_count', XMLDB_TYPE_INTEGER, '4', null, null, null, '0');
+        $table->add_field('zoomid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
 
-        // Adding keys to table zoom_meetings_queue.
-        $table->add_key('meeting_webinar_instance_id_unique', XMLDB_KEY_UNIQUE, array('meeting_webinar_instance_id'));
+        // Adding keys to table zoom_meeting_details.
+        $table->add_key('uuid_unique', XMLDB_KEY_UNIQUE, array('uuid'));
         $table->add_key('id_primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('zoomid_foreign', XMLDB_KEY_FOREIGN, array('zoomid'), 'zoom', array('id'));
+        $table->add_key('meeting_unique', XMLDB_KEY_UNIQUE, array('meeting_id', 'uuid'));
 
-        // Conditionally launch create table for zoom_meetings_queue.
+        // Conditionally launch create table for zoom_meeting_details.
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
 
-        // Define table zoom_meetings_participants to be created.
-        $table = new xmldb_table('zoom_meetings_participants');
+        // Define table zoom_meeting_participants to be created.
+        $table = new xmldb_table('zoom_meeting_participants');
 
-        // Adding fields to table zoom_meetings_participants.
-        $table->add_field('participant_instance_id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('participant_universal_id', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('participant_email', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
-        $table->add_field('meeting_webinar_instance_id', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('join_time', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('leave_time', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, null);
+        // Adding fields to table zoom_meeting_participants.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('zoomuserid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('uuid', XMLDB_TYPE_CHAR, '30', null, null, null, null);
+        $table->add_field('user_email', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('join_time', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('leave_time', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
         $table->add_field('duration', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
         $table->add_field('attentiveness_score', XMLDB_TYPE_CHAR, '7', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('userid', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('detailsid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'name');
 
-        // Adding keys to table zoom_meetings_participants.
-        $table->add_key('participant_universal_id_unique', XMLDB_KEY_UNIQUE, array('participant_universal_id'));
+        // Adding keys to table zoom_meeting_participants.
         $table->add_key('id_primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('user_by_meeting_key', XMLDB_KEY_UNIQUE, array('detailsid', 'zoomuserid'));
+        $table->add_key('detailsid_foreign', XMLDB_KEY_FOREIGN, array('detailsid'), 'zoom_meeting_details', array('id'));
 
-        // Conditionally launch create table for zoom_meetings_participants.
+        // Adding indexes to table zoom_meeting_participants.
+        $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));
+
+        // Conditionally launch create table for zoom_meeting_participants.
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
 
-        // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2018082100, 'zoom');
-    }
-
-    if ($oldversion < 2018082101) {
-
-        // Define field start_time to be added to zoom_meetings_queue.
-        $table = new xmldb_table('zoom_meetings_queue');
-        $field = new xmldb_field('start_time', XMLDB_TYPE_INTEGER, '12', null, null, null, null, 'id');
-
-        // Conditionally launch add field start_time.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        $field = new xmldb_field('topic', XMLDB_TYPE_CHAR, '300', null, XMLDB_NOTNULL, null, null, 'duration');
-
-        // Conditionally launch add field topic.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2018082101, 'zoom');
-    }
-
-    if ($oldversion < 2018082102) {
-
-        // Define field retrieved to be added to zoom_meetings_queue.
-        $table = new xmldb_table('zoom_meetings_queue');
-        $field = new xmldb_field('retrieved', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'topic');
-
-        // Conditionally launch add field retrieved.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2018082102, 'zoom');
-    }
-
-    if ($oldversion < 2018082103) {
-        // Changes for zoom_meetings_queue.
-        // Define table zoom_meetings_queue to be renamed to zoom_meeting_details.
-        $table = new xmldb_table('zoom_meetings_queue');
-
-        // Rename field meeting_webinar_instance_id on table zoom_meeting_details to uuid.
-        $field = new xmldb_field('meeting_webinar_instance_id', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null, null);
-        // Launch rename field meeting_webinar_instance_id.
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->rename_field($table, $field, 'uuid');
-        } else {
-            $field = new xmldb_field('uuid', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null, null);
-            if (!$dbman->field_exists($table, $field)) {
-                $dbman->add_field($table, $field);
-            }
-        }
-
-        // Rename field meeting_webinar_universal_id on table zoom_meeting_details to meeting_id.
-        $field = new xmldb_field('meeting_webinar_universal_id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null,
-                                 'uuid');
-        // Launch rename field meeting_webinar_universal_id.
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->rename_field($table, $field, 'meeting_id');
-        } else {
-            $field = new xmldb_field('meeting_id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null,
-                                 'uuid');
-            if (!$dbman->field_exists($table, $field)) {
-                $dbman->add_field($table, $field);
-            }
-        }
-
-        // Define field retrieved to be dropped from zoom_meeting_details.
-        $field = new xmldb_field('retrieved');
-        // Conditionally launch drop field retrieved.
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->drop_field($table, $field);
-        }
-
-        // Define field total_minutes to be added to zoom_meeting_details.
-        $field = new xmldb_field('total_minutes', XMLDB_TYPE_INTEGER, '12', null, null, null, '0', 'topic');
-        // Conditionally launch add field total_minutes.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Define field participant_count to be added to zoom_meeting_details.
-        $field = new xmldb_field('participants_count', XMLDB_TYPE_INTEGER, '4', null, null, null, '0', 'total_minutes');
-        // Conditionally launch add field participant_count.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Define field zoomid to be added to zoom_meeting_details.
-        $field = new xmldb_field('zoomid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'participants_count');
-        // Conditionally launch add field zoomid.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Define key zoomid_foreign (foreign) to be added to zoom_meeting_details.
-        $key = new xmldb_key('zoomid_foreign', XMLDB_KEY_FOREIGN, array('zoomid'), 'zoom', array('id'));
-        // Launch add key zoomid_foreign.
-        $dbman->add_key($table, $key);
-
-        // Define key meeting_unique (unique) to be added to zoom_meeting_details.
-        $key = new xmldb_key('meeting_unique', XMLDB_KEY_UNIQUE, array('meeting_id', 'uuid'));
-        // Launch add key meeting_unique.
-        $dbman->add_key($table, $key);
-
-        // Launch rename table for zoom_meetings_queue.
-        if ($dbman->table_exists($table)) {
-            $dbman->rename_table($table, 'zoom_meeting_details');
-        }
-
-        // Changes for zoom_meetings_participants.
-        // Define table zoom_meetings_participants to be renamed to zoom_meeting_participants.
-        $table = new xmldb_table('zoom_meetings_participants');
-
-        // Rename field participant_instance_id on table zoom_meeting_participants to zoomuserid.
-        $field = new xmldb_field('participant_instance_id', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, null);
-        // Launch rename field participant_instance_id.
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->rename_field($table, $field, 'zoomuserid');
-        } else {
-            $field = new xmldb_field('zoomuserid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, null);
-            if (!$dbman->field_exists($table, $field)) {
-                $dbman->add_field($table, $field);
-            }
-        }
-
-        // Rename field participant_universal_id on table zoom_meeting_participants to uuid.
-        $field = new xmldb_field('participant_universal_id', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null,
-                                 'zoomuserid');
-        // Launch rename field participant_universal_id.
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->rename_field($table, $field, 'uuid');
-        } else {
-            $field = new xmldb_field('uuid', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null,
-                                 'zoomuserid');
-            if (!$dbman->field_exists($table, $field)) {
-                $dbman->add_field($table, $field);
-            }
-        }
-
-        // Rename field participant_email on table zoom_meeting_participants to user_email.
-        $field = new xmldb_field('participant_email', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null,
-                                 'uuid');
-        // Launch rename field participant_email.
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->rename_field($table, $field, 'user_email');
-        } else {
-            $field = new xmldb_field('user_email', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null,
-                                 'uuid');
-            if (!$dbman->field_exists($table, $field)) {
-                $dbman->add_field($table, $field);
-            }
-        }
-
-        // Define field userid to be added to zoom_meeting_participants.
-        $field = new xmldb_field('userid', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'id');
-        // Conditionally launch add field userid.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Define field name to be added to zoom_meeting_participants.
-        $field = new xmldb_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, 'userid');
-        // Conditionally launch add field name.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Define field detailsid to be added to zoom_meeting_participants.
-        $field = new xmldb_field('detailsid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'name');
-        // Conditionally launch add field detailsid.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Define key user_by_meeting_key (unique) to be added to zoom_meeting_participants.
-        $key = new xmldb_key('user_by_meeting_key', XMLDB_KEY_UNIQUE, array('detailsid', 'zoomuserid'));
-        // Launch add key user_by_meeting_key.
-        $dbman->add_key($table, $key);
-
-        // Define key detailsid_foreign (foreign) to be added to zoom_meeting_participants.
-        $key = new xmldb_key('detailsid_foreign', XMLDB_KEY_FOREIGN, array('detailsid'), 'zoom_meeting_details', array('id'));
-        // Launch add key detailsid_foreign.
-        $dbman->add_key($table, $key);
-
-        // Define index userid (not unique) to be added to zoom_meeting_participants.
-        $index = new xmldb_index('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));
-        // Conditionally launch add index userid.
-        if (!$dbman->index_exists($table, $index)) {
-            $dbman->add_index($table, $index);
-        }
-
-        // Define field meeting_webinar_instance_id to be dropped from zoom_meeting_participants.
-        $field = new xmldb_field('meeting_webinar_instance_id');
-        // Conditionally launch drop field meeting_webinar_instance_id.
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->drop_field($table, $field);
-        }
-
-        // Changing type of field join_time on table zoom_meeting_participants to int.
-        $field = new xmldb_field('join_time', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null, 'user_email');
-        // Launch change of type for field join_time.
-        $dbman->change_field_type($table, $field);
-
-        // Changing type of field leave_time on table zoom_meeting_participants to int.
-        $field = new xmldb_field('leave_time', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null, 'join_time');
-        // Launch change of type for field leave_time.
-        $dbman->change_field_type($table, $field);
-
-        // Launch rename table for zoom_meetings_participants.
-        if ($dbman->table_exists($table)) {
-            $dbman->rename_table($table, 'zoom_meeting_participants');
-        }
-
-        // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2018082103, 'zoom');
-    }
-
-    if ($oldversion < 2018082300) {
-        // Define key user_by_meeting_key (unique) to be dropped form zoom_meeting_participants.
-        $table = new xmldb_table('zoom_meeting_participants');
-        $key = new xmldb_key('participant_universal_id_unique', XMLDB_KEY_UNIQUE, array('uuid'));
-
-        // Launch drop key user_by_meeting_key.
-        $dbman->drop_key($table, $key);
-
-        // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2018082300, 'zoom');
-    }
-
-    if ($oldversion < 2018082400) {
-        // Set the starting number of API calls.
-        set_config('calls_left', 2000, 'mod_zoom');
-
-        // Set the time at which to start looking for meeting reports.
-        set_config('last_call_made_at', time() - (60 * 60 * 12), 'mod_zoom');
-
-        // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2018082400, 'zoom');
-    }
-
-    if ($oldversion < 2018083105) {
-
-        // Changing nullability of field user_email on table zoom_meeting_participants to not null.
-        $table = new xmldb_table('zoom_meeting_participants');
-        $field = new xmldb_field('user_email', XMLDB_TYPE_TEXT, null, null, null, null, null, 'uuid');
-
-        // Launch change of nullability for field user_email.
-        $dbman->change_field_notnull($table, $field);
-
-        // Changing nullability of field uuid on table zoom_meeting_participants to not null.
-        $field = new xmldb_field('uuid', XMLDB_TYPE_CHAR, '30', null, null, null, null, 'zoomuserid');
-
-        // Launch change of nullability for field uuid.
-        $dbman->change_field_notnull($table, $field);
-
-        // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2018083105, 'zoom');
+        upgrade_mod_savepoint(true, 2018091200, 'zoom');
     }
 
     if ($oldversion < 2018083106) {

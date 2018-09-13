@@ -55,8 +55,8 @@ if ($ADMIN->fulltree) {
             get_string('apikey_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
     $settings->add($apikey);
 
-    $apisecret = new admin_setting_configtext('mod_zoom/apisecret', get_string('apisecret', 'mod_zoom'),
-            get_string('apisecret_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
+    $apisecret = new admin_setting_configpasswordunmask('mod_zoom/apisecret', get_string('apisecret', 'mod_zoom'),
+            get_string('apisecret_desc', 'mod_zoom'), '');
     $settings->add($apisecret);
 
     $zoomurl = new admin_setting_configtext('mod_zoom/zoomurl', get_string('zoomurl', 'mod_zoom'),
@@ -97,7 +97,8 @@ if ($ADMIN->fulltree) {
             get_string('recurringmeeting_help', 'zoom'), 0, 1, 0);
     $settings->add($defaultrecurring);
 
-    $defaulthostvideo = new admin_setting_configcheckbox('mod_zoom/defaulthostvideo', get_string('option_host_video', 'zoom'), '', 1, 1, 0);
+    $defaulthostvideo = new admin_setting_configcheckbox('mod_zoom/defaulthostvideo', get_string('option_host_video', 'zoom'),
+            '', 1, 1, 0);
     $settings->add($defaulthostvideo);
 
     $defaultparticipantsvideo = new admin_setting_configcheckbox('mod_zoom/defaultparticipantsvideo',
@@ -107,10 +108,12 @@ if ($ADMIN->fulltree) {
     $audiochoices = array(ZOOM_AUDIO_TELEPHONY => get_string('audio_telephony', 'zoom'),
                           ZOOM_AUDIO_VOIP => get_string('audio_voip', 'zoom'),
                           ZOOM_AUDIO_BOTH => get_string('audio_both', 'zoom'));
-    $defaultaudiooption = new admin_setting_configselect('mod_zoom/defaultaudiooption', get_string('option_audio', 'zoom'), '', ZOOM_AUDIO_BOTH, $audiochoices);
+    $defaultaudiooption = new admin_setting_configselect('mod_zoom/defaultaudiooption', get_string('option_audio', 'zoom'),
+            '', ZOOM_AUDIO_BOTH, $audiochoices);
     $settings->add($defaultaudiooption);
 
-    $defaultjoinbeforehost = new admin_setting_configcheckbox('mod_zoom/defaultjoinbeforehost', get_string('option_jbh', 'zoom'), '', 0, 1, 0);
+    $defaultjoinbeforehost = new admin_setting_configcheckbox('mod_zoom/defaultjoinbeforehost', get_string('option_jbh', 'zoom'),
+            '', 0, 1, 0);
     $settings->add($defaultjoinbeforehost);
 
 }

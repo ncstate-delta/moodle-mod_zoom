@@ -19,6 +19,7 @@
  *
  * @package    mod_zoom
  * @copyright  2018 UC Regents
+ * @author     Kubilay Agi
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,6 +27,13 @@ namespace mod_zoom\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Ad hoc task that performs the actions for approved data privacy requests.
+ *
+ * @package   mod_zoom
+ * @copyright 2018 UC Regents
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class provider implements
     // This plugin has data.
     \core_privacy\local\metadata\provider,
@@ -36,7 +44,7 @@ class provider implements
     /**
      * Returns meta data about this system.
      *
-     * @param   collection $items The collection to add metadata to.
+     * @param   collection $collection The collection to add metadata to.
      * @return  collection  The array of metadata
      */
     public static function get_metadata(\core_privacy\local\metadata\collection $collection):
@@ -141,7 +149,7 @@ class provider implements
             $instancedata = [
                 'topic' => $participantinstance->topic,
                 'name' => $participantinstance->name,
-                'user_email'=> $participantinstance->user_email,
+                'user_email' => $participantinstance->user_email,
                 'join_time' => \core_privacy\local\request\transform::datetime($participantinstance->join_time),
                 'leave_time' => \core_privacy\local\request\transform::datetime($participantinstance->leave_time),
                 'duration' => $participantinstance->duration,
@@ -198,7 +206,8 @@ class provider implements
             if ($cm = get_coursemodule_from_id('zoom', $context->instanceid)) {
                 $meetingdetails = $DB->get_records('zoom_meeting_details', array('zoomid' => $cm->instance));
                 foreach ($meetingdetails as $meetingdetail) {
-                    $DB->delete_records('zoom_meeting_participants', array('detailsid' => $meetingdetail->id, 'userid' => $user->id));
+                    $DB->delete_records('zoom_meeting_participants',
+                            array('detailsid' => $meetingdetail->id, 'userid' => $user->id));
                 }
             }
         }

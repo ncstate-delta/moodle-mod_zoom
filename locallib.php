@@ -92,6 +92,7 @@ function zoom_get_instance_setup() {
  *
  * @param int $meetingid
  * @param bool $webinar
+ * @param string $hostid the host's uuid
  * @return array information about the meeting
  */
 function zoom_get_sessions_for_display($meetingid, $webinar, $hostid) {
