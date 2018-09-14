@@ -254,7 +254,7 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2018091200, 'zoom');
     }
 
-    if ($oldversion < 2018083106) {
+    if ($oldversion < 2018091400) {
         // Define field alternative_hosts to be added to zoom.
         $table = new xmldb_table('zoom');
         $field = new xmldb_field('alternative_hosts', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'exists_on_zoom');
@@ -265,7 +265,7 @@ function xmldb_zoom_upgrade($oldversion) {
         }
 
         // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2018083106, 'zoom');
+        upgrade_mod_savepoint(true, 2018091400, 'zoom');
     }
 
     return true;
