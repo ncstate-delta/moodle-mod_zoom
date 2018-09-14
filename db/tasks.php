@@ -33,5 +33,23 @@ $tasks = array(
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*'
+    ),
+    array(
+        'classname' => 'mod_zoom\task\get_meeting_reports',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '0,12',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
+    ),
+    array(
+        'classname' => 'mod_zoom\task\reset_api_calls',
+        'blocking' => 0,
+        'minute' => '59',
+        'hour' => '23',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
     )
 );
