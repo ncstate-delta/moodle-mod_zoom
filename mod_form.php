@@ -167,6 +167,13 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addHelpButton('meetingoptions', 'meetingoptions', 'zoom');
         $mform->disabledIf('meetingoptions', 'webinar', 'checked');
 
+        // Add alternative hosts.
+        $mform->addElement('text', 'alternative_hosts', get_string('alternative_hosts', 'zoom'), array('size' => '64'));
+        $mform->setType('alternative_hosts', PARAM_TEXT);
+        // Set the maximum field length to 255 because that's the limit on Zoom's end.
+        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+        $mform->addHelpButton('alternative_hosts', 'alternative_hosts', 'zoom');
+
         // Add meeting id.
         $mform->addElement('hidden', 'meeting_id', -1);
         $mform->setType('meeting_id', PARAM_ALPHANUMEXT);
@@ -195,6 +202,7 @@ class mod_zoom_mod_form extends moodleform_mod {
      * @return array
      */
     public function validation($data, $files) {
+        global $CFG;
         $errors = array();
 
         // Only check for scheduled meetings.
@@ -209,6 +217,17 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $errors['duration'] = get_string('err_duration_nonpositive', 'zoom');
             } else if ($data['duration'] > 150 * 60 * 60) {
                 $errors['duration'] = get_string('err_duration_too_long', 'zoom');
+            }
+        }
+
+        // Check if the listed alternative hosts are valid users on Zoom.
+        require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+        $service = new mod_zoom_webservice();
+        $alternativehosts = explode(',', $data['alternative_hosts']);
+        foreach ($alternativehosts as $alternativehost) {
+            if (!($service->get_user($alternativehost))) {
+                $errors['alternative_hosts'] = 'User ' . $alternativehost . ' was not found on Zoom.';
+                break;
             }
         }
 

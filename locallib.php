@@ -182,13 +182,13 @@ function zoom_is_meeting_gone_error($error) {
 }
 
 /**
- * Check if the error indicates that a user is not found.
+ * Check if the error indicates that a user is not found or does not belong to the current account.
  *
  * @param string $error
  * @return bool
  */
 function zoom_is_user_not_found_error($error) {
-    return strpos($error, 'not exist') !== false;
+    return strpos($error, 'not exist') !== false || strpos($error, 'not belong to this account') !== false;
 }
 
 /**
