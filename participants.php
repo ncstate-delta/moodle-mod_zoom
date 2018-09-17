@@ -91,37 +91,39 @@ $table->head = array(get_string('idnumber'),
 foreach ($participants as $p) {
     $row = array();
 
-    $name = $p->name;
+    // Gets moodleuser so we can try to match information to Moodle database.
+    $moodleuser = $DB->get_record('user', array('id' => $p->userid), 'idnumber, email');
 
     // ID number.
     if (array_key_exists($p->userid, $moodleidtouids)) {
         $row[] = $moodleidtouids[$p->userid];
-    } else if ($moodleuser = $DB->get_record('user', array('id' => $p->userid), 'idnumber')) {
+    } else if ($moodleuser) {
         $row[] = $moodleuser->idnumber;
     } else {
         $row[] = '';
     }
 
     // Name.
-    $row[] = $name;
+    $name = $p->name;
+    if (!empty($moodleuser->email)) {
+        $row[] = html_writer::link("mailto:$moodleuser->email", $name);
+    } else if (!empty($p->user_email)){
+        $row[] = html_writer::link("mailto:$p->user_email", $name);
+    } else {
+        $row[] = $name;
+    }
 
     // Join/leave times.
-    $row[] = userdate($p->join_time);
-    $row[] = userdate($p->leave_time);
+    $row[] = userdate($p->join_time, get_string('strftimedatetimeshort', 'langconfig'));
+    $row[] = userdate($p->leave_time, get_string('strftimedatetimeshort', 'langconfig'));
 
     // Duration.
     $durationremainder = $p->duration % 60;
     if ($durationremainder != 0) {
         $p->duration += 60 - $durationremainder;
     }
-    $durationminutes = $p->duration / 60;
+    $row[] = $p->duration / 60;
 
-    if ($durationminutes == 1) {
-        $row[] = "$durationminutes min";
-    } else {
-        $row[] = "$durationminutes mins";
-    }
-    
     // Attentiveness Score.
     $row[] = $p->attentiveness_score;
 
