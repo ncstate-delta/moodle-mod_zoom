@@ -28,9 +28,4 @@ $definitions = array(
     'zoomid' => array(
         'mode' => cache_store::MODE_SESSION
     ),
-
-    'sessions' => array(
-        'mode' => cache_store::MODE_APPLICATION,
-        'ttl' => 300
-    )
 );
