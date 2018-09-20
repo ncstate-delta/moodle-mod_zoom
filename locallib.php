@@ -111,10 +111,9 @@ function zoom_get_sessions_for_display($meetingid, $webinar, $hostid) {
         $sessions[$uuid]['participants'] = $participantlist;
         $sessions[$uuid]['count'] = count($participantlist);
         $sessions[$uuid]['topic'] = $instance->topic;
-        $duration = $instance->duration * 60;
-        $sessions[$uuid]['duration'] = format_time($duration);
+        $sessions[$uuid]['duration'] = $instance->duration;
         $sessions[$uuid]['starttime'] = userdate($instance->start_time, $format);
-        $sessions[$uuid]['endtime'] = userdate($instance->start_time + $duration, $format);
+        $sessions[$uuid]['endtime'] = userdate($instance->start_time + $instance->duration * 60, $format);
     }
     return $sessions;
 }
