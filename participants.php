@@ -133,6 +133,8 @@ foreach ($participants as $p) {
 if ($export != 'xls') {
     echo html_writer::table($table);
 
+    echo html_writer::tag('p', get_string('attentiveness_score_help', 'zoom'));
+
     $exporturl = new moodle_url('/mod/zoom/participants.php', array(
             'id' => $cm->id,
             'uuid' => $uuid,
