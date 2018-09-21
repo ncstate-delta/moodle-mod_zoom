@@ -49,7 +49,7 @@ class provider implements
      */
     public static function get_metadata(\core_privacy\local\metadata\collection $collection):
         \core_privacy\local\metadata\collection {
-            // Add all user data fields to the collection.
+        // Add all user data fields to the collection.
 
         $collection->add_database_table('mdl_zoom_meeting_participants', [
             'name' => 'privacy:metadata:mdl_zoom_meeting_participants:name',

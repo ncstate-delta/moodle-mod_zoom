@@ -33,7 +33,8 @@ $functions = array(
         'classname'     => 'mod_zoom_external',
         'methodname'    => 'get_state',
         'classpath'     => 'mod/zoom/classes/external.php',
-        'description'   => 'Determine if a zoom meeting is available, meeting status, and the start time, duration, and other meeting options.',
+        'description'   => 'Determine if a zoom meeting is available, meeting '
+        . 'status, and the start time, duration, and other meeting options.',
         'type'          => 'read',
         'capabilities'  => 'mod/zoom:view',
         'services'      => array(MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'),

@@ -107,7 +107,7 @@ foreach ($participants as $p) {
     $name = $p->name;
     if (!empty($moodleuser->email)) {
         $row[] = html_writer::link("mailto:$moodleuser->email", $name);
-    } else if (!empty($p->user_email)){
+    } else if (!empty($p->user_email)) {
         $row[] = html_writer::link("mailto:$p->user_email", $name);
     } else {
         $row[] = $name;

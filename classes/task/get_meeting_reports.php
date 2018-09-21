@@ -69,7 +69,9 @@ class get_meeting_reports extends \core\task\scheduled_task {
             $name = $names[$moodleuserid];
         } else if (!empty($participant->name) && ($moodleuserid = array_search($participant->name, $names))) {
             $name = $names[$moodleuserid];
-        } else if (!empty($participant->user_email) && ($moodleuser = $DB->get_record('user', array('email' => $participant->user_email, 'deleted' => 0, 'suspended' => 0), '*', IGNORE_MULTIPLE))) {
+        } else if (!empty($participant->user_email) &&
+                ($moodleuser = $DB->get_record('user', array('email' => $participant->user_email,
+                'deleted' => 0, 'suspended' => 0), '*', IGNORE_MULTIPLE))) {
             // This is the case where someone attends the meeting, but is not enrolled in the class.
             $moodleuserid = $moodleuser->id;
             $name = strtoupper(fullname($moodleuser));

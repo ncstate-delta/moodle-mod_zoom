@@ -52,13 +52,6 @@ $PAGE->set_url('/mod/zoom/view.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($zoom->name));
 $PAGE->set_heading(format_string($course->fullname));
 
-/*
- * Other things you may want to set - remove if not needed.
- * $PAGE->set_cacheable(false);
- * $PAGE->set_focuscontrol('some-html-id');
- * $PAGE->add_body_class('zoom-'.$somevar);
- */
-
 $zoomuserid = zoom_get_user_id(false);
 $userishost = ($zoomuserid == $zoom->host_id);
 
@@ -147,18 +140,21 @@ if ($iszoommanager) {
     }
 }
 
-// Generate add-to-calendar buttons if meeting was found.
-if (!$showrecreate) {
-    $googlelink = 'https://ucla.zoom.us/meeting/' . $zoom->meeting_id . '/calendar/google/add';
-    $outlooklink = 'https://ucla.zoom.us/meeting/' . $zoom->meeting_id . '/ics';
-    $googleicon = $OUTPUT->pix_icon('i/google', get_string('googleiconalt', 'mod_zoom'), 'mod_zoom');
-    $windowsicon = $OUTPUT->pix_icon('i/windows', get_string('windowsiconalt', 'mod_zoom'), 'mod_zoom');
-    $googlebutton = html_writer::div($googleicon . ' ' . get_string('googlecalendar', 'mod_zoom'), 'btn btn-primary');
-    $outlookbutton = html_writer::div($windowsicon . ' ' . get_string('outlook', 'mod_zoom'), 'btn btn-primary');
-    $googlehtml = html_writer::link($googlelink, $googlebutton, array('target' => '_blank'));
-    $outlookhtml = html_writer::link($outlooklink, $outlookbutton, array('target' => '_blank'));
-    $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $googlehtml . $outlookhtml);
-}
+//@codingStandardsIgnoreStart
+// TODO: Commenting out because it requires user to be host. Need to generate ical file ourselves.
+//// Generate add-to-calendar buttons if meeting was found.
+//if (!$showrecreate) {
+//    $googlelink = 'https://ucla.zoom.us/meeting/' . $zoom->meeting_id . '/calendar/google/add';
+//    $outlooklink = 'https://ucla.zoom.us/meeting/' . $zoom->meeting_id . '/ics';
+//    $googleicon = $OUTPUT->pix_icon('i/google', get_string('googleiconalt', 'mod_zoom'), 'mod_zoom');
+//    $windowsicon = $OUTPUT->pix_icon('i/windows', get_string('windowsiconalt', 'mod_zoom'), 'mod_zoom');
+//    $googlebutton = html_writer::div($googleicon . ' ' . get_string('googlecalendar', 'mod_zoom'), 'btn btn-primary');
+//    $outlookbutton = html_writer::div($windowsicon . ' ' . get_string('outlook', 'mod_zoom'), 'btn btn-primary');
+//    $googlehtml = html_writer::link($googlelink, $googlebutton, array('target' => '_blank'));
+//    $outlookhtml = html_writer::link($outlooklink, $outlookbutton, array('target' => '_blank'));
+//    $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $googlehtml . $outlookhtml);
+//}
+//@codingStandardsIgnoreEnd
 
 if ($zoom->recurring) {
     $recurringmessage = new html_table_cell(get_string('recurringmeetinglong', 'mod_zoom'));
