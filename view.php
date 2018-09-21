@@ -190,7 +190,7 @@ if (!$zoom->webinar) {
     $table->data[] = array($strstartvideopart, $strparticipantsvideo);
 }
 
-$table->data[] = array($straudioopt, $zoom->option_audio);
+$table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom'));
 
 if (!$zoom->recurring) {
     if (!$zoom->exists_on_zoom) {

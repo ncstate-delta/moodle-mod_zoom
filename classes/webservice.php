@@ -279,17 +279,26 @@ class mod_zoom_webservice {
      * @link https://zoom.github.io/api/#users
      */
     public function get_user($identifier) {
+        $logintypes = get_config('mod_zoom', 'logintypes');
+        $allowedtypes = explode(',', $logintypes);
+        $founduser = false;
+        
         $url = 'users/' . $identifier;
-        try {
-            $user = $this->_make_call($url);
-        } catch (moodle_exception $error) {
-            if (zoom_is_user_not_found_error($error->getMessage())) {
-                return false;
-            } else {
-                throw $error;
+
+        foreach ($allowedtypes as $logintype) {
+            try {
+                $data = ['login_type' => $logintype];
+                $founduser = $this->_make_call($url, $data);
+            } catch (moodle_exception $error) {
+                if (zoom_is_user_not_found_error($error->getMessage())) {
+                    continue;
+                } else {
+                    throw $error;
+                }
             }
         }
-        return $user;
+
+        return $founduser;
     }
 
     /**

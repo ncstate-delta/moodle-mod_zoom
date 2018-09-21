@@ -10,13 +10,29 @@ You will need to have Zoom administrator access. Please note that the API key an
 ## Settings
 Must set the following settings to enable the plugin:
 
-* Zoom API url (mod_zoom | apiurl), Default: https://api.zoom.us/v1/
 * Zoom API key (mod_zoom | apikey)
 * Zoom API secret (mod_zoom | apisecret)
 * Zoom home page URL (mod_zoom | zoomurl), Link to your organization's custom Zoom landing page.
 * Login types (mod_zoom | logintypes), Depending on your Zoom instance, how should the plug-in find users from Moodle in Zoom?
 
 ## Changelog
+
+v2.0
+* Updated to support Zoom API V2
+* Added SVG icon for resolution independence (Thanks rrusso)
+* Additional logging
+* License recycling (Thanks tigusigalpa)
+* Participant reports improved (local storage and added attentiveness score)
+* GDPR compliance
+* Support for alternative hosts
+
+v1.7
+* Lang string BOM fix (Thanks roperto/tonyjbutler)
+* Support for proxy servers (Thanks jonof)
+* Improved handling of meetings not found on Zoom
+* Exporting of session participants to xls
+* Improved participants report
+* Fixing coding issues
 
 v1.6
 * Addressed coding issues brought up by a MoodleRooms review done for CSUN.

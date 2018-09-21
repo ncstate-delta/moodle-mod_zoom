@@ -44,22 +44,16 @@ class mod_zoom_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
-        global $USER;
+        global $PAGE, $USER;
         $config = get_config('mod_zoom');
         $service = new mod_zoom_webservice();
-        try {
-            $zoomuser = $service->get_user($USER->email);
-        } catch (moodle_exception $error) {
-            if (zoom_is_user_not_found_error($error)) {
-                // Assume user is using Zoom for the first time.
-                $errstring = 'zoomerr_usernotfound';
-                $param = $config->zoomurl;
-                // After they set up their account, the user should continue to the page they were on.
-                $nexturl = $PAGE->url;
-                throw new moodle_exception($errstring, 'mod_zoom', $nexturl, $param, "user/getbyemail : $error");
-            } else {
-                throw $error;
-            }
+        $zoomuser = $service->get_user($USER->email);
+        if ($zoomuser === false) {
+            // Assume user is using Zoom for the first time.
+            $errstring = 'zoomerr_usernotfound';
+            // After they set up their account, the user should continue to the page they were on.
+            $nexturl = $PAGE->url;
+            throw new moodle_exception($errstring, 'mod_zoom', $nexturl, $config->zoomurl);
         }
 
         // If updating, ensure we can get the meeting on Zoom.
