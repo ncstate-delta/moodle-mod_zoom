@@ -26,7 +26,16 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 require_once($CFG->dirroot.'/lib/filelib.php');
-require_once($CFG->dirroot.'/mod/zoom/jwt/JWT.php');
+
+// Some plugins already might include this library, like mod_bigbluebuttonbn.
+// Hacky, but need to create whitelist of plugins that might have JWT library.
+if (!class_exists('Firebase\JWT\JWT')) {
+    if (file_exists($CFG->dirroot.'/mod/bigbluebuttonbn/vendor/firebase/php-jwt/src/JWT.php')) {
+        require_once($CFG->dirroot.'/mod/bigbluebuttonbn/vendor/firebase/php-jwt/src/JWT.php');
+    } else {
+        require_once($CFG->dirroot.'/mod/zoom/jwt/JWT.php');
+    }
+}
 
 define('API_URL', 'https://api.zoom.us/v2/');
 
