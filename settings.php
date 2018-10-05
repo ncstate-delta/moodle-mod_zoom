@@ -73,16 +73,6 @@ if ($ADMIN->fulltree) {
             15, $jointimeselect);
     $settings->add($firstabletojoin);
 
-    $logintypes = array(ZOOM_SNS_SSO => get_string('login_sso', 'mod_zoom'),
-                        ZOOM_SNS_ZOOM => get_string('login_zoom', 'mod_zoom'),
-                        ZOOM_SNS_API => get_string('login_api', 'mod_zoom'),
-                        ZOOM_SNS_FACEBOOK => get_string('login_facebook', 'mod_zoom'),
-                        ZOOM_SNS_GOOGLE => get_string('login_google', 'mod_zoom'));
-
-    $settings->add(new admin_setting_configmultiselect('mod_zoom/logintypes',
-            get_string('logintypes', 'mod_zoom'), get_string('logintypesexplain', 'mod_zoom'),
-            array(ZOOM_SNS_SSO), $logintypes));
-
     $licensescount = new admin_setting_configtext('mod_zoom/licensesnumber', get_string('licensesnumber', 'mod_zoom'),
             null, 0, PARAM_INT);
     $settings->add($licensescount);

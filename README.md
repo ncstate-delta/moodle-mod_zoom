@@ -13,7 +13,6 @@ Must set the following settings to enable the plugin:
 * Zoom API key (mod_zoom | apikey)
 * Zoom API secret (mod_zoom | apisecret)
 * Zoom home page URL (mod_zoom | zoomurl), Link to your organization's custom Zoom landing page.
-* Login types (mod_zoom | logintypes), Depending on your Zoom instance, how should the plug-in find users from Moodle in Zoom?
 
 ## Changelog
 
