@@ -302,7 +302,7 @@ class mod_zoom_webservice {
             $founduser = $this->_make_call($url);
         } catch (moodle_exception $error) {
             if (zoom_is_user_not_found_error($error->getMessage())) {
-                continue;
+                return false;
             } else {
                 throw $error;
             }
