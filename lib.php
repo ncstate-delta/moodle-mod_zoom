@@ -558,7 +558,6 @@ function zoom_extend_settings_navigation(settings_navigation $settingsnav, navig
  */
 function mod_zoom_get_fontawesome_icon_map() {
     return [
-        'mod_zoom:i/google' => 'fa-google',
-        'mod_zoom:i/windows' => 'fa-windows'
+        'mod_zoom:i/calendar' => 'fa-calendar'
     ];
 }

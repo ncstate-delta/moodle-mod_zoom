@@ -140,21 +140,14 @@ if ($iszoommanager) {
     }
 }
 
-//@codingStandardsIgnoreStart
-// TODO: Commenting out because it requires user to be host. Need to generate ical file ourselves.
-//// Generate add-to-calendar buttons if meeting was found.
-//if (!$showrecreate) {
-//    $googlelink = 'https://ucla.zoom.us/meeting/' . $zoom->meeting_id . '/calendar/google/add';
-//    $outlooklink = 'https://ucla.zoom.us/meeting/' . $zoom->meeting_id . '/ics';
-//    $googleicon = $OUTPUT->pix_icon('i/google', get_string('googleiconalt', 'mod_zoom'), 'mod_zoom');
-//    $windowsicon = $OUTPUT->pix_icon('i/windows', get_string('windowsiconalt', 'mod_zoom'), 'mod_zoom');
-//    $googlebutton = html_writer::div($googleicon . ' ' . get_string('googlecalendar', 'mod_zoom'), 'btn btn-primary');
-//    $outlookbutton = html_writer::div($windowsicon . ' ' . get_string('outlook', 'mod_zoom'), 'btn btn-primary');
-//    $googlehtml = html_writer::link($googlelink, $googlebutton, array('target' => '_blank'));
-//    $outlookhtml = html_writer::link($outlooklink, $outlookbutton, array('target' => '_blank'));
-//    $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $googlehtml . $outlookhtml);
-//}
-//@codingStandardsIgnoreEnd
+// Generate add-to-calendar button if meeting was found.
+if (!$showrecreate) {
+    $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
+    $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'), 'mod_zoom');
+    $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
+    $buttonhtml = html_writer::link((string) $icallink, $calendarbutton, array('target' => '_blank'));
+    $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
+}
 
 if ($zoom->recurring) {
     $recurringmessage = new html_table_cell(get_string('recurringmeetinglong', 'mod_zoom'));
