@@ -53,7 +53,12 @@ $PAGE->set_title(format_string($zoom->name));
 $PAGE->set_heading(format_string($course->fullname));
 
 $zoomuserid = zoom_get_user_id(false);
-$userishost = ($zoomuserid == $zoom->host_id);
+$alternativehosts = array();
+if (!is_null($zoom->alternative_hosts)) {
+    $alternativehosts = explode(",", $zoom->alternative_hosts);
+}
+
+$userishost = ($zoomuserid === $zoom->host_id || in_array($USER->email, $alternativehosts));
 
 $service = new mod_zoom_webservice();
 try {
@@ -163,13 +168,13 @@ if (!$zoom->webinar) {
     $strhaspass = ($haspassword) ? $stryes : $strno;
     $table->data[] = array($strpassprotect, $strhaspass);
 
-    if ($zoomuserid === $zoom->host_id && $haspassword) {
+    if ($userishost && $haspassword) {
         $table->data[] = array($strpassword, $zoom->password);
     }
 }
 
 if ($userishost) {
-    $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url));
+    $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, array('target' => '_blank')));
 }
 
 if (!$zoom->webinar) {
