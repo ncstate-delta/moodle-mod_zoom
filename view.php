@@ -145,8 +145,8 @@ if ($iszoommanager) {
     }
 }
 
-// Generate add-to-calendar button if meeting was found.
-if (!$showrecreate) {
+// Generate add-to-calendar button if meeting was found and isn't recurring.
+if (!($showrecreate || $zoom->recurring)) {
     $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
     $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'), 'mod_zoom');
     $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
