@@ -138,7 +138,9 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
             $newzoom->$field = $response->$field;
         }
     }
-    $newzoom->duration = $response->duration * 60;
+    if (isset($response->duration)) {
+        $newzoom->duration = $response->duration * 60;
+    }
     $newzoom->meeting_id = $response->id;
     $newzoom->name = $response->topic;
     if (isset($response->agenda)) {
