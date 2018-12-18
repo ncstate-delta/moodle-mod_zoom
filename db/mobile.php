@@ -18,13 +18,42 @@
  * Zoom module capability definition
  *
  * @package    mod_zoom
- * @author     Nick Stefanski <nstefanski@escoffier.edu>
- * @copyright  2017 Auguste Escoffier School of Culinary Arts {@link https://www.escoffier.edu}
+ * @copyright  2018 Nick Stefanski <nmstefanski@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
-
 $addons = array(
-    "mod_zoom" => array()
+  "mod_zoom" => array(
+		"handlers" => array(
+			'zoommeetingdetails' => array(
+				'displaydata' => array(
+				'title' => 'pluginname',
+					'icon' => $CFG->wwwroot . '/mod/zoom/pix/icon.gif',
+					'class' => '',
+				),
+				
+				'delegate' => 'CoreCourseModuleDelegate',
+				'method' => 'mobile_course_view', // main function in \mod_zoom\output\mobile
+				'offlinefunctions' => array(
+					'mobile_course_view' => array(),
+				),
+			)
+		),
+		'lang' => array(
+			array('pluginname', 'zoom'),
+			array('join_meeting', 'zoom'),
+			array('unavailable', 'zoom'),
+			array('meeting_time', 'zoom'),
+			array('duration', 'zoom'),
+			array('passwordprotected', 'zoom'),
+			array('password', 'zoom'),
+			array('join_link', 'zoom'),
+			array('joinbeforehost', 'zoom'),
+			array('starthostjoins', 'zoom'),
+			array('startpartjoins', 'zoom'),
+			array('option_audio', 'zoom'),
+			array('status', 'zoom'),
+			array('recurringmeetinglong', 'zoom')
+		)
+	)
 );
