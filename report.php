@@ -21,7 +21,8 @@
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+// Login check require_login() is called in zoom_get_instance_setup();.
+// @codingStandardsIgnoreLine
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
@@ -43,94 +44,43 @@ $PAGE->set_title("$course->shortname: $strname");
 $PAGE->set_heading($course->fullname);
 $PAGE->set_pagelayout('incourse');
 
-$created = date_parse($zoom->created_at);
-$now = getdate();
-$now['month'] = $now['mon'];
-$now['day'] = $now['mday'];
-$from = optional_param_array('from', $created, PARAM_INT);
-$to = optional_param_array('to', $now, PARAM_INT);
-$ffrom = sprintf('%u-%u-%u', $from['year'], $from['month'], $from['day']);
-$fto = sprintf('%u-%u-%u', $to['year'], $to['month'], $to['day']);
-
-/* Cached structure: class->sessions[hostid][meetingid][starttime]
- *                        ->reqfrom
- *                        ->reqto
- *                        ->resfrom
- */
-$cache = cache::make('mod_zoom', 'sessions');
-if (!($todisplay = $cache->get(strval($zoom->host_id))) || $ffrom != $todisplay->reqfrom ||
-        $fto != $todisplay->reqto || empty($todisplay->resfrom)) {
-    // Send a new request if the from and to fields change from what we cached, or if the response is empty.
-    $todisplay = zoom_get_sessions_for_display($zoom, $ffrom, $fto);
-    $cache->set(strval($zoom->host_id), $todisplay);
-}
-
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strname);
 echo $OUTPUT->heading($strtitle, 4);
 
-if (!empty($todisplay)) {
-    // If the time period is longer than a month, Zoom will only return the latest month in range.
-    $resfrom = $todisplay->resfrom; // From field in zoom's response.
+$sessions = zoom_get_sessions_for_display($zoom->meeting_id, $zoom->webinar, $zoom->host_id);
+if (!empty($sessions)) {
+    $table = new html_table();
+    $table->head = array(get_string('title', 'mod_zoom'),
+                         get_string('starttime', 'mod_zoom'),
+                         get_string('endtime', 'mod_zoom'),
+                         get_string('duration', 'mod_zoom'),
+                         get_string('participants', 'mod_zoom'));
+    $table->align = array('left', 'left', 'left', 'left', 'left');
+    $format = get_string('strftimedatetimeshort', 'langconfig');
 
-    if ($resfrom[0] != $from['year'] || $resfrom[1] != $from['month'] || $resfrom[2] != $from['day']) {
-        echo $OUTPUT->notification(get_string('err_long_timeframe', 'mod_zoom'), 'notifymessage');
-    }
+    foreach ($sessions as $uuid => $meet) {
+        $row = array();
+        $row[] = $meet['topic'];
+        $row[] = $meet['starttime'];
+        $row[] = $meet['endtime'];
+        $row[] = $meet['duration'];
 
-    if (isset($todisplay->sessions[$zoom->meeting_id])) {
-        $meetsessions = $todisplay->sessions[$zoom->meeting_id];
-
-        $table = new html_table();
-        $table->head = array(get_string('title', 'mod_zoom'),
-                             get_string('starttime', 'mod_zoom'),
-                             get_string('endtime', 'mod_zoom'),
-                             get_string('duration', 'mod_zoom'),
-                             get_string('participants', 'mod_zoom'));
-        $table->align = array('left', 'left', 'left', 'left', 'left');
-
-        foreach ($meetsessions as $starttime => $meet) {
-            $row = array();
-
-            $row[] = $meet->topic;
-
-            $format = get_string('strftimedatetimeshort', 'langconfig');
-
-            $start = strtotime($meet->start_time);
-
-            $row[] = userdate($start, $format);
-            if (!empty($meet->end_time)) {
-                $end = strtotime($meet->end_time);
-                $row[] = userdate($end, $format);
-                $row[] = format_time($end - $start);
-            } else {
-                $row[] = '';
-                $row[] = '';
-            }
-
-            $numparticipants = count($meet->participants);
-
-            if ($numparticipants > 0) {
-                $url = new moodle_url('/mod/zoom/participants.php',
-                        array('id' => $cm->id, 'session' => $starttime));
-                $row[] = html_writer::link($url, $numparticipants);
-            } else {
-                $row[] = 0;
-            }
-
-            $table->data[] = $row;
+        if ($meet['count'] > 0) {
+            $url = new moodle_url('/mod/zoom/participants.php', array('id' => $cm->id, 'uuid' => $uuid));
+            $row[] = html_writer::link($url, $meet['count']);
+        } else {
+            $row[] = 0;
         }
+
+        $table->data[] = $row;
     }
 }
-
-
-$dateform = new mod_zoom_report_form('report.php?id='.$cm->id);
-$dateform->set_data(array('from' => $from, 'to' => $to));
-echo $dateform->render();
 
 if (!empty($table->data)) {
     echo html_writer::table($table);
 } else {
-    echo $OUTPUT->notification(get_string('nosessions', 'mod_zoom'), 'notifymessage');
+    echo $OUTPUT->notification(get_string('nomeetinginstances', 'mod_zoom'), 'notifymessage');
 }
 
 echo $OUTPUT->footer();

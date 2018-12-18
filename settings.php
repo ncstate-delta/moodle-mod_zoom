@@ -24,55 +24,39 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+
 if ($ADMIN->fulltree) {
     require_once($CFG->dirroot.'/mod/zoom/locallib.php');
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
     $settings = new admin_settingpage('modsettingzoom', get_string('pluginname', 'mod_zoom'));
 
-    // Test connection if it is setup and user is on the settings page.
-    if (!CLI_SCRIPT && $PAGE->url == $CFG->wwwroot . '/' . $CFG->admin .
-            '/settings.php?section=modsettingzoom') {
+    // Test whether connection works and display result to user.
+    if (!CLI_SCRIPT && $PAGE->url == $CFG->wwwroot . '/' . $CFG->admin . '/settings.php?section=modsettingzoom') {
         $status = 'connectionok';
         $notifyclass = 'notifysuccess';
-        $service = new mod_zoom_webservice();
-        if (!$service->user_getbyemail($USER->email)) {
-            $error = $service->lasterror;
-            if (strpos($error, 'Api key and secret are required') !== false) {
-                $status = 'zoomerr_apisettings_missing';
-                $notifyclass = 'notifymessage';
-            } else if (strpos($error, 'Invalid api key or secret') !== false) {
-                $status = 'zoomerr_apisettings_invalid';
-                $notifyclass = 'notifyproblem';
-            } else if (strpos($error, '404 Not Found') !== false) {
-                $status = 'zoomerr_apiurl_404';
-                $notifyclass = 'notifyproblem';
-            } else if (strpos($error, "Couldn't resolve host") !== false) {
-                $status = 'zoomerr_apiurl_unresolved';
-                $notifyclass = 'notifyproblem';
-            } else if (strpos($error, "The requested URL returned error:") !== false) {
-                $status = 'zoomerr_apiurl_error';
-                $notifyclass = 'notifyproblem';
-                debugging('Zoom error: ' . $error, DEBUG_NORMAL);
-            }
+        $errormessage = '';
+        try {
+            $service = new mod_zoom_webservice();
+            $service->get_user($USER->email);
+        } catch (moodle_exception $error) {
+            $notifyclass = 'notifyproblem';
+            $status = 'connectionfailed';
+            $errormessage = $error->a;
         }
         $statusmessage = $OUTPUT->notification(get_string('connectionstatus', 'zoom') .
-                ': ' . get_string($status, 'zoom'), $notifyclass);
-        $connectionstatus = new admin_setting_heading('mod_zoom/connectionstatus',
-                $statusmessage, '');
+                ': ' . get_string($status, 'zoom') . $errormessage, $notifyclass);
+        $connectionstatus = new admin_setting_heading('mod_zoom/connectionstatus', $statusmessage, '');
         $settings->add($connectionstatus);
     }
-
-    $apiurl = new admin_setting_configtext('mod_zoom/apiurl', get_string('apiurl', 'mod_zoom'),
-            get_string('apiurl_desc', 'mod_zoom'), 'https://api.zoom.us/v1/', PARAM_URL);
-    $settings->add($apiurl);
 
     $apikey = new admin_setting_configtext('mod_zoom/apikey', get_string('apikey', 'mod_zoom'),
             get_string('apikey_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
     $settings->add($apikey);
 
-    $apisecret = new admin_setting_configtext('mod_zoom/apisecret', get_string('apisecret', 'mod_zoom'),
-            get_string('apisecret_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
+    $apisecret = new admin_setting_configpasswordunmask('mod_zoom/apisecret', get_string('apisecret', 'mod_zoom'),
+            get_string('apisecret_desc', 'mod_zoom'), '');
     $settings->add($apisecret);
 
     $zoomurl = new admin_setting_configtext('mod_zoom/zoomurl', get_string('zoomurl', 'mod_zoom'),
@@ -89,14 +73,37 @@ if ($ADMIN->fulltree) {
             15, $jointimeselect);
     $settings->add($firstabletojoin);
 
-    $logintypes = array(ZOOM_SNS_SSO => get_string('login_sso', 'mod_zoom'),
-                        ZOOM_SNS_ZOOM => get_string('login_zoom', 'mod_zoom'),
-                        ZOOM_SNS_API => get_string('login_api', 'mod_zoom'),
-                        ZOOM_SNS_FACEBOOK => get_string('login_facebook', 'mod_zoom'),
-                        ZOOM_SNS_GOOGLE => get_string('login_google', 'mod_zoom'));
+    $licensescount = new admin_setting_configtext('mod_zoom/licensesnumber', get_string('licensesnumber', 'mod_zoom'),
+            null, 0, PARAM_INT);
+    $settings->add($licensescount);
+    $utmost = new admin_setting_configcheckbox('mod_zoom/utmost', get_string('redefinelicenses', 'mod_zoom'),
+            get_string('lowlicenses', 'mod_zoom'), 0, 1);
+    $settings->add($utmost);
 
-    $settings->add(new admin_setting_configmultiselect('mod_zoom/logintypes',
-            get_string('logintypes', 'mod_zoom'), get_string('logintypesexplain', 'mod_zoom'),
-            array(ZOOM_SNS_SSO), $logintypes));
+    $settings->add(new admin_setting_heading('defaultsettings', get_string('defaultsettings', 'mod_zoom'),
+            get_string('defaultsettings_help', 'mod_zoom')));
+
+    $defaultrecurring = new admin_setting_configcheckbox('mod_zoom/defaultrecurring', get_string('recurringmeeting', 'zoom'),
+            get_string('recurringmeeting_help', 'zoom'), 0, 1, 0);
+    $settings->add($defaultrecurring);
+
+    $defaulthostvideo = new admin_setting_configcheckbox('mod_zoom/defaulthostvideo', get_string('option_host_video', 'zoom'),
+            '', 1, 1, 0);
+    $settings->add($defaulthostvideo);
+
+    $defaultparticipantsvideo = new admin_setting_configcheckbox('mod_zoom/defaultparticipantsvideo',
+            get_string('option_participants_video', 'zoom'), '', 1, 1, 0);
+    $settings->add($defaultparticipantsvideo);
+
+    $audiochoices = array(ZOOM_AUDIO_TELEPHONY => get_string('audio_telephony', 'zoom'),
+                          ZOOM_AUDIO_VOIP => get_string('audio_voip', 'zoom'),
+                          ZOOM_AUDIO_BOTH => get_string('audio_both', 'zoom'));
+    $defaultaudiooption = new admin_setting_configselect('mod_zoom/defaultaudiooption', get_string('option_audio', 'zoom'),
+            '', ZOOM_AUDIO_BOTH, $audiochoices);
+    $settings->add($defaultaudiooption);
+
+    $defaultjoinbeforehost = new admin_setting_configcheckbox('mod_zoom/defaultjoinbeforehost', get_string('option_jbh', 'zoom'),
+            '', 0, 1, 0);
+    $settings->add($defaultjoinbeforehost);
 
 }

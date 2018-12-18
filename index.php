@@ -158,7 +158,7 @@ foreach ($zooms as $z) {
                 $aurl = new moodle_url($z->start_url);
             }
             $buttonhtml .= html_writer::input_hidden_params($aurl);
-            $row[4] = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring()));
+            $row[4] = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
         } else {
             $row[4] = '--';
         }

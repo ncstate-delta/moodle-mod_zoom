@@ -24,7 +24,8 @@
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+// Login check require_login() is called in zoom_get_instance_setup();.
+// @codingStandardsIgnoreLine
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
@@ -51,18 +52,21 @@ $PAGE->set_url('/mod/zoom/view.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($zoom->name));
 $PAGE->set_heading(format_string($course->fullname));
 
-/*
- * Other things you may want to set - remove if not needed.
- * $PAGE->set_cacheable(false);
- * $PAGE->set_focuscontrol('some-html-id');
- * $PAGE->add_body_class('zoom-'.$somevar);
- */
-
 $zoomuserid = zoom_get_user_id(false);
-$userishost = ($zoomuserid == $zoom->host_id);
+$alternativehosts = array();
+if (!is_null($zoom->alternative_hosts)) {
+    $alternativehosts = explode(",", $zoom->alternative_hosts);
+}
+
+$userishost = ($zoomuserid === $zoom->host_id || in_array($USER->email, $alternativehosts));
 
 $service = new mod_zoom_webservice();
-$showrecreate = !$service->get_meeting_info($zoom) && zoom_is_meeting_gone_error($service->lasterror);
+try {
+    $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
+    $showrecreate = false;
+} catch (moodle_exception $error) {
+    $showrecreate = zoom_is_meeting_gone_error($error);
+}
 
 $stryes = get_string('yes');
 $strno = get_string('no');
@@ -111,16 +115,13 @@ list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
 if ($available) {
     if ($userishost) {
-        $buttonhtml = html_writer::tag('button', $strstart,
-                array('type' => 'submit', 'class' => 'btn btn-success'));
-        $aurl = new moodle_url($zoom->start_url);
+        $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
     } else {
-        $buttonhtml = html_writer::tag('button', $strjoin,
-                array('type' => 'submit', 'class' => 'btn btn-primary'));
-        $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
+        $buttonhtml = html_writer::tag('button', $strjoin, array('type' => 'submit', 'class' => 'btn btn-primary'));
     }
+    $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
     $buttonhtml .= html_writer::input_hidden_params($aurl);
-    $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring()));
+    $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
 } else {
     $link = html_writer::tag('span', $strunavailable, array('style' => 'font-size:20px'));
 }
@@ -130,13 +131,27 @@ $title->header = true;
 $title->colspan = $numcolumns;
 $table->data[] = array($title);
 
-// Only show sessions link to users with edit capability.
 if ($iszoommanager) {
+    // Only show sessions link to users with edit capability.
     $sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
     $sessionslink = html_writer::link($sessionsurl, get_string('sessions', 'mod_zoom'));
     $sessions = new html_table_cell($sessionslink);
     $sessions->colspan = $numcolumns;
     $table->data[] = array($sessions);
+
+    // Display alternate hosts if they exist.
+    if (!empty($zoom->alternative_hosts)) {
+        $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts);
+    }
+}
+
+// Generate add-to-calendar button if meeting was found and isn't recurring.
+if (!($showrecreate || $zoom->recurring)) {
+    $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
+    $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'), 'mod_zoom');
+    $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
+    $buttonhtml = html_writer::link((string) $icallink, $calendarbutton, array('target' => '_blank'));
+    $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
 }
 
 if ($zoom->recurring) {
@@ -153,13 +168,13 @@ if (!$zoom->webinar) {
     $strhaspass = ($haspassword) ? $stryes : $strno;
     $table->data[] = array($strpassprotect, $strhaspass);
 
-    if ($zoomuserid === $zoom->host_id && $haspassword) {
+    if ($userishost && $haspassword) {
         $table->data[] = array($strpassword, $zoom->password);
     }
 }
 
 if ($userishost) {
-    $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url));
+    $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, array('target' => '_blank')));
 }
 
 if (!$zoom->webinar) {
@@ -173,11 +188,11 @@ if (!$zoom->webinar) {
     $table->data[] = array($strstartvideopart, $strparticipantsvideo);
 }
 
-$table->data[] = array($straudioopt, $zoom->option_audio);
+$table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom'));
 
 if (!$zoom->recurring) {
-    if ($zoom->status == ZOOM_MEETING_EXPIRED) {
-        $status = get_string('meeting_expired', 'mod_zoom');
+    if (!$zoom->exists_on_zoom) {
+        $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
     } else if ($finished) {
         $status = get_string('meeting_finished', 'mod_zoom');
     } else if ($inprogress) {

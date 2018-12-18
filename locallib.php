@@ -36,26 +36,19 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 define('ZOOM_AUDIO_TELEPHONY', 'telephony');
 define('ZOOM_AUDIO_VOIP', 'voip');
 define('ZOOM_AUDIO_BOTH', 'both');
-// Meeting statuses.
-define('ZOOM_MEETING_NOT_STARTED', 0);
-define('ZOOM_MEETING_STARTED', 1);
-define('ZOOM_MEETING_FINISHED', 2);
-define('ZOOM_MEETING_EXPIRED', -1);
 // Meeting types.
 define('ZOOM_INSTANT_MEETING', 1);
 define('ZOOM_SCHEDULED_MEETING', 2);
 define('ZOOM_RECURRING_MEETING', 3);
-define('ZOOM_WEBINAR', 5);
+define('ZOOM_SCHEDULED_WEBINAR', 5);
 define('ZOOM_RECURRING_WEBINAR', 6);
-// Authentication methods.
-define('ZOOM_SNS_FACEBOOK', 0);
-define('ZOOM_SNS_GOOGLE', 1);
-define('ZOOM_SNS_API', 99);
-define('ZOOM_SNS_ZOOM', 100);
-define('ZOOM_SNS_SSO', 101);
 // Number of meetings per page from zoom's get user report.
 define('ZOOM_DEFAULT_RECORDS_PER_CALL', 30);
 define('ZOOM_MAX_RECORDS_PER_CALL', 300);
+// User types. Numerical values from Zoom API.
+define('ZOOM_USER_TYPE_BASIC', 1);
+define('ZOOM_USER_TYPE_PRO', 2);
+define('ZOOM_USER_TYPE_CORP', 3);
 
 /**
  * Get course/cm/zoom objects from url parameters, and check for login/permissions.
@@ -77,7 +70,7 @@ function zoom_get_instance_setup() {
         $course     = $DB->get_record('course', array('id' => $zoom->course), '*', MUST_EXIST);
         $cm         = get_coursemodule_from_instance('zoom', $zoom->id, $course->id, false, MUST_EXIST);
     } else {
-        print_error('You must specify a course_module ID or an instance ID');
+        print_error(get_string('zoomerr_id_missing', 'zoom'));
     }
 
     require_login($course, true, $cm);
@@ -89,81 +82,34 @@ function zoom_get_instance_setup() {
 }
 
 /**
- * Get the user report for display and caching.
+ * Retrieves information for a meeting.
  *
- * @param stdClass $zoom
- * @param string $from same format as webservice->get_user_report
- * @param string $to
- * @return class->sessions[meetingid][starttime]
- *              ->reqfrom string same as param
- *              ->reqto string same as param
- *              ->resfrom array string "from" field of zoom response
+ * @param int $meetingid
+ * @param bool $webinar
+ * @param string $hostid the host's uuid
+ * @return array information about the meeting
  */
-function zoom_get_sessions_for_display($zoom, $from, $to) {
+function zoom_get_sessions_for_display($meetingid, $webinar, $hostid) {
+    require_once(__DIR__.'/../../lib/moodlelib.php');
+    global $DB;
     $service = new mod_zoom_webservice();
-    $return = new stdClass();
+    $sessions = array();
+    $format = get_string('strftimedatetimeshort', 'langconfig');
 
-    // If the from or to fields change, report.php will issue a new request.
-    $return->reqfrom = $from;
-    $return->reqto = $to;
+    $instances = $DB->get_records('zoom_meeting_details', array('meeting_id' => $meetingid));
 
-    $hostsessions = array();
-
-    if ($zoom->webinar) {
-        if (!$service->webinar_uuid_list($zoom)) {
-            zoom_print_error('webinar/uuid/list', $service->lasterror);
-        }
-        $uuidlist = $service->lastresponse;
-
-        foreach ($uuidlist->webinars as $session) {
-            // Get participants for this uuid/session. May have multiple pages.
-            $participants = array();
-            $pagenumber = 1;
-            do {
-                if (!$service->metrics_webinar_detail($session->uuid, ZOOM_MAX_RECORDS_PER_CALL, $pagenumber)) {
-                    zoom_print_error('metrics/webinardetail', $service->lasterror);
-                }
-                $result = $service->lastresponse;
-                $participants = array_merge($participants, $result->participants);
-            } while ($pagenumber++ < $result->page_count);
-
-            // Rename user_name to name to match report API.
-            foreach ($participants as $participant) {
-                // For some reason, the Dashboard API replaces ',' with '#' in names.
-                $participant->name = str_replace('#', ',', $participant->user_name);
-            }
-
-            // Create a 'meeting' like the one from the report API.
-            $meeting = $result;
-            $meeting->topic = $zoom->name;
-            $meeting->participants = $participants;
-            $hostsessions[$meeting->id][strtotime($meeting->start_time)] = $meeting;
-        }
-
-        // The webinar/uuid/list call doesn't actually use the from/to dates.
-        $return->resfrom = sscanf($from, '%u-%u-%u');
-    } else {
-        // Zoom may return multiple pages of results.
-        $pagenumber = 1;
-        do {
-            if (!$service->get_user_report($zoom->host_id, $from, $to, ZOOM_MAX_RECORDS_PER_CALL, $pagenumber)) {
-                zoom_print_error('report/getuserreport', $service->lasterror);
-            }
-            $result = $service->lastresponse;
-
-            foreach ($result->meetings as $meet) {
-                $starttime = strtotime($meet->start_time);
-                $hostsessions[$meet->id][$starttime] = $meet;
-            }
-        } while ($pagenumber++ < $result->page_count);
-
-        // If the time period is longer than a month, Zoom will only return the latest month in range.
-        // Return the response "from" field to check.
-        $return->resfrom = sscanf($result->from, '%u-%u-%u');
+    foreach ($instances as $instance) {
+        // The meeting uuid, not the participant's uuid.
+        $uuid = $instance->uuid;
+        $participantlist = zoom_get_participants_report($instance->id);
+        $sessions[$uuid]['participants'] = $participantlist;
+        $sessions[$uuid]['count'] = count($participantlist);
+        $sessions[$uuid]['topic'] = $instance->topic;
+        $sessions[$uuid]['duration'] = $instance->duration;
+        $sessions[$uuid]['starttime'] = userdate($instance->start_time, $format);
+        $sessions[$uuid]['endtime'] = userdate($instance->start_time + $instance->duration * 60, $format);
     }
-
-    $return->sessions = $hostsessions;
-    return $return;
+    return $sessions;
 }
 
 /**
@@ -200,10 +146,17 @@ function zoom_get_user_id($required = true) {
     if (!($zoomuserid = $cache->get($USER->id))) {
         $zoomuserid = false;
         $service = new mod_zoom_webservice();
-        if ($service->user_getbyemail($USER->email)) {
-            $zoomuserid = $service->lastresponse->id;
-        } else if ($required) {
-            zoom_print_error('user/getbyemail', $service->lasterror);
+        try {
+            $zoomuser = $service->get_user($USER->email);
+            if ($zoomuser !== false) {
+                $zoomuserid = $zoomuser->id;
+            }
+        } catch (moodle_exception $error) {
+            if ($required) {
+                throw $error;
+            } else {
+                $zoomuserid = $zoomuser->id;
+            }
         }
         $cache->set($USER->id, $zoomuserid);
     }
@@ -223,13 +176,13 @@ function zoom_is_meeting_gone_error($error) {
 }
 
 /**
- * Check if the error indicates that a user is not found.
+ * Check if the error indicates that a user is not found or does not belong to the current account.
  *
  * @param string $error
  * @return bool
  */
 function zoom_is_user_not_found_error($error) {
-    return strpos($error, 'User not exist') !== false;
+    return strpos($error, 'not exist') !== false || strpos($error, 'not belong to this account') !== false;
 }
 
 /**
@@ -252,65 +205,28 @@ function zoom_meetingnotfound_param($cmid) {
 }
 
 /**
- * Update local copy of zoom meetings by getting the latest Zoom data through the API.
- *
- * @param Traversable $zooms Traversable collection of zoom objects, perhaps from a recordset
- * (although this function does not close the recordset).
+ * Get the data of each user for the participants report.
+ * @param string $detailsid The meeting ID that you want to get the participants report for.
+ * @return array The user data as an array of records (array of arrays).
  */
-function zoom_update_records(Traversable $zooms) {
-    global $CFG, $DB;
-    require_once($CFG->dirroot.'/course/lib.php');
-    require_once($CFG->dirroot.'/lib/modinfolib.php');
-
+function zoom_get_participants_report($detailsid) {
+    global $DB;
     $service = new mod_zoom_webservice();
-    $coursestoupdate = array();
-    $calendar_fields = array('intro',
-                             'introformat',
-                             'start_time',
-                             'duration',
-                             'recurring');
-    foreach ($zooms as $z) {
-        if ($service->get_meeting_info($z)) {
-            $response = &$service->lastresponse;
-
-            // Check for changes.
-            $changed = false;
-            foreach ($z as $field => $value) {
-                // The start_url has a parameter that always changes, so it doesn't really count as a change.
-                if ($field != 'start_url' && $response->$field != $value) {
-                    $changed = true;
-                    break;
-                }
-            }
-            if ($changed) {
-                // Save in database.
-                $response->timemodified = time();
-                $DB->update_record('zoom', $response);
-                // If the topic/title was changed, mark this course for cache clearing.
-                if ($z->name != $response->name) {
-                    $coursestoupdate[$z->course] = 1;
-                }
-
-                // Check if calendar needs updating.
-                $calendar_changed = false;
-                foreach ($calendar_fields as $field) {
-                    if ($z->$field != $response->$field) {
-                        $calendar_changed = true;
-                    }
-                }
-                if ($calendar_changed) {
-                    // Update calendar.
-                    zoom_calendar_item_update($response);
-                }
-            }
-        } else {
-            $z->status = ZOOM_MEETING_EXPIRED;
-            $DB->update_record('zoom', $z);
-        }
-    }
-
-    // Clear caches for meetings whose topic/title changed (and rebuild as needed).
-    foreach (array_flip($coursestoupdate) as $course) {
-        rebuild_course_cache($course, true);
-    }
+    $sql = 'SELECT zmp.id,
+                   zmp.name,
+                   zmp.userid,
+                   zmp.user_email,
+                   zmp.join_time,
+                   zmp.leave_time,
+                   zmp.duration,
+                   zmp.attentiveness_score,
+                   zmp.uuid
+              FROM {zoom_meeting_participants} zmp
+             WHERE zmp.detailsid = :detailsid
+    ';
+    $params = [
+        'detailsid' => $detailsid
+    ];
+    $participants = $DB->get_records_sql($sql, $params);
+    return $participants;
 }
