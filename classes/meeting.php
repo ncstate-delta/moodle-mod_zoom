@@ -27,73 +27,115 @@ defined('MOODLE_INTERNAL') || die();
 define('API_URL', 'https://api.zoom.us/v2/');
 
 /**
- * Zoom meeting class.
+ * A class to represent general zoom instances (either meetings or webinars).
  *
  * @package    mod_zoom
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_zoom_webservice {
+abstract class zoom_instance {
+    // Recurrence constants.
+    const NO_RECURRENCE = 0; // Defined by CCLE, not Zoom.
+    const DAILY = 1;
+    const WEEKLY = 2;
+    const MONTHLY = 3;
 
     /**
-     * The meeting host's ID on Zoom servers
+     * The instance host's ID on Zoom servers.
      * @var string
      */
     protected $hostid;
 
     /**
-     * The meeting's name
-     * 'topic' on Zoom API
+     * The instance's name.
+     * 'topic' on Zoom API.
      * @var string
      */
     protected $name;
 
     /**
-     * The meeting's description
-     * 'agenda' on Zoom API
-     * 'intro' in database
-     * @var string
-     */
-    protected $description;
-
-    /**
-     * The course ID that the meeting is in
-     * @var string
-     */
-    protected $course;
-
-    /**
-     * The meeting's ID on Zoom servers
-     * TODO 'uuid' or 'id' on Zoom API
+     * The instance type (with respect to timing).
+     * Uses class constants.
      * @var int
      */
-    protected $meetingid;
+    protected $type;
 
     /**
-     * The time at which the meeting starts
-     * Stored in epoch time format
+     * The time at which the instance starts.
+     * Stored in epoch time format.
      * @var int
      */
     protected $starttime;
 
     /**
-     * The URL to start the meeting
+     * The meeting instance in seconds.
+     * @var int
+     */
+    protected $duration;
+
+    /**
+     * The password required to join the meeting.
+     * @var string
+     */
+    protected $password;
+
+    /**
+     * The meeting's description.
+     * 'agenda' on Zoom API.
+     * 'intro' in database.
+     * @var string
+     */
+    protected $description;
+
+    /**
+     * The ID of the course to which the meeting belongs.
+     * @var string
+     */
+    protected $course;
+
+    /**
+     * The instance's ID on Zoom servers.
+     * TODO 'uuid' or 'id' on Zoom API.
+     * @var int
+     */
+    protected $id;
+
+    /**
+     * The URL to start the meeting.
      * @var string
      */
     protected $startURL;
 
     /**
-     * The URL to join the meeting
+     * The URL to join the meeting.
      * @var string
      */
     protected $joinURL;
 
     /**
-     * The meeting type (scheduled, recurring with time, recurring without time)
-     * Uses class meeting_types to simulate enumeration for types
+     * Whether to start video when the host joins the meeting.
+     * @var bool
+     */
+    protected $host_video;
+
+    /**
+     * How participants can join the audio portion of the meeting.
+     * Possible values: both, telephony, voip.
+     * @var string
+     */
+    protected $audio;
+
+    /**
+     * Other users that can start the meeting.
+     * @var string
+     */
+    protected $alternative_hosts;
+
+    /**
+     * Whether the meeting occurs daily, monthly, weekly, or not at all.
      * @var int
      */
-    protected $meetingtype;
+    protected $recurrence_type;
 
     /**
      * Populate this meeting's fields using data returned by a Zoom API call.
@@ -104,13 +146,92 @@ class mod_zoom_webservice {
     /**
      * Converts this meeting's data fields to a format that the Zoom API accepts.
      */
-    public function export_to_API() {
+    protected function export_to_API() {
+        global $CFG;
+
+        $data = array(
+            'topic' => $this->name,
+            'type' => $this->type,
+            'settings' => array(
+                'host_video' => (bool) ($this->host_video),
+                'audio' => $this->audio
+            )
+        );
+        if (isset($this->description)) {
+            $data['agenda'] = strip_tags($this->description);
+        }
+        if (isset($CFG->timezone) && !empty($CFG->timezone)) {
+            $data['timezone'] = $CFG->timezone;
+        } else {
+            $data['timezone'] = date_default_timezone_get();
+        }
+        if (isset($this->password)) {
+            $data['password'] = $this->password;
+        }
+        if (isset($this->alternative_hosts)) {
+            $data['settings']['alternative_hosts'] = $this->alternative_hosts;
+        }
+
+        if ($data['type'] == ZOOM_SCHEDULED_MEETING || $data['type'] == ZOOM_SCHEDULED_WEBINAR) {
+            // Convert timestamp to ISO-8601. The API seems to insist that it end with 'Z' to indicate UTC.
+            $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $this->start_time);
+            $data['duration'] = (int) ceil($this->duration / 60);
+        }
+
+        return $data;
     }
 
 }
 
-abstract class meeting_types {
-    const SCHEDULED = 0;
-    const RECURRING_WITHOUT_FIXED_TIME = 1;
-    const RECURRING_WITH_FIXED_TIME = 1;
+/**
+ * A class to represent zoom meetings.
+ *
+ * @package    mod_zoom
+ * @copyright  2015 UC Regents
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class zoom_meeting extends zoom_instance {
+    // Type constants.
+    const SCHEDULED_MEETING = 2;
+    const RECURRING_MEETING_WITHOUT_FIXED_TIME = 3;
+    const RECURRING_MEETING_WITH_FIXED_TIME = 8;
+
+    /**
+     * Whether to start video when participants join the meeting.
+     * @var bool
+     */
+    protected $participants_video;
+
+    /**
+     * Whether participants can join the meeting before the host starts it.
+     * @var bool
+     */
+    protected $join_before_host;
+
+    public function export_to_API() {
+        $data = parent::export_to_API();
+        $data['settings']['join_before_host'] = (bool) ($this->join_before_host);
+        $data['settings']['participant_video'] = (bool) ($this->participants_video);
+        return $data;
+    }
+}
+
+/**
+ * A class to represent zoom webinars.
+ *
+ * @package    mod_zoom
+ * @copyright  2015 UC Regents
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class zoom_webinar extends zoom_instance {
+    // Type constants.
+    const SCHEDULED_WEBINAR = 5;
+    const RECURRING_WEBINAR_WITHOUT_FIXED_TIME = 6;
+    const RECURRING_WEBINAR_WITH_FIXED_TIME = 9;
+
+    public function export_to_API() {
+        $data = parent::export_to_API();
+        // Insert logic here.
+        return $data;
+    }
 }
