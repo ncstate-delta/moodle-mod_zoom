@@ -268,5 +268,13 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2018091400, 'zoom');
     }
 
+    if ($oldversion < 0) {
+        $table = new xmldb_table('zoom');
+        // Add additional fields
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2019012400, 'zoom');
+    }
+
     return true;
 }

@@ -105,6 +105,24 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addElement('advcheckbox', 'recurring', get_string('recurringmeeting', 'zoom'));
         $mform->setDefault('recurring', $config->defaultrecurring);
         $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
+        $mform->addElement('select', 'recurrence_type', 'Recurrence', array('Daily', 'Weekly', 'Monthly', 'No Fixed Time'));
+        $mform->addElement('text', 'repeats_every_day', 'Repeats Every (max 90 days)');
+        $mform->hideIf('repeats_every_day', 'recurrence_type', 'neq', 0);
+        $mform->addElement('text', 'repeats_every_week', 'Repeats Every (max 12 weeks)');
+        $mform->hideIf('repeats_every_week', 'recurrence_type', 'neq', 1);
+
+        $mform->addElement('text', 'repeats_every_month', 'Repeats Every (max 3 months)');
+        $weekday_select = $mform->addElement('select', 'weekday_select', 'Repeats On', array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'));
+        $weekday_select->setMultiple(true);
+        $mform->hideIf('repeats_every_month', 'recurrence_type', 'neq', 2);
+        $mform->hideIf('weekday_select', 'recurrence_type', 'neq', 2);
+
+        $mform->addElement('select', 'end_type', 'Ends', array('By a Date', 'After a Number of Occurences'));
+        $mform->addElement('date_selector', 'end_by', 'By');
+        $mform->hideIf('end_by', 'end_type', 'neq', 0);
+        $mform->addElement('text', 'num_occurences', 'Number of Occurences');
+        $mform->hideIf('num_occurences', 'end_type', 'neq', 1);
+
 
         if ($isnew) {
             // Add webinar, disabled if the user cannot create webinars.
