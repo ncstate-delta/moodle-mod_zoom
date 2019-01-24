@@ -106,16 +106,26 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('recurring', $config->defaultrecurring);
         $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
         $mform->addElement('select', 'recurrence_type', 'Recurrence', array('Daily', 'Weekly', 'Monthly', 'No Fixed Time'));
+
+        // Daily Repeat.
         $mform->addElement('text', 'repeats_every_day', 'Repeats Every (max 90 days)');
         $mform->hideIf('repeats_every_day', 'recurrence_type', 'neq', 0);
+
+        // Weekly Repeat.
         $mform->addElement('text', 'repeats_every_week', 'Repeats Every (max 12 weeks)');
         $mform->hideIf('repeats_every_week', 'recurrence_type', 'neq', 1);
-
-        $mform->addElement('text', 'repeats_every_month', 'Repeats Every (max 3 months)');
         $weekday_select = $mform->addElement('select', 'weekday_select', 'Repeats On', array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'));
         $weekday_select->setMultiple(true);
+        $mform->hideIf('weekday_select', 'recurrence_type', 'neq', 1);
+
+        // Monthly Repeat.
+        $mform->addElement('text', 'repeats_every_month', 'Repeats Every (max 3 months)');
+        $mform->addElement('select', 'monthly_recurrence_end_type', 'Occurs On', array('A specific day', 'A general day'));
+        $mform->addElement('text', 'monthly_recurrence_day', 'Day of the month (1-31)');
         $mform->hideIf('repeats_every_month', 'recurrence_type', 'neq', 2);
-        $mform->hideIf('weekday_select', 'recurrence_type', 'neq', 2);
+        $mform->hideIf('monthly_recurrence_end_type', 'recurrence_type', 'neq', 2);
+        $mform->hideIf('monthly_recurrence_day', 'recurrence_type', 'neq', 2);
+        $mform->hideIf('monthly_recurrence_day', 'monthly_recurrence_end_type', 'neq', 0);
 
         $mform->addElement('select', 'end_type', 'Ends', array('By a Date', 'After a Number of Occurences'));
         $mform->addElement('date_selector', 'end_by', 'By');
