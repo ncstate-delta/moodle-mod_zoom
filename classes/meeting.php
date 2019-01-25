@@ -68,7 +68,22 @@ abstract class zoom_instance {
     protected $starttime;
 
     /**
-     * The meeting instance in seconds.
+     * The time at which the instance was created.
+     * Stored in epoch time format.
+     * @var int
+     * TODO: how to store it?
+     */
+    protected $createdat;
+
+    /**
+     * The timezone that the meeting is in.
+     * Stored as a string, specified by @see https://zoom.github.io/api/#timezones.
+     * @var string
+     */
+    protected $timezone;
+
+    /**
+     * The instance duration in seconds.
      * @var int
      */
     protected $duration;
@@ -95,7 +110,7 @@ abstract class zoom_instance {
 
     /**
      * The instance's ID on Zoom servers.
-     * TODO 'uuid' or 'id' on Zoom API.
+     * 'id' on Zoom API (not 'uuid').
      * @var int
      */
     protected $id;
@@ -138,13 +153,37 @@ abstract class zoom_instance {
     protected $recurrence_type;
 
     /**
-     * Populate this meeting's fields using data returned by a Zoom API call.
+     * Populate this instance's fields using data returned by a Zoom API call.
      */
-    public function populate_from_API_data() {
+    public function populate_from_API_data($response) {
+        $samefields = array('start_url', 'join_url', 'created_at', 'timezone', 'id');
+        foreach ($samefields as $field) {
+            if (isset($response->$field)) {
+                $this->$field = $response->$field;
+            }
+        }
+        if (isset($response->duration)) {
+            // Multiply by 60 because we store it in seconds and Zoom returns it in minutes.
+            $this->duration = $response->duration * 60;
+        }
+        if (isset($response->topic)) {
+            $this->name = $response->topic;
+        }
+        if (isset($response->agenda)) {
+            $this->description = $response->agenda;
+        }
+        if (isset($response->start_time)) {
+            // We store the start time in epoch format, but Zoom returns it in string format.
+            $this->starttime = strtotime($response->start_time);
+        }
+        // TODO: ADD ALL THAT RECURRING STUFF
+        if (isset($response->settings->alternative_hosts)) {
+            $this->alternative_hosts = $response->settings->alternative_hosts;
+        }
     }
 
     /**
-     * Converts this meeting's data fields to a format that the Zoom API accepts.
+     * Converts this instance's data fields to a format that the Zoom API accepts.
      */
     protected function export_to_API() {
         global $CFG;
@@ -172,13 +211,23 @@ abstract class zoom_instance {
             $data['settings']['alternative_hosts'] = $this->alternative_hosts;
         }
 
+        // TODO: check this recurring/type stuff
         if ($data['type'] == ZOOM_SCHEDULED_MEETING || $data['type'] == ZOOM_SCHEDULED_WEBINAR) {
             // Convert timestamp to ISO-8601. The API seems to insist that it end with 'Z' to indicate UTC.
-            $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $this->start_time);
+            $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $this->starttime);
             $data['duration'] = (int) ceil($this->duration / 60);
         }
 
         return $data;
+    }
+
+    /**
+     * Populate this instance's fields using data returned by mod_form.php.
+     */
+    protected function populate_from_mod_form($formdata) {
+        $this->course = (int) $formdata->course;
+        // Stores the name equality between fields i.e. 'form' => 'object'.
+        $fieldalignment = array('intro' => 'name', 'password' => 'password', 'duration' => 'duration', 'introformat');
     }
 
 }
@@ -213,6 +262,22 @@ class zoom_meeting extends zoom_instance {
         $data['settings']['join_before_host'] = (bool) ($this->join_before_host);
         $data['settings']['participant_video'] = (bool) ($this->participants_video);
         return $data;
+    }
+
+    /**
+     * Populate this meeting's fields using data returned by a Zoom API call.
+     */
+    public function populate_from_API_data($response) {
+        parent::populate_from_API_data($response);
+        if (isset($response->password)) {
+            $this->password = $response->password;
+        }
+        if (isset($response->settings->join_before_host)) {
+            $this->join_before_host = $response->settings->join_before_host;
+        }
+        if (isset($response->settings->participant_video)) {
+            $newzoom->participants_video = $response->settings->participant_video;
+        }
     }
 }
 

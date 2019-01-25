@@ -73,6 +73,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     $service = new mod_zoom_webservice();
     $response = $service->create_meeting($zoom);
+    // Updating our data with the data returned by Zoom ensures that our data match.
     $zoom = populate_zoom_from_response($zoom, $response);
 
     $zoom->id = $DB->insert_record('zoom', $zoom);
