@@ -69,19 +69,26 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
-    $zoom->course = (int) $zoom->course;
+    if ($zoom->webinar) {
+        $instance = new mod_zoom_webinar();
+    } else {
+        $instance = new mod_zoom_meeting();
+    }
+    $instance->populate_from_mod_form($zoom);
 
     $service = new mod_zoom_webservice();
-    $response = $service->create_meeting($zoom);
+    $response = $service->create_meeting($instance->export_to_api_format());
     // Updating our data with the data returned by Zoom ensures that our data match.
-    $zoom = populate_zoom_from_response($zoom, $response);
+    $instance->populate_from_api_response($response);
 
-    $zoom->id = $DB->insert_record('zoom', $zoom);
+    $newid = $DB->insert_record('zoom', $instance->export_to_database_format());
+    $instance->set_database_id($newid);
 
+    // TODO: figure out how to handle these
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
 
-    return $zoom->id;
+    return $newid;
 }
 
 /**

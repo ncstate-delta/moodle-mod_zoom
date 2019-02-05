@@ -271,6 +271,7 @@ function xmldb_zoom_upgrade($oldversion) {
     if ($oldversion < 0) {
         $table = new xmldb_table('zoom');
         // Add additional fields
+        // TODO: remove start type, its deprecated
 
         // Zoom savepoint reached.
         upgrade_mod_savepoint(true, 2019012400, 'zoom');

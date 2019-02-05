@@ -384,7 +384,7 @@ class mod_zoom_webservice {
         }
 
         $url = "users/$zoom->host_id/" . ($zoom->webinar ? 'webinars' : 'meetings');
-        return $this->_make_call($url, $this->_database_to_api($zoom), 'post');
+        return $this->_make_call($url, $zoom, 'post');
     }
 
     /**
