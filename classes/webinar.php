@@ -53,4 +53,11 @@ class mod_zoom_webinar extends mod_zoom_instance {
         $data->webinar = 1;
         return $data;
     }
+
+    /**
+     * Simply returns whether the instance is a webinar.
+     */
+    public static function is_webinar() {
+        return True;
+    }
 }

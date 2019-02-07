@@ -71,6 +71,13 @@ abstract class mod_zoom_instance {
     protected $starttime;
 
     /**
+     * The most recent time at which the instance was modified.
+     * Stored in epoch time format.
+     * @var int
+     */
+    protected $timemodified;
+
+    /**
      * The time at which the instance was created.
      * Stored in epoch time format.
      * @var int
@@ -167,24 +174,54 @@ abstract class mod_zoom_instance {
     protected $supportsgrading;
 
     /**
+     * Stores the name equality between fields i.e. 'database' => 'object'.
+     */
+    const DATABASETOINSTANCEFIELDALIGNMENT = array(
+        'course' => 'course',
+        'intro' => 'description',
+        'introformat' => 'INTROFORMAT',
+        'grade' => 'supportsgrading',
+        'meeting_id' => 'id',
+        'start_url' => 'starturl',
+        'join_url' => 'joinurl',
+        'created_at' => 'createdat',
+        'host_id' => 'hostid',
+        'name' => 'name',
+        'start_time' => 'starttime',
+        'timemodified' => 'timemodified', // TODO: do we even have this
+        'recurring' => 'recurrencetype', // TODO: figure this out
+        'duration' => 'duration',
+        'timezone' => 'timezone',
+        'password' => 'password',
+        'option_host_video' => 'hostvideo',
+        'option_audio' => 'audio',
+        'alternative_hosts' => 'alternativehosts',
+        'id' => 'databaseid',
+        'meeting_id' => 'id'
+    );
+
+    /**
      * Populate this instance's fields using data returned by a Zoom API call.
      */
     public function populate_from_api_response($response) {
-        $samefields = array('start_url', 'join_url', 'created_at', 'timezone', 'id');
-        foreach ($samefields as $field) {
-            if (isset($response->$field)) {
-                $this->$field = $response->$field;
+        // Stores the name equality between fields i.e. 'response' => 'object'.
+        $fieldalignment = array(
+            'start_url' => 'start_url',
+            'join_url' => 'join_url',
+            'created_at' => 'created_at',
+            'timezone' => 'timezone',
+            'id' => 'id',
+            'topic' => 'name',
+            'agenda' => 'description'
+        );
+        foreach ($fieldalignment as $responsefield => $objectfield) {
+            if(isset($response->responsefield)) {
+                $this->objectfield = $response->responsefield;
             }
         }
         if (isset($response->duration)) {
             // Multiply by 60 because we store it in seconds and Zoom returns it in minutes.
             $this->duration = $response->duration * 60;
-        }
-        if (isset($response->topic)) {
-            $this->name = $response->topic;
-        }
-        if (isset($response->agenda)) {
-            $this->description = $response->agenda;
         }
         if (isset($response->start_time)) {
             // We store the start time in epoch format, but Zoom returns it in string format.
@@ -251,67 +288,71 @@ abstract class mod_zoom_instance {
             'alternative_hosts' => 'alternativehosts',
             'option_host_video' => 'hostvideo',
             'option_audio' => 'audio',
-            'grade' => 'supportsgrading'
+            'grade' => 'supportsgrading',
+            'instance' => 'databaseid',
+            'host_id' => 'hostid'
         );
         foreach ($fieldalignment as $formfield => $objectfield) {
-            $this->objectfield = $formdata->formfield;
+            if(isset($formdata->formfield)) {
+                $this->objectfield = $formdata->formfield;
+            }
         }
     }
 
     /**
      * Converts this instance's data fields to a format used by the Moodle database.
+     * @return stdClass $data An object with fields populated according to the database schema.
      */
     public function export_to_database_format() {
-        $data = array();
-        // Stores the name equality between fields i.e. 'database' => 'object'.
-        $fieldalignment = array(
-            'course' => 'course',
-            'intro' => 'description',
-            'introformat' => 'INTROFORMAT',
-            'grade' => 'supportsgrading',
-            'meeting_id' => 'id',
-            'start_url' => 'starturl',
-            'join_url' => 'joinurl',
-            'created_at' => 'createdat',
-            'host_id' => 'hostid',
-            'name' => 'name',
-            'start_time' => 'starttime',
-            'timemodified' => 'timemodified',
-            'recurring' => 'recurrencetype', // TODO: figure this out
-            'duration' => 'duration',
-            'timezone' => 'timezone',
-            'password' => 'password',
-            'option_host_video' => 'hostvideo',
-            'option_audio' => 'audio',
-            'alternative_hosts' => 'alternativehosts'
-        );
-        foreach ($fieldalignment as $databasefield => $objectfield) {
-            $data->databasefield = $this->objectfield;
+        $data = new stdClass();
+        foreach (DATABASETOINSTANCEFIELDALIGNMENT as $databasefield => $objectfield) {
+            if(isset($this->objectfield)) {
+                $data->databasefield = $this->objectfield;
+            }
         }
         return $data;
     }
 
     /**
+     * Populate this instance's fields using a record from the database.
+     * @param stdClass $record A record from the database.
+     */
+    public function populate_from_database_record($record) {
+        foreach (DATABASETOINSTANCEFIELDALIGNMENT as $databasefield => $objectfield) {
+            if(isset($data->databasefield)) {
+                $this->objectfield = $data->databasefield;
+            }
+        }
+    }
+
+    /**
      * Converts this instance's data fields to a format used by the Moodle calendar interface.
      * @param bool $new Whether the event is new, as opposed to being an update to an existing one.
+     * @return stdClass $event An event object with populated fields.
      */
     public function export_to_calendar_format($new) {
-        $data = array();
+        $event = new stdClass();
         // Stores the name equality between fields i.e. 'event' => 'object'.
         $fieldalignment = array(
             'name' => 'name',
             'description' => 'description',
             'format' => 'INTROFORMAT',
             'timestart' => 'starttime',
+            'timeduration' => 'duration'
         );
         if ($new) {
             $fieldalignment['courseid'] = 'course';
+            $fieldalignment['instance'] = 'databaseid';
+            $event->modulename = 'zoom';
+            $event->eventtype = 'zoom';
         }
         foreach ($fieldalignment as $eventfield => $objectfield) {
-            $data->eventfield = $this->objectfield;
+            if(isset($this->objectfield)) {
+                $event->eventfield = $this->objectfield;
+            }
         }
-        $data->visible = !$this->recurrencetype; // TODO: figure this out
-        return $data;
+        $event->visible = !$this->recurrencetype; // TODO: figure this out
+        return $event;
     }
 
     /**
@@ -319,6 +360,27 @@ abstract class mod_zoom_instance {
      */
     public function set_database_id($newid) {
         $this->databaseid = $newid;
+    }
+
+    /**
+     * Getter function for the database ID.
+     */
+    public function get_database_id() {
+        return $this->databaseid;
+    }
+
+    /**
+     * Getter function for the host ID.
+     */
+    public function get_host_id() {
+        return $this->hostid;
+    }
+
+    /**
+     * Updates the timemodified field to now.
+     */
+    public function make_modified_now() {
+        $timemodified = time();
     }
 
 }

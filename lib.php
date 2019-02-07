@@ -77,7 +77,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $instance->populate_from_mod_form($zoom);
 
     $service = new mod_zoom_webservice();
-    $response = $service->create_meeting($instance->export_to_api_format());
+    $response = $service->create_meeting($instance->export_to_api_format(), $instance->is_webinar(), $instance->get_host_id());
     // Updating our data with the data returned by Zoom ensures that our data match.
     $instance->populate_from_api_response($response);
 
@@ -85,7 +85,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $instance->set_database_id($newid);
 
     // TODO: figure out how to handle these
-    zoom_calendar_item_update($zoom);
+    zoom_calendar_item_update($instance);
     zoom_grade_item_update($zoom);
 
     return $newid;
@@ -105,19 +105,23 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
-    // The object received from mod_form.php returns instance instead of id for some reason.
-    $zoom->id = $zoom->instance;
-    $zoom->timemodified = time();
-    $DB->update_record('zoom', $zoom);
-
-    $updatedzoomrecord = $DB->get_record('zoom', array('id' => $zoom->instance));
-    $zoom->meeting_id = $updatedzoomrecord->meeting_id;
-    $zoom->webinar = $updatedzoomrecord->webinar;
+    if ($zoom->webinar) {
+        $instance = new mod_zoom_webinar();
+    } else {
+        $instance = new mod_zoom_meeting();
+    }
+    $instance->populate_from_mod_form($zoom);
+    $instance->make_modified_now();
+    $DB->update_record('zoom', $instance->export_to_database_format());
+    $updatedinstancerecord = $DB->get_record('zoom', array('id' => $instance->get_database_id));
+    $instance->populate_from_database_record($updatedinstancerecord);
 
     // Update meeting on Zoom.
     $service = new mod_zoom_webservice();
-    $service->update_meeting($zoom);
+    $service->update_meeting($instance); // TODO: this is probably wrong
 
+
+    // TODO: need to fix these here too. kind of avoiding this haha.
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
 
@@ -286,36 +290,25 @@ function zoom_get_extra_capabilities() {
 /**
  * Create or update Moodle calendar event of the Zoom instance.
  *
- * @param stdClass $zoom
+ * @param mod_zoom\instance $instance
  */
-function zoom_calendar_item_update(stdClass $zoom) {
+function zoom_calendar_item_update(mod_zoom\instance $instance) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/calendar/lib.php');
 
-    $event = new stdClass();
-    $event->name = $zoom->name;
-    if ($zoom->intro) {
-        $event->description = $zoom->intro;
-        $event->format = $zoom->introformat;
-    }
-    $event->timestart = $zoom->start_time;
-    $event->timeduration = $zoom->duration;
-    $event->visible = !$zoom->recurring;
-
+    $databaseid = $instance->get_database_id();
     $eventid = $DB->get_field('event', 'id', array(
         'modulename' => 'zoom',
-        'instance' => $zoom->id
+        'instance' => $databaseid
     ));
 
     // Load existing event object, or create a new one.
-    if (!empty($eventid)) {
-        calendar_event::load($eventid)->update($event);
-    } else {
-        $event->courseid = $zoom->course;
-        $event->modulename = 'zoom';
-        $event->instance = $zoom->id;
-        $event->eventtype = 'zoom';
+    if (empty($eventid)) {
+        $event = $instance->export_to_calendar_format(True);
         calendar_event::create($event);
+    } else {
+        $event = $instance->export_to_calendar_format(False);
+        calendar_event::load($eventid)->update($event);
     }
 }
 
@@ -380,7 +373,7 @@ function zoom_scale_used_anywhere($scaleid) {
 /**
  * Creates or updates grade item for the given zoom instance
  *
- * Needed by {@link grade_update_mod_grades()}.
+ * Needed by {@link grade_update_mod_grades()}. This is a callback?
  *
  * @param stdClass $zoom instance object with extra cmidnumber and modname property
  * @param array $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
@@ -410,8 +403,7 @@ function zoom_grade_item_update(stdClass $zoom, $grades=null) {
         $grades = null;
     }
 
-    grade_update('mod/zoom', $zoom->course, 'mod', 'zoom',
-            $zoom->id, 0, $grades, $item);
+    grade_update('mod/zoom', $zoom->course, 'mod', 'zoom', $zoom->id, 0, $grades, $item);
 }
 
 /**

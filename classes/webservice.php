@@ -365,26 +365,27 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Create a meeting/webinar on Zoom.
-     * Take a $zoom object as returned from the Moodle form and respond with an object that can be saved to the database.
+     * Creates a meeting or webinar using the Zoom API.
      *
-     * @param stdClass $zoom The meeting to create.
+     * @param stdClass $data The data to pass in the request to the Zoom API.
+     * @param bool $webinar Whether the instance to create is a webinar or not (as opposed to a meeting).
+     * @param int $hostid The id of the host under whom to create the instance.
      * @return stdClass The call response.
      */
-    public function create_meeting($zoom) {
+    public function create_instance($data, $webinar, $hostid) {
         // Checks whether we need to recycle licenses and acts accordingly.
-        if ($this->recyclelicenses && $this->_make_call("users/$zoom->host_id")->type == ZOOM_USER_TYPE_BASIC) {
+        if ($this->recyclelicenses && $this->_make_call("users/$host_id")->type == ZOOM_USER_TYPE_BASIC) {
             if ($this->_paid_user_limit_reached()) {
                 $leastrecentlyactivepaiduserid = $this->_get_least_recently_active_paid_user_id();
                 // Changes least_recently_active_user to a basic user so we can use their license.
                 $this->_make_call("users/$leastrecentlyactivepaiduserid", array('type' => ZOOM_USER_TYPE_BASIC), 'patch');
             }
             // Changes current user to pro so they can make a meeting.
-            $this->_make_call("users/$zoom->host_id", array('type' => ZOOM_USER_TYPE_PRO), 'patch');
+            $this->_make_call("users/$hostid", array('type' => ZOOM_USER_TYPE_PRO), 'patch');
         }
 
-        $url = "users/$zoom->host_id/" . ($zoom->webinar ? 'webinars' : 'meetings');
-        return $this->_make_call($url, $zoom, 'post');
+        $url = "users/$hostid/" . ($webinar ? 'webinars' : 'meetings');
+        return $this->_make_call($url, $data, 'post');
     }
 
     /**
