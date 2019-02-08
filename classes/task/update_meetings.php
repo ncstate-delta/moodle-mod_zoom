@@ -67,46 +67,50 @@ class update_meetings extends \core\task\scheduled_task {
         $service = new \mod_zoom_webservice();
 
         // Check all meetings, in case they were deleted/changed on Zoom.
-        $zoomstoupdate = $DB->get_records('zoom', array('exists_on_zoom' => true));
+        $recordstoupdate = $DB->get_records('zoom', array('exists_on_zoom' => true));
         $courseidstoupdate = array();
         $calendarfields = array('intro', 'introformat', 'start_time', 'duration', 'recurring');
 
-        foreach ($zoomstoupdate as $zoom) {
-            $gotinfo = false;
+        foreach ($recordstoupdate as $record) {
+            // TODO: i keep repeating this code snippet. is there a way to auto choose which class to use depending on some variable?
+            if ($record->webinar) {
+                $instance = new mod_zoom_webinar();
+            } else {
+                $instance = new mod_zoom_meeting();
+            }
+            $instance->populate_from_database_record($record);
             try {
-                $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
-                $gotinfo = true;
+                $response = $service->get_instance_info($instance->get_instance_id(), $instance->is_webinar());
             } catch (\moodle_exception $error) {
                 // Outputs error and then goes to next meeting.
-                $zoom->exists_on_zoom = false;
-                $DB->update_record('zoom', $zoom);
+                $instance->set_exists_on_zoom(false);
+                $DB->update_record('zoom', $instance->export_to_database_format());
                 mtrace('Error updating Zoom meeting with meeting_id ' . $zoom->meeting_id . ': ' . $error);
+                continue;
             }
-            if ($gotinfo) {
-                $changed = false;
-                $newzoom = populate_zoom_from_response($zoom, $response);
-                foreach ((array) $zoom as $field => $value) {
-                    // The start_url has a parameter that always changes, so it doesn't really count as a change.
-                    if ($field != 'start_url' && $newzoom->$field != $value) {
-                        $changed = true;
-                        break;
-                    }
+            $changed = false;
+            $newzoom = populate_zoom_from_response($zoom, $response);
+            foreach ((array) $zoom as $field => $value) {
+                // The start_url has a parameter that always changes, so it doesn't really count as a change.
+                if ($field != 'start_url' && $newzoom->$field != $value) {
+                    $changed = true;
+                    break;
+                }
+            }
+
+            if ($changed) {
+                $DB->update_record('zoom', $newzoom);
+
+                // If the topic/title was changed, mark this course for cache clearing.
+                if ($zoom->name != $newzoom->name) {
+                    $courseidstoupdate[] = $newzoom->course;
                 }
 
-                if ($changed) {
-                    $DB->update_record('zoom', $newzoom);
-
-                    // If the topic/title was changed, mark this course for cache clearing.
-                    if ($zoom->name != $newzoom->name) {
-                        $courseidstoupdate[] = $newzoom->course;
-                    }
-
-                    // Check if calendar needs updating.
-                    foreach ($calendarfields as $field) {
-                        if ($zoom->$field != $newzoom->$field) {
-                            zoom_calendar_item_update($newzoom);
-                            break;
-                        }
+                // Check if calendar needs updating.
+                foreach ($calendarfields as $field) {
+                    if ($zoom->$field != $newzoom->$field) {
+                        zoom_calendar_item_update($newzoom);
+                        break;
                     }
                 }
             }

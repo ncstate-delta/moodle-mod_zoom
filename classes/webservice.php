@@ -110,7 +110,7 @@ class mod_zoom_webservice {
      * Makes a REST call.
      *
      * @param string $url The URL to append to the API URL
-     * @param array|string $data The data to attach to the call.
+     * @param array|string|stdClass $data The data to attach to the call.
      * @param string $method The HTTP method to use.
      * @return stdClass The call's result in JSON format.
      * @throws moodle_exception Moodle exception is thrown for curl errors.
@@ -365,9 +365,9 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Creates a meeting or webinar using the Zoom API.
+     * Create a meeting or webinar using the Zoom API.
      *
-     * @param stdClass $data The data to pass in the request to the Zoom API.
+     * @param array|stdClass $data The data to pass in the request to the Zoom API.
      * @param bool $webinar Whether the instance to create is a webinar or not (as opposed to a meeting).
      * @param int $hostid The id of the host under whom to create the instance.
      * @return stdClass The call response.
@@ -389,14 +389,16 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Update a meeting/webinar on Zoom.
+     * Update a meeting or webinar using the Zoom API.
      *
-     * @param stdClass $zoom The meeting to update.
+     * @param array|stdClass $data The data to pass in the request to the Zoom API.
+     * @param bool $webinar Whether the instance to update is a webinar or not (as opposed to a meeting).
+     * @param int $instanceid The instance's id on Zoom servers.
      * @return void
      */
-    public function update_meeting($zoom) {
-        $url = ($zoom->webinar ? 'webinars/' : 'meetings/') . $zoom->meeting_id;
-        $this->_make_call($url, $this->_database_to_api($zoom), 'patch');
+    public function update_instance($data, $webinar, $instanceid) {
+        $url = ($webinar ? 'webinars/' : 'meetings/') . $instanceid;
+        $this->_make_call($url, $data, 'patch');
     }
 
     /**
@@ -415,10 +417,10 @@ class mod_zoom_webservice {
      * Get a meeting or webinar's information from Zoom.
      *
      * @param int $id The meeting_id or webinar_id of the meeting or webinar to retrieve.
-     * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
+     * @param bool $webinar Whether the instance to retrieve is a webinar or not (as opposed to a meeting).
      * @return stdClass The meeting's or webinar's information.
      */
-    public function get_meeting_webinar_info($id, $webinar) {
+    public function get_instance_info($id, $webinar) {
         $url = ($webinar ? 'webinars/' : 'meetings/') . $id;
         $response = null;
         try {

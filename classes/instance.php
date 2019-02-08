@@ -170,8 +170,15 @@ abstract class mod_zoom_instance {
 
     /**
      * Whether the instance supports grading on Moodle.
+     * @var bool ??
      */
     protected $supportsgrading;
+
+    /**
+     * Whether we could find the instance on Zoom's servers.
+     * @var bool
+     */
+    protected $existsonzoom;
 
     /**
      * Stores the name equality between fields i.e. 'database' => 'object'.
@@ -197,7 +204,8 @@ abstract class mod_zoom_instance {
         'option_audio' => 'audio',
         'alternative_hosts' => 'alternativehosts',
         'id' => 'databaseid',
-        'meeting_id' => 'id'
+        'meeting_id' => 'id',
+        'exists_on_zoom' => 'existsonzoom'
     );
 
     /**
@@ -363,6 +371,13 @@ abstract class mod_zoom_instance {
     }
 
     /**
+     * Setter function for @link $existsonzoom.
+     */
+    public function set_exists_on_zoom($newvalue) {
+        $this->existsonzoom = $newvalue;
+    }
+
+    /**
      * Getter function for the database ID.
      */
     public function get_database_id() {
@@ -374,6 +389,13 @@ abstract class mod_zoom_instance {
      */
     public function get_host_id() {
         return $this->hostid;
+    }
+
+    /**
+     * Getter function for the id.
+     */
+    public function get_instance_id() {
+        return $this->id;
     }
 
     /**
