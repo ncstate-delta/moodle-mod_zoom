@@ -72,13 +72,9 @@ class update_meetings extends \core\task\scheduled_task {
         $calendarfields = array('intro', 'introformat', 'start_time', 'duration', 'recurring');
 
         foreach ($recordstoupdate as $record) {
-            // TODO: i keep repeating this code snippet. is there a way to auto choose which class to use depending on some variable?
-            if ($record->webinar) {
-                $instance = new mod_zoom_webinar();
-            } else {
-                $instance = new mod_zoom_meeting();
-            }
+            $instance = mod_zoom_instance::factory($record->webinar);
             $instance->populate_from_database_record($record);
+
             try {
                 $response = $service->get_instance_info($instance->get_instance_id(), $instance->is_webinar());
             } catch (\moodle_exception $error) {
@@ -88,22 +84,13 @@ class update_meetings extends \core\task\scheduled_task {
                 mtrace('Error updating Zoom meeting with meeting_id ' . $zoom->meeting_id . ': ' . $error);
                 continue;
             }
-            $changed = false;
-            $newzoom = populate_zoom_from_response($zoom, $response);
-            foreach ((array) $zoom as $field => $value) {
-                // The start_url has a parameter that always changes, so it doesn't really count as a change.
-                if ($field != 'start_url' && $newzoom->$field != $value) {
-                    $changed = true;
-                    break;
-                }
-            }
 
-            if ($changed) {
-                $DB->update_record('zoom', $newzoom);
+            if (!$instance->equalToResponse($response)) {
+                $DB->update_record('zoom', $instance->export_to_database_format());
 
                 // If the topic/title was changed, mark this course for cache clearing.
-                if ($zoom->name != $newzoom->name) {
-                    $courseidstoupdate[] = $newzoom->course;
+                if (!$instance->equalToResponse($response, true)) {
+                    $courseidstoupdate[] = $instance->get_course();
                 }
 
                 // Check if calendar needs updating.

@@ -69,11 +69,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
-    if ($zoom->webinar) {
-        $instance = new mod_zoom_webinar();
-    } else {
-        $instance = new mod_zoom_meeting();
-    }
+    $instance = mod_zoom_instance::factory($zoom->webinar);
     $instance->populate_from_mod_form($zoom);
 
     $service = new mod_zoom_webservice();

@@ -181,7 +181,7 @@ abstract class mod_zoom_instance {
     protected $existsonzoom;
 
     /**
-     * Stores the name equality between fields i.e. 'database' => 'object'.
+     * Stores the name equality between the database and object fields i.e. 'database' => 'object'.
      */
     const DATABASETOINSTANCEFIELDALIGNMENT = array(
         'course' => 'course',
@@ -208,21 +208,58 @@ abstract class mod_zoom_instance {
         'exists_on_zoom' => 'existsonzoom'
     );
 
+    // Stores the name equality between the response and object fields i.e. 'response' => 'object'.
+    const RESPONSETOOBJECTFIELDALIGNMENT = array(
+        'start_url' => 'starturl',
+        'join_url' => 'joinurl',
+        'created_at' => 'createdat',
+        'timezone' => 'timezone',
+        'id' => 'id',
+        'topic' => 'name',
+        'agenda' => 'description'
+    );
+
+    /**
+     * Factory method for Zoom instances.
+     * @see https://en.wikipedia.org/wiki/Factory_method_pattern
+     * @see https://stackoverflow.com/questions/6622214/how-to-return-subclass-from-constructor-in-php
+     * @param int $webinar Whether the instance is a webinar (as opposed to a meeting).
+     * @return mod_zoom\meeting|mod_zoom\webinar The correct instance.
+     */
+    public static function factory($webinar) {
+        if ($webinar) {
+            return new mod_zoom_webinar();
+        } else {
+            return new mod_zoom_meeting();
+        }
+    }
+
+    /**
+     * Compares this instance to a response to check whether they differ or are equal.
+     * @param $response The response against which to compare.
+     * @param $justname Whether to check just the name (as opposed to the whole response). // TODO: this code is SMELLY. prob need to change.
+     * @return bool Whether the instance and response have equal fields.
+     * // TODO: update with additional meeting fields
+     * // TODO: remove start_url thing? why not check it?
+     */
+    public function equalToResponse($response, $justname = false) {
+        if ($justname) {
+            return $response->topic == $this->name; // TODO: even more smelly cause im not using RESPONSETOOBJECTFIELDALIGNMENT
+        }
+        foreach (RESPONSETOOBJECTFIELDALIGNMENT as $responsefield => $objectfield) {
+            if($this->objectfield != $response->responsefield/* && $this->objectfield != 'start_url'*/) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Populate this instance's fields using data returned by a Zoom API call.
+     * @param $response The response from the API.
      */
     public function populate_from_api_response($response) {
-        // Stores the name equality between fields i.e. 'response' => 'object'.
-        $fieldalignment = array(
-            'start_url' => 'start_url',
-            'join_url' => 'join_url',
-            'created_at' => 'created_at',
-            'timezone' => 'timezone',
-            'id' => 'id',
-            'topic' => 'name',
-            'agenda' => 'description'
-        );
-        foreach ($fieldalignment as $responsefield => $objectfield) {
+        foreach (RESPONSETOOBJECTFIELDALIGNMENT as $responsefield => $objectfield) {
             if(isset($response->responsefield)) {
                 $this->objectfield = $response->responsefield;
             }
@@ -382,6 +419,13 @@ abstract class mod_zoom_instance {
      */
     public function get_database_id() {
         return $this->databaseid;
+    }
+
+    /**
+     * Getter function for the course.
+     */
+    public function get_course() {
+        return $this->course;
     }
 
     /**
