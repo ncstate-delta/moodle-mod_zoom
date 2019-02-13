@@ -51,18 +51,18 @@ class provider implements
         \core_privacy\local\metadata\collection {
         // Add all user data fields to the collection.
 
-        $collection->add_database_table('mdl_zoom_meeting_participants', [
-            'name' => 'privacy:metadata:mdl_zoom_meeting_participants:name',
-            'user_email' => 'privacy:metadata:mdl_zoom_meeting_participants:user_email',
-            'join_time' => 'privacy:metadata:mdl_zoom_meeting_participants:join_time',
-            'leave_time' => 'privacy:metadata:mdl_zoom_meeting_participants:leave_time',
-            'duration' => 'privacy:metadata:mdl_zoom_meeting_participants:duration',
-            'attentiveness_score' => 'privacy:metadata:mdl_zoom_meeting_participants:attentiveness_score'
-        ], 'privacy:metadata:mdl_zoom_meeting_participants');
+        $collection->add_database_table('zoom_meeting_participants', [
+            'name' => 'privacy:metadata:zoom_meeting_participants:name',
+            'user_email' => 'privacy:metadata:zoom_meeting_participants:user_email',
+            'join_time' => 'privacy:metadata:zoom_meeting_participants:join_time',
+            'leave_time' => 'privacy:metadata:zoom_meeting_participants:leave_time',
+            'duration' => 'privacy:metadata:zoom_meeting_participants:duration',
+            'attentiveness_score' => 'privacy:metadata:zoom_meeting_participants:attentiveness_score'
+        ], 'privacy:metadata:zoom_meeting_participants');
 
-        $collection->add_database_table('mdl_zoom_meeting_details',
-                                        ['topic' => 'privacy:metadata:mdl_zoom_meeting_details:topic'],
-                                        'privacy:metadata:mdl_zoom_meeting_details');
+        $collection->add_database_table('zoom_meeting_details',
+                                        ['topic' => 'privacy:metadata:zoom_meeting_details:topic'],
+                                        'privacy:metadata:zoom_meeting_details');
         return $collection;
     }
 
