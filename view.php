@@ -65,7 +65,7 @@ try {
     $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
     $showrecreate = false;
 } catch (moodle_exception $error) {
-    $showrecreate = zoom_is_meeting_gone_error($error);
+    $showrecreate = error_indicates_meeting_gone($error);
 }
 
 $stryes = get_string('yes');

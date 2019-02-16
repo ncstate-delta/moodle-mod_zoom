@@ -312,59 +312,6 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Converts a zoom object from database format to API format.
-     *
-     * The database and the API use different fields and formats for the same information. This function changes the
-     * database fields to the appropriate API request fields.
-     *
-     * @param stdClass $zoom The zoom meeting to format.
-     * @return array The formatted meetings for the meeting.
-     * @todo Add functionality for 'alternative_hosts' => $zoom->option_alternative_hosts in $data['settings']
-     * @todo Make UCLA data fields and API data fields match?
-     */
-    protected function _database_to_api($zoom) {
-        global $CFG;
-
-        $data = array(
-            'topic' => $zoom->name,
-            'settings' => array(
-                'host_video' => (bool) ($zoom->option_host_video),
-                'audio' => $zoom->option_audio
-            )
-        );
-        if (isset($zoom->intro)) {
-            $data['agenda'] = strip_tags($zoom->intro);
-        }
-        if (isset($CFG->timezone) && !empty($CFG->timezone)) {
-            $data['timezone'] = $CFG->timezone;
-        } else {
-            $data['timezone'] = date_default_timezone_get();
-        }
-        if (isset($zoom->password)) {
-            $data['password'] = $zoom->password;
-        }
-        if (isset($zoom->alternative_hosts)) {
-            $data['settings']['alternative_hosts'] = $zoom->alternative_hosts;
-        }
-
-        if ($zoom->webinar) {
-            $data['type'] = $zoom->recurring ? ZOOM_RECURRING_WEBINAR : ZOOM_SCHEDULED_WEBINAR;
-        } else {
-            $data['type'] = $zoom->recurring ? ZOOM_RECURRING_MEETING : ZOOM_SCHEDULED_MEETING;
-            $data['settings']['join_before_host'] = (bool) ($zoom->option_jbh);
-            $data['settings']['participant_video'] = (bool) ($zoom->option_participants_video);
-        }
-
-        if ($data['type'] == ZOOM_SCHEDULED_MEETING || $data['type'] == ZOOM_SCHEDULED_WEBINAR) {
-            // Convert timestamp to ISO-8601. The API seems to insist that it end with 'Z' to indicate UTC.
-            $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->start_time);
-            $data['duration'] = (int) ceil($zoom->duration / 60);
-        }
-
-        return $data;
-    }
-
-    /**
      * Create a meeting or webinar using the Zoom API.
      *
      * @param array|stdClass $data The data to pass in the request to the Zoom API.

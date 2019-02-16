@@ -63,7 +63,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $service->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
             } catch (moodle_exception $error) {
                 // If the meeting can't be found, offer to recreate the meeting on Zoom.
-                if (zoom_is_meeting_gone_error($error)) {
+                if (error_indicates_meeting_gone($error)) {
                     $errstring = 'zoomerr_meetingnotfound';
                     $param = zoom_meetingnotfound_param($this->_cm->id);
                     $nexturl = "/mod/zoom/view.php?id=" . $this->_cm->id;

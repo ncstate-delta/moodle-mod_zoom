@@ -86,25 +86,23 @@ class update_meetings extends \core\task\scheduled_task {
             }
 
             if (!$instance->equalToResponse($response)) {
+                $instance->populate_from_api_response($response);
                 $DB->update_record('zoom', $instance->export_to_database_format());
 
                 // If the topic/title was changed, mark this course for cache clearing.
-                if (!$instance->equalToResponse($response, true)) {
+                if (!$instance->equalToResponseName($response)) {
                     $courseidstoupdate[] = $instance->get_course();
                 }
 
                 // Check if calendar needs updating.
-                foreach ($calendarfields as $field) {
-                    if ($zoom->$field != $newzoom->$field) {
-                        zoom_calendar_item_update($newzoom);
-                        break;
-                    }
+                if (!$instance->equalToResponseCalendar($response)) {
+                    zoom_calendar_item_update($instance);
                 }
             }
         }
 
         // Clear caches for meetings whose topic/title changed (and rebuild as needed).
-        foreach ($courseidstoupdate as $courseid) {
+        foreach (array_unique($courseidstoupdate) as $courseid) {
             rebuild_course_cache($courseid, true);
         }
 

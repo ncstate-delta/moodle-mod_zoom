@@ -41,7 +41,7 @@ abstract class mod_zoom_instance {
     const MONTHLY = 3;
 
     // Other constants.
-    const INTROFORMAT = 1; // A moodle requirement for descriptions. Will always be 1.
+    const INTROFORMAT = 1; // A moodle requirement for descriptions. Will always be 1. TODO: check if this is actually constant.
 
     /**
      * The instance host's ID on Zoom servers.
@@ -208,6 +208,18 @@ abstract class mod_zoom_instance {
         'exists_on_zoom' => 'existsonzoom'
     );
 
+    /**
+     * Stores the name equality between the database and object fields i.e. 'database' => 'object'.
+     */
+    const DATABASETOINSTANCEFIELDALIGNMENT_CALENDAR = array(
+        'intro' => 'description',
+        'introformat' => 'INTROFORMAT',
+        'start_time' => 'starttime',
+        'recurring' => 'recurrencetype', // TODO: figure this out
+        'name' => 'name',
+        'duration' => 'duration',
+    );
+
     // Stores the name equality between the response and object fields i.e. 'response' => 'object'.
     const RESPONSETOOBJECTFIELDALIGNMENT = array(
         'start_url' => 'starturl',
@@ -243,15 +255,26 @@ abstract class mod_zoom_instance {
      * // TODO: remove start_url thing? why not check it?
      */
     public function equalToResponse($response, $justname = false) {
-        if ($justname) {
-            return $response->topic == $this->name; // TODO: even more smelly cause im not using RESPONSETOOBJECTFIELDALIGNMENT
-        }
         foreach (RESPONSETOOBJECTFIELDALIGNMENT as $responsefield => $objectfield) {
             if($this->objectfield != $response->responsefield/* && $this->objectfield != 'start_url'*/) {
                 return false;
             }
         }
         return true;
+    }
+
+    // TODO: this code seems pretty bad
+    public function equalToResponseCalendar($response) {
+        foreach (DATABASETOINSTANCEFIELDALIGNMENT_CALENDAR as $responsefield => $objectfield) {
+            if($this->objectfield != $response->responsefield) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function equalToResponseName($response, $justname = false) {
+        return $response->topic == $this->name;
     }
 
     /**
@@ -412,6 +435,13 @@ abstract class mod_zoom_instance {
      */
     public function set_exists_on_zoom($newvalue) {
         $this->existsonzoom = $newvalue;
+    }
+
+    /**
+     * Getter function for @link $existsonzoom.
+     */
+    public function exists_on_zoom() {
+        return $this->existsonzoom;
     }
 
     /**

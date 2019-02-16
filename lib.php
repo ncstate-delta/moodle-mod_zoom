@@ -125,57 +125,6 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 }
 
 /**
- * Populates a zoom meeting or webinar from a response object.
- *
- * Given a zoom meeting object from mod_form.php, this function uses the response to repopulate some of the object properties.
- *
- * @param stdClass $zoom An object from the form in mod_form.php
- * @param stdClass $response A response from an API call like 'create meeting' or 'update meeting'
- * @return stdClass A $zoom object ready to be added to the database.
- */
-function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
-    global $CFG;
-    // Inlcuded for constants.
-    require_once($CFG->dirroot.'/mod/zoom/locallib.php');
-
-    $newzoom = clone $zoom;
-
-    $samefields = array('start_url', 'join_url', 'created_at', 'timezone');
-    foreach ($samefields as $field) {
-        if (isset($response->$field)) {
-            $newzoom->$field = $response->$field;
-        }
-    }
-    if (isset($response->duration)) {
-        $newzoom->duration = $response->duration * 60;
-    }
-    $newzoom->meeting_id = $response->id;
-    $newzoom->name = $response->topic;
-    if (isset($response->agenda)) {
-        $newzoom->intro = $response->agenda;
-    }
-    if (isset($response->start_time)) {
-        $newzoom->start_time = strtotime($response->start_time);
-    }
-    $newzoom->recurring = $response->type == ZOOM_RECURRING_MEETING || $response->type == ZOOM_RECURRING_WEBINAR;
-    if (isset($response->password)) {
-        $newzoom->password = $response->password;
-    }
-    if (isset($response->settings->join_before_host)) {
-        $newzoom->option_jbh = $response->settings->join_before_host;
-    }
-    if (isset($response->settings->participant_video)) {
-        $newzoom->option_participants_video = $response->settings->participant_video;
-    }
-    if (isset($response->settings->alternative_hosts)) {
-        $newzoom->alternative_hosts = $response->settings->alternative_hosts;
-    }
-    $newzoom->timemodified = time();
-
-    return $newzoom;
-}
-
-/**
  * Removes an instance of the zoom from the database
  *
  * Given an ID of an instance of this module, this function will permanently delete the instance and any data that depends on it.
@@ -195,29 +144,32 @@ function zoom_delete_instance($id) {
     // Include locallib.php for constants.
     require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
+    $instance = mod_zoom_instance::factory($record->webinar);
+    $instance->populate_from_api_response($record);
+
     // If the meeting is missing from zoom, don't bother with the webservice.
-    if ($zoom->exists_on_zoom) {
+    if ($instance->exists_on_zoom()) {
         $service = new mod_zoom_webservice();
         try {
-            $service->delete_meeting($zoom->meeting_id, $zoom->webinar);
+            $service->delete_meeting($instance->get_instance_id(), $instance->is_webinar());
         } catch (moodle_exception $error) {
-            if (strpos($error, 'is not found or has expired') === false) {
+            if (!error_indicates_meeting_gone($error)) {
                 throw $error;
             }
         }
     }
 
-    $DB->delete_records('zoom', array('id' => $zoom->id));
+    $DB->delete_records('zoom', array('id' => $instance->get_database_id()));
 
     // If we delete a meeting instance, do we want to delete the participants?
-    $meetinginstances = $DB->get_records('zoom_meeting_details', array('meeting_id' => $zoom->meeting_id));
+    $meetinginstances = $DB->get_records('zoom_meeting_details', array('meeting_id' => $instance->get_instance_id()));
     foreach ($meetinginstances as $meetinginstance) {
         $DB->delete_records('zoom_meeting_participants', array('uuid' => $meetinginstance->uuid));
     }
-    $DB->delete_records('zoom_meeting_details', array('meeting_id' => $zoom->meeting_id));
+    $DB->delete_records('zoom_meeting_details', array('meeting_id' => $instance->get_instance_id()));
 
     // Delete any dependent records here.
-    zoom_calendar_item_delete($zoom);
+    zoom_calendar_item_delete($zoom); // TODO: lol this thing again
     zoom_grade_item_delete($zoom);
 
     return true;

@@ -165,12 +165,12 @@ function zoom_get_user_id($required = true) {
 }
 
 /**
- * Check if the error indicates that a meeting is gone.
+ * Check if the error indicates that a meeting is unavailable.
  *
  * @param string $error
  * @return bool
  */
-function zoom_is_meeting_gone_error($error) {
+function error_indicates_meeting_gone($error) {
     // If the meeting's owner/user cannot be found, we consider the meeting to be gone.
     return strpos($error, 'not found') !== false || zoom_is_user_not_found_error($error);
 }
