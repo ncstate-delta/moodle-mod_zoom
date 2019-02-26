@@ -193,7 +193,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 }
                 $detailsid = $DB->insert_record('zoom_meeting_details', $meeting);
                 $iswebinar = $zoomrecord->webinar;
-                $participants = $service->get_meeting_participants($meeting->uuid, $iswebinar);
+                $participants = $service->get_instance_participants($meeting->uuid, $iswebinar);
 
                 // Loop through each user to generate name->uids mapping.
                 $coursecontext = \context_course::instance($zoomrecord->course);

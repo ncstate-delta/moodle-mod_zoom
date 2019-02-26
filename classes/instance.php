@@ -129,7 +129,7 @@ abstract class mod_zoom_instance {
      * The instance's ID in the Moodle database.
      * @var int
      */
-    protected $databaseid;
+    public $databaseid;
 
     /**
      * The URL to start the meeting.
@@ -157,8 +157,8 @@ abstract class mod_zoom_instance {
     protected $audio;
 
     /**
-     * Other users that can start the meeting.
-     * @var string
+     * Other users that can start the meeting (stores user emails).
+     * @var array
      */
     protected $alternativehosts;
 
@@ -178,7 +178,18 @@ abstract class mod_zoom_instance {
      * Whether we could find the instance on Zoom's servers.
      * @var bool
      */
-    protected $existsonzoom;
+    public $existsonzoom;
+
+    /**
+     * Makes all private variables read-only.
+     */
+    public function __get($variable) {
+        if (property_exists($this, $variable)) {
+            return $this->variable;
+        } else {
+            // TODO: throw exception?
+        }
+    }
 
     /**
      * Stores the name equality between the database and object fields i.e. 'database' => 'object'.
@@ -202,7 +213,7 @@ abstract class mod_zoom_instance {
         'password' => 'password',
         'option_host_video' => 'hostvideo',
         'option_audio' => 'audio',
-        'alternative_hosts' => 'alternativehosts',
+        'alternative_hosts' => 'alternativehosts', // TODO: this is an array lel
         'id' => 'databaseid',
         'meeting_id' => 'id',
         'exists_on_zoom' => 'existsonzoom'
@@ -297,7 +308,7 @@ abstract class mod_zoom_instance {
         }
         // TODO: ADD ALL THAT RECURRING STUFF
         if (isset($response->settings->alternative_hosts)) {
-            $this->alternativehosts = $response->settings->alternative_hosts;
+            $this->alternativehosts = explode(",", $response->settings->alternative_hosts);
         }
     }
 
@@ -327,7 +338,7 @@ abstract class mod_zoom_instance {
             $data['password'] = $this->password;
         }
         if (isset($this->alternativehosts)) {
-            $data['settings']['alternative_hosts'] = $this->alternativehosts;
+            $data['settings']['alternative_hosts'] = implode(",", $this->alternativehosts);
         }
 
         // TODO: check this recurring/type stuff
@@ -353,7 +364,7 @@ abstract class mod_zoom_instance {
             'start_time' => 'starttime',
             'duration' => 'duration',
             'password' => 'password',
-            'alternative_hosts' => 'alternativehosts',
+            'alternative_hosts' => 'alternativehosts', // TODO: again this is an array
             'option_host_video' => 'hostvideo',
             'option_audio' => 'audio',
             'grade' => 'supportsgrading',
@@ -424,59 +435,18 @@ abstract class mod_zoom_instance {
     }
 
     /**
-     * Setter function for the database ID.
-     */
-    public function set_database_id($newid) {
-        $this->databaseid = $newid;
-    }
-
-    /**
-     * Setter function for @link $existsonzoom.
-     */
-    public function set_exists_on_zoom($newvalue) {
-        $this->existsonzoom = $newvalue;
-    }
-
-    /**
-     * Getter function for @link $existsonzoom.
-     */
-    public function exists_on_zoom() {
-        return $this->existsonzoom;
-    }
-
-    /**
-     * Getter function for the database ID.
-     */
-    public function get_database_id() {
-        return $this->databaseid;
-    }
-
-    /**
-     * Getter function for the course.
-     */
-    public function get_course() {
-        return $this->course;
-    }
-
-    /**
-     * Getter function for the host ID.
-     */
-    public function get_host_id() {
-        return $this->hostid;
-    }
-
-    /**
-     * Getter function for the id.
-     */
-    public function get_instance_id() {
-        return $this->id;
-    }
-
-    /**
      * Updates the timemodified field to now.
      */
     public function make_modified_now() {
         $timemodified = time();
     }
 
+    /**
+     * Checks if a user is either the primary host or an alternative host.
+     * @param string $userid The user's id.
+     * @param string $email The user's email.
+     */
+    public function is_any_host($userid, $email) {
+        return $userid == $hostid || in_array($email, $alternativehosts);
+    }
 }

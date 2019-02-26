@@ -172,7 +172,17 @@ function zoom_get_user_id($required = true) {
  */
 function error_indicates_meeting_gone($error) {
     // If the meeting's owner/user cannot be found, we consider the meeting to be gone.
-    return strpos($error, 'not found') !== false || zoom_is_user_not_found_error($error);
+    return strpos($error, 'not found') !== false || error_indicates_user_not_found($error);
+}
+
+/**
+ * Check if the error indicates that a user already exists.
+ *
+ * @param string $error
+ * @return bool
+ */
+function error_indicates_user_exists($error) {
+    return strpos($error, 'User already in the account') !== false;
 }
 
 /**
@@ -181,7 +191,7 @@ function error_indicates_meeting_gone($error) {
  * @param string $error
  * @return bool
  */
-function zoom_is_user_not_found_error($error) {
+function error_indicates_user_not_found($error) {
     return strpos($error, 'not exist') !== false || strpos($error, 'not belong to this account') !== false;
 }
 

@@ -139,6 +139,7 @@ $string['zoom:addinstance'] = 'Add a new Zoom meeting';
 $string['zoomerr'] = 'An error occured with Zoom.'; // Generic error.
 $string['zoomerr_apikey_missing'] = 'Zoom API key not found';
 $string['zoomerr_apisecret_missing'] = 'Zoom API secret not found';
+$string['zoomerr_apiurl_missing'] = 'Zoom URL secret not found';
 $string['zoomerr_id_missing'] = 'You must specify a course_module ID or an instance ID';
 $string['zoomerr_licensescount_missing'] = 'Zoom utmost setting found but, licensescount setting not found';
 $string['zoomerr_meetingnotfound'] = 'This meeting cannot be found on Zoom. You can <a href="{$a->recreate}">recreate it here</a> or <a href="{$a->delete}">delete it completely</a>.';

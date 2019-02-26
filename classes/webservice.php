@@ -37,8 +37,6 @@ if (!class_exists('Firebase\JWT\JWT')) {
     }
 }
 
-define('API_URL', 'https://api.zoom.us/v2/');
-
 /**
  * Web service class.
  *
@@ -47,6 +45,12 @@ define('API_URL', 'https://api.zoom.us/v2/');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_zoom_webservice {
+
+    /**
+     * API URL
+     * @var string
+     */
+    protected $apiurl;
 
     /**
      * API key
@@ -84,10 +88,15 @@ class mod_zoom_webservice {
      */
     public function __construct() {
         $config = get_config('mod_zoom');
+        if (!empty($config->apiurl)) {
+            $this->apiurl = $config->apiurl;
+        } else {
+            throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apikey_missing', 'zoom'));
+        }
         if (!empty($config->apikey)) {
             $this->apikey = $config->apikey;
         } else {
-            throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apikey_missing', 'zoom'));
+            throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apiurl_missing', 'zoom'));
         }
         if (!empty($config->apisecret)) {
             $this->apisecret = $config->apisecret;
@@ -116,7 +125,7 @@ class mod_zoom_webservice {
      * @throws moodle_exception Moodle exception is thrown for curl errors.
      */
     protected function _make_call($url, $data = array(), $method = 'get') {
-        $url = API_URL . $url;
+        $url = $this->apiurl . $url;
         $method = strtolower($method);
         $curl = new curl();
         $payload = array(
@@ -212,8 +221,7 @@ class mod_zoom_webservice {
         try {
             $this->_make_call($url, $data, 'post');
         } catch (moodle_exception $error) {
-            // If the user already exists, the error will contain 'User already in the account'.
-            if (strpos($error->getMessage(), 'User already in the account') === true) {
+            if (error_indicates_user_exists($error)) {
                 return false;
             } else {
                 throw $error;
@@ -301,7 +309,7 @@ class mod_zoom_webservice {
         try {
             $founduser = $this->_make_call($url);
         } catch (moodle_exception $error) {
-            if (zoom_is_user_not_found_error($error->getMessage())) {
+            if (error_indicates_user_not_found($error)) {
                 return false;
             } else {
                 throw $error;
@@ -432,23 +440,14 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Get the participants who attended a meeting
-     * @param string $meetinguuid The meeting or webinar's UUID.
-     * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
+     * Get the participants who attended an instance.
+     * @param string $uuid The uuid of the meeting or webinar to retrieve.
+     * @param bool $webinar Whether the instance is a webinar.
      * @return stdClass The meeting report.
      */
-    public function get_meeting_participants($meetinguuid, $webinar) {
+    public function get_instance_participants($meetinguuid, $webinar) {
         return $this->_make_paginated_call('report/' . ($webinar ? 'webinars' : 'meetings') . '/'
                                            . $meetinguuid . '/participants', null, 'participants');
-    }
-
-    /**
-     * Retrieves ended webinar details report.
-     *
-     * @param string|int $identifier The webinar ID or webinar UUID. If given webinar ID, Zoom will take the last webinar instance.
-     */
-    public function get_webinar_details_report($identifier) {
-        return $this->_make_call('report/webinars/' . $identifier);
     }
 
     /**

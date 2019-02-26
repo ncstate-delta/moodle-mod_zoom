@@ -34,6 +34,7 @@ require_once(dirname(__FILE__).'/../../lib/moodlelib.php');
 $config = get_config('mod_zoom');
 
 list($course, $cm, $zoom) = zoom_get_instance_setup();
+$instance = mod_zoom_instance::factory($zoom->webinar);
 
 $context = context_module::instance($cm->id);
 $iszoommanager = has_capability('mod/zoom:addinstance', $context);
@@ -49,7 +50,7 @@ $event->trigger();
 // Print the page header.
 
 $PAGE->set_url('/mod/zoom/view.php', array('id' => $cm->id));
-$PAGE->set_title(format_string($zoom->name));
+$PAGE->set_title(format_string($instance->name));
 $PAGE->set_heading(format_string($course->fullname));
 
 $zoomuserid = zoom_get_user_id(false);
@@ -58,12 +59,12 @@ if (!is_null($zoom->alternative_hosts)) {
     $alternativehosts = explode(",", $zoom->alternative_hosts);
 }
 
-$userishost = ($zoomuserid === $zoom->host_id || in_array($USER->email, $alternativehosts));
+$userishost = $instance->is_any_host($zoomuserid, $USER->email);
 
 $service = new mod_zoom_webservice();
+$showrecreate = false;
 try {
-    $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
-    $showrecreate = false;
+    $service->get_instance_info($zoom->meeting_id, $zoom->webinar);
 } catch (moodle_exception $error) {
     $showrecreate = error_indicates_meeting_gone($error);
 }
