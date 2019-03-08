@@ -43,7 +43,7 @@ $context = context_module::instance($cm->id);
 $PAGE->set_context($context);
 
 require_capability('mod/zoom:view', $context);
-
+$config = get_config('mod_zoom');
 // Start ical file.
 $ical = new iCalendar;
 $ical->add_property('method', 'PUBLISH');
@@ -62,7 +62,7 @@ $event->add_property('dtend', Bennu::timestamp_to_datetime($zoom->start_time + $
 
 // Compute and add description property to event.
 $convertedtext = html_to_text($zoom->intro);
-$descriptiontext = get_string('calendardescriptionURL', 'mod_zoom', $zoom->join_url);
+$descriptiontext = get_string('calendardescriptionURL', 'mod_zoom', $config->newstringtemplate ? $zoom : $zoom->join_url);
 if (!empty($convertedtext)) {
     $descriptiontext .= get_string('calendardescriptionintro', 'mod_zoom', $convertedtext);
 }
