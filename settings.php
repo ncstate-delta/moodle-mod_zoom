@@ -105,5 +105,9 @@ if ($ADMIN->fulltree) {
     $defaultjoinbeforehost = new admin_setting_configcheckbox('mod_zoom/defaultjoinbeforehost', get_string('option_jbh', 'zoom'),
             '', 0, 1, 0);
     $settings->add($defaultjoinbeforehost);
+    
+    $newstringtemplate = new admin_setting_configcheckbox('mod_zoom/newstringtemplate', get_string('option_nst', 'zoom'),
+            '', 0, 1, 0);
+    $settings->add($newstringtemplate);
 
 }
