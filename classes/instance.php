@@ -472,4 +472,5 @@ abstract class mod_zoom_instance {
      * @var int
      */
     protected $type;
+    
 }
