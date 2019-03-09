@@ -54,10 +54,7 @@ $PAGE->set_title(format_string($instance->name));
 $PAGE->set_heading(format_string($course->fullname));
 
 $zoomuserid = zoom_get_user_id(false);
-$alternativehosts = array();
-if (!is_null($zoom->alternative_hosts)) {
-    $alternativehosts = explode(",", $zoom->alternative_hosts);
-}
+$alternativehosts = $instance->alternative_hosts;;
 
 $userishost = $instance->is_any_host($zoomuserid, $USER->email);
 
@@ -101,9 +98,9 @@ if ($showrecreate) {
     echo $OUTPUT->notification($message, $style);
 }
 
-echo $OUTPUT->heading(format_string($zoom->name), 2);
-if ($zoom->intro) {
-    echo $OUTPUT->box(format_module_intro('zoom', $zoom, $cm->id), 'generalbox mod_introbox', 'intro');
+echo $OUTPUT->heading(format_string($instance->name), 2);
+if (!empty($instance->description)) {
+    echo $OUTPUT->box(format_module_intro('zoom', $instance->export_to_database_format(), $cm->id), 'generalbox mod_introbox', 'intro');
 }
 
 $table = new html_table();

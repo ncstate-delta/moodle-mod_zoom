@@ -60,4 +60,8 @@ class mod_zoom_webinar extends mod_zoom_instance {
     public static function is_webinar() {
         return True;
     }
+
+    protected function has_fixed_time() {
+        return $this->type != RECURRING_WEBINAR_WITHOUT_FIXED_TIME;
+    }
 }

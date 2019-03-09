@@ -34,12 +34,6 @@ define('API_URL', 'https://api.zoom.us/v2/');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class mod_zoom_instance {
-    // Recurrence constants.
-    const NO_RECURRENCE = 0; // Defined by CCLE, not Zoom.
-    const DAILY = 1;
-    const WEEKLY = 2;
-    const MONTHLY = 3;
-
     // Other constants.
     const INTROFORMAT = 1; // A moodle requirement for descriptions. Will always be 1. TODO: check if this is actually constant.
 
@@ -54,21 +48,7 @@ abstract class mod_zoom_instance {
      * 'topic' on Zoom API.
      * @var string
      */
-    protected $name;
-
-    /**
-     * The instance type (with respect to timing).
-     * Uses class constants.
-     * @var int
-     */
-    protected $type;
-
-    /**
-     * The time at which the instance starts.
-     * Stored in epoch time format.
-     * @var int
-     */
-    protected $starttime;
+    public $name;
 
     /**
      * The most recent time at which the instance was modified.
@@ -84,19 +64,6 @@ abstract class mod_zoom_instance {
      * TODO: how to store it? naturally in string but everything else is int. be consistent or easy?
      */
     protected $createdat;
-
-    /**
-     * The timezone that the meeting is in.
-     * Stored as a string, specified by @see https://zoom.github.io/api/#timezones.
-     * @var string
-     */
-    protected $timezone;
-
-    /**
-     * The instance duration in seconds.
-     * @var int
-     */
-    protected $duration;
 
     /**
      * The password required to join the meeting.
@@ -449,4 +416,60 @@ abstract class mod_zoom_instance {
     public function is_any_host($userid, $email) {
         return $userid == $hostid || in_array($email, $alternativehosts);
     }
+
+    /**
+     * Checks whether the instance is in progress.
+     * @return bool Whether the instance is in progress.
+     */
+    public function is_in_progress() {
+        $config = get_config('mod_zoom');
+        $now = time();
+
+        $firstavailable = $this->starttime - ($config->firstabletojoin * 60);
+        $lastavailable = $this->starttime + $zoom->duration;
+        return $firstavailable <= $now && $now <= $lastavailable;
+    }
+
+    /**
+     * Checks whether the instance is available to join.
+     * @return bool Whether the instance is available to join.
+     */
+    public function can_join() {
+        return $this->recurrencetype > 0 || $this->is_in_progress();
+    }
+
+    // ---------- RECURRENCE VARIABLES/FUNCTIONS ----------
+
+    // Constants.
+    const NO_RECURRENCE = 0; // Defined by CCLE, not Zoom.
+    const DAILY = 1;
+    const WEEKLY = 2;
+    const MONTHLY = 3;
+
+    /**
+     * The time at which the instance starts.
+     * Stored in epoch time format.
+     * @var int
+     */
+    protected $starttime;
+
+    /**
+     * The timezone that the meeting is in.
+     * Stored as a string, specified by @see https://zoom.github.io/api/#timezones.
+     * @var string
+     */
+    protected $timezone;
+
+    /**
+     * The instance duration in seconds.
+     * @var int
+     */
+    protected $duration;
+
+    /**
+     * The instance type (with respect to timing).
+     * Uses class constants.
+     * @var int
+     */
+    protected $type;
 }
