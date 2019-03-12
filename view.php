@@ -111,7 +111,7 @@ $numcolumns = 2;
 
 list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
-if ($available) {
+if ($instance->can_join()) {
     if ($userishost) {
         $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
     } else {
@@ -138,13 +138,13 @@ if ($iszoommanager) {
     $table->data[] = array($sessions);
 
     // Display alternate hosts if they exist.
-    if (!empty($zoom->alternative_hosts)) {
-        $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts);
+    if (!empty($instance->alternativehosts)) {
+        $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $instance->alternativehosts);
     }
 }
 
 // Generate add-to-calendar button if meeting was found and isn't recurring.
-if (!($showrecreate || $zoom->recurring)) {
+if (!($showrecreate || $instance->is_recurring())) {
     $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
     $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'), 'mod_zoom');
     $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
@@ -152,16 +152,16 @@ if (!($showrecreate || $zoom->recurring)) {
     $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
 }
 
-if ($zoom->recurring) {
+if ($instance->is_recurring()) {
     $recurringmessage = new html_table_cell(get_string('recurringmeetinglong', 'mod_zoom'));
     $recurringmessage->colspan = $numcolumns;
     $table->data[] = array($recurringmessage);
 } else {
-    $table->data[] = array($strtime, userdate($zoom->start_time));
-    $table->data[] = array($strduration, format_time($zoom->duration));
+    $table->data[] = array($strtime, userdate($instance->starttime));
+    $table->data[] = array($strduration, format_time($instance->duration));
 }
 
-if (!$zoom->webinar) {
+if (!$instance->is_webinar()) {
     $haspassword = (isset($zoom->password) && $zoom->password !== '');
     $strhaspass = ($haspassword) ? $stryes : $strno;
     $table->data[] = array($strpassprotect, $strhaspass);
@@ -193,8 +193,8 @@ if (!$zoom->recurring) {
         $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
     } else if ($finished) {
         $status = get_string('meeting_finished', 'mod_zoom');
-    } else if ($inprogress) {
-        $status = get_string('meeting_started', 'mod_zoom');
+    } else if ($instance->can_join()) {
+        $status = get_string('meeting_started', 'mod_zoom'); // TODO: change this string to just that the meeting can be joined. also add recurring if.
     } else {
         $status = get_string('meeting_not_started', 'mod_zoom');
     }

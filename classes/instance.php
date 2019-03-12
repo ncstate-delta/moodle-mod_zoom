@@ -130,12 +130,6 @@ abstract class mod_zoom_instance {
     protected $alternativehosts;
 
     /**
-     * Whether the instance occurs daily, monthly, weekly, or not at all.
-     * @var int
-     */
-    protected $recurrencetype;
-
-    /**
      * Whether the instance supports grading on Moodle.
      * @var bool ??
      */
@@ -417,34 +411,17 @@ abstract class mod_zoom_instance {
         return $userid == $hostid || in_array($email, $alternativehosts);
     }
 
-    /**
-     * Checks whether the instance is in progress.
-     * @return bool Whether the instance is in progress.
-     */
-    public function is_in_progress() {
-        $config = get_config('mod_zoom');
-        $now = time();
 
-        $firstavailable = $this->starttime - ($config->firstabletojoin * 60);
-        $lastavailable = $this->starttime + $zoom->duration;
-        return $firstavailable <= $now && $now <= $lastavailable;
-    }
-
-    /**
-     * Checks whether the instance is available to join.
-     * @return bool Whether the instance is available to join.
-     */
-    public function can_join() {
-        return $this->recurrencetype > 0 || $this->is_in_progress();
-    }
 
     // ---------- RECURRENCE VARIABLES/FUNCTIONS ----------
 
     // Constants.
-    const NO_RECURRENCE = 0; // Defined by CCLE, not Zoom.
-    const DAILY = 1;
-    const WEEKLY = 2;
-    const MONTHLY = 3;
+    const NOT_RECURRING = 0;
+    const RECURRING_WITHOUT_FIXED_TIME = 1;
+    const RECURRING_WITH_FIXED_TIME = 2;
+    const DAILY = 0;
+    const WEEKLY = 1;
+    const MONTHLY = 2;
 
     /**
      * The time at which the instance starts.
@@ -467,10 +444,127 @@ abstract class mod_zoom_instance {
     protected $duration;
 
     /**
-     * The instance type (with respect to timing).
+     * The manner in which the instance recures.
      * Uses class constants.
+     * TODO: make mapping in each subclass to Zoom's API type
      * @var int
      */
-    protected $type;
-    
+    protected $recurrencetype;
+
+    /**
+     * Whether the instance occurs daily, monthly, weekly, or not at all.
+     * Uses class constants.
+     * TODO: what should i call this variable
+     * @var int
+     */
+    protected $recurrencerepeattype;
+
+    /**
+     * Whether the instance recurs in intervals.
+     * TODO: idk whether to keep this
+     * @var bool
+     */
+    protected $usesintervals;
+
+    /**
+     * The interval in which the instance recurs.
+     * Equals -1 if instance does not recur using intervals.
+     * @var int
+     */
+    protected $intervals;
+
+    /**
+     * Whether the instance recurs on days of the month.
+     * Only applies if {@see $recurrencerepeattype} is monthly.
+     * TODO: again, i dont know if i should use this
+     * @var bool
+     */
+    protected $usesmday;
+
+    /**
+     * The day of the month on which a monthly-recurring instance recurs.
+     * @var int
+     */
+    protected $mday;
+
+    /**
+     * The weeks during which a monthly-recurring instance recurs.
+     * @var int
+     */
+    protected $mweek;
+
+    /**
+     * The weekdays on which a monthly-recurring instance recurs.
+     * @var int
+     */
+    protected $mweekday;
+
+    /**
+     * The weekdays on which a weekly-recurring instance recurs.
+     * @var int
+     */
+    protected $weekday;
+
+    /**
+     * The date and time which after an recurring meeting will not recur.
+     * 'end_date_time' in Zoom API.
+     * empty string if $lastrecurrence is not used. TODO: should use separate bool?
+     * @var string
+     */
+    protected $lastrecurrence;
+
+    /**
+     * The number of times for which a recurring meeting should recur.
+     * 'end_times' in Zoom API.
+     * @var int
+     */
+    protected $numrecurrences;
+
+    /**
+     * Checks whether the instance is in progress.
+     * TODO: i don't think we need this function.
+     * @return bool Whether the instance is in progress.
+     */
+    public function is_in_progress() {
+        $config = get_config('mod_zoom');
+        $now = time();
+
+        $firstavailable = $this->starttime - ($config->firstabletojoin * 60);
+        $lastavailable = $this->starttime + $zoom->duration;
+        return $firstavailable <= $now && $now <= $lastavailable;
+    }
+
+    /**
+     * Checks whether the instance is available to join.
+     * @return bool Whether the instance is available to join.
+     */
+    public function can_join() {
+        // RECURRING_WITHOUT_FIXED_TIME meetings are technically always running.
+        if ($this->recurrencetype == RECURRING_WITHOUT_FIXED_TIME) {
+            return true;
+        }
+
+        $config = get_config('mod_zoom');
+        $now = time();
+
+        // If meeting is NOT_RECURRING we just need to check simple bounds.
+        if ($this->recurrencetype == NOT_RECURRING) {
+            $firstavailable = $this->starttime - ($config->firstabletojoin * 60);
+            $lastavailable = $this->starttime + $zoom->duration;
+            return $firstavailable <= $now && $now <= $lastavailable;
+        }
+
+        // TODO: implement this. it will be hard.
+        if ($this->recurrencetype == RECURRING_WITH_FIXED_TIME) {
+            return false;
+        }
+    }
+
+    /**
+     * Returns whether the meeting is recurring.
+     * @return bool Whether the meeting is recurring.
+     */
+    public function is_recurring() {
+        return $this->recurrencetype != NOT_RECURRING;
+    }
 }
