@@ -35,6 +35,9 @@ $config = get_config('mod_zoom');
 
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 $instance = mod_zoom_instance::factory($zoom->webinar);
+$instance->populate_from_database_record($zoom);
+var_dump($zoom);
+// var_dump($instance);
 
 $context = context_module::instance($cm->id);
 $iszoommanager = has_capability('mod/zoom:addinstance', $context);
@@ -55,13 +58,12 @@ $PAGE->set_heading(format_string($course->fullname));
 
 $zoomuserid = zoom_get_user_id(false);
 $alternativehosts = $instance->alternative_hosts;;
-
 $userishost = $instance->is_any_host($zoomuserid, $USER->email);
 
 $service = new mod_zoom_webservice();
 $showrecreate = false;
 try {
-    $service->get_instance_info($zoom->meeting_id, $zoom->webinar);
+    $service->get_instance_info($instance->id, $instance->is_webinar());
 } catch (moodle_exception $error) {
     $showrecreate = error_indicates_meeting_gone($error);
 }
@@ -86,6 +88,7 @@ $strall = get_string('allmeetings', 'mod_zoom');
 // Output starts here.
 echo $OUTPUT->header();
 
+// Show a recreate dialog for meetings that were deleted on Zoom servers.
 if ($showrecreate) {
     // Only show recreate/delete links in the message for users that can edit.
     if ($iszoommanager) {
@@ -98,19 +101,19 @@ if ($showrecreate) {
     echo $OUTPUT->notification($message, $style);
 }
 
+// Show name and description.
 echo $OUTPUT->heading(format_string($instance->name), 2);
 if (!empty($instance->description)) {
     echo $OUTPUT->box(format_module_intro('zoom', $instance->export_to_database_format(), $cm->id), 'generalbox mod_introbox', 'intro');
 }
 
+// Create table for meeting attributes.
 $table = new html_table();
 $table->attributes['class'] = 'generaltable mod_view';
-
 $table->align = array('center', 'left');
 $numcolumns = 2;
 
-list($inprogress, $available, $finished) = zoom_get_state($zoom);
-
+// Conditionally display button to join/start meeting.
 if ($instance->can_join()) {
     if ($userishost) {
         $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
@@ -124,11 +127,13 @@ if ($instance->can_join()) {
     $link = html_writer::tag('span', $strunavailable, array('style' => 'font-size:20px'));
 }
 
+// Do more table manipulation.
 $title = new html_table_cell($link);
 $title->header = true;
 $title->colspan = $numcolumns;
 $table->data[] = array($title);
 
+// Show sessions link and alternative hosts to any Zoom manager.
 if ($iszoommanager) {
     // Only show sessions link to users with edit capability.
     $sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
@@ -143,8 +148,8 @@ if ($iszoommanager) {
     }
 }
 
-// Generate add-to-calendar button if meeting was found and isn't recurring.
-if (!($showrecreate || $instance->is_recurring())) {
+// Generate add-to-calendar button if instance was found and isn't recurring.
+if (!$showrecreate && !$instance->is_recurring()) {
     $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
     $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'), 'mod_zoom');
     $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
@@ -152,6 +157,7 @@ if (!($showrecreate || $instance->is_recurring())) {
     $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
 }
 
+// Display either time information or that the instance is recurring.
 if ($instance->is_recurring()) {
     $recurringmessage = new html_table_cell(get_string('recurringmeetinglong', 'mod_zoom'));
     $recurringmessage->colspan = $numcolumns;
@@ -161,46 +167,48 @@ if ($instance->is_recurring()) {
     $table->data[] = array($strduration, format_time($instance->duration));
 }
 
+// Display password information.
 if (!$instance->is_webinar()) {
-    $haspassword = (isset($zoom->password) && $zoom->password !== '');
+    $haspassword = (isset($instance->password) && $instance->password !== '');
     $strhaspass = ($haspassword) ? $stryes : $strno;
     $table->data[] = array($strpassprotect, $strhaspass);
 
+    // Display the actual password only to hosts.
     if ($userishost && $haspassword) {
-        $table->data[] = array($strpassword, $zoom->password);
+        $table->data[] = array($strpassword, $instance->password);
     }
 }
 
+// Display the join url to hosts.
 if ($userishost) {
-    $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, array('target' => '_blank')));
+    $table->data[] = array($strjoinlink, html_writer::link($instance->join_url, $instance->join_url, array('target' => '_blank')));
 }
 
-if (!$zoom->webinar) {
-    $strjbh = ($zoom->option_jbh) ? $stryes : $strno;
+// Display some settings.
+if (!$instance->is_webinar()) {
+    $strjbh = ($instance->joinbeforehost) ? $stryes : $strno;
     $table->data[] = array($strjoinbeforehost, $strjbh);
 
-    $strvideohost = ($zoom->option_host_video) ? $stryes : $strno;
-    $table->data[] = array($strstartvideohost, $strvideohost);
-
-    $strparticipantsvideo = ($zoom->option_participants_video) ? $stryes : $strno;
+    $strparticipantsvideo = ($instance->participantsvideo) ? $stryes : $strno;
     $table->data[] = array($strstartvideopart, $strparticipantsvideo);
 }
 
-$table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom'));
+// Display host video settings.
+$strvideohost = ($instance->hostvideo) ? $stryes : $strno;
+$table->data[] = array($strstartvideohost, $strvideohost);
 
-if (!$zoom->recurring) {
-    if (!$zoom->exists_on_zoom) {
-        $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
-    } else if ($finished) {
-        $status = get_string('meeting_finished', 'mod_zoom');
-    } else if ($instance->can_join()) {
-        $status = get_string('meeting_started', 'mod_zoom'); // TODO: change this string to just that the meeting can be joined. also add recurring if.
-    } else {
-        $status = get_string('meeting_not_started', 'mod_zoom');
-    }
+// Display audio settings.
+$table->data[] = array($straudioopt, get_string('audio_' . $instance->audio, 'mod_zoom'));
 
-    $table->data[] = array($strstatus, $status);
+// Display status message.
+if (!$instance->existsonzoom) {
+    $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
+} else if ($instance->can_join()) {
+    $status = get_string('meeting_avaiable', 'mod_zoom');
+} else {
+    $status = get_string('meeting_unavailable', 'mod_zoom');
 }
+$table->data[] = array($strstatus, $status);
 
 $urlall = new moodle_url('/mod/zoom/index.php', array('id' => $course->id));
 $linkall = html_writer::link($urlall, $strall);

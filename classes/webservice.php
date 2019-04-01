@@ -88,15 +88,15 @@ class mod_zoom_webservice {
      */
     public function __construct() {
         $config = get_config('mod_zoom');
-        if (!empty($config->apiurl)) {
-            $this->apiurl = $config->apiurl;
+        if (!empty($config->zoomurl)) {
+            $this->apiurl = $config->zoomurl;
         } else {
-            throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apikey_missing', 'zoom'));
+            throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apiurl_missing', 'zoom'));
         }
         if (!empty($config->apikey)) {
             $this->apikey = $config->apikey;
         } else {
-            throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apiurl_missing', 'zoom'));
+            throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apikey_missing', 'zoom'));
         }
         if (!empty($config->apisecret)) {
             $this->apisecret = $config->apisecret;

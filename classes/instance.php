@@ -24,8 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-define('API_URL', 'https://api.zoom.us/v2/');
-
 /**
  * A class to represent general zoom instances (either meetings or webinars).
  *
@@ -130,6 +128,22 @@ abstract class mod_zoom_instance {
     protected $alternativehosts;
 
     /**
+     * Populates $alternativehosts from a comma-separated string.
+     * @param string $from The comma-separated string.
+     */
+    protected function set_alternativehosts_from_string($from) {
+        $this->alternativehosts = explode(",", $from);
+    }
+
+    /**
+     * Converts $alternativehosts to a comma-separated string.
+     * @return string $from The comma-separated string.
+     */
+    protected function get_string_from_alternativehosts() {
+        return implode(",", $this->alternativehosts);
+    }
+
+    /**
      * Whether the instance supports grading on Moodle.
      * @var bool ??
      */
@@ -153,57 +167,6 @@ abstract class mod_zoom_instance {
     }
 
     /**
-     * Stores the name equality between the database and object fields i.e. 'database' => 'object'.
-     */
-    const DATABASETOINSTANCEFIELDALIGNMENT = array(
-        'course' => 'course',
-        'intro' => 'description',
-        'introformat' => 'INTROFORMAT',
-        'grade' => 'supportsgrading',
-        'meeting_id' => 'id',
-        'start_url' => 'starturl',
-        'join_url' => 'joinurl',
-        'created_at' => 'createdat',
-        'host_id' => 'hostid',
-        'name' => 'name',
-        'start_time' => 'starttime',
-        'timemodified' => 'timemodified', // TODO: do we even have this
-        'recurring' => 'recurrencetype', // TODO: figure this out
-        'duration' => 'duration',
-        'timezone' => 'timezone',
-        'password' => 'password',
-        'option_host_video' => 'hostvideo',
-        'option_audio' => 'audio',
-        'alternative_hosts' => 'alternativehosts', // TODO: this is an array lel
-        'id' => 'databaseid',
-        'meeting_id' => 'id',
-        'exists_on_zoom' => 'existsonzoom'
-    );
-
-    /**
-     * Stores the name equality between the database and object fields i.e. 'database' => 'object'.
-     */
-    const DATABASETOINSTANCEFIELDALIGNMENT_CALENDAR = array(
-        'intro' => 'description',
-        'introformat' => 'INTROFORMAT',
-        'start_time' => 'starttime',
-        'recurring' => 'recurrencetype', // TODO: figure this out
-        'name' => 'name',
-        'duration' => 'duration',
-    );
-
-    // Stores the name equality between the response and object fields i.e. 'response' => 'object'.
-    const RESPONSETOOBJECTFIELDALIGNMENT = array(
-        'start_url' => 'starturl',
-        'join_url' => 'joinurl',
-        'created_at' => 'createdat',
-        'timezone' => 'timezone',
-        'id' => 'id',
-        'topic' => 'name',
-        'agenda' => 'description'
-    );
-
-    /**
      * Factory method for Zoom instances.
      * @see https://en.wikipedia.org/wiki/Factory_method_pattern
      * @see https://stackoverflow.com/questions/6622214/how-to-return-subclass-from-constructor-in-php
@@ -218,31 +181,53 @@ abstract class mod_zoom_instance {
         }
     }
 
+
+
+
+    // ---------- RESPONSE TO INSTANCE INTERACTIONS ----------
+
+    // Stores the name equality between the response and object fields i.e. 'response' => 'object'.
+    const RESPONSETOOBJECTFIELDALIGNMENT = array(
+        'start_url' => 'starturl',
+        'join_url' => 'joinurl',
+        'created_at' => 'createdat',
+        'timezone' => 'timezone',
+        'id' => 'id',
+        'topic' => 'name',
+        'agenda' => 'description'
+    );
+
     /**
      * Compares this instance to a response to check whether they differ or are equal.
      * @param $response The response against which to compare.
-     * @param $justname Whether to check just the name (as opposed to the whole response). // TODO: this code is SMELLY. prob need to change.
      * @return bool Whether the instance and response have equal fields.
-     * // TODO: update with additional meeting fields
      * // TODO: remove start_url thing? why not check it?
      */
-    public function equalToResponse($response, $justname = false) {
-        foreach (RESPONSETOOBJECTFIELDALIGNMENT as $responsefield => $objectfield) {
+    public function equalToResponse($response) {
+        foreach (self::RESPONSETOOBJECTFIELDALIGNMENT as $responsefield => $objectfield) {
             if($this->objectfield != $response->responsefield/* && $this->objectfield != 'start_url'*/) {
                 return false;
             }
         }
+        if ($this->duration != $response->duration * 60) {
+            return false;
+        }
+        if ($this->starttime != strtotime($response->start_time)) {
+            return false;
+        }
+        if ($this->get_string_from_alternativehosts() != $response->settings->alternative_hosts) {
+            return false;
+        }
         return true;
     }
 
-    // TODO: this code seems pretty bad
+    /**
+     * Compares this instance to a response to check whether they differ or are equal, but just in calendar-related fields.
+     * @param $response The response against which to compare.
+     * @return bool Whether the instance and response have equal fields.
+     */
     public function equalToResponseCalendar($response) {
-        foreach (DATABASETOINSTANCEFIELDALIGNMENT_CALENDAR as $responsefield => $objectfield) {
-            if($this->objectfield != $response->responsefield) {
-                return false;
-            }
-        }
-        return true;
+        return $this->starttime == strtotime($response->start_time) && $this->duration += $response->duration * 60;
     }
 
     public function equalToResponseName($response, $justname = false) {
@@ -254,7 +239,7 @@ abstract class mod_zoom_instance {
      * @param $response The response from the API.
      */
     public function populate_from_api_response($response) {
-        foreach (RESPONSETOOBJECTFIELDALIGNMENT as $responsefield => $objectfield) {
+        foreach (self::RESPONSETOOBJECTFIELDALIGNMENT as $responsefield => $objectfield) {
             if(isset($response->responsefield)) {
                 $this->objectfield = $response->responsefield;
             }
@@ -269,7 +254,7 @@ abstract class mod_zoom_instance {
         }
         // TODO: ADD ALL THAT RECURRING STUFF
         if (isset($response->settings->alternative_hosts)) {
-            $this->alternativehosts = explode(",", $response->settings->alternative_hosts);
+            $this->set_alternativehosts_from_string($response->settings->alternative_hosts);
         }
     }
 
@@ -299,11 +284,11 @@ abstract class mod_zoom_instance {
             $data['password'] = $this->password;
         }
         if (isset($this->alternativehosts)) {
-            $data['settings']['alternative_hosts'] = implode(",", $this->alternativehosts);
+            $data['settings']['alternative_hosts'] = $this->get_string_from_alternativehosts();
         }
 
         // TODO: check this recurring/type stuff
-        if ($data['type'] == ZOOM_SCHEDULED_MEETING || $data['type'] == ZOOM_SCHEDULED_WEBINAR) {
+        if ($data['type'] == $this->ZOOM_SCHEDULED_MEETING || $data['type'] == $this->ZOOM_SCHEDULED_WEBINAR) {
             // Convert timestamp to ISO-8601. The API seems to insist that it end with 'Z' to indicate UTC.
             $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $this->starttime);
             $data['duration'] = (int) ceil($this->duration / 60);
@@ -312,12 +297,15 @@ abstract class mod_zoom_instance {
         return $data;
     }
 
+
+
+
+    // ---------- FORM TO INSTANCE INTERACTIONS ----------
+
     /**
      * Populate this instance's fields using data returned by mod_form.php.
-     * TODO: abstract redundant 'fieldalignment' variables into inherited constants.
      */
     public function populate_from_mod_form($formdata) {
-        $this->course = (int) $formdata->course;
         // Stores the name equality between fields i.e. 'form' => 'object'.
         $fieldalignment = array(
             'name' => 'name',
@@ -325,7 +313,6 @@ abstract class mod_zoom_instance {
             'start_time' => 'starttime',
             'duration' => 'duration',
             'password' => 'password',
-            'alternative_hosts' => 'alternativehosts', // TODO: again this is an array
             'option_host_video' => 'hostvideo',
             'option_audio' => 'audio',
             'grade' => 'supportsgrading',
@@ -337,7 +324,45 @@ abstract class mod_zoom_instance {
                 $this->objectfield = $formdata->formfield;
             }
         }
+
+        $this->course = (int) $formdata->course;
+        if (isset($formdata->alternative_hosts)) {
+            $this->set_alternativehosts_from_string($formdata->alternative_hosts);
+        }
     }
+
+
+
+
+    // ---------- DATABASE TO INSTANCE INTERACTIONS ----------
+
+    /**
+     * Stores the name equality between the database and object fields i.e. 'database' => 'object'.
+     * Doesn't include alternative hosts.
+     */
+    const DATABASETOINSTANCEFIELDALIGNMENT = array(
+        'course' => 'course',
+        'intro' => 'description',
+        'introformat' => 'INTROFORMAT',
+        'grade' => 'supportsgrading',
+        'meeting_id' => 'id',
+        'start_url' => 'starturl',
+        'join_url' => 'joinurl',
+        'created_at' => 'createdat',
+        'host_id' => 'hostid',
+        'name' => 'name',
+        'start_time' => 'starttime',
+        'timemodified' => 'timemodified',
+        'recurrencetype' => 'recurrencetype',
+        'duration' => 'duration',
+        'timezone' => 'timezone',
+        'password' => 'password',
+        'option_host_video' => 'hostvideo',
+        'option_audio' => 'audio',
+        'id' => 'databaseid',
+        'meeting_id' => 'id',
+        'exists_on_zoom' => 'existsonzoom'
+    );
 
     /**
      * Converts this instance's data fields to a format used by the Moodle database.
@@ -345,11 +370,14 @@ abstract class mod_zoom_instance {
      */
     public function export_to_database_format() {
         $data = new stdClass();
-        foreach (DATABASETOINSTANCEFIELDALIGNMENT as $databasefield => $objectfield) {
+        foreach (self::DATABASETOINSTANCEFIELDALIGNMENT as $databasefield => $objectfield) {
             if(isset($this->objectfield)) {
                 $data->databasefield = $this->objectfield;
             }
         }
+
+        // DATABASETOINSTANCEFIELDALIGNMENT doesn't include alternativehosts because of the string/array conversion.
+        $data->alternative_hosts = $this->get_string_from_alternativehosts();
         return $data;
     }
 
@@ -358,12 +386,20 @@ abstract class mod_zoom_instance {
      * @param stdClass $record A record from the database.
      */
     public function populate_from_database_record($record) {
-        foreach (DATABASETOINSTANCEFIELDALIGNMENT as $databasefield => $objectfield) {
-            if(isset($data->databasefield)) {
-                $this->objectfield = $data->databasefield;
+        foreach (self::DATABASETOINSTANCEFIELDALIGNMENT as $databasefield => $objectfield) {
+            if(isset($record->databasefield)) {
+                echo "SOMETHING WAS SET \N";
+                $this->objectfield = $record->databasefield;
             }
         }
+        // DATABASETOINSTANCEFIELDALIGNMENT doesn't include alternativehosts because of the string/array conversion.
+        $this->set_alternativehosts_from_string($record->alternative_hosts);
     }
+
+
+
+
+    // ---------- CALENDAR TO INSTANCE INTERACTIONS ----------
 
     /**
      * Converts this instance's data fields to a format used by the Moodle calendar interface.
@@ -391,34 +427,21 @@ abstract class mod_zoom_instance {
                 $event->eventfield = $this->objectfield;
             }
         }
-        $event->visible = !$this->recurrencetype; // TODO: figure this out
+        $event->visible = $this->recurrencetype == $this->NOT_RECURRING; // TODO: include RECURRING_WITH_FIXED_TIME?
         return $event;
     }
 
-    /**
-     * Updates the timemodified field to now.
-     */
-    public function make_modified_now() {
-        $timemodified = time();
-    }
-
-    /**
-     * Checks if a user is either the primary host or an alternative host.
-     * @param string $userid The user's id.
-     * @param string $email The user's email.
-     */
-    public function is_any_host($userid, $email) {
-        return $userid == $hostid || in_array($email, $alternativehosts);
-    }
 
 
 
     // ---------- RECURRENCE VARIABLES/FUNCTIONS ----------
 
-    // Constants.
+    // Constants for $recurrencetype.
     const NOT_RECURRING = 0;
     const RECURRING_WITHOUT_FIXED_TIME = 1;
     const RECURRING_WITH_FIXED_TIME = 2;
+
+    // Constants for $recurrencerepeattype.
     const DAILY = 0;
     const WEEKLY = 1;
     const MONTHLY = 2;
@@ -460,29 +483,16 @@ abstract class mod_zoom_instance {
     protected $recurrencerepeattype;
 
     /**
-     * Whether the instance recurs in intervals.
-     * TODO: idk whether to keep this
-     * @var bool
-     */
-    protected $usesintervals;
-
-    /**
      * The interval in which the instance recurs.
-     * Equals -1 if instance does not recur using intervals.
+     * Equals -1 if instance does not recur in intervals.
      * @var int
      */
     protected $intervals;
 
     /**
-     * Whether the instance recurs on days of the month.
-     * Only applies if {@see $recurrencerepeattype} is monthly.
-     * TODO: again, i dont know if i should use this
-     * @var bool
-     */
-    protected $usesmday;
-
-    /**
      * The day of the month on which a monthly-recurring instance recurs.
+     * Equals -1 if instance does not recur on days of the month.
+     * Only applies if {@see $recurrencerepeattype} is monthly.
      * @var int
      */
     protected $mday;
@@ -540,7 +550,7 @@ abstract class mod_zoom_instance {
      */
     public function can_join() {
         // RECURRING_WITHOUT_FIXED_TIME meetings are technically always running.
-        if ($this->recurrencetype == RECURRING_WITHOUT_FIXED_TIME) {
+        if ($this->recurrencetype == $this->RECURRING_WITHOUT_FIXED_TIME) {
             return true;
         }
 
@@ -548,14 +558,14 @@ abstract class mod_zoom_instance {
         $now = time();
 
         // If meeting is NOT_RECURRING we just need to check simple bounds.
-        if ($this->recurrencetype == NOT_RECURRING) {
+        if ($this->recurrencetype == $this->NOT_RECURRING) {
             $firstavailable = $this->starttime - ($config->firstabletojoin * 60);
             $lastavailable = $this->starttime + $zoom->duration;
             return $firstavailable <= $now && $now <= $lastavailable;
         }
 
         // TODO: implement this. it will be hard.
-        if ($this->recurrencetype == RECURRING_WITH_FIXED_TIME) {
+        if ($this->recurrencetype == $this->RECURRING_WITH_FIXED_TIME) {
             return false;
         }
     }
@@ -565,6 +575,27 @@ abstract class mod_zoom_instance {
      * @return bool Whether the meeting is recurring.
      */
     public function is_recurring() {
-        return $this->recurrencetype != NOT_RECURRING;
+        return $this->recurrencetype != $this->NOT_RECURRING;
+    }
+
+
+
+
+    // ---------- OTHER FUNCTIONS TO INSTANCE INTERACTIONS ----------
+
+    /**
+     * Updates the timemodified field to now.
+     */
+    public function make_modified_now() {
+        $timemodified = time();
+    }
+
+    /**
+     * Checks if a user is either the primary host or an alternative host.
+     * @param string $userid The user's id.
+     * @param string $email The user's email.
+     */
+    public function is_any_host($userid, $email) {
+        return $userid == $this->hostid || in_array($email, $this->alternativehosts);
     }
 }

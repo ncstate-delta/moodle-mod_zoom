@@ -154,8 +154,6 @@ function zoom_get_user_id($required = true) {
         } catch (moodle_exception $error) {
             if ($required) {
                 throw $error;
-            } else {
-                $zoomuserid = $zoomuser->id;
             }
         }
         $cache->set($USER->id, $zoomuserid);

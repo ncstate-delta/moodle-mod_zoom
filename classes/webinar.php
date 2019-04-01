@@ -24,8 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-define('API_URL', 'https://api.zoom.us/v2/');
-
 /**
  * A class to represent zoom webinars.
  *

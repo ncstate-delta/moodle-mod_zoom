@@ -24,8 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-define('API_URL', 'https://api.zoom.us/v2/');
-
 /**
  * A class to represent zoom meetings.
  *
@@ -64,8 +62,8 @@ class mod_zoom_meeting extends mod_zoom_instance {
     /**
      * Populate this meeting's fields using data returned by a Zoom API call.
      */
-    public function populate_from_API_response($response) {
-        parent::populate_from_API_response($response);
+    public function populate_from_api_response($response) {
+        parent::populate_from_api_response($response);
         if (isset($response->password)) {
             $this->password = $response->password;
         }
@@ -80,7 +78,7 @@ class mod_zoom_meeting extends mod_zoom_instance {
     /**
      * Populate this instance's fields using data returned by mod_form.php.
      */
-    protected function populate_from_mod_form($formdata) {
+    public function populate_from_mod_form($formdata) {
         parent::populate_from_mod_form($formdata);
         // Stores the name equality between fields i.e. 'form' => 'object'.
         $fieldalignment = array(
