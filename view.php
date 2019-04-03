@@ -36,8 +36,6 @@ $config = get_config('mod_zoom');
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 $instance = mod_zoom_instance::factory($zoom->webinar);
 $instance->populate_from_database_record($zoom);
-var_dump($zoom);
-// var_dump($instance);
 
 $context = context_module::instance($cm->id);
 $iszoommanager = has_capability('mod/zoom:addinstance', $context);

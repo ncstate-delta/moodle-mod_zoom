@@ -159,8 +159,8 @@ abstract class mod_zoom_instance {
      * Makes all private variables read-only.
      */
     public function __get($variable) {
-        if (property_exists($this, $variable)) {
-            return $this->variable;
+        if (isset($this->$variable)) {
+            return $this->$variable;
         } else {
             // TODO: throw exception?
         }
@@ -205,7 +205,7 @@ abstract class mod_zoom_instance {
      */
     public function equalToResponse($response) {
         foreach (self::RESPONSETOOBJECTFIELDALIGNMENT as $responsefield => $objectfield) {
-            if($this->objectfield != $response->responsefield/* && $this->objectfield != 'start_url'*/) {
+            if($this->$objectfield != $response->$responsefield/* && $this->objectfield != 'start_url'*/) {
                 return false;
             }
         }
@@ -240,8 +240,8 @@ abstract class mod_zoom_instance {
      */
     public function populate_from_api_response($response) {
         foreach (self::RESPONSETOOBJECTFIELDALIGNMENT as $responsefield => $objectfield) {
-            if(isset($response->responsefield)) {
-                $this->objectfield = $response->responsefield;
+            if(isset($response->$responsefield)) {
+                $this->$objectfield = $response->$responsefield;
             }
         }
         if (isset($response->duration)) {
@@ -320,8 +320,8 @@ abstract class mod_zoom_instance {
             'host_id' => 'hostid'
         );
         foreach ($fieldalignment as $formfield => $objectfield) {
-            if(isset($formdata->formfield)) {
-                $this->objectfield = $formdata->formfield;
+            if(isset($formdata->$formfield)) {
+                $this->$objectfield = $formdata->$formfield;
             }
         }
 
@@ -371,8 +371,8 @@ abstract class mod_zoom_instance {
     public function export_to_database_format() {
         $data = new stdClass();
         foreach (self::DATABASETOINSTANCEFIELDALIGNMENT as $databasefield => $objectfield) {
-            if(isset($this->objectfield)) {
-                $data->databasefield = $this->objectfield;
+            if(isset($this->$objectfield)) {
+                $data->$databasefield = $this->$objectfield;
             }
         }
 
@@ -387,9 +387,8 @@ abstract class mod_zoom_instance {
      */
     public function populate_from_database_record($record) {
         foreach (self::DATABASETOINSTANCEFIELDALIGNMENT as $databasefield => $objectfield) {
-            if(isset($record->databasefield)) {
-                echo "SOMETHING WAS SET \N";
-                $this->objectfield = $record->databasefield;
+            if(isset($record->$databasefield)) {
+                $this->$objectfield = $record->$databasefield;
             }
         }
         // DATABASETOINSTANCEFIELDALIGNMENT doesn't include alternativehosts because of the string/array conversion.
@@ -423,11 +422,11 @@ abstract class mod_zoom_instance {
             $event->eventtype = 'zoom';
         }
         foreach ($fieldalignment as $eventfield => $objectfield) {
-            if(isset($this->objectfield)) {
-                $event->eventfield = $this->objectfield;
+            if(isset($this->$objectfield)) {
+                $event->$eventfield = $this->$objectfield;
             }
         }
-        $event->visible = $this->recurrencetype == $this->NOT_RECURRING; // TODO: include RECURRING_WITH_FIXED_TIME?
+        $event->visible = $this->recurrencetype == self::NOT_RECURRING; // TODO: include RECURRING_WITH_FIXED_TIME?
         return $event;
     }
 
@@ -550,7 +549,7 @@ abstract class mod_zoom_instance {
      */
     public function can_join() {
         // RECURRING_WITHOUT_FIXED_TIME meetings are technically always running.
-        if ($this->recurrencetype == $this->RECURRING_WITHOUT_FIXED_TIME) {
+        if ($this->recurrencetype == self::RECURRING_WITHOUT_FIXED_TIME) {
             return true;
         }
 
@@ -558,14 +557,14 @@ abstract class mod_zoom_instance {
         $now = time();
 
         // If meeting is NOT_RECURRING we just need to check simple bounds.
-        if ($this->recurrencetype == $this->NOT_RECURRING) {
+        if ($this->recurrencetype == self::NOT_RECURRING) {
             $firstavailable = $this->starttime - ($config->firstabletojoin * 60);
-            $lastavailable = $this->starttime + $zoom->duration;
+            $lastavailable = $this->starttime + $this->duration;
             return $firstavailable <= $now && $now <= $lastavailable;
         }
 
         // TODO: implement this. it will be hard.
-        if ($this->recurrencetype == $this->RECURRING_WITH_FIXED_TIME) {
+        if ($this->recurrencetype == self::RECURRING_WITH_FIXED_TIME) {
             return false;
         }
     }
@@ -575,7 +574,7 @@ abstract class mod_zoom_instance {
      * @return bool Whether the meeting is recurring.
      */
     public function is_recurring() {
-        return $this->recurrencetype != $this->NOT_RECURRING;
+        return $this->recurrencetype != self::NOT_RECURRING;
     }
 
 
