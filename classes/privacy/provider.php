@@ -27,6 +27,7 @@ namespace mod_zoom\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
+
 /**
  * Ad hoc task that performs the actions for approved data privacy requests.
  *
@@ -37,6 +38,8 @@ defined('MOODLE_INTERNAL') || die();
 class provider implements
     // This plugin has data.
     \core_privacy\local\metadata\provider,
+
+    \core_privacy\local\request\core_userlist_provider,
 
     // This plugin currently implements the original plugin_provider interface.
     \core_privacy\local\request\plugin\provider {
@@ -96,6 +99,34 @@ class provider implements
         $contextlist->add_from_sql($sql, $params);
 
         return $contextlist;
+    }
+
+    /**
+     * Get the list of users who have data within a context.
+     *
+     * @param   userlist    $userlist   The userlist containing the list of users who have data in this context/plugin combination.
+     */
+    public static function get_users_in_context(\core_privacy\local\request\userlist $userlist) {
+        $context = $userlist->get_context();
+
+        if (!is_a($context, \context_module::class)) {
+            return;
+        }
+
+        $sql = "SELECT zmp.userid
+                  FROM {zoom_meeting_participants} zmp
+                  JOIN {zoom_meeting_details} zmd ON zmd.id = zmp.detailsid
+                  JOIN {zoom} z ON zmd.zoomid = z.id
+                  JOIN {modules} m ON m.name = 'zoom'
+                  JOIN {course_modules} cm ON cm.id = z.id
+                  JOIN {context} ctx
+                    ON ctx.instanceid = cm.id
+                   AND ctx.contextlevel = :modlevel
+                  WHERE ctx.id = :contextid";
+
+        $params = ['modlevel' => CONTEXT_MODULE, 'contextid' => $context->id];
+
+        $userlist->add_from_sql('userid', $sql, $params);
     }
 
     /**
@@ -211,5 +242,40 @@ class provider implements
                 }
             }
         }
+    }
+
+
+    /**
+     * Delete multiple users within a single context.
+     *
+     * @param   approved_userlist       $userlist The approved context and user information to delete information for.
+     */
+    public static function delete_data_for_users(\core_privacy\local\request\approved_userlist $userlist) {
+        global $DB;
+        $context = $userlist->get_context();
+
+        if (!is_a($context, \context_module::class)) {
+            return;
+        }
+
+        // Prepare SQL to gather all completed IDs.
+        $userids = $userlist->get_userids();
+        list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+
+        $sql = "SELECT zmp.id
+                  FROM {zoom_meeting_participants} zmp
+                  JOIN {zoom_meeting_details} zmd ON zmd.id = zmp.detailsid
+                  JOIN {zoom} z ON zmd.zoomid = z.id
+                  JOIN {modules} m ON m.name = 'zoom'
+                  JOIN {course_modules} cm ON cm.id = z.id
+                  JOIN {context} ctx
+                    ON ctx.instanceid = cm.id
+                   AND ctx.contextlevel = :modlevel
+                  WHERE ctx.id = :contextid
+                    AND zmp.userid $insql";
+
+        $params = array_merge($inparams, ['contextid' => $context->id]);
+
+        $DB->delete_records_select('zoom_meeting_participants', "id $sql", $params);
     }
 }
