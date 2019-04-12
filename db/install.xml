@@ -68,7 +68,7 @@
         <FIELD NAME="duration" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="The time for which the participant was in the meeting."/>
         <FIELD NAME="attentiveness_score" TYPE="char" LENGTH="7" NOTNULL="true" SEQUENCE="false" COMMENT="How attentive the participant was during the meeting."/>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field. Other than that it's useless."/>
-        <FIELD NAME="userid" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="The user id from moodle"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The user id from moodle"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="user's name"/>
         <FIELD NAME="detailsid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="link to zoom_meeting_details table"/>
       </FIELDS>
