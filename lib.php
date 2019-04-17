@@ -73,12 +73,12 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $instance->populate_from_mod_form($zoom);
 
     $service = new mod_zoom_webservice();
-    $response = $service->create_instance($instance->export_to_api_format(), $instance->is_webinar(), $instance->get_host_id());
+    $response = $service->create_instance($instance->export_to_api_format(), $instance->is_webinar(), $instance->hostid);
     // Updating our data with the data returned by Zoom ensures that our data match.
     $instance->populate_from_api_response($response);
 
     $newid = $DB->insert_record('zoom', $instance->export_to_database_format());
-    $instance->set_database_id($newid);
+    $instance->set_databaseid($newid);
 
     // TODO: figure out how to handle these
     zoom_calendar_item_update($instance);
@@ -109,16 +109,16 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $instance->populate_from_mod_form($zoom);
     $instance->make_modified_now();
     $DB->update_record('zoom', $instance->export_to_database_format());
-    $updatedinstancerecord = $DB->get_record('zoom', array('id' => $instance->get_database_id));
+    $updatedinstancerecord = $DB->get_record('zoom', array('id' => $instance->databaseid));
     $instance->populate_from_database_record($updatedinstancerecord);
 
     // Update meeting on Zoom.
     $service = new mod_zoom_webservice();
-    $service->update_meeting($instance->export_to_api_format(), $instance->is_webinar(), $instance->get_instance_id());
+    $service->update_instance($instance->export_to_api_format(), $instance->is_webinar(), $instance->id);
 
 
     // TODO: need to fix these here too. kind of avoiding this haha.
-    zoom_calendar_item_update($zoom);
+    zoom_calendar_item_update($instance);
     zoom_grade_item_update($zoom);
 
     return $zoom->id;
@@ -240,11 +240,11 @@ function zoom_get_extra_capabilities() {
  *
  * @param mod_zoom\instance $instance
  */
-function zoom_calendar_item_update(mod_zoom\instance $instance) {
+function zoom_calendar_item_update(mod_zoom_instance $instance) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/calendar/lib.php');
 
-    $databaseid = $instance->get_database_id();
+    $databaseid = $instance->databaseid;
     $eventid = $DB->get_field('event', 'id', array(
         'modulename' => 'zoom',
         'instance' => $databaseid

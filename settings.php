@@ -59,6 +59,10 @@ if ($ADMIN->fulltree) {
             get_string('apisecret_desc', 'mod_zoom'), '');
     $settings->add($apisecret);
 
+    $apiurl = new admin_setting_configtext('mod_zoom/apiurl', get_string('apiurl', 'mod_zoom'),
+            get_string('apiurl_desc', 'mod_zoom'), '', PARAM_URL);
+    $settings->add($apiurl);
+
     $zoomurl = new admin_setting_configtext('mod_zoom/zoomurl', get_string('zoomurl', 'mod_zoom'),
             get_string('zoomurl_desc', 'mod_zoom'), '', PARAM_URL);
     $settings->add($zoomurl);

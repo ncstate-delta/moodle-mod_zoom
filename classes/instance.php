@@ -94,7 +94,11 @@ abstract class mod_zoom_instance {
      * The instance's ID in the Moodle database.
      * @var int
      */
-    public $databaseid;
+    protected $databaseid;
+
+    public function set_databaseid($newid) {
+        $this->databaseid = $newid;
+    }
 
     /**
      * The URL to start the meeting.
@@ -162,7 +166,7 @@ abstract class mod_zoom_instance {
         if (isset($this->$variable)) {
             return $this->$variable;
         } else {
-            // TODO: throw exception?
+            throw new \coding_exception("Nonexistent property accessed in mod/zoom/classes/instance.php.");
         }
     }
 
@@ -266,7 +270,7 @@ abstract class mod_zoom_instance {
 
         $data = array(
             'topic' => $this->name,
-            'type' => $this->type,
+            // 'type' => $this->type, // TODO: need type conversions
             'settings' => array(
                 'host_video' => (bool) ($this->hostvideo),
                 'audio' => $this->audio
@@ -386,6 +390,8 @@ abstract class mod_zoom_instance {
      * @param stdClass $record A record from the database.
      */
     public function populate_from_database_record($record) {
+        file_put_contents('/tmp/phpoutput', "its rohan\n", FILE_APPEND);
+        file_put_contents('/tmp/phpoutput', json_encode($record), FILE_APPEND);
         foreach (self::DATABASETOINSTANCEFIELDALIGNMENT as $databasefield => $objectfield) {
             if(isset($record->$databasefield)) {
                 $this->$objectfield = $record->$databasefield;
@@ -580,7 +586,7 @@ abstract class mod_zoom_instance {
 
 
 
-    // ---------- OTHER FUNCTIONS TO INSTANCE INTERACTIONS ----------
+    // ---------- OTHER FUNCTIONS ----------
 
     /**
      * Updates the timemodified field to now.

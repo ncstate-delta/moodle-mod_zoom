@@ -88,8 +88,8 @@ class mod_zoom_webservice {
      */
     public function __construct() {
         $config = get_config('mod_zoom');
-        if (!empty($config->zoomurl)) {
-            $this->apiurl = $config->zoomurl;
+        if (!empty($config->apiurl)) {
+            $this->apiurl = $config->apiurl;
         } else {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apiurl_missing', 'zoom'));
         }

@@ -60,7 +60,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $isnew = empty($this->_cm);
         if (!$isnew) {
             try {
-                $service->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
+                $service->get_instance_info($this->current->meeting_id, $this->current->webinar);
             } catch (moodle_exception $error) {
                 // If the meeting can't be found, offer to recreate the meeting on Zoom.
                 if (error_indicates_meeting_gone($error)) {

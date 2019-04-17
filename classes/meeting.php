@@ -86,7 +86,7 @@ class mod_zoom_meeting extends mod_zoom_instance {
             'option_jbh' => 'joinbeforehost'
         );
         foreach ($fieldalignment as $formfield => $objectfield) {
-            $this->objectfield = $formdata->formfield;
+            $this->$objectfield = $formdata->$formfield;
         }
     }
 
@@ -101,7 +101,7 @@ class mod_zoom_meeting extends mod_zoom_instance {
             'option_participants_video' => 'participantsvideo'
         );
         foreach ($fieldalignment as $databasefield => $objectfield) {
-            $data->databasefield = $this->objectfield;
+            $data->$databasefield = $this->$objectfield;
         }
         $data->webinar = 0;
         return $data;
