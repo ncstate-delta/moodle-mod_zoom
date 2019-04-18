@@ -67,48 +67,66 @@ if (empty($export) || empty($participants)) {
     }
 }
 
-// Loop through each user to generate name->uids mapping.
+// Loop through each user to generate id->idnumber mapping.
 $coursecontext = context_course::instance($course->id);
 $enrolled = get_enrolled_users($coursecontext);
-$nametouids = array();
 $moodleidtouids = array();
 foreach ($enrolled as $user) {
     $moodleidtouids[$user->id] = $user->idnumber;
-    $name = strtoupper(fullname($user));
-    $uids = empty($nametouids[$name]) ? array() : $nametouids[$name];
-    $uids[] = $user->idnumber;
-    $nametouids[$name] = $uids;
 }
 
 $table = new html_table();
-$table->head = array(get_string('idnumber'),
-                     get_string('name'),
-                     get_string('jointime', 'mod_zoom'),
-                     get_string('leavetime', 'mod_zoom'),
-                     get_string('duration', 'mod_zoom'),
-                     get_string('attentiveness_score', 'mod_zoom'));
+// If we are exporting, then put email as a separate column.
+if (!empty($export)) {
+    $table->head = array(get_string('idnumber'),
+                         get_string('name'),
+                         get_string('email'),
+                         get_string('jointime', 'mod_zoom'),
+                         get_string('leavetime', 'mod_zoom'),
+                         get_string('duration', 'mod_zoom'),
+                         get_string('attentiveness_score', 'mod_zoom'));
+} else {
+    $table->head = array(get_string('idnumber'),
+                         get_string('name'),
+                         get_string('jointime', 'mod_zoom'),
+                         get_string('leavetime', 'mod_zoom'),
+                         get_string('duration', 'mod_zoom'),
+                         get_string('attentiveness_score', 'mod_zoom'));
+}
 
 foreach ($participants as $p) {
     $row = array();
 
     // Gets moodleuser so we can try to match information to Moodle database.
-    $moodleuser = $DB->get_record('user', array('id' => $p->userid), 'idnumber, email');
+    $moodleuser = new stdClass();
+    if (!empty($p->userid)) {
+        $moodleuser = $DB->get_record('user', array('id' => $p->userid), 'idnumber, email');
+    }
 
     // ID number.
     if (array_key_exists($p->userid, $moodleidtouids)) {
         $row[] = $moodleidtouids[$p->userid];
-    } else if ($moodleuser) {
+    } else if (isset($moodleuser->idnumber)) {
         $row[] = $moodleuser->idnumber;
     } else {
         $row[] = '';
     }
 
-    // Name.
+    // Name/email.
     $name = $p->name;
+    $email = '';
     if (!empty($moodleuser->email)) {
-        $row[] = html_writer::link("mailto:$moodleuser->email", $name);
+        $email = $moodleuser->email;
     } else if (!empty($p->user_email)) {
-        $row[] = html_writer::link("mailto:$p->user_email", $name);
+        $email = $p->user_email;
+    }
+
+    // Put email in separate column if we are exporting to Excel.
+    if (!empty($export)) {
+        $row[] = $name;
+        $row[] = $email;
+    } else if (!empty($email)) {
+        $row[] = html_writer::link("mailto:$email", $name);
     } else {
         $row[] = $name;
     }
