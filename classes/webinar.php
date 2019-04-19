@@ -62,4 +62,13 @@ class mod_zoom_webinar extends mod_zoom_instance {
     protected function has_fixed_time() {
         return $this->type != RECURRING_WEBINAR_WITHOUT_FIXED_TIME;
     }
+
+    /**
+     * Maps recurrencetype to Zoom API's accepted types.
+     */
+    const RECURRENCETYPETOZOOMTYPEMAPPING = array(
+        parent::NOT_RECURRING => self::SCHEDULED_WEBINAR,
+        parent::RECURRING_WITHOUT_FIXED_TIME => self::RECURRING_WEBINAR_WITHOUT_FIXED_TIME,
+        parent::RECURRING_WITH_FIXED_TIME => self::RECURRING_WEBINAR_WITH_FIXED_TIME
+    );
 }

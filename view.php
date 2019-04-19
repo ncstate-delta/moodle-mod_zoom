@@ -55,7 +55,7 @@ $PAGE->set_title(format_string($instance->name));
 $PAGE->set_heading(format_string($course->fullname));
 
 $zoomuserid = zoom_get_user_id(false);
-$alternativehosts = $instance->alternative_hosts;;
+$alternativehosts = $instance->alternativehosts;
 $userishost = $instance->is_any_host($zoomuserid, $USER->email);
 
 $service = new mod_zoom_webservice();
@@ -179,7 +179,7 @@ if (!$instance->is_webinar()) {
 
 // Display the join url to hosts.
 if ($userishost) {
-    $table->data[] = array($strjoinlink, html_writer::link($instance->join_url, $instance->join_url, array('target' => '_blank')));
+    $table->data[] = array($strjoinlink, html_writer::link($instance->joinurl, $instance->joinurl, array('target' => '_blank')));
 }
 
 // Display some settings.

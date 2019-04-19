@@ -157,17 +157,18 @@ abstract class mod_zoom_instance {
      * Whether we could find the instance on Zoom's servers.
      * @var bool
      */
-    public $existsonzoom;
+    protected $existsonzoom;
 
     /**
      * Makes all private variables read-only.
      */
     public function __get($variable) {
-        if (isset($this->$variable)) {
-            return $this->$variable;
-        } else {
-            throw new \coding_exception("Nonexistent property accessed in mod/zoom/classes/instance.php.");
-        }
+        // if (isset($this->$variable)) {
+        //     return $this->$variable;
+        // } else {
+        //     throw new \coding_exception("Nonexistent property '$variable' accessed in mod/zoom/classes/instance.php.");
+        // }
+        return $this->$variable;
     }
 
     /**
@@ -268,9 +269,11 @@ abstract class mod_zoom_instance {
     public function export_to_api_format() {
         global $CFG;
 
+        file_put_contents('/tmp/phpoutput', "boi\n", FILE_APPEND);
+        file_put_contents('/tmp/phpoutput', json_encode(debug_backtrace(), JSON_PRETTY_PRINT), FILE_APPEND);
         $data = array(
             'topic' => $this->name,
-            // 'type' => $this->type, // TODO: need type conversions
+            'type' => static::RECURRENCETYPETOZOOMTYPEMAPPING[$this->recurrencetype], // TODO: need type conversions
             'settings' => array(
                 'host_video' => (bool) ($this->hostvideo),
                 'audio' => $this->audio
@@ -292,7 +295,7 @@ abstract class mod_zoom_instance {
         }
 
         // TODO: check this recurring/type stuff
-        if ($data['type'] == $this->ZOOM_SCHEDULED_MEETING || $data['type'] == $this->ZOOM_SCHEDULED_WEBINAR) {
+        if ($this->recurrencetype == self::NOT_RECURRING) {
             // Convert timestamp to ISO-8601. The API seems to insist that it end with 'Z' to indicate UTC.
             $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $this->starttime);
             $data['duration'] = (int) ceil($this->duration / 60);
@@ -390,8 +393,6 @@ abstract class mod_zoom_instance {
      * @param stdClass $record A record from the database.
      */
     public function populate_from_database_record($record) {
-        file_put_contents('/tmp/phpoutput', "its rohan\n", FILE_APPEND);
-        file_put_contents('/tmp/phpoutput', json_encode($record), FILE_APPEND);
         foreach (self::DATABASETOINSTANCEFIELDALIGNMENT as $databasefield => $objectfield) {
             if(isset($record->$databasefield)) {
                 $this->$objectfield = $record->$databasefield;
