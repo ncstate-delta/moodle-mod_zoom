@@ -257,7 +257,34 @@ abstract class mod_zoom_instance {
             // We store the start time in epoch format, but Zoom returns it in string format.
             $this->starttime = strtotime($response->start_time);
         }
-        // TODO: ADD ALL THAT RECURRING STUFF
+        
+        //recurrence fields
+        if(isset($response->recurrence->type)) {
+            $this->recurrencerepeattype = $response->recurrence->type;
+        }
+        if(isset($response->recurrence->repeat_interval)) {
+            $this->intervals = $response->recurrence->repeat_interval;
+        }
+        if(isset($response->recurrence->monthly_day)) {
+            $this->mday = $response->recurrence->monthly_day;
+        }
+        if(isset($response->recurrence->monthly_week)) {
+            $this->mweek = $response->recurrence->monthly_week;
+        }
+        if(isset($response->recurrence->monthly_week_day)) {
+            $this->mweekday = $response->recurrence->monthly_week_day;
+        }
+        if(isset($response->recurrence->weekly_days)) {
+            $this->weekday = $response->recurrence->weekly_days;
+        }
+        if(isset($response->recurrence->end_date_time)) {
+            $this->end_date_time = $response->recurrence->end_date_time;
+        }
+        if(isset($response->recurrence->end_times)) {
+            $this->numrecurrences = $response->recurrence->end_times;
+        }
+        
+        //settings fields
         if (isset($response->settings->alternative_hosts)) {
             $this->set_alternativehosts_from_string($response->settings->alternative_hosts);
         }
