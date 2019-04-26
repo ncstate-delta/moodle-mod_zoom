@@ -80,9 +80,8 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $newid = $DB->insert_record('zoom', $instance->export_to_database_format());
     $instance->set_databaseid($newid);
 
-    // TODO: figure out how to handle these
     zoom_calendar_item_update($instance);
-    zoom_grade_item_update($zoom);
+    zoom_grade_item_update($instance->export_to_database_format());
 
     return $newid;
 }
@@ -117,9 +116,8 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $service->update_instance($instance->export_to_api_format(), $instance->is_webinar(), $instance->id);
 
 
-    // TODO: need to fix these here too. kind of avoiding this haha.
     zoom_calendar_item_update($instance);
-    zoom_grade_item_update($zoom);
+    zoom_grade_item_update($instance->export_to_database_format());
 
     return $zoom->id;
 }
@@ -169,8 +167,8 @@ function zoom_delete_instance($id) {
     $DB->delete_records('zoom_meeting_details', array('meeting_id' => $instance->get_instance_id()));
 
     // Delete any dependent records here.
-    zoom_calendar_item_delete($zoom); // TODO: lol this thing again
-    zoom_grade_item_delete($zoom);
+    zoom_calendar_item_delete($instance);
+    zoom_grade_item_delete($instance->export_to_database_format());
 
     return true;
 }
@@ -237,6 +235,7 @@ function zoom_get_extra_capabilities() {
 
 /**
  * Create or update Moodle calendar event of the Zoom instance.
+ * I don't think this is a callback even though it starts with 'zoom'.
  *
  * @param mod_zoom\instance $instance
  */
@@ -244,10 +243,9 @@ function zoom_calendar_item_update(mod_zoom_instance $instance) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/calendar/lib.php');
 
-    $databaseid = $instance->databaseid;
     $eventid = $DB->get_field('event', 'id', array(
         'modulename' => 'zoom',
-        'instance' => $databaseid
+        'instance' => $instance->databaseid
     ));
 
     // Load existing event object, or create a new one.
@@ -262,16 +260,17 @@ function zoom_calendar_item_update(mod_zoom_instance $instance) {
 
 /**
  * Delete Moodle calendar event of the Zoom instance.
+ * I don't think this is a callback even though it starts with 'zoom'.
  *
- * @param stdClass $zoom
+ * @param mod_zoom\instance $instance
  */
-function zoom_calendar_item_delete(stdClass $zoom) {
+function zoom_calendar_item_delete(mod_zoom_instance $instance) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/calendar/lib.php');
 
     $eventid = $DB->get_field('event', 'id', array(
         'modulename' => 'zoom',
-        'instance' => $zoom->id
+        'instance' => $instance->databaseid
     ));
     if (!empty($eventid)) {
         calendar_event::load($eventid)->delete();
@@ -321,7 +320,7 @@ function zoom_scale_used_anywhere($scaleid) {
 /**
  * Creates or updates grade item for the given zoom instance
  *
- * Needed by {@link grade_update_mod_grades()}. This is a callback?
+ * This is a callback: Needed by {@link grade_update_mod_grades()}.
  *
  * @param stdClass $zoom instance object with extra cmidnumber and modname property
  * @param array $grades optional array/object of grade(s); 'reset' means reset grades in gradebook

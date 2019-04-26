@@ -257,7 +257,7 @@ abstract class mod_zoom_instance {
             // We store the start time in epoch format, but Zoom returns it in string format.
             $this->starttime = strtotime($response->start_time);
         }
-        
+
         //recurrence fields
         if(isset($response->recurrence->type)) {
             $this->recurrencerepeattype = $response->recurrence->type;
@@ -283,7 +283,7 @@ abstract class mod_zoom_instance {
         if(isset($response->recurrence->end_times)) {
             $this->numrecurrences = $response->recurrence->end_times;
         }
-        
+
         //settings fields
         if (isset($response->settings->alternative_hosts)) {
             $this->set_alternativehosts_from_string($response->settings->alternative_hosts);
@@ -300,7 +300,7 @@ abstract class mod_zoom_instance {
         file_put_contents('/tmp/phpoutput', json_encode(debug_backtrace(), JSON_PRETTY_PRINT), FILE_APPEND);
         $data = array(
             'topic' => $this->name,
-            'type' => static::RECURRENCETYPETOZOOMTYPEMAPPING[$this->recurrencetype], // TODO: need type conversions
+            'type' => static::RECURRENCETYPETOZOOMTYPEMAPPING[$this->recurrencetype],
             'settings' => array(
                 'host_video' => (bool) ($this->hostvideo),
                 'audio' => $this->audio
@@ -321,8 +321,7 @@ abstract class mod_zoom_instance {
             $data['settings']['alternative_hosts'] = $this->get_string_from_alternativehosts();
         }
 
-        // TODO: check this recurring/type stuff
-        if ($this->recurrencetype == self::NOT_RECURRING) {
+        if ($this->recurrencetype != self::RECURRING_WITHOUT_FIXED_TIME) {
             // Convert timestamp to ISO-8601. The API seems to insist that it end with 'Z' to indicate UTC.
             $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $this->starttime);
             $data['duration'] = (int) ceil($this->duration / 60);
@@ -502,7 +501,6 @@ abstract class mod_zoom_instance {
     /**
      * The manner in which the instance recures.
      * Uses class constants.
-     * TODO: make mapping in each subclass to Zoom's API type
      * @var int
      */
     protected $recurrencetype;
@@ -510,7 +508,6 @@ abstract class mod_zoom_instance {
     /**
      * Whether the instance occurs daily, monthly, weekly, or not at all.
      * Uses class constants.
-     * TODO: what should i call this variable
      * @var int
      */
     protected $recurrencerepeattype;
@@ -551,7 +548,7 @@ abstract class mod_zoom_instance {
     /**
      * The date and time which after an recurring meeting will not recur.
      * 'end_date_time' in Zoom API.
-     * empty string if $lastrecurrence is not used. TODO: should use separate bool?
+     * empty string if $lastrecurrence is not used.
      * @var string
      */
     protected $lastrecurrence;
