@@ -42,73 +42,12 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class get_meeting_reports extends \core\task\scheduled_task {
-    /**
-     * Formats participants array as a record for the database.
-     *
-     * @param stdClass $participant Unformatted array received from web service API call.
-     * @param int $detailsid The id to link to the zoom_meeting_details table.
-     * @param array $names Array that contains mappings of user's moodle ID to the user's name.
-     * @param array $emails Array that contains mappings of user's moodle ID to the user's email.
-     * @return array Formatted array that is ready to be inserted into the database table.
-     */
-    private function format_participant($participant, $detailsid, $names, $emails) {
-        global $DB;
-        $moodleuser = null;
-        $user = null;
-        $moodleuserid = null;
-        $name = null;
-
-        // Reset gets the value of first element in the array, or returns false if empty.
-        // The returned array is indexed by the id field, and we won't know the values of id otherwise.
-        $participantmatches = $DB->get_records('zoom_meeting_participants',
-                                                array('uuid' => $participant->id), null, 'id, userid, name');
-        if ($user = reset($participantmatches)) {
-            $moodleuserid = $user->userid;
-            $name = $user->name;
-        } else if (!empty($participant->user_email) && ($moodleuserid = array_search($participant->user_email, $emails))) {
-            $name = $names[$moodleuserid];
-        } else if (!empty($participant->name) && ($moodleuserid = array_search($participant->name, $names))) {
-            $name = $names[$moodleuserid];
-        } else if (!empty($participant->user_email) &&
-                ($moodleuser = $DB->get_record('user', array('email' => $participant->user_email,
-                'deleted' => 0, 'suspended' => 0), '*', IGNORE_MULTIPLE))) {
-            // This is the case where someone attends the meeting, but is not enrolled in the class.
-            $moodleuserid = $moodleuser->id;
-            $name = strtoupper(fullname($moodleuser));
-        } else {
-            $name = $participant->name;
-            $moodleuserid = null;
-        }
-
-        if ($participant->user_email == '') {
-            $participant->user_email = null;
-        }
-        if ($participant->id == '') {
-            $participant->id = null;
-        }
-
-        return array(
-            'name' => $name,
-            'userid' => $moodleuserid,
-            'detailsid' => $detailsid,
-            'zoomuserid' => $participant->user_id,
-            'uuid' => $participant->id,
-            'user_email' => $participant->user_email,
-            'join_time' => strtotime($participant->join_time),
-            'leave_time' => strtotime($participant->leave_time),
-            'duration' => $participant->duration,
-            'attentiveness_score' => $participant->attentiveness_score
-        );
-    }
 
     /**
-     * Retrieves the number of API report calls that are still available.
-     *
-     * @return int The number of available calls that are left.
+     * Percentage in which we want similar_text to reach before we consider
+     * using its results.
      */
-    private function get_num_calls_left() {
-        return get_config('mod_zoom', 'calls_left');
-    }
+    const SIMILARNAME_THRESHOLD = 60;
 
     /**
      * Compare function for usort.
@@ -196,15 +135,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 $participants = $service->get_meeting_participants($meeting->uuid, $iswebinar);
 
                 // Loop through each user to generate name->uids mapping.
-                $coursecontext = \context_course::instance($zoomrecord->course);
-                $enrolled = get_enrolled_users($coursecontext);
-                $names = array();
-                $emails = array();
-                foreach ($enrolled as $user) {
-                    $name = strtoupper(fullname($user));
-                    $names[$user->id] = $name;
-                    $emails[$user->id] = strtoupper($user->email);
-                }
+                list($names, $emails) = $this->get_enrollments($zoomrecord->course);
 
                 foreach ($participants as $rawparticipant) {
                     $participant = $this->format_participant($rawparticipant, $detailsid, $names, $emails);
@@ -218,11 +149,180 @@ class get_meeting_reports extends \core\task\scheduled_task {
     }
 
     /**
+     * Formats participants array as a record for the database.
+     *
+     * @param stdClass $participant Unformatted array received from web service API call.
+     * @param int $detailsid The id to link to the zoom_meeting_details table.
+     * @param array $names Array that contains mappings of user's moodle ID to the user's name.
+     * @param array $emails Array that contains mappings of user's moodle ID to the user's email.
+     * @return array Formatted array that is ready to be inserted into the database table.
+     */
+    public function format_participant($participant, $detailsid, $names, $emails) {
+        global $DB;
+        $moodleuser = null;
+        $moodleuserid = null;
+        $name = null;
+
+        // Cleanup the name. For some reason # gets into the name instead of a comma.
+        $participant->name = str_replace('#', ',', $participant->name);
+
+        // Try to see if we successfully queried for this user and found a Moodle id before.
+        if (!empty($participant->id)) {
+            // Sometimes uuid is blank from Zoom.
+            $search = array('uuid' => $participant->id);
+        } else {
+            // Try to find user by Zoom user id.
+            $search = array('zoomuserid' => $participant->user_id);
+        }
+
+        $participantmatches = $DB->get_records('zoom_meeting_participants',
+                $search, null, 'id, userid, name');
+
+        if (!empty($participantmatches)) {
+            // Found some previous matches. Find first one with userid set.
+            foreach ($participantmatches as $participantmatch) {
+                if (!empty($participantmatch->userid)) {
+                    $moodleuserid = $participantmatch->userid;
+                    $name = $participantmatch->name;
+                    break;
+                }
+            }
+        }
+
+        // Did not find a previous match.
+        if (empty($moodleuserid)) {
+            if (!empty($participant->user_email) && ($moodleuserid =
+                    array_search(strtoupper($participant->user_email), $emails))) {
+                // Found email from list of enrolled users.
+                $name = $names[$moodleuserid];
+            } else if (!empty($participant->name) && ($moodleuserid =
+                    array_search(strtoupper($participant->name), $names))) {
+                // Found name from list of enrolled users.
+                $name = $names[$moodleuserid];
+            } else if (!empty($participant->user_email) &&
+                    ($moodleuser = $DB->get_record('user',
+                            array('email' => $participant->user_email,
+                            'deleted' => 0, 'suspended' => 0), '*', IGNORE_MULTIPLE))) {
+                // This is the case where someone attends the meeting, but is not enrolled in the class.
+                $moodleuserid = $moodleuser->id;
+                $name = strtoupper(fullname($moodleuser));
+            } else if (!empty($participant->name) && ($moodleuserid =
+                    $this->match_name($participant->name, $names))) {
+                // Found name by using fuzzy text search.
+                $name = $names[$moodleuserid];
+            } else {
+                // Did not find any matches, so use what is given by Zoom.
+                $name = $participant->name;
+                $moodleuserid = null;
+            }
+        }
+
+        if ($participant->user_email == '') {
+            $participant->user_email = null;
+        }
+        if ($participant->id == '') {
+            $participant->id = null;
+        }
+
+        return array(
+            'name' => $name,
+            'userid' => $moodleuserid,
+            'detailsid' => $detailsid,
+            'zoomuserid' => $participant->user_id,
+            'uuid' => $participant->id,
+            'user_email' => $participant->user_email,
+            'join_time' => strtotime($participant->join_time),
+            'leave_time' => strtotime($participant->leave_time),
+            'duration' => $participant->duration,
+            'attentiveness_score' => $participant->attentiveness_score
+        );
+    }
+
+    /**
+     * Get enrollment for given course.
+     *
+     * @param int $courseid
+     * @return array    Returns an array of names and emails.
+     */
+    public function get_enrollments($courseid) {
+        // Loop through each user to generate name->uids mapping.
+        $coursecontext = \context_course::instance($courseid);
+        $enrolled = get_enrolled_users($coursecontext);
+        $names = array();
+        $emails = array();
+        foreach ($enrolled as $user) {
+            $name = strtoupper(fullname($user));
+            $names[$user->id] = $name;
+            $emails[$user->id] = strtoupper($user->email);
+        }
+        return array($names, $emails);
+    }
+
+    /**
      * Returns name of task.
      *
      * @return string
      */
     public function get_name() {
         return get_string('getmeetingreports', 'mod_zoom');
+    }
+
+    /**
+     * Retrieves the number of API report calls that are still available.
+     *
+     * @return int The number of available calls that are left.
+     */
+    public function get_num_calls_left() {
+        return get_config('mod_zoom', 'calls_left');
+    }
+
+    /**
+     * Tries to match a given name to the roster using two different fuzzy text
+     * matching algorithms and if they match, then returns the match.
+     *
+     * @param string $nametomatch
+     * @param array $rosternames    Needs to be an array larger than 3 for any
+     *                              meaningful results.
+     *
+     * @return int  Returns id for $rosternames. Returns false if no match found.
+     */
+    private function match_name($nametomatch, $rosternames) {
+        if (count($rosternames) < 3) {
+            return false;
+        }
+
+        $nametomatch = strtoupper($nametomatch);
+        $similartextscores = [];
+        $levenshteinscores = [];
+        foreach ($rosternames as $name) {
+            similar_text($nametomatch, $name, $percentage);
+            if ($percentage > self::SIMILARNAME_THRESHOLD) {
+                $similartextscores[$name] = $percentage;
+                $levenshteinscores[$name] = levenshtein($nametomatch, $name);
+            }
+        }
+
+        // If we did not find any quality matches, then return false.
+        if (empty($similartextscores)) {
+            return false;
+        }
+
+        // Simlar text has better matches with higher numbers.
+        arsort($similartextscores);
+        reset($similartextscores);  // Make sure key gets first element.
+        $stmatch = key($similartextscores);
+
+        // Levenshtein has better matches with lower numbers.
+        asort($levenshteinscores);
+        reset($levenshteinscores);  // Make sure key gets first element.
+        $lmatch = key($levenshteinscores);
+
+        // If both matches, then we can be rather sure that it is the same user.
+        if ($stmatch == $lmatch) {
+            $moodleuserid = array_search($stmatch, $rosternames);
+            return $moodleuserid;
+        } else {
+            return false;
+        }
     }
 }
