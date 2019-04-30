@@ -169,22 +169,17 @@ class get_meeting_reports extends \core\task\scheduled_task {
         // Try to see if we successfully queried for this user and found a Moodle id before.
         if (!empty($participant->id)) {
             // Sometimes uuid is blank from Zoom.
-            $search = array('uuid' => $participant->id);
-        } else {
-            // Try to find user by Zoom user id.
-            $search = array('zoomuserid' => $participant->user_id);
-        }
+            $participantmatches = $DB->get_records('zoom_meeting_participants',
+                    array('uuid' => $participant->id), null, 'id, userid, name');
 
-        $participantmatches = $DB->get_records('zoom_meeting_participants',
-                $search, null, 'id, userid, name');
-
-        if (!empty($participantmatches)) {
-            // Found some previous matches. Find first one with userid set.
-            foreach ($participantmatches as $participantmatch) {
-                if (!empty($participantmatch->userid)) {
-                    $moodleuserid = $participantmatch->userid;
-                    $name = $participantmatch->name;
-                    break;
+            if (!empty($participantmatches)) {
+                // Found some previous matches. Find first one with userid set.
+                foreach ($participantmatches as $participantmatch) {
+                    if (!empty($participantmatch->userid)) {
+                        $moodleuserid = $participantmatch->userid;
+                        $name = $participantmatch->name;
+                        break;
+                    }
                 }
             }
         }

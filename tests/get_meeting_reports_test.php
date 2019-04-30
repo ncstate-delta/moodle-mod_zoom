@@ -170,26 +170,6 @@ class get_meeting_reports_test extends advanced_testcase {
         $this->assertEquals($participant['name'], $newparticipant['name']);
         // Email should match what Zoom gives us.
         $this->assertEquals($this->zoomdata->user_email, $newparticipant['user_email']);
-
-        // 6) Try to match user via user_id.
-
-        // Change uuid, email, user_id so no record is found.
-        $this->zoomdata->id = '';
-        $this->zoomdata->user_email = '';
-        $this->zoomdata->user_id = 987654321;
-
-        // Should find no matches.
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, $names, $emails);
-        $this->assertNull($participant['userid']);
-
-        // Now change Zoom data to match userid in database.
-        $this->zoomdata->user_id = 123456789;
-
-        // Should return the found entry in zoom_meeting_participants.
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, $names, $emails);
-        $this->assertEquals(999, $newparticipant['userid']);
     }
 
     /**

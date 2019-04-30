@@ -125,7 +125,12 @@ foreach ($meetings as $meeting) {
         cli_error('Error: Zoom Report API calls have been exhausted.');
     }
 
-    $participants = $service->get_meeting_participants($uuid, $zoomrecord->webinar);
+    try {
+        $participants = $service->get_meeting_participants($uuid, $zoomrecord->webinar);
+    } catch (Exception $e) {
+        $trace->output('Exception: ' . $e->getMessage(), 1);
+        continue;
+    }
     $trace->output(sprintf('Processing %d participants', count($participants)), 1);
     foreach ($participants as $rawparticipant) {
         $trace->output(sprintf('Working on %s (user_id: %d, uuid: %s)',
