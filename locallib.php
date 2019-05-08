@@ -27,6 +27,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use Firebase\JWT\JWT as JWT;
+
 global $CFG;
 require_once($CFG->dirroot.'/mod/zoom/lib.php');
 require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
