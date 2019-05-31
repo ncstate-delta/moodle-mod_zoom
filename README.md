@@ -16,6 +16,13 @@ Must set the following settings to enable the plugin:
 
 ## Changelog
 
+v2.1
+* Moodle 3.7 support (Thanks danmarsden) 
+* Privacy API support
+* Moodle mobile support fixed for 3.5 (Thanks nstefanski)
+* iCal generation
+* Various bug fixes/improvements.
+
 v2.0.1
 
 * Fixing conflicts with Firebase\JWT library. If more conflicts are found,
