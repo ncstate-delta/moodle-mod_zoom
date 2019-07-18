@@ -91,7 +91,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
  *
  * @param stdClass $zoom An object from the form in mod_form.php
  * @param mod_zoom_mod_form $mform The form instance (included because the function is used as a callback)
- * @return int The id of the newly inserted zoom record
+ * @return boolean Success/Failure
  */
 function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
@@ -108,12 +108,16 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     // Update meeting on Zoom.
     $service = new mod_zoom_webservice();
-    $service->update_meeting($zoom);
+    try {
+        $service->update_meeting($zoom);
+    } catch (moodle_exception $error) {
+        return false;
+    }
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
 
-    return $zoom->id;
+    return true;
 }
 
 /**
