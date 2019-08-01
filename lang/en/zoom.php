@@ -118,6 +118,7 @@ $string['report'] = 'Reports';
 $string['reportapicalls'] = 'Report API calls exhausted';
 $string['requirepassword'] = 'Require meeting password';
 $string['resetapicalls'] = 'Reset the number of available API calls';
+$string['search:activity'] = 'Zoom - activity information';
 $string['sessions'] = 'Sessions';
 $string['start'] = 'Start';
 $string['starthostjoins'] = 'Start video when host joins';
