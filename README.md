@@ -16,6 +16,13 @@ Must set the following settings to enable the plugin:
 
 ## Changelog
 
+v2.2
+* Resized svg icon (Thanks stopfstedt)
+* Fixed error handling for 'User not found on this account' (Thanks nstefanski and tzerafnx)
+* Incorrect return value for zoom_update_instance (Thanks jrchamp)
+* Added global search support
+* Fixed inconsistent "start_time" column (Thanks tuanngocnguyen)
+
 v2.1
 * Moodle 3.7 support (Thanks danmarsden) 
 * Privacy API support
