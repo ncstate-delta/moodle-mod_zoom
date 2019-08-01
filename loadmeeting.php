@@ -39,7 +39,7 @@ if ($id) {
 } else {
     print_error('You must specify a course_module ID');
 }
-$userishost = (zoom_get_user_id() == $zoom->host_id);
+$userishost = (zoom_get_user_id(false) == $zoom->host_id);
 
 require_login($course, true, $cm);
 
