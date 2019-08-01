@@ -182,7 +182,8 @@ function zoom_is_meeting_gone_error($error) {
  * @return bool
  */
 function zoom_is_user_not_found_error($error) {
-    return strpos($error, 'not exist') !== false || strpos($error, 'not belong to this account') !== false;
+    return strpos($error, 'not exist') !== false || strpos($error, 'not belong to this account') !== false
+        || strpos($error, 'not found on this account') !== false;
 }
 
 /**
