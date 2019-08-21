@@ -3,7 +3,7 @@ Zoom is the web and app based video conferencing service (http://zoom.us). This 
 
 ## Installation
 Requires Zoom API key and secret.
-See https://developer.zoom.us/docs/api/ and follow the link to "Get your API key pair from here (https://developer.zoom.us/me/#api)"
+See https://marketplace.zoom.us/docs/guides/authorization/jwt/jwt-with-zoom. You will need to create a JWT app and that will generate the API key and secret.
 
 You will need to have Zoom administrator access. Please note that the API key and secret is not the same as the LTI key/secret.
 
