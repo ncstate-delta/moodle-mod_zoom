@@ -103,10 +103,10 @@ class mod_zoom_webservice {
             $this->recyclelicenses = $config->utmost;
         }
         if ($this->recyclelicenses) {
-            if (!empty($config->licensescount)) {
-                $this->numlicenses = $config->licensescount;
+            if (!empty($config->licensesnumber)) {
+                $this->numlicenses = $config->licensesnumber;
             } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_licensescount_missing', 'zoom'));
+                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_licensesnumber_missing', 'zoom'));
             }
         }
     }
