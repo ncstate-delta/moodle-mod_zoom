@@ -95,12 +95,23 @@ if ($ADMIN->fulltree) {
             get_string('option_participants_video', 'zoom'), '', 1, 1, 0);
     $settings->add($defaultparticipantsvideo);
 
+    $defaultmuteoption = new admin_setting_configcheckbox('mod_zoom/defaultmuteoption',
+        get_string('option_mute_upon_entry', 'zoom'), '', 0, 1, 0);
+    $settings->add($defaultmuteoption);
+
     $audiochoices = array(ZOOM_AUDIO_TELEPHONY => get_string('audio_telephony', 'zoom'),
                           ZOOM_AUDIO_VOIP => get_string('audio_voip', 'zoom'),
                           ZOOM_AUDIO_BOTH => get_string('audio_both', 'zoom'));
     $defaultaudiooption = new admin_setting_configselect('mod_zoom/defaultaudiooption', get_string('option_audio', 'zoom'),
             '', ZOOM_AUDIO_BOTH, $audiochoices);
     $settings->add($defaultaudiooption);
+
+    $autorecordingchoices = array(ZOOM_REC_LOCAL => get_string('auto_rec_local', 'zoom'),
+        ZOOM_REC_CLOUD => get_string('auto_rec_cloud', 'zoom'),
+        ZOOM_REC_NONE => get_string('auto_rec_none', 'zoom'));
+    $defaultautorecording = new admin_setting_configselect('mod_zoom/defaultautorecording', get_string('auto_recording', 'zoom'),
+        '', ZOOM_REC_NONE, $autorecordingchoices);
+    $settings->add($defaultautorecording);
 
     $defaultjoinbeforehost = new admin_setting_configcheckbox('mod_zoom/defaultjoinbeforehost', get_string('option_jbh', 'zoom'),
             '', 0, 1, 0);

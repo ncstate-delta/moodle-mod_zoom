@@ -151,6 +151,13 @@ class mod_zoom_mod_form extends moodleform_mod {
         ), null, get_string('option_audio', 'zoom'));
         $mform->setDefault('option_audio', $config->defaultaudiooption);
 
+        //Add mute upon entry (false default)
+        $mform->addGroup(array(
+            $mform->createElement('radio', 'option_mute_upon_entry', '', get_string('on', 'zoom'), true),
+            $mform->createElement('radio', 'option_mute_upon_entry', '', get_string('off', 'zoom'), false)
+        ), null, get_string('option_mute_upon_entry', 'zoom'));
+        $mform->setDefault('option_mute_upon_entry', $config->defaultmuteoption);
+
         // Add meeting options. Make sure we pass $appendName as false
         // so the options aren't nested in a 'meetingoptions' array.
         $mform->addGroup(array(
@@ -160,6 +167,19 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('option_jbh', $config->defaultjoinbeforehost);
         $mform->addHelpButton('meetingoptions', 'meetingoptions', 'zoom');
         $mform->disabledIf('meetingoptions', 'webinar', 'checked');
+
+        //Add Auto recording option
+        $recordingattr = null;
+        if (!$service->_get_user_settings($zoomuser->id)->feature->cloud_recording) {
+            $recordingattr = array('disabled' => true, 'group' => null);
+        }
+        $mform->addGroup(array(
+            $mform->createElement('radio', 'auto_recording', '', get_string('auto_rec_none', 'zoom'), ZOOM_REC_NONE),
+            $mform->createElement('radio', 'auto_recording', '', get_string('auto_rec_local', 'zoom'), ZOOM_REC_LOCAL),
+            $mform->createElement('radio', 'auto_recording', '', get_string('auto_rec_cloud', 'zoom'), ZOOM_REC_CLOUD, $recordingattr)
+        ), 'auto_recording', get_string('auto_recording', 'zoom'));
+        $mform->setDefault('auto_recording', $config->autorecordingchoices);
+        $mform->addHelpButton('auto_recording', 'auto_recording', 'zoom');
 
         // Add alternative hosts.
         $mform->addElement('text', 'alternative_hosts', get_string('alternative_hosts', 'zoom'), array('size' => '64'));

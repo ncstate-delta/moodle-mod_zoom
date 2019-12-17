@@ -50,6 +50,10 @@ define('ZOOM_USER_TYPE_BASIC', 1);
 define('ZOOM_USER_TYPE_PRO', 2);
 define('ZOOM_USER_TYPE_CORP', 3);
 
+//Auto Recording options
+define('ZOOM_REC_LOCAL', 'local');
+define('ZOOM_REC_CLOUD', 'cloud');
+define('ZOOM_REC_NONE', 'none');
 /**
  * Get course/cm/zoom objects from url parameters, and check for login/permissions.
  *

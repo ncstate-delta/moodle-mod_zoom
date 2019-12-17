@@ -334,7 +334,9 @@ class mod_zoom_webservice {
             'topic' => $zoom->name,
             'settings' => array(
                 'host_video' => (bool) ($zoom->option_host_video),
-                'audio' => $zoom->option_audio
+                'audio' => $zoom->option_audio,
+                'mute_upon_entry' => (bool) ($zoom->option_mute_upon_entry),
+                'auto_recording' => $zoom->auto_recording
             )
         );
         if (isset($zoom->intro)) {
