@@ -101,6 +101,7 @@ $string['on'] = 'On';
 $string['option_audio'] = 'Audio options';
 $string['option_host_video'] = 'Host video';
 $string['option_jbh'] = 'Enable join before host';
+$string['option_mute_upon_entry'] = 'Mute attendees upon entry';
 $string['option_participants_video'] = 'Participants video';
 $string['participants'] = 'Participants';
 $string['password'] = 'Password';
