@@ -367,7 +367,6 @@ class mod_zoom_webservice {
             $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->start_time);
             $data['duration'] = (int) ceil($zoom->duration / 60);
         }
-		var_dump($data);
         return $data;
     }
 
