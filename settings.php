@@ -110,7 +110,7 @@ if ($ADMIN->fulltree) {
         ZOOM_REC_CLOUD => get_string('auto_rec_cloud', 'zoom'),
         ZOOM_REC_NONE => get_string('auto_rec_none', 'zoom'));
     $defaultautorecording = new admin_setting_configselect('mod_zoom/defaultautorecording', get_string('auto_recording', 'zoom'),
-        '', ZOOM_REC_NONE, $autorecordingchoices);
+        	'', ZOOM_REC_NONE, $autorecordingchoices);
     $settings->add($defaultautorecording);
 
     $defaultjoinbeforehost = new admin_setting_configcheckbox('mod_zoom/defaultjoinbeforehost', get_string('option_jbh', 'zoom'),
