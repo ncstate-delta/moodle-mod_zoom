@@ -336,26 +336,6 @@ function zoom_calendar_item_delete(stdClass $zoom) {
 /* Gradebook API */
 
 /**
- * Is a given scale used by the instance of zoom?
- *
- * This function returns if a scale is being used by one zoom
- * if it has support for grading and scales.
- *
- * @param int $zoomid ID of an instance of this module
- * @param int $scaleid ID of the scale
- * @return bool true if the scale is used by the given zoom instance
- */
-function zoom_scale_used($zoomid, $scaleid) {
-    global $DB;
-
-    if ($scaleid and $DB->record_exists('zoom', array('id' => $zoomid, 'grade' => -$scaleid))) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-/**
  * Checks if scale is being used by any instance of zoom.
  *
  * This is used to find out if scale used anywhere.
