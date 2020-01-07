@@ -28,6 +28,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot.'/mod/zoom/classes/Enums/MeetingType.php');
+require_once($CFG->dirroot.'/mod/zoom/classes/Enums/DaysOfWeek.php');
+require_once($CFG->dirroot.'/mod/zoom/classes/Enums/RecurringFrequency.php');
+require_once($CFG->dirroot.'/mod/zoom/classes/Enums/MonthlyWeek.php');
+require_once($CFG->dirroot.'/mod/zoom/classes/Enums/EndType.php');
 require_once($CFG->dirroot.'/mod/zoom/lib.php');
 require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
@@ -88,23 +93,267 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add description ('intro' and 'introformat').
         $this->standard_intro_elements();
+        // Repeat type
+        $mform->addElement('select', 'type', 'Type', MeetingType::get());
+        $mform->addHelpButton('type', 'form_repeat_type', 'zoom');
+        $mform->setDefault('type', 1);
+        $mform->addRule('type', null, 'required', null, 'client');
+
+        $mform->addElement('select', 'timezone', 'Time zone', [
+            'Pacific/Midway' => 'Midway Island, Samoa',
+            'Pacific/Pago_Pago' => 	'Pago Pago',
+            'Pacific/Honolulu' => 'Hawaii',
+            'America/Anchorage' => 'Alaska',
+            'America/Vancouver' => 'Vancouver',
+            'America/Los_Angeles' => 'Pacific Time (US and Canada)',
+            'America/Tijuana' => 	'Tijuana',
+            'America/Edmonton' => 	'Edmonton',
+            'America/Denver' => 	'Mountain Time (US and Canada)',
+            'America/Phoenix' => 	'Arizona',
+            'America/Mazatlan' => 	'Mazatlan',
+            'America/Winnipeg' => 	'Winnipeg',
+            'America/Regina' => 	'Saskatchewan',
+            'America/Chicago' => 	'Central Time (US and Canada)',
+            'America/Mexico_City' => 	'Mexico City',
+            'America/Guatemala' => 	'Guatemala',
+            'America/El_Salvador' => 	'El Salvador',
+            'America/Managua' => 'Managua',
+            'America/Costa_Rica' => 	'Costa Rica',
+            'America/Montreal' => 	'Montreal',
+            'America/New_York' => 	'Eastern Time (US and Canada)',
+            'America/Indianapolis' => 	'Indiana (East)',
+            'America/Panama' => 	'Panama',
+            'America/Bogota' => 	'Bogota',
+            'America/Lima' => 	'Lima',
+            'America/Halifax' => 	'Halifax',
+            'America/Puerto_Rico' => 	'Puerto Rico',
+            'America/Caracas' =>	'Caracas',
+            'America/Santiago' => 	'Santiago',
+            'America/St_Johns' => 	'Newfoundland and Labrador',
+            'America/Montevideo' => 	'Montevideo',
+            'America/Araguaina' => 	'Brasilia',
+            'America/Argentina/Buenos_Aires' => 'Buenos Aires, Georgetown',
+            'America/Godthab'	=> 'Greenland',
+            'America/Sao_Paulo' => 	'Sao Paulo',
+            'Atlantic/Azores' => 'Azores',
+            'Canada/Atlantic' => 'Atlantic Time (Canada)',
+            'Atlantic/Cape_Verde' => 'Cape Verde Islands',
+            'UTC' => 'Universal Time UTC',
+            'Etc/Greenwich' => 	'Greenwich Mean Time',
+            'Europe/Belgrade' => 'Belgrade, Bratislava, Ljubljana',
+            'CET' => 'Sarajevo, Skopje, Zagreb',
+            'Atlantic/Reykjavik' => 'Reykjavik',
+            'Europe/Dublin' => 	'Dublin',
+            'Europe/London' => 	'London',
+            'Europe/Lisbon' => 	'Lisbon',
+            'Africa/Casablanca' => 	'Casablanca',
+            'Africa/Nouakchott' => 	'Nouakchott',
+            'Europe/Oslo' => 	'Oslo',
+            'Europe/Copenhagen' => 	'Copenhagen',
+            'Europe/Brussels' => 'Brussels',
+            'Europe/Berlin' => 	'Amsterdam, Berlin, Rome, Stockholm, Vienna',
+            'Europe/Helsinki' => 	'Helsinki',
+            'Europe/Amsterdam' => 	'Amsterdam',
+            'Europe/Rome' => 'Rome',
+            'Europe/Stockholm' => 	'Stockholm',
+            'Europe/Vienna' => 	'Vienna',
+            'Europe/Luxembourg' => 	'Luxembourg',
+            'Europe/Paris' => 'Paris',
+            'Europe/Zurich' => 	'Zurich',
+            'Europe/Madrid' => 	'Madrid',
+            'Africa/Bangui' => 	'West Central Africa',
+            'Africa/Algiers' => 'Algiers',
+            'Africa/Tunis' => 	'Tunis',
+            'Africa/Harare' => 	'Harare, Pretoria',
+            'Africa/Nairobi' => 'Nairobi',
+            'Europe/Warsaw' => 	'Warsaw',
+            'Europe/Prague' => 	'Prague Bratislava',
+            'Europe/Budapest' => 'Budapest',
+            'Europe/Sofia' => 'Sofia',
+            'Europe/Istanbul' => 'Istanbul',
+            'Europe/Athens' => 	'Athens',
+            'Europe/Bucharest' => 	'Bucharest',
+            'Asia/Nicosia' => 'Nicosia',
+            'Asia/Beirut' => 'Beirut',
+            'Asia/Damascus' => 	'Damascus',
+            'Asia/Jerusalem' => 	'Jerusalem',
+            'Asia/Amman' => 	'Amman',
+            'Africa/Tripoli' => 	'Tripoli',
+            'Africa/Cairo' => 	'Cairo',
+            'Africa/Johannesburg' => 	'Johannesburg',
+            'Europe/Moscow' => 	'Moscow',
+            'Asia/Baghdad' => 	'Baghdad',
+            'Asia/Kuwait' => 	'Kuwait',
+            'Asia/Riyadh' => 	'Riyadh',
+            'Asia/Bahrain' => 	'Bahrain',
+            'Asia/Qatar' => 	'Qatar',
+            'Asia/Aden' => 	'Aden',
+            'Asia/Tehran' => 	'Tehran',
+            'Africa/Khartoum' => 	'Khartoum',
+            'Africa/Djibouti' => 	'Djibouti',
+            'Africa/Mogadishu' => 	'Mogadishu',
+            'Asia/Dubai' => 	'Dubai',
+            'Asia/Muscat' => 	'Muscat',
+            'Asia/Baku' => 	'Baku, Tbilisi, Yerevan',
+            'Asia/Kabul' => 	'Kabul',
+            'Asia/Yekaterinburg' => 	'Yekaterinburg',
+            'Asia/Tashkent' => 	'Islamabad, Karachi, Tashkent',
+            'Asia/Kathmandu' => 	'Kathmandu',
+            'Asia/Novosibirsk' => 	'Novosibirsk',
+            'Asia/Almaty' => 	'Almaty',
+            'Asia/Dacca' => 	'Dacca',
+            'Asia/Krasnoyarsk' => 	'Krasnoyarsk',
+            'Asia/Dhaka' => 'Astana, Dhaka',
+            'Asia/Bangkok' => 	'Bangkok',
+            'Asia/Saigon' => 	'Vietnam',
+            'Asia/Jakarta' => 	'Jakarta',
+            'Asia/Irkutsk' => 'Irkutsk, Ulaanbaatar',
+            'Asia/Shanghai' => 	'Beijing, Shanghai',
+            'Asia/Hong_Kong' => 	'Hong Kong',
+            'Asia/Taipei' => 	'Taipei',
+            'Asia/Kuala_Lumpur' => 	'Kuala Lumpur',
+            'Asia/Singapore' => 	'Singapore',
+            'Australia/Perth' => 	'Perth',
+            'Asia/Yakutsk' => 	'Yakutsk',
+            'Asia/Seoul' => 	'Seoul',
+            'Asia/Tokyo' => 	'Osaka, Sapporo, Tokyo',
+            'Australia/Darwin' => 	'Darwin',
+            'Australia/Adelaide' => 	'Adelaide',
+            'Asia/Vladivostok' => 	'Vladivostok',
+            'Pacific/Port_Moresby' => 	'Guam, Port Moresby',
+            'Australia/Brisbane' => 'Brisbane',
+            'Australia/Sydney' => 'Canberra, Melbourne, Sydney',
+            'Australia/Hobart'=> 'Hobart',
+            'Asia/Magadan' => 'Magadan',
+            'SST' => 'Solomon Islands',
+            'Pacific/Noumea' => 'New Caledonia',
+            'Asia/Kamchatka' => 	'Kamchatka',
+            'Pacific/Fiji' => 	'Fiji Islands, Marshall Islands',
+            'Pacific/Auckland' => 	'Auckland, Wellington',
+            'Asia/Kolkata' => 	'Mumbai, Kolkata, New Delhi',
+            'Europe/Kiev' => 'Kiev',
+            'America/Tegucigalpa' => 'Tegucigalpa',
+            'Pacific/Apia' => 'Independent State of Samoa',
+        ]);
+        $mform->setDefault('timezone', 'Asia/Kolkata');
 
         // Add date/time. Validation in validation().
         $mform->addElement('date_time_selector', 'start_time', get_string('start_time', 'zoom'));
-        // Disable for recurring meetings.
-        $mform->disabledIf('start_time', 'recurring', 'checked');
 
         // Add duration.
         $mform->addElement('duration', 'duration', get_string('duration', 'zoom'), array('optional' => false));
+
+        // Adding the "recurring" type
+        $mform->addElement('select', 'recurring', 'Recurring', RecurringFrequency::get());
+        $mform->addHelpButton('recurring', 'form_recurring', 'webex');
+        $mform->hideIf('recurring', 'type', 'neq', MeetingType::Recurring_meeting_with_a_fixed_time);
+
+        $days_count = [];
+        for ($i = 1; $i <= 90; $i++) {
+            $days_count[$i] = $i;
+        }
+
+        // Adding the recurring interval in days
+        $mform->addElement('select', 'recurringdays', 'Repeat after X days', $days_count);
+        $mform->addHelpButton('recurringdays', 'form_recurringdays', 'webex');
+        $mform->hideIf('recurringdays', 'type', 'neq', MeetingType::Recurring_meeting_with_a_fixed_time);
+        $mform->hideIf('recurringdays', 'recurring', 'neq', RecurringFrequency::Daily);
+        $mform->setDefault('recurringdays', null);
+
+        $weeks_count = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $weeks_count[$i] = $i;
+        }
+
+        // Adding the recurring interval in weeks
+        $mform->addElement('select', 'recurringweeks', 'Repeat after X weeks', $weeks_count);
+        $mform->addHelpButton('recurringdays', 'form_recurringdays', 'webex');
+        $mform->hideIf('recurringweeks', 'type', 'neq', MeetingType::Recurring_meeting_with_a_fixed_time);
+        $mform->hideIf('recurringweeks', 'recurring', 'neq', RecurringFrequency::Weekly);
+        $mform->setDefault('recurringweeks', null);
+
+        $months_count = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $months_count[$i] = $i;
+        }
+
+        // Adding the recurring interval in months
+        $mform->addElement('select', 'recurringmonths', 'Repeat after X months', $months_count);
+        $mform->addHelpButton('recurringdays', 'form_recurringdays', 'webex');
+        $mform->hideIf('recurringmonths', 'type', 'neq', MeetingType::Recurring_meeting_with_a_fixed_time);
+        $mform->hideIf('recurringmonths', 'recurring', 'neq', RecurringFrequency::Monthly);
+        $mform->setDefault('recurringmonths', null);
+
+        // Adding the week days for weekly recurring meetings
+        $weeklygrp = [];
+        foreach (DaysOfWeek::get() as $key => $day){
+            $weeklygrp[] = &$mform->createElement('checkbox', strtolower($day), '', $day);
+        }
+        $mform->addGroup($weeklygrp, 'weeklygrp', get_string('form_weeklygrp', 'webex'), array('<br />','<br />','<br />','<br />','<br />','<br />'), false);
+        $mform->addHelpButton('weeklygrp', 'form_weeklygrp', 'webex');
+        $mform->hideIf('weeklygrp', 'type', 'neq', MeetingType::Recurring_meeting_with_a_fixed_time);
+        $mform->hideIf('weeklygrp', 'recurring', 'neq', RecurringFrequency::Weekly);
+
+        // Monthly recurring settings
+        $dates = [];
+        for ($i = 1; $i <= 31; $i++) {
+            $dates[$i] = $i;
+        }
+
+        //Add days of month for monthly recurring meetings
+        $monthlygrp1 = [];
+        $monthlygrp1[] = &$mform->createElement('checkbox','monthdaysenable','', 'Day', 0);
+        $monthlygrp1[] = &$mform->createElement('select','dayofmonth', '', $dates);
+        $mform->addGroup($monthlygrp1, 'monthlygrp1', 'Monthly', array('    '), false);
+        $mform->addHelpButton('monthlygrp1', 'form_monthlygrp', 'webex');
+        $mform->hideIf('monthlygrp1', 'type', 'neq', MeetingType::Recurring_meeting_with_a_fixed_time);
+        $mform->hideIf('monthlygrp1', 'recurring', 'neq', RecurringFrequency::Monthly);
+        $mform->disabledIf('monthlygrp1','dayofweekenable','checked');
+        $mform->disabledIf('monthlygrp1','monthdaysenable');
+        $mform->disabledIf('dayofmonth','monthdaysenable');
+
+        //Add days of week for monthly recurring meetings
+        $monthlygrp2 = [];
+        $monthlygrp2[] = &$mform->createElement('checkbox','dayofweekenable', '','Week',0);
+        $monthlygrp2[] = &$mform->createElement('select','weekofmonth', '', MonthlyWeek::get());
+        $monthlygrp2[] = &$mform->createElement('select','dayofweek', '', DaysOfWeek::get());
+        $mform->addGroup($monthlygrp2, 'monthlygrp2', '', ['  '], false);
+        $mform->hideIf('monthlygrp2', 'type', 'neq', MeetingType::Recurring_meeting_with_a_fixed_time);
+        $mform->hideIf('monthlygrp2', 'recurring', 'neq', RecurringFrequency::Monthly);
+        $mform->disabledIf('monthlygrp2','monthdaysenable','checked');
+        $mform->disabledIf('weekofmonth','dayofweekenable');
+        $mform->disabledIf('dayofweek','dayofweekenable');
+        //End of monthly recurring mettings settings
+
+        //Add the end type of recurring meeting
+        $mform->addElement('select', 'endtype', get_string('form_endingtype','webex'), EndType::get());
+        $mform->addHelpButton('endtype', 'form_endingtype', 'webex');
+        $mform->setType('endtype', PARAM_INT);
+        $mform->hideIf('endtype', 'type', 'neq', MeetingType::Recurring_meeting_with_a_fixed_time);
+
+        //Add the end date of recurring meeting
+        $mform->addElement('date_selector', 'enddate', 'End by', ['startyear' => 2018, 'optional' => false]);
+        $mform->addHelpButton('enddate', 'form_enddate', 'webex');
+        $mform->hideIf('enddate', 'type', 'neq', MeetingType::Recurring_meeting_with_a_fixed_time);
+        $mform->hideIf('enddate', 'endtype', 'neq', EndType::End_by_date);
+
+        //Add the occurrence count to end after
+        $occurrences = [];
+        for ($i = 1; $i <= 20; $i++) {
+            $occurrences[$i] = $i;
+        }
+        $mform->addElement('select','endafter', 'End after X occurrences', $occurrences);
+        $mform->addHelpButton('endafter', 'form_endafter', 'webex');
+        $mform->hideIf('endafter', 'type', 'neq', MeetingType::Recurring_meeting_with_a_fixed_time);
+        $mform->hideIf('endafter', 'endtype', 'neq', EndType::End_after_X_occurrence);
+
+
+        // Adding the "recurring" fieldset, where all the recurring based settings are showed
+        $mform->addElement('header', 'other', 'Others');
         // Validation in validation(). Default to one hour.
         $mform->setDefault('duration', array('number' => 1, 'timeunit' => 3600));
         // Disable for recurring meetings.
         $mform->disabledIf('duration', 'recurring', 'checked');
-
-        // Add recurring.
-        $mform->addElement('advcheckbox', 'recurring', get_string('recurringmeeting', 'zoom'));
-        $mform->setDefault('recurring', $config->defaultrecurring);
-        $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
 
         if ($isnew) {
             // Add webinar, disabled if the user cannot create webinars.

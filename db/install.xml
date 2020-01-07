@@ -19,7 +19,26 @@
         <FIELD NAME="name" TYPE="char" LENGTH="300" NOTNULL="true" SEQUENCE="false" COMMENT="Meeting topic. Max of 300 characters."/>
         <FIELD NAME="start_time" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting start time (Unix timestamp, seconds). For scheduled meeting only."/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp when the instance was last modified."/>
-        <FIELD NAME="recurring" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Is the meeting or webinar recurring?"/>
+        <FIELD NAME="type" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="Session repeat type"/>
+        <FIELD NAME="recurring" TYPE="char" LENGTH="15" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="recurringdays" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="recurringweeks" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="recurringmonths" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="monday" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="tuesday" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="wednesday" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="thursday" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="friday" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="saturday" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="sunday" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="monthdaysenable" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="dayofmonth" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="dayofweekenable" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="weekofmonth" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="dayofweek" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="endtype" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="enddate" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="endafter" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="webinar" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Is this a webinar?"/>
         <FIELD NAME="duration" TYPE="int" LENGTH="6" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting duration (seconds). For scheduled meeting only."/>
         <FIELD NAME="timezone" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Timezone to format start_time, like &quot;America/Los_Angeles&quot;. For scheduled meeting only."/>
