@@ -4,13 +4,13 @@ require_once($CFG->dirroot.'/mod/zoom/classes/Enums/BaseEnum.php');
 
 class MonthlyWeek extends BaseEnum
 {
-    const Last_week = -1;
+    const LAST_WEEK = -1;
 
-    const First_week = 1;
+    const FIRST_WEEK = 1;
 
-    const Second_week = 2;
+    const SECOND_WEEK = 2;
 
-    const Third_week = 3;
+    const THIRD_WEEK = 3;
 
-    const Fourth_week = 4;
+    const FOURTH_WEEK = 4;
 }

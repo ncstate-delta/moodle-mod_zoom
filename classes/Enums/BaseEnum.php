@@ -1,6 +1,6 @@
 <?php
 
-class BaseEnum
+abstract class BaseEnum
 {
     public static function toArray()
     {
@@ -9,10 +9,21 @@ class BaseEnum
         return $reflection->getConstants();
     }
 
-    public static function get()
+    public static function valueOf($key)
+    {
+        $array = static::toArray();
+        return $array[$key];
+    }
+
+    public static function search($value)
+    {
+        return \array_search($value, static::toArray());
+    }
+
+    public static function getValuesToDisplay()
     {
         return array_map(function ($value) {
-            return str_replace('_', ' ', $value);
+            return ucfirst(str_replace('_', ' ', strtolower($value)));
         }, array_flip(static::toArray()));
     }
 }

@@ -3,17 +3,17 @@ require_once($CFG->dirroot.'/mod/zoom/classes/Enums/BaseEnum.php');
 
 class DaysOfWeek extends BaseEnum
 {
-    const Sunday = 1;
+    const SUNDAY = 1;
 
-    const Monday = 2;
+    const MONDAY = 2;
 
-    const Tuesday = 3;
+    const TUESDAY = 3;
 
-    const Wednesday = 4;
+    const WEDNESDAY = 4;
 
-    const Thursday =  5;
+    const THURSDAY =  5;
 
-    const Friday =  6;
+    const FRIDAY =  6;
 
-    const Saturday = 7;
+    const SATURDAY = 7;
 }

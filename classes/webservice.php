@@ -339,6 +339,22 @@ class mod_zoom_webservice {
                 'auto_recording' => $zoom->auto_recording
             )
         );
+        if ($zoom->webinar) {
+            $data['type'] = $zoom->recurring
+                ? WebinarType::RECURRING_WITH_NO_FIXED_TIME
+                : WebinarType::WEBINAR;
+        } else {
+            //User provided meeting type
+            $data['type'] = isset($zoom->type)
+                ? (int) $zoom->type
+                : MeetingType::SCHEDULED_MEETING;
+
+            $data['settings']['join_before_host'] = (bool) ($zoom->option_jbh);
+            $data['settings']['participant_video'] = (bool) ($zoom->option_participants_video);
+        }
+        if ($zoom->recurring && ($zoom->type == MeetingType::RECURRING_WITH_FIXED_TIME)) {
+            $data['recurrence'] = $this->prepareRecurrenceSettings($zoom);
+        }
         if (isset($zoom->intro)) {
             $data['agenda'] = strip_tags($zoom->intro);
         }
@@ -354,19 +370,15 @@ class mod_zoom_webservice {
             $data['settings']['alternative_hosts'] = $zoom->alternative_hosts;
         }
 
-        if ($zoom->webinar) {
-            $data['type'] = $zoom->recurring ? ZOOM_RECURRING_WEBINAR : ZOOM_SCHEDULED_WEBINAR;
-        } else {
-            $data['type'] = $zoom->recurring ? ZOOM_RECURRING_MEETING : ZOOM_SCHEDULED_MEETING;
-            $data['settings']['join_before_host'] = (bool) ($zoom->option_jbh);
-            $data['settings']['participant_video'] = (bool) ($zoom->option_participants_video);
-        }
-
-        if ($data['type'] == ZOOM_SCHEDULED_MEETING || $data['type'] == ZOOM_SCHEDULED_WEBINAR) {
+        if ($data['type'] == MeetingType::SCHEDULED_MEETING
+            || $data['type'] != MeetingType::RECURRING_WITH_NO_FIXED_TIME
+            || $data['type'] == WebinarType::WEBINAR
+        ) {
             // Convert timestamp to ISO-8601. The API seems to insist that it end with 'Z' to indicate UTC.
             $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->start_time);
             $data['duration'] = (int) ceil($zoom->duration / 60);
         }
+
         return $data;
     }
 
@@ -521,5 +533,65 @@ class mod_zoom_webservice {
             $uuids[] = $user->id;
         }
         return $uuids;
+    }
+
+    /**
+     * Prepare the recurring meeting settings
+     * @param $zoom
+     * @return array
+     */
+    private function prepareRecurrenceSettings($zoom)
+    {
+        $recurrence_settings = [];
+
+        switch (RecurringFrequency::search($zoom->recurring_type)) {
+            case 'DAILY':
+                $recurrence_settings['type'] = (int) $zoom->recurring_type;
+                if (isset($zoom->recurringdays)) {
+                    $recurrence_settings['repeat_interval'] = (int) $zoom->recurringdays;
+                }
+                break;
+            case 'WEEKLY':
+                $recurrence_settings['type'] = (int)$zoom->recurring_type;
+                if (isset($zoom->recurringweeks)) {
+                    $recurrence_settings['repeat_interval'] = (int) $zoom->recurringweeks;
+                }
+                $week_days = array_keys(
+                        array_intersect_key(
+                            (array)$zoom,
+                            array_flip(array_map('strtolower', array_keys(DaysOfWeek::toArray())))
+                        )
+                );
+                if (!empty($week_days)) {
+                    $selected_week_days = [];
+                    foreach ($week_days AS $day) {
+                        $selected_week_days[] = DaysOfWeek::valueOf(strtoupper($day));
+                    }
+                    $recurrence_settings['weekly_days'] = implode(',', $selected_week_days);
+                }
+                break;
+            case 'MONTHLY':
+                $recurrence_settings['type'] = (int)$zoom->recurring_type;
+                if (isset($zoom->recurringmonths)) {
+                    $recurrence_settings['repeat_interval'] = (int) $zoom->recurringmonths;
+                }
+                if (isset($zoom->monthdaysenable) && (isset($zoom->dayofmonth))) {
+                    $recurrence_settings['monthly_day'] = (int) $zoom->dayofmonth;
+                } elseif (isset($zoom->dayofweekenable)) {
+                    $recurrence_settings['monthly_week'] = (int) $zoom->weekofmonth;
+                    $recurrence_settings['monthly_week_day'] = (int) $zoom->dayofweek;
+                }
+                break;
+            default:
+                return $recurrence_settings;
+        }
+
+        if ($zoom->endtype == EndType::END_BY_DATE && isset($zoom->enddate)) {
+            $recurrence_settings['end_date_time'] = $zoom->enddate;
+        } elseif (isset($zoom->endafter)) {
+            $recurrence_settings['end_times'] = (int) $zoom->endafter;
+        }
+
+        return $recurrence_settings;
     }
 }

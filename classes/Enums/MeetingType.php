@@ -4,11 +4,11 @@ require_once($CFG->dirroot.'/mod/zoom/classes/Enums/BaseEnum.php');
 
 class MeetingType extends BaseEnum
 {
-    const Instant_meeting = 1;
+    const INSTANT_MEETING = 1;
 
-    const Scheduled_Meeting = 2;
+    const SCHEDULED_MEETING = 2;
 
-    const Recurring_meeting_with_no_fixed_time = 3;
+    const RECURRING_WITH_NO_FIXED_TIME = 3;
 
-    const Recurring_meeting_with_a_fixed_time =  8;
+    const RECURRING_WITH_FIXED_TIME =  8;
 }
