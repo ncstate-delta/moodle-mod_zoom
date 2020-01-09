@@ -106,6 +106,8 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addElement('text', 'duration', get_string('duration', 'zoom'), array('size' => '10'));
         $mform->addRule('duration', 'Number', 'numeric', null, 'client');
         $mform->setType('duration', PARAM_INT);
+        $mform->setDefault('duration', 60);
+        $mform->applyFilter('duration', 'trim');
         $mform->hideIf('duration', 'type', 'eq', MeetingType::RECURRING_WITH_NO_FIXED_TIME);
 
         $mform->addElement('checkbox', 'recurring', 'Recurring');
@@ -120,7 +122,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Adding the "recurring" type
         $mform->addElement('select', 'recurring_type', 'Recurrence', RecurringFrequency::getValuesToDisplay());
-        $mform->addHelpButton('recurring', 'form_recurring', 'webex');
+        $mform->addHelpButton('recurring', 'form_recurring', 'zoom');
         $mform->hideIf('recurring_type', 'recurring', 'notchecked');
         $mform->hideIf('recurring_type', 'type', 'neq', MeetingType::RECURRING_WITH_FIXED_TIME);
 
@@ -131,7 +133,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Adding the recurring interval in days
         $mform->addElement('select', 'recurringdays', 'Repeat after X days', $days_count);
-        $mform->addHelpButton('recurringdays', 'form_recurringdays', 'webex');
+        $mform->addHelpButton('recurringdays', 'form_recurringdays', 'zoom');
         $mform->hideIf('recurringdays', 'recurring', 'notchecked');
         $mform->hideIf('recurringdays', 'type', 'neq', MeetingType::RECURRING_WITH_FIXED_TIME);
         $mform->hideIf('recurringdays', 'recurring_type', 'neq', RecurringFrequency::DAILY);
@@ -144,7 +146,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Adding the recurring interval in weeks
         $mform->addElement('select', 'recurringweeks', 'Repeat after X weeks', $weeks_count);
-        $mform->addHelpButton('recurringdays', 'form_recurringdays', 'webex');
+        $mform->addHelpButton('recurringdays', 'form_recurringdays', 'zoom');
         $mform->hideIf('recurringweeks', 'recurring', 'notchecked');
         $mform->hideIf('recurringweeks', 'type', 'neq', MeetingType::RECURRING_WITH_FIXED_TIME);
         $mform->hideIf('recurringweeks', 'recurring_type', 'neq', RecurringFrequency::WEEKLY);
@@ -157,7 +159,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Adding the recurring interval in months
         $mform->addElement('select', 'recurringmonths', 'Repeat after X months', $months_count);
-        $mform->addHelpButton('recurringdays', 'form_recurringdays', 'webex');
+        $mform->addHelpButton('recurringdays', 'form_recurringdays', 'zoom');
         $mform->hideIf('recurringmonths', 'recurring', 'notchecked');
         $mform->hideIf('recurringmonths', 'type', 'neq', MeetingType::RECURRING_WITH_FIXED_TIME);
         $mform->hideIf('recurringmonths', 'recurring_type', 'neq', RecurringFrequency::MONTHLY);
@@ -168,8 +170,8 @@ class mod_zoom_mod_form extends moodleform_mod {
         foreach (DaysOfWeek::getValuesToDisplay() as $key => $day){
             $weeklygrp[] = &$mform->createElement('checkbox', strtolower($day), '', $day);
         }
-        $mform->addGroup($weeklygrp, 'weeklygrp', get_string('form_weeklygrp', 'webex'), array('<br />','<br />','<br />','<br />','<br />','<br />'), false);
-        $mform->addHelpButton('weeklygrp', 'form_weeklygrp', 'webex');
+        $mform->addGroup($weeklygrp, 'weeklygrp', get_string('form_weeklygrp', 'zoom'), array('<br />','<br />','<br />','<br />','<br />','<br />'), false);
+        $mform->addHelpButton('weeklygrp', 'form_weeklygrp', 'zoom');
         $mform->hideIf('weeklygrp', 'recurring', 'notchecked');
         $mform->hideIf('weeklygrp', 'type', 'neq', MeetingType::RECURRING_WITH_FIXED_TIME);
         $mform->hideIf('weeklygrp', 'recurring_type', 'neq', RecurringFrequency::WEEKLY);
@@ -185,7 +187,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $monthlygrp1[] = &$mform->createElement('checkbox','monthdaysenable','', 'Day', 0);
         $monthlygrp1[] = &$mform->createElement('select','dayofmonth', '', $dates);
         $mform->addGroup($monthlygrp1, 'monthlygrp1', 'Monthly', array('    '), false);
-        $mform->addHelpButton('monthlygrp1', 'form_monthlygrp', 'webex');
+        $mform->addHelpButton('monthlygrp1', 'form_monthlygrp', 'zoom');
         $mform->hideIf('monthlygrp1', 'recurring', 'notchecked');
         $mform->hideIf('monthlygrp1', 'type', 'neq', MeetingType::RECURRING_WITH_FIXED_TIME);
         $mform->hideIf('monthlygrp1', 'recurring_type', 'neq', RecurringFrequency::MONTHLY);
@@ -208,15 +210,15 @@ class mod_zoom_mod_form extends moodleform_mod {
         //End of monthly recurring mettings settings
 
         //Add the end type of recurring meeting
-        $mform->addElement('select', 'endtype', get_string('form_endingtype','webex'), EndType::getValuesToDisplay());
-        $mform->addHelpButton('endtype', 'form_endingtype', 'webex');
+        $mform->addElement('select', 'endtype', get_string('form_endingtype','zoom'), EndType::getValuesToDisplay());
+        $mform->addHelpButton('endtype', 'form_endingtype', 'zoom');
         $mform->setType('endtype', PARAM_INT);
         $mform->hideIf('endtype', 'recurring', 'notchecked');
         $mform->hideIf('endtype', 'type', 'neq', MeetingType::RECURRING_WITH_FIXED_TIME);
 
         //Add the end date of recurring meeting
         $mform->addElement('date_selector', 'enddate', 'End by', ['startyear' => 2018, 'optional' => false]);
-        $mform->addHelpButton('enddate', 'form_enddate', 'webex');
+        $mform->addHelpButton('enddate', 'form_enddate', 'zoom');
         $mform->hideIf('enddate', 'recurring', 'notchecked');
         $mform->hideIf('enddate', 'type', 'neq', MeetingType::RECURRING_WITH_FIXED_TIME);
         $mform->hideIf('enddate', 'endtype', 'neq', EndType::END_BY_DATE);
@@ -227,7 +229,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             $occurrences[$i] = $i;
         }
         $mform->addElement('select','endafter', 'End after X occurrences', $occurrences);
-        $mform->addHelpButton('endafter', 'form_endafter', 'webex');
+        $mform->addHelpButton('endafter', 'form_endafter', 'zoom');
         $mform->hideIf('endafter', 'recurring', 'notchecked');
         $mform->hideIf('endafter', 'type', 'neq', MeetingType::RECURRING_WITH_FIXED_TIME);
         $mform->hideIf('endafter', 'endtype', 'neq', EndType::END_AFTER_X_OCCURRENCE);

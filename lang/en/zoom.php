@@ -140,6 +140,43 @@ $string['updatemeetings'] = 'Update meeting settings from Zoom';
 $string['usepersonalmeeting'] = 'Use personal meeting ID {$a}';
 $string['webinar'] = 'Webinar';
 $string['webinar_help'] = 'This option is only available to pre-authorized Zoom accounts.';
+
+$string['form_recurring'] = 'Recurring';
+$string['form_recurring_help'] = '<p>This setting determines whether your session recurs on a daily, weekly, or monthly basis.</p>
+<p><b>Daily</b>: This schedules a daily meeting. This works with the Every x days setting to determine if it is daily, every other day, etc.</p>
+<p><b>Weekly</b>: This enables the Weekly setting, allowing you to check the days of the week the session occurs.</p>
+<p><b>Monthly</b>: This allows you to schedule a session that occurs on a numbered day of the month (ie, every 3rd day of the month) or specified to a particular day (ie. every 1st Sunday).</p>';
+
+$string['form_repeat_type'] = 'Repeat type';
+$string['form_repeat_type_help'] = 'The session repeat type determines if the session is scheduled to occur once <b>(Recurring with no fixed time)</b> or multiple times <b>(Recurring with fixed time)</b>.  
+If you select a Recurring session, the settings below will be turned on for you to define how often the session takes place <b>(Daily, Weekly or Monthly)</b> and when the session is scheduled to end.';
+$string['form_recurringdays'] = 'Every X day(s)';
+$string['form_recurringdays_help'] = 'This setting works with the Daily recurring type to control how often the session is scheduled.  
+If you want to the session to take place every other day, then select 2.  To schedule a session every 3 days of the week, you would select 3, and so forth.';
+$string['form_weeklygrp'] = 'Weekly';
+$string['form_weeklygrp_help'] = 'Select the day(s) of the week your Weekly recurring sessions will occur on.  For example, a session could be scheduled for every Tuesday and Thursday.';
+$string['form_monthlygrp'] = 'Monthly';
+$string['form_monthlygrp_help'] = 'Here you can schedule your Monthly recurring session to occur on a numbered day of the month (ie, every 3rd day of the month) 
+or specified to a particular day of the week (ie. every 1st Sunday of the month).';
+$string['form_everymonths'] = 'of every X month(s)';
+$string['form_everymonths_help'] = 'This will schedule your monthly session to fall on every numbered day of the month that you define.  
+For example, if you select 5, your session will happen on the 5th day of each month - no matter what the actual day is (the 5th day could land on a Thursday one month and be a Saturday another).';
+$string['form_endingtype'] = 'Ending type';
+$string['form_endingtype_help'] = '<p>Set an ending type for your recurring session. You have two choices:</p>
+<ol>
+	<li>
+		<p>Ending: This allows you to set a specific date, month and year for the sessions to end using the Ending on setting.</p>
+	</li>
+	<li>
+		<p>Ending after X sessions: this option will allow you to choose the total number of sessions you plan to schedule using the ending After X sessions setting. 
+		For example, you can define a session to end after 6 meetings. This would set a daily session to end after 6 days, a weekly session to end after 6 weeks, and a monthly session to end after 6 months.</p>
+	</li>
+</ol>';
+$string['form_enddate'] = 'Ending on';
+$string['form_enddate_help'] = 'This setting works with the Ending type "Ending."  The date you set here will be the last date your recurring session occurs on.';
+$string['form_endafter'] = 'Every after X sessions(s)';
+$string['form_endafter_help'] = 'This setting defines the total number of recurring sessions scheduled. For example, you can define a session\'s schedule to end after 6 meetings.  
+This will work with whatever session type you defined previously (ie, if you defined a Weekly session on Thursday, the session would end after 6 Thursdays).';
 $string['webinar_already_true'] = '<p><b>This module was already set as a webinar, not meeting. You cannot toggle this setting after creating the webinar.</b></p>';
 $string['webinar_already_false'] = '<p><b>This module was already set as a meeting, not webinar. You cannot toggle this setting after creating the meeting.</b></p>';
 $string['zoom:addinstance'] = 'Add a new Zoom meeting';
