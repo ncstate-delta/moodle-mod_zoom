@@ -40,6 +40,7 @@ define('ZOOM_AUDIO_BOTH', 'both');
 define('ZOOM_INSTANT_MEETING', 1);
 define('ZOOM_SCHEDULED_MEETING', 2);
 define('ZOOM_RECURRING_MEETING', 3);
+define('ZOOM_RECURRING_MEETING_WITH_FIXED_TIME', 8);
 define('ZOOM_SCHEDULED_WEBINAR', 5);
 define('ZOOM_RECURRING_WEBINAR', 6);
 // Number of meetings per page from zoom's get user report.
@@ -234,4 +235,169 @@ function zoom_get_participants_report($detailsid) {
     ];
     $participants = $DB->get_records_sql($sql, $params);
     return $participants;
+}
+
+/**
+ * The datetime from the datetime selector is Already timezone adjusted for that user.
+ * So when they think they are setting 12am the timestamp really becomes 8am or so.
+ * We roll back this change by removing the offset so WebEx
+ * has to original time value. That way when WebEx add's in their timeZone adjustment
+ * or when moodle displays the time userdate will take tz into account.
+ *
+ * @param int $datetime
+ * @param string $format
+ * @return string
+ * @throws coding_exception
+ */
+function zoom_convert_date_time($datetime, $format = 'Y-m-d\TH:i:s') {
+    try {
+        return (new DateTimeImmutable('@'.$datetime))
+            ->setTimezone(core_date::get_user_timezone_object())
+            ->format($format);
+    } catch (Exception $e) {
+        throw new coding_exception($e->getMessage(), $e->getTraceAsString());
+    }
+}
+
+/**
+ * Get zoom supported time zones
+ * @return array
+ */
+function zoom_get_time_zones() {
+    return [
+        'Pacific/Midway' => 'Midway Island, Samoa',
+        'Pacific/Pago_Pago' => 'Pago Pago',
+        'Pacific/Honolulu' => 'Hawaii',
+        'America/Anchorage' => 'Alaska',
+        'America/Vancouver' => 'Vancouver',
+        'America/Los_Angeles' => 'Pacific Time (US and Canada)',
+        'America/Tijuana' => 'Tijuana',
+        'America/Edmonton' => 'Edmonton',
+        'America/Denver' => 'Mountain Time (US and Canada)',
+        'America/Phoenix' => 'Arizona',
+        'America/Mazatlan' => 'Mazatlan',
+        'America/Winnipeg' => 'Winnipeg',
+        'America/Regina' => 'Saskatchewan',
+        'America/Chicago' => 'Central Time (US and Canada)',
+        'America/Mexico_City' => 'Mexico City',
+        'America/Guatemala' => 'Guatemala',
+        'America/El_Salvador' => 'El Salvador',
+        'America/Managua' => 'Managua',
+        'America/Costa_Rica' => 'Costa Rica',
+        'America/Montreal' => 'Montreal',
+        'America/New_York' => 'Eastern Time (US and Canada)',
+        'America/Indianapolis' => 'Indiana (East)',
+        'America/Panama' => 'Panama',
+        'America/Bogota' => 'Bogota',
+        'America/Lima' => 'Lima',
+        'America/Halifax' => 'Halifax',
+        'America/Puerto_Rico' => 'Puerto Rico',
+        'America/Caracas' => 'Caracas',
+        'America/Santiago' => 'Santiago',
+        'America/St_Johns' => 'Newfoundland and Labrador',
+        'America/Montevideo' => 'Montevideo',
+        'America/Araguaina' => 'Brasilia',
+        'America/Argentina/Buenos_Aires' => 'Buenos Aires, Georgetown',
+        'America/Godthab' => 'Greenland',
+        'America/Sao_Paulo' => 'Sao Paulo',
+        'Atlantic/Azores' => 'Azores',
+        'Canada/Atlantic' => 'Atlantic Time (Canada)',
+        'Atlantic/Cape_Verde' => 'Cape Verde Islands',
+        'UTC' => 'Universal Time UTC',
+        'Etc/Greenwich' => 'Greenwich Mean Time',
+        'Europe/Belgrade' => 'Belgrade, Bratislava, Ljubljana',
+        'CET' => 'Sarajevo, Skopje, Zagreb',
+        'Atlantic/Reykjavik' => 'Reykjavik',
+        'Europe/Dublin' => 'Dublin',
+        'Europe/London' => 'London',
+        'Europe/Lisbon' => 'Lisbon',
+        'Africa/Casablanca' => 'Casablanca',
+        'Africa/Nouakchott' => 'Nouakchott',
+        'Europe/Oslo' => 'Oslo',
+        'Europe/Copenhagen' => 'Copenhagen',
+        'Europe/Brussels' => 'Brussels',
+        'Europe/Berlin' => 'Amsterdam, Berlin, Rome, Stockholm, Vienna',
+        'Europe/Helsinki' => 'Helsinki',
+        'Europe/Amsterdam' => 'Amsterdam',
+        'Europe/Rome' => 'Rome',
+        'Europe/Stockholm' => 'Stockholm',
+        'Europe/Vienna' => 'Vienna',
+        'Europe/Luxembourg' => 'Luxembourg',
+        'Europe/Paris' => 'Paris',
+        'Europe/Zurich' => 'Zurich',
+        'Europe/Madrid' => 'Madrid',
+        'Africa/Bangui' => 'West Central Africa',
+        'Africa/Algiers' => 'Algiers',
+        'Africa/Tunis' => 'Tunis',
+        'Africa/Harare' => 'Harare, Pretoria',
+        'Africa/Nairobi' => 'Nairobi',
+        'Europe/Warsaw' => 'Warsaw',
+        'Europe/Prague' => 'Prague Bratislava',
+        'Europe/Budapest' => 'Budapest',
+        'Europe/Sofia' => 'Sofia',
+        'Europe/Istanbul' => 'Istanbul',
+        'Europe/Athens' => 'Athens',
+        'Europe/Bucharest' => 'Bucharest',
+        'Asia/Nicosia' => 'Nicosia',
+        'Asia/Beirut' => 'Beirut',
+        'Asia/Damascus' => 'Damascus',
+        'Asia/Jerusalem' => 'Jerusalem',
+        'Asia/Amman' => 'Amman',
+        'Africa/Tripoli' => 'Tripoli',
+        'Africa/Cairo' => 'Cairo',
+        'Africa/Johannesburg' => 'Johannesburg',
+        'Europe/Moscow' => 'Moscow',
+        'Asia/Baghdad' => 'Baghdad',
+        'Asia/Kuwait' => 'Kuwait',
+        'Asia/Riyadh' => 'Riyadh',
+        'Asia/Bahrain' => 'Bahrain',
+        'Asia/Qatar' => 'Qatar',
+        'Asia/Aden' => 'Aden',
+        'Asia/Tehran' => 'Tehran',
+        'Africa/Khartoum' => 'Khartoum',
+        'Africa/Djibouti' => 'Djibouti',
+        'Africa/Mogadishu' => 'Mogadishu',
+        'Asia/Dubai' => 'Dubai',
+        'Asia/Muscat' => 'Muscat',
+        'Asia/Baku' => 'Baku, Tbilisi, Yerevan',
+        'Asia/Kabul' => 'Kabul',
+        'Asia/Yekaterinburg' => 'Yekaterinburg',
+        'Asia/Tashkent' => 'Islamabad, Karachi, Tashkent',
+        'Asia/Kathmandu' => 'Kathmandu',
+        'Asia/Novosibirsk' => 'Novosibirsk',
+        'Asia/Almaty' => 'Almaty',
+        'Asia/Dacca' => 'Dacca',
+        'Asia/Krasnoyarsk' => 'Krasnoyarsk',
+        'Asia/Dhaka' => 'Astana, Dhaka',
+        'Asia/Bangkok' => 'Bangkok',
+        'Asia/Saigon' => 'Vietnam',
+        'Asia/Jakarta' => 'Jakarta',
+        'Asia/Irkutsk' => 'Irkutsk, Ulaanbaatar',
+        'Asia/Shanghai' => 'Beijing, Shanghai',
+        'Asia/Hong_Kong' => 'Hong Kong',
+        'Asia/Taipei' => 'Taipei',
+        'Asia/Kuala_Lumpur' => 'Kuala Lumpur',
+        'Asia/Singapore' => 'Singapore',
+        'Australia/Perth' => 'Perth',
+        'Asia/Yakutsk' => 'Yakutsk',
+        'Asia/Seoul' => 'Seoul',
+        'Asia/Tokyo' => 'Osaka, Sapporo, Tokyo',
+        'Australia/Darwin' => 'Darwin',
+        'Australia/Adelaide' => 'Adelaide',
+        'Asia/Vladivostok' => 'Vladivostok',
+        'Pacific/Port_Moresby' => 'Guam, Port Moresby',
+        'Australia/Brisbane' => 'Brisbane',
+        'Australia/Sydney' => 'Canberra, Melbourne, Sydney',
+        'Australia/Hobart' => 'Hobart',
+        'Asia/Magadan' => 'Magadan',
+        'SST' => 'Solomon Islands',
+        'Pacific/Noumea' => 'New Caledonia',
+        'Asia/Kamchatka' => 'Kamchatka',
+        'Pacific/Fiji' => 'Fiji Islands, Marshall Islands',
+        'Pacific/Auckland' => 'Auckland, Wellington',
+        'Asia/Kolkata' => 'Mumbai, Kolkata, New Delhi',
+        'Europe/Kiev' => 'Kiev',
+        'America/Tegucigalpa' => 'Tegucigalpa',
+        'Pacific/Apia' => 'Independent State of Samoa',
+    ];
 }

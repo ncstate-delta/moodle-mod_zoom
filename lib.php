@@ -143,7 +143,7 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
         }
     }
     if (isset($response->duration)) {
-        $newzoom->duration = $response->duration * 60;
+        $newzoom->duration = $response->duration;
     }
     $newzoom->meeting_id = $response->id;
     $newzoom->name = $response->topic;
@@ -153,7 +153,10 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->start_time)) {
         $newzoom->start_time = strtotime($response->start_time);
     }
-    $newzoom->recurring = $response->type == ZOOM_RECURRING_MEETING || $response->type == ZOOM_RECURRING_WEBINAR;
+    $newzoom->recurring = $response->type == ZOOM_RECURRING_MEETING
+        || $response->type == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME
+        || $response->type == ZOOM_RECURRING_WEBINAR;
+
     if (isset($response->password)) {
         $newzoom->password = $response->password;
     }
@@ -166,8 +169,10 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->settings->alternative_hosts)) {
         $newzoom->alternative_hosts = $response->settings->alternative_hosts;
     }
+    if (isset($response->password)) {
+        $newzoom->password = $response->password;
+    }
     $newzoom->timemodified = time();
-
     return $newzoom;
 }
 
