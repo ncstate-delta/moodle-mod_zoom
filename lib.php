@@ -292,26 +292,24 @@ function zoom_get_extra_capabilities() {
 function zoom_calendar_item_update(stdClass $zoom) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/calendar/lib.php');
+    require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
-    $event = new stdClass();
-    $event->name = $zoom->name;
-    if ($zoom->intro) {
-        $event->description = $zoom->intro;
-        $event->format = $zoom->introformat;
-    }
-    $event->timestart = $zoom->start_time;
-    $event->timeduration = $zoom->duration;
-    $event->visible = !$zoom->recurring;
+    //Delete the existing events associated with the zoom id
+    $DB->delete_records('event', ['modulename' => 'zoom', 'instance' => $zoom->id]);
 
-    $eventid = $DB->get_field('event', 'id', array(
-        'modulename' => 'zoom',
-        'instance' => $zoom->id
-    ));
-
-    // Load existing event object, or create a new one.
-    if (!empty($eventid)) {
-        calendar_event::load($eventid)->update($event);
-    } else {
+    $service = new mod_zoom_webservice();
+    $zoom_meeting = $service->get_meeting($zoom->meeting_id);
+    // Create new events
+    foreach ($zoom_meeting->occurrences AS $meeting_occurrences) {
+        $event = new stdClass();
+        $event->name = $zoom->name;
+        if ($zoom->intro) {
+            $event->description = $zoom->intro;
+            $event->format = $zoom->introformat;
+        }
+        $event->timestart = strtotime($meeting_occurrences->start_time);
+        $event->timeduration = $zoom->duration;
+        $event->visible = !$zoom->recurring;
         $event->courseid = $zoom->course;
         $event->modulename = 'zoom';
         $event->instance = $zoom->id;
