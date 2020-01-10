@@ -115,7 +115,8 @@ $numcolumns = 2;
 
 list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
-if ($available) {
+$enddate = $zoom->start_time + $zoom->duration;
+if ($available && ($zoom->start_time - (get_config('zoom', 'opentime') * MINSECS)) < time() && $enddate > time()) {
     if ($userishost) {
         $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
     } else {
@@ -163,7 +164,7 @@ if ($zoom->recurring) {
         $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
         $buttonhtml = html_writer::link((string)$icallink, $calendarbutton, array('target' => '_blank'));
         $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
-        $table->data[] = array($strtime, userdate($zoom->start_time));
+        $table->data[] = array($strtime, zoom_convert_date_time($zoom->start_time, 'jS F Y, g:h A'));
         $table->data[] = array('Time zone', zoom_get_time_zones()[$zoom->timezone]);
         $table->data[] = array($strduration, (int)$zoom->duration);
     } else {
