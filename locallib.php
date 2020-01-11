@@ -127,15 +127,23 @@ function zoom_get_state($zoom) {
     $config = get_config('mod_zoom');
     $now = time();
 
-    $firstavailable = $zoom->start_time - ($config->firstabletojoin * 60);
-    $lastavailable = $zoom->start_time + $zoom->duration;
+    if ($zoom->type == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME) {
+        $service = new mod_zoom_webservice();
+        $meetings = $service->get_meeting($zoom->meeting_id)->occurrences;
+        $start_time = strtotime(zoom_get_latest_meeting($meetings)->start_time);
+    } else {
+        $start_time = $zoom->start_time;
+    }
+
+    $firstavailable = $start_time - ($config->firstabletojoin * 60);
+    $lastavailable = $start_time + $zoom->duration;
     $inprogress = ($firstavailable <= $now && $now <= $lastavailable);
 
-    $available = $zoom->recurring || $inprogress;
+    $available = $zoom->type == ZOOM_RECURRING_MEETING || $inprogress;
 
-    $finished = !$zoom->recurring && $now > $lastavailable;
+    $finished = !$zoom->type == ZOOM_RECURRING_MEETING && $now > $lastavailable;
 
-    return array($inprogress, $available, $finished);
+    return array($inprogress, $available, $finished, $start_time);
 }
 
 /**
@@ -400,4 +408,18 @@ function zoom_get_time_zones() {
         'America/Tegucigalpa' => 'Tegucigalpa',
         'Pacific/Apia' => 'Independent State of Samoa',
     ];
+}
+
+/**
+ * Get the next latest zoom meeting for recurring meetings
+ * @param $meetings
+ * @return mixed
+ */
+function zoom_get_latest_meeting($meetings) {
+    foreach ($meetings AS $meeting) {
+        if ($meeting->start_time <= time()) {
+            return $meeting;
+            break;
+        }
+    }
 }

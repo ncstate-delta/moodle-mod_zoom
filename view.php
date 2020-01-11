@@ -113,10 +113,9 @@ $table->attributes['class'] = 'generaltable mod_view';
 $table->align = array('center', 'left');
 $numcolumns = 2;
 
-list($inprogress, $available, $finished) = zoom_get_state($zoom);
+list($inprogress, $available, $finished, $start_time) = zoom_get_state($zoom);
 
-$enddate = $zoom->start_time + $zoom->duration;
-if ($available && ($zoom->start_time - (get_config('zoom', 'opentime') * MINSECS)) < time() && $enddate > time()) {
+if ($available) {
     if ($userishost) {
         $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
     } else {
@@ -157,21 +156,18 @@ if (!($showrecreate || $zoom->recurring)) {
     $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
 }
 
-if ($zoom->recurring) {
-    if ($zoom->type == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME) {
-        $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
-        $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'), 'mod_zoom');
-        $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
-        $buttonhtml = html_writer::link((string)$icallink, $calendarbutton, array('target' => '_blank'));
-        $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
-        $table->data[] = array($strtime, zoom_convert_date_time($zoom->start_time, 'jS F Y, g:h A'));
-        $table->data[] = array('Time zone', zoom_get_time_zones()[$zoom->timezone]);
-        $table->data[] = array($strduration, (int)$zoom->duration);
-    } else {
-        $recurringmessage = new html_table_cell(get_string('recurringmeetinglong', 'mod_zoom'));
-        $recurringmessage->colspan = $numcolumns;
-        $table->data[] = array($recurringmessage);
-    }
+if (in_array($zoom->type, [ZOOM_SCHEDULED_MEETING, ZOOM_RECURRING_MEETING_WITH_FIXED_TIME])) {
+    $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
+    $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'), 'mod_zoom');
+    $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
+    $buttonhtml = html_writer::link((string)$icallink, $calendarbutton, array('target' => '_blank'));
+    $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
+    $table->data[] = array($strtime, zoom_convert_date_time($start_time, 'jS F Y, g:h A'));
+    $table->data[] = array($strduration, (int)$zoom->duration);
+} else {
+    $recurringmessage = new html_table_cell(get_string('recurringmeetinglong', 'mod_zoom'));
+    $recurringmessage->colspan = $numcolumns;
+    $table->data[] = array($recurringmessage);
 }
 
 if (!$zoom->webinar) {

@@ -112,7 +112,7 @@ $modinfo = get_fast_modinfo($course);
 $cms = $modinfo->instances['zoom'];
 foreach ($zooms as $z) {
     $row = array();
-    list($inprogress, $available, $finished) = zoom_get_state($z);
+    list($inprogress, $available, $finished, $start_time) = zoom_get_state($z);
 
     $cm = $cms[$z->id];
     if ($usesections && isset($cm->sectionnum)) {
@@ -125,7 +125,9 @@ foreach ($zooms as $z) {
         $row[1] .= " ($strwebinar)";
     }
     // Recurring meetings have no start time or duration.
-    $displaytime = $z->recurring ? get_string('recurringmeetinglong', 'mod_zoom') : userdate($z->start_time);
+    $displaytime = $z->type == ZOOM_RECURRING_MEETING
+        ? get_string('recurringmeetinglong', 'mod_zoom')
+        : zoom_convert_date_time($start_time, 'jS F Y, g:h A');
 
     $report = new moodle_url('report.php', array('id' => $cm->id));
     $sessions = html_writer::link($report, $strsessions);
