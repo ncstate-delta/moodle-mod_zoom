@@ -130,7 +130,8 @@ function zoom_get_state($zoom) {
     if ($zoom->type == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME) {
         $service = new mod_zoom_webservice();
         $meetings = $service->get_meeting($zoom->meeting_id)->occurrences;
-        $start_time = strtotime(zoom_get_latest_meeting($meetings)->start_time);
+        //Get the latest meeting start time
+        $start_time = strtotime($meetings{0}->start_time);
     } else {
         $start_time = $zoom->start_time;
     }
@@ -408,18 +409,4 @@ function zoom_get_time_zones() {
         'America/Tegucigalpa' => 'Tegucigalpa',
         'Pacific/Apia' => 'Independent State of Samoa',
     ];
-}
-
-/**
- * Get the next latest zoom meeting for recurring meetings
- * @param $meetings
- * @return mixed
- */
-function zoom_get_latest_meeting($meetings) {
-    foreach ($meetings AS $meeting) {
-        if ($meeting->start_time <= time()) {
-            return $meeting;
-            break;
-        }
-    }
 }

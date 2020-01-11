@@ -295,7 +295,9 @@ function zoom_calendar_item_update(stdClass $zoom) {
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
     //Delete the existing events associated with the zoom id
-    $DB->delete_records('event', ['modulename' => 'zoom', 'instance' => $zoom->id]);
+    if (!$DB->delete_records('event', ['modulename' => 'zoom', 'instance' => $zoom->id])) {
+        return false;
+    }
 
     $service = new mod_zoom_webservice();
     $zoom_meeting = $service->get_meeting($zoom->meeting_id);
@@ -309,7 +311,7 @@ function zoom_calendar_item_update(stdClass $zoom) {
         }
         $event->timestart = strtotime($meeting_occurrences->start_time);
         $event->timeduration = $zoom->duration;
-        $event->visible = !$zoom->recurring;
+        $event->visible = !$zoom->type == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME;
         $event->courseid = $zoom->course;
         $event->modulename = 'zoom';
         $event->instance = $zoom->id;

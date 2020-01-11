@@ -127,7 +127,7 @@ foreach ($zooms as $z) {
     // Recurring meetings have no start time or duration.
     $displaytime = $z->type == ZOOM_RECURRING_MEETING
         ? get_string('recurringmeetinglong', 'mod_zoom')
-        : zoom_convert_date_time($start_time, 'jS F Y, g:h A');
+        : zoom_convert_date_time($start_time, 'jS F Y, g:i A');
 
     $report = new moodle_url('report.php', array('id' => $cm->id));
     $sessions = html_writer::link($report, $strsessions);
