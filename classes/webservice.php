@@ -399,15 +399,6 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Delete a meeting on Zoom.
-     * @param int $id The meeting_id or webinar_id of the meeting or webinar to delete.
-     * @return stdClass The call response.
-     */
-    public function get_meeting($id) {
-        return $this->_make_call('meetings/'. $id, null, 'get');
-    }
-
-    /**
      * Update a meeting/webinar on Zoom.
      *
      * @param stdClass $zoom The meeting to update.

@@ -300,7 +300,7 @@ function zoom_calendar_item_update(stdClass $zoom) {
     }
 
     $service = new mod_zoom_webservice();
-    $zoom_meeting = $service->get_meeting($zoom->meeting_id);
+    $zoom_meeting = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
     // Create new events
     foreach ($zoom_meeting->occurrences AS $meeting_occurrences) {
         $event = new stdClass();
