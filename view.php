@@ -162,7 +162,7 @@ if (in_array($zoom->type, [ZOOM_SCHEDULED_MEETING, ZOOM_RECURRING_MEETING_WITH_F
     $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
     $buttonhtml = html_writer::link((string)$icallink, $calendarbutton, array('target' => '_blank'));
     $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
-    $table->data[] = array($strtime, zoom_convert_date_time($start_time, 'jS F Y, g:h A'));
+    $table->data[] = array($strtime, zoom_convert_date_time($start_time, 'jS F Y, g:i A'));
     $table->data[] = array($strduration, (int)$zoom->duration);
 } else {
     $recurringmessage = new html_table_cell(get_string('recurringmeetinglong', 'mod_zoom'));
