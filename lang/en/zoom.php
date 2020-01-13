@@ -132,6 +132,8 @@ $string['recurringmeetinglong'] = 'Recurring meeting (meeting with no end date o
 $string['report'] = 'Reports';
 $string['reportapicalls'] = 'Report API calls exhausted';
 $string['requirepassword'] = 'Require meeting password';
+$string['enablenotifymail'] = 'Mail Notification';
+$string['enableremindermail'] = 'Reminder Mail';
 $string['resetapicalls'] = 'Reset the number of available API calls';
 $string['search:activity'] = 'Zoom - activity information';
 $string['sessions'] = 'Sessions';
@@ -151,6 +153,10 @@ $string['updatemeetings'] = 'Update meeting settings from Zoom';
 $string['usepersonalmeeting'] = 'Use personal meeting ID {$a}';
 $string['webinar'] = 'Webinar';
 $string['webinar_help'] = 'This option is only available to pre-authorized Zoom accounts.';
+$string['enablenotifymail_desc'] = '';
+$string['enableremindermail_desc'] = '';
+$string['remindertime'] = 'Reminder Time';
+$string['remindertime_desc'] = '';
 
 $string['form_recurring'] = 'Recurring';
 $string['form_recurring_help'] = '<p>This setting determines whether your session recurs on a daily, weekly, or monthly basis.</p>
@@ -188,6 +194,10 @@ $string['form_enddate_help'] = 'This setting works with the Ending type "Ending.
 $string['form_endafter'] = 'Every after X sessions(s)';
 $string['form_endafter_help'] = 'This setting defines the total number of recurring sessions scheduled. For example, you can define a session\'s schedule to end after 6 meetings.  
 This will work with whatever session type you defined previously (ie, if you defined a Weekly session on Thursday, the session would end after 6 Thursdays).';
+$string['form_enable_notify_mail'] = 'Enable mail notification';
+$string['form_enable_notify_mail_help'] = '';
+$string['form_enable_reminder_mail'] = 'Enable mail reminder';
+$string['form_enable_reminder_mail_help'] = '';
 $string['webinar_already_true'] = '<p><b>This module was already set as a webinar, not meeting. You cannot toggle this setting after creating the webinar.</b></p>';
 $string['webinar_already_false'] = '<p><b>This module was already set as a meeting, not webinar. You cannot toggle this setting after creating the meeting.</b></p>';
 $string['zoom:addinstance'] = 'Add a new Zoom meeting';
@@ -202,3 +212,15 @@ $string['zoomerr_usernotfound'] = 'Unable to find your account on Zoom. If you a
 $string['zoomurl'] = 'Zoom home page URL';
 $string['zoomurl_desc'] = '';
 $string['zoom:view'] = 'View Zoom meetings';
+
+// Email
+$string['msg_header'] = 'Dear {$a},';
+$string['msg_attendee_desc'] = 'You have been requested to attend the following session.';
+$string['msg_host_desc'] = 'You are scheduled to host the following Session.';
+$string['msg_session_name'] = 'Session name: {$a}';
+$string['msg_session_date'] = 'Date: {$a}';
+$string['msg_session_time'] = 'Time: {$a}';
+$string['msg_session_duration'] = 'Duration: {$a}';
+$string['msg_session_key'] = 'Session key: {$a}';
+$string['msg_session_agenda'] = 'Agenda: {$a}';
+$string['msg_footer'] = '';

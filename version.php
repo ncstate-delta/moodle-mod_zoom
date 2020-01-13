@@ -29,4 +29,4 @@ $plugin->version = 2019121802;
 $plugin->release = 'v2.2.4';
 $plugin->requires = 2017051500.00;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->cron = 0;
+$plugin->cron = 900; // secs

@@ -66,10 +66,11 @@ function zoom_supports($feature) {
  * @return int The id of the newly inserted zoom record
  */
 function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
-    global $CFG, $DB;
+    global $CFG, $DB, $USER;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
     $zoom->course = (int) $zoom->course;
+    $zoom->user_id = (int) $USER->id;
 
     $service = new mod_zoom_webservice();
     $response = $service->create_meeting($zoom);
@@ -201,6 +202,7 @@ function zoom_delete_instance($id) {
         $service = new mod_zoom_webservice();
         try {
             $service->delete_meeting($zoom->meeting_id, $zoom->webinar);
+            $DB->update_record('zoom', (object)['id' => $zoom->id, 'deleted_at' => time()]);
         } catch (moodle_exception $error) {
             if (strpos($error, 'is not found or has expired') === false) {
                 throw $error;
@@ -571,4 +573,44 @@ function mod_zoom_get_fontawesome_icon_map() {
     return [
         'mod_zoom:i/calendar' => 'fa-calendar'
     ];
+}
+
+/**
+ * Function to be run periodically according to the moodle cron
+ * This function searches for things that need to be done, such
+ * as sending out mail, toggling flags etc ...
+ *
+ * @return boolean
+ * @throws coding_exception
+ * @throws dml_exception
+ * @todo Finish documenting this function
+ */
+function zoom_cron() {
+    $config = get_config('zoom');
+    $current_time = time();
+
+    // Mail notifications - Notification process should be carried out
+    // before triggering the remainder process
+    mtrace("Starting zoom mail notification method");
+
+    if ($config->enablenotifymail == 1) {
+        zoom_send_notification($config, $current_time);
+    } else {
+        mtrace('... Skipping because mail notification is disabled in the site level');
+    }
+
+    mtrace("Finishing zoom mail notification method");
+
+    // Reminder mail
+    mtrace("Starting zoom reminder method");
+
+    if ($config->enableremindermail == 1) {
+        zoom_send_reminder($config, $current_time);
+    } else {
+        mtrace('... Skipping because reminder is disabled in the site level');
+    }
+
+    mtrace("Finishing webex reminder method");
+
+    return true;
 }

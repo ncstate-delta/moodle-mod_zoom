@@ -126,7 +126,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->hideIf('recurring_type', 'type', 'neq', ZOOM_RECURRING_MEETING_WITH_FIXED_TIME);
 
         $days_count = [];
-        for ($i = 1; $i <= 90; $i++) {
+        for ($i = 0; $i <= 90; $i++) {
             $days_count[$i] = $i;
         }
 
@@ -139,7 +139,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('recurringdays', null);
 
         $weeks_count = [];
-        for ($i = 1; $i <= 12; $i++) {
+        for ($i = 0; $i <= 12; $i++) {
             $weeks_count[$i] = $i;
         }
 
@@ -152,7 +152,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('recurringweeks', null);
 
         $months_count = [];
-        for ($i = 1; $i <= 3; $i++) {
+        for ($i = 0; $i <= 3; $i++) {
             $months_count[$i] = $i;
         }
 
@@ -236,16 +236,19 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Adding the "recurring" fieldset, where all the recurring based settings are showed
         $mform->addElement('header', 'other', 'Others');
+        $mform->setExpanded('other', true);
 
         if ($isnew) {
             // Add webinar, disabled if the user cannot create webinars.
             $webinarattr = null;
-            if (!$service->_get_user_settings($zoomuser->id)->feature->webinar) {
+            if ($service->_get_user_settings($zoomuser->id)->feature->webinar) {
                 $webinarattr = array('disabled' => true, 'group' => null);
             }
-            $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '', $webinarattr);
+            $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '');
             $mform->setDefault('webinar', 0);
             $mform->addHelpButton('webinar', 'webinar', 'zoom');
+            $mform->hideIf('webinar', 'type', 'neq', ZOOM_SCHEDULED_WEBINAR);
+            $mform->hideIf('webinar', 'type', 'neq', ZOOM_RECURRING_WEBINAR);
         } else if ($this->current->webinar) {
             $mform->addElement('html', get_string('webinar_already_true', 'zoom'));
         } else {
@@ -306,6 +309,14 @@ class mod_zoom_mod_form extends moodleform_mod {
             $mform->createElement('radio', 'auto_recording', '', get_string('auto_rec_cloud', 'zoom'), ZOOM_REC_CLOUD)
         ), null , get_string('auto_recording', 'zoom'));
         $mform->setDefault('auto_recording', $config->defaultautorecording);
+
+        $mform->addElement('selectyesno', 'enable_notify_mail', get_string('form_enable_notify_mail', 'zoom'));
+        $mform->setDefault('enable_notify_mail', $config->enable_notify_mail);
+        $mform->addHelpButton('enable_notify_mail', 'form_enable_notify_mail', 'zoom');
+
+        $mform->addElement('selectyesno','enable_reminder_mail', get_string('form_enable_reminder_mail', 'zoom'));
+        $mform->setDefault('enable_reminder_mail', $config->enable_reminder_mail);
+        $mform->addHelpButton('enable_reminder_mail', 'form_enable_reminder_mail', 'zoom');
 
         // Add alternative hosts.
         $mform->addElement('text', 'alternative_hosts', get_string('alternative_hosts', 'zoom'), array('size' => '64'));
