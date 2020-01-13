@@ -131,7 +131,9 @@ function zoom_get_state($zoom) {
         $service = new mod_zoom_webservice();
         $meetings = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar)->occurrences;
         //Get the latest meeting start time
-        $start_time = strtotime($meetings{0}->start_time);
+        //When all the occurrences are over for a meeting, occurrence comes as an empty object
+        //So when all occurrences gets over, just take start time of meeting as current meeting start time
+        $start_time = !empty($meetings) ? strtotime($meetings{0}->start_time) : $zoom->start_time;
     } else {
         $start_time = $zoom->start_time;
     }
