@@ -107,6 +107,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->hideIf('duration', 'type', 'eq', ZOOM_RECURRING_MEETING);
 
         $mform->addElement('advcheckbox', 'recurring', 'Recurring');
+        $mform->addRule('recurring', null, 'required');
 
         // Repeat type
         $meeting_types = [
@@ -343,6 +344,12 @@ class mod_zoom_mod_form extends moodleform_mod {
     public function validation($data, $files) {
         global $CFG;
         $errors = array();
+
+        // Make sure the recurring checkbox is checked or not.
+        if ($data['recurring'] == false) {
+
+            $errors['recurring'] = 'You must check this field';
+        }
 
         // Only check for scheduled meetings.
         if (empty($data['recurring']) || $data['type'] == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME) {
