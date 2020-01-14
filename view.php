@@ -115,7 +115,7 @@ $numcolumns = 2;
 
 list($inprogress, $available, $finished, $start_time) = zoom_get_state($zoom);
 
-if ($available || $inprogress) {
+if ($available) {
     if ($userishost) {
         $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
     } else {

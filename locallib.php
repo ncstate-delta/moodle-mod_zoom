@@ -138,7 +138,7 @@ function zoom_get_state($zoom) {
         $start_time = $zoom->start_time;
     }
 
-    $firstavailable = $start_time - ($config->firstabletojoin);
+    $firstavailable = $start_time - ($config->firstabletojoin * MINSECS);
     $lastavailable = $start_time + ($zoom->duration * MINSECS);
     $inprogress = ($firstavailable <= $now && $now <= $lastavailable);
 
