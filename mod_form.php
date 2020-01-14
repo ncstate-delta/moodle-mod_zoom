@@ -311,11 +311,11 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('auto_recording', $config->defaultautorecording);
 
         $mform->addElement('selectyesno', 'enable_notify_mail', get_string('form_enable_notify_mail', 'zoom'));
-        $mform->setDefault('enable_notify_mail', $config->enable_notify_mail);
+        $mform->setDefault('enable_notify_mail', $config->enablenotifymail);
         $mform->addHelpButton('enable_notify_mail', 'form_enable_notify_mail', 'zoom');
 
         $mform->addElement('selectyesno','enable_reminder_mail', get_string('form_enable_reminder_mail', 'zoom'));
-        $mform->setDefault('enable_reminder_mail', $config->enable_reminder_mail);
+        $mform->setDefault('enable_reminder_mail', $config->enableremindermail);
         $mform->addHelpButton('enable_reminder_mail', 'form_enable_reminder_mail', 'zoom');
 
         // Add alternative hosts.

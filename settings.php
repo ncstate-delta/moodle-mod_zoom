@@ -117,10 +117,10 @@ if ($ADMIN->fulltree) {
             '', 0, 1, 0);
     $settings->add($defaultjoinbeforehost);
 
-    $settings->add(new admin_setting_configcheckbox('mod_zoom/enable_notify_mail',get_string('enablenotifymail','zoom'),
+    $settings->add(new admin_setting_configcheckbox('mod_zoom/enablenotifymail',get_string('enablenotifymail','zoom'),
         get_string('enablenotifymail_desc','zoom'),1));
 
-    $settings->add(new admin_setting_configcheckbox('mod_zoom/enable_reminder_mail',get_string('enableremindermail','zoom'),
+    $settings->add(new admin_setting_configcheckbox('mod_zoom/enableremindermail',get_string('enableremindermail','zoom'),
         get_string('enableremindermail_desc','zoom'),1));
 
     $settings->add(new admin_setting_configtext('mod_zoom/reminder_time',get_string('remindertime','zoom'),

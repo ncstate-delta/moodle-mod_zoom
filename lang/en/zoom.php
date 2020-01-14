@@ -220,7 +220,18 @@ $string['msg_host_desc'] = 'You are scheduled to host the following Session.';
 $string['msg_session_name'] = 'Session name: {$a}';
 $string['msg_session_date'] = 'Date: {$a}';
 $string['msg_session_time'] = 'Time: {$a}';
-$string['msg_session_duration'] = 'Duration: {$a}';
+$string['msg_session_duration'] = 'Duration: {$a} minutes';
 $string['msg_session_key'] = 'Session key: {$a}';
 $string['msg_session_agenda'] = 'Agenda: {$a}';
-$string['msg_footer'] = '';
+$string['msg_footer'] = '
+-------------------------------------------------------
+To join the session
+-------------------------------------------------------
+1. Go to {$a}
+2. Log in with your account.
+3. Click the active link in the Join Session box.
+4. Follow the instructions that appear on your screen.';
+$string['msg_subject_invite'] = 'Session Invitation: {$a}';
+$string['msg_subject_update'] = 'Session Update: {$a}';
+$string['msg_subject_cancel'] = 'Session Canceled: {$a}';
+$string['msg_subject_reminder'] = 'Session Reminder: {$a}';

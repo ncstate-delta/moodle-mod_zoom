@@ -257,13 +257,17 @@ function zoom_get_participants_report($detailsid) {
  *
  * @param int $datetime
  * @param string $format
+ * @param string $time_zone
  * @return string
  * @throws coding_exception
  */
-function zoom_convert_date_time($datetime, $format = 'Y-m-d\TH:i:s') {
+function zoom_convert_date_time($datetime, $format = 'Y-m-d\TH:i:s', $time_zone = null) {
     try {
         return (new DateTimeImmutable('@'.$datetime))
-            ->setTimezone(core_date::get_user_timezone_object())
+            ->setTimezone(!empty($time_zone)
+                ? new DateTimeZone($time_zone)
+                : core_date::get_user_timezone_object()
+            )
             ->format($format);
     } catch (Exception $e) {
         throw new coding_exception($e->getMessage(), $e->getTraceAsString());
@@ -448,27 +452,27 @@ function zoom_send_mail($param) {
 function zoom_send_notification($config, $currenttime) {
     global $DB;
 
-    $zoom = $DB->get_records_sql("SELECT z.id, z.course as course_id, z.user_id, z.name sessionname, z.intro,
-                                           z.start_time as sessiontime, z.enable_notify_mail enablenotifymail, 
-                                           z.enable_notify_mail enableremaindermail, z.duration, z.timezone, z.created_at, 
+    $zoom = $DB->get_records_sql("SELECT z.id, z.course as course_id, z.user_id, z.name as sessionname, z.intro,
+                                           z.start_time as sessiontime, z.duration as sessionduration, z.enable_notify_mail as enablenotifymail, 
+                                           z.enable_notify_mail as enableremaindermail, z.duration, z.timezone, z.created_at, 
                                            z.timemodified, cm.groupingid
                                     FROM {zoom} z
                                         JOIN {course} c ON c.id = z.course
                                         JOIN {course_modules} cm ON cm.instance = z.id
                                         JOIN {modules} m ON m.id = cm.module
                                     WHERE z.deleted_at IS NULL
-                                      AND w.notified = 0
+                                      AND z.notified = 0
                                       AND c.visible = 1
                                       AND cm.visible = 1
                                       AND m.name = 'zoom'
-                                    ORDER BY z.sessiontime");
+                                    ORDER BY z.start_time");
 
     if (!empty($zoom)) {
         foreach ($zoom as $meeting) {
             // Notifications should be send after crossing the session time
             if ($meeting->enablenotifymail == 1 && $meeting->sessiontime > $currenttime) {
-                if ($meeting->courseid != 0) {
-                    $attendees = get_zoom_users_from_course($meeting->courseid);
+                if ($meeting->course_id != 0) {
+                    $attendees = get_zoom_users_from_course($meeting->course_id);
                 } else {
                     // Todo: currently skipping the meeting which is created
                     // outside of the course and marking it as notified to avoid for next queue
@@ -488,9 +492,9 @@ function zoom_send_notification($config, $currenttime) {
                 }
 
                 $param = new stdClass();
-                $param->courseid = $meeting->courseid;
+                $param->courseid = $meeting->course_id;
                 $param->action = 'session_notification';
-                $param->from = $DB->get_record('user', ['id' => $meeting->userid]);
+                $param->from = $DB->get_record('user', ['id' => $meeting->user_id]);
 
                 if ($meeting->created_at == $meeting->timemodified || $meeting->timemodified == 0) {
                     $param->subject = get_string('msg_subject_invite', 'zoom', $meeting->sessionname);
@@ -504,7 +508,7 @@ function zoom_send_notification($config, $currenttime) {
                     zoom_send_mail($param);
                 }
             }
-            $DB->update_record('zoom', (object)['id'=> $meeting->id, 'notified'=> 1]);
+            $DB->update_record('zoom', (object)['id' => $meeting->id, 'notified' => 1]);
         }
     } else {
         mtrace('... No zoom session to notify');
@@ -521,30 +525,31 @@ function zoom_send_notification($config, $currenttime) {
 function zoom_send_reminder($config, $currenttime) {
     global $DB;
     $mintime = $currenttime;
-    $maxtime = $mintime + ($config->remindertime * MINSECS);
+    $maxtime = $mintime + ($config->reminder_time * MINSECS);
     // Added notified = 1 in order to avoid sending the notification
     // and the reminder simultaneously for the same session.
-    $zoom = $DB->get_records_sql("SELECT z.id id, z.course courseid, z.enableremindermail, z.name sessionname, z.agenda,
-                                          z.duration, z.timezone, z.userid,
-                                          z.start_time sessiontime, cm.groupingid
+    $zoom = $DB->get_records_sql("SELECT z.id id, z.course course_id, z.enable_reminder_mail as enableremaindermail, 
+                                          z.name as sessionname, z.intro,
+                                          z.duration as sessionduration, z.timezone, z.user_id,
+                                          z.start_time as sessiontime, cm.groupingid
                                      FROM {event} e 
                                      JOIN {zoom} z ON z.id = e.instance
-                                     JOIN {course} c ON c.id = w.course
-                                     JOIN {course_modules} cm ON cm.instance = w.id
-                                    WHERE w.deleted = 0
-                                        AND w.notified = 1
+                                     JOIN {course} c ON c.id = z.course
+                                     JOIN {course_modules} cm ON cm.instance = z.id
+                                    WHERE z.deleted_at = 0
+                                        AND z.notified = 1
                                         AND c.visible = 1
                                         AND cm.visible = 1
-                                        AND w.sessiontime > $mintime
-                                        AND w.sessiontime < $maxtime
-                                        ORDER BY w.sessiontime
+                                        AND e.timestart > $mintime
+                                        AND e.timestart < $maxtime
+                                        ORDER BY z.start_time
                                 ");
 
     if (!empty($zoom)) {
         foreach ($zoom as $event) {
             if ($event->enableremindermail == 1 && $event->sessiontime > $currenttime) {
-                if ($event->courseid != 0) {
-                    $attendees = get_zoom_users_from_course($event->courseid);
+                if ($event->course_id != 0) {
+                    $attendees = get_zoom_users_from_course($event->course_id);
                 } else {
                     // Todo: currently skipping the session which is created
                     // outside of the course
@@ -552,9 +557,9 @@ function zoom_send_reminder($config, $currenttime) {
                 }
 
                 $param = new stdClass();
-                $param->courseid = $event->courseid;
+                $param->courseid = $event->course_id;
                 $param->action = 'session_reminder';
-                $param->from = $DB->get_record('user', ['id'=> $event->userid]);
+                $param->from = $DB->get_record('user', ['id'=> $event->user_id]);
                 $param->subject = get_string('msg_subject_reminder', 'zoom', $event->sessionname);
 
                 foreach ($attendees as $attendee) {
@@ -581,26 +586,17 @@ function zoom_get_mail_body($event, $attendee, &$param) {
     $param->message = ''; // To clear the msg body
     $param->message .= get_string('msg_header', 'zoom', trim(ucwords($attendee->fullname))).PHP_EOL;
     $param->message .= PHP_EOL;
-    if ($attendee->id == $event->userid) {
+    if ($attendee->id == $event->user_id) {
         $param->message .= get_string('msg_host_desc', 'zoom').PHP_EOL;
     } else {
         $param->message .= get_string('msg_attendee_desc', 'zoom').PHP_EOL;
     }
     $param->message .= get_string('msg_session_name', 'zoom', $event->sessionname).PHP_EOL;
-    $sessiondate = '';
-    if (isset($event->sessiondate) && is_array($event->sessiondate)) {
-        foreach ($event->sessiondate as $value) {
-            $sessiondate .= userdate($value, '%A %B %d, %Y', $attendee->timezone).PHP_EOL;
-        }
-    } else {
-        $sessiondate = userdate($event->sessiontime, '%A %B %d, %Y', $attendee->timezone).PHP_EOL;
-    }
-    $param->message .= get_string('msg_session_date', 'zoom', $sessiondate);
-    $param->message .= get_string('msg_session_time', 'zoom', userdate($event->sessiontime, '%I:%M %p', $attendee->timezone)." ".zoom_get_time_zones()[$attendee->timezone]).PHP_EOL;
-    $param->message .= get_string('msg_session_duration', 'zoom', format_time($event->sessionduration)).PHP_EOL;
-    $param->message .= get_string('msg_session_agenda', 'zoom', $event->agenda).PHP_EOL;
+    $param->message .= get_string('msg_session_time', 'zoom', zoom_convert_date_time($event->sessiontime, 'jS F Y, g:i A')).PHP_EOL;
+    $param->message .= get_string('msg_session_duration', 'zoom', $event->sessionduration).PHP_EOL;
+    $param->message .= get_string('msg_session_agenda', 'zoom', html_entity_decode($event->intro)).PHP_EOL;
     $param->message .= PHP_EOL;
-    $param->message .= get_string('msg_footer', 'zoom', $CFG->wwwroot.'/mod/zoom/view.php?w='.$event->id).PHP_EOL;
+    $param->message .= get_string('msg_footer', 'zoom', $CFG->wwwroot.'/mod/zoom/view.php?id='.$event->id).PHP_EOL;
 }
 
 /**
