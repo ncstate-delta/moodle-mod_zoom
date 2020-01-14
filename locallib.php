@@ -138,13 +138,13 @@ function zoom_get_state($zoom) {
         $start_time = $zoom->start_time;
     }
 
-    $firstavailable = $start_time - ($config->firstabletojoin * 60);
-    $lastavailable = $start_time + $zoom->duration;
+    $firstavailable = $start_time - ($config->firstabletojoin);
+    $lastavailable = $start_time + ($zoom->duration * MINSECS);
     $inprogress = ($firstavailable <= $now && $now <= $lastavailable);
 
-    $available = $zoom->type == ZOOM_RECURRING_MEETING || $inprogress;
+    $available = ($zoom->type == ZOOM_RECURRING_MEETING) || $inprogress;
 
-    $finished = !$zoom->type == ZOOM_RECURRING_MEETING && $now > $lastavailable;
+    $finished = (!$zoom->type == ZOOM_RECURRING_MEETING) && $now > $lastavailable;
 
     return array($inprogress, $available, $finished, $start_time);
 }
