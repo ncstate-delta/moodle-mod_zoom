@@ -249,10 +249,6 @@ class mod_zoom_mod_form extends moodleform_mod {
             $mform->addHelpButton('webinar', 'webinar', 'zoom');
             $mform->hideIf('webinar', 'type', 'neq', ZOOM_SCHEDULED_WEBINAR);
             $mform->hideIf('webinar', 'type', 'neq', ZOOM_RECURRING_WEBINAR);
-        } else if ($this->current->webinar) {
-            $mform->addElement('html', get_string('webinar_already_true', 'zoom'));
-        } else {
-            $mform->addElement('html', get_string('webinar_already_false', 'zoom'));
         }
 
         // Add password.
@@ -358,7 +354,6 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Make sure the recurring checkbox is checked or not.
         if ($data['recurring'] == false) {
-
             $errors['recurring'] = 'You must check this field';
         }
 

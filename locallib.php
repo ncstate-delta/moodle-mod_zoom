@@ -144,7 +144,7 @@ function zoom_get_state($zoom) {
 
     $available = ($zoom->type == ZOOM_RECURRING_MEETING) || $inprogress;
 
-    $finished = (!$zoom->type == ZOOM_RECURRING_MEETING) && $now > $lastavailable;
+    $finished = $now > $lastavailable && !($zoom->type == ZOOM_RECURRING_MEETING);
 
     return array($inprogress, $available, $finished, $start_time);
 }
@@ -452,7 +452,7 @@ function zoom_send_mail($param) {
 function zoom_send_notification($config, $currenttime) {
     global $DB;
 
-    $zoom = $DB->get_records_sql("SELECT z.id, z.course as course_id, z.user_id, z.name as sessionname, z.intro,
+    $zoom = $DB->get_records_sql("SELECT z.id, z.course as course_id, z.user_id, z.name as sessionname, z.intro, cm.groupingid,
                                            z.start_time as sessiontime, z.duration as sessionduration, z.enable_notify_mail as enablenotifymail, 
                                            z.enable_notify_mail as enableremaindermail, z.duration, z.timezone, z.created_at, 
                                            z.timemodified, cm.groupingid
@@ -472,7 +472,11 @@ function zoom_send_notification($config, $currenttime) {
             // Notifications should be send after crossing the session time
             if ($meeting->enablenotifymail == 1 && $meeting->sessiontime > $currenttime) {
                 if ($meeting->course_id != 0) {
-                    $attendees = get_zoom_users_from_course($meeting->course_id);
+                    if ($meeting->groupingid == 0) {
+                        $attendees = get_zoom_users_from_course($meeting->course_id);
+                    } else {
+                        $attendees = get_zoom_users_from_group($meeting->groupingid);
+                    }
                 } else {
                     // Todo: currently skipping the meeting which is created
                     // outside of the course and marking it as notified to avoid for next queue
@@ -529,7 +533,7 @@ function zoom_send_reminder($config, $currenttime) {
     // Added notified = 1 in order to avoid sending the notification
     // and the reminder simultaneously for the same session.
     $zoom = $DB->get_records_sql("SELECT z.id id, z.course course_id, z.enable_reminder_mail as enableremaindermail, 
-                                          z.name as sessionname, z.intro,
+                                          z.name as sessionname, z.intro, cm.groupingid,
                                           z.duration as sessionduration, z.timezone, z.user_id,
                                           z.start_time as sessiontime, cm.groupingid
                                      FROM {event} e 
@@ -549,7 +553,11 @@ function zoom_send_reminder($config, $currenttime) {
         foreach ($zoom as $event) {
             if ($event->enableremindermail == 1 && $event->sessiontime > $currenttime) {
                 if ($event->course_id != 0) {
-                    $attendees = get_zoom_users_from_course($event->course_id);
+                    if ($event->groupingid == 0) {
+                        $attendees = get_zoom_users_from_course($event->course_id);
+                    } else {
+                        $attendees = get_zoom_users_from_group($event->groupingid);
+                    }
                 } else {
                     // Todo: currently skipping the session which is created
                     // outside of the course
@@ -616,27 +624,11 @@ function get_zoom_users_from_course($courseid) {
 }
 
 /**
- * @param int $groupid
- * @return array
- * @throws dml_exception
- */
-function get_zoom_users_from_group($groupid) {
-    global $DB;
-    return $DB->get_records_sql("SELECT DISTINCT u.id, CONCAT(u.firstname ,' ', u.lastname) AS fullname, u.timezone
-                                   FROM {groups_members} gm, {user} u
-                                  WHERE u.id = gm.userid
-                                        AND gm.groupid = $groupid
-                                        AND u.deleted = 0
-                                        AND u.suspended = 0
-                                ");
-}
-
-/**
  * @param int $groupingid
  * @return array
  * @throws dml_exception
  */
-function get_zoom_users_from_grouping($groupingid) {
+function get_zoom_users_from_group($groupingid) {
     global $DB;
     return $DB->get_records_sql("SELECT DISTINCT u.id, CONCAT(u.firstname ,' ', u.lastname) AS fullname, u.timezone
                                    FROM {user} u

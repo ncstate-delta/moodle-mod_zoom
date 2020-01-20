@@ -292,7 +292,7 @@ function zoom_get_extra_capabilities() {
  * @param stdClass $zoom
  */
 function zoom_calendar_item_update(stdClass $zoom) {
-    global $CFG, $DB;
+    global $CFG, $DB, $COURSE;
     require_once($CFG->dirroot.'/calendar/lib.php');
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
@@ -314,11 +314,31 @@ function zoom_calendar_item_update(stdClass $zoom) {
         $event->timestart = strtotime($meeting_occurrences->start_time);
         $event->timeduration = $zoom->duration;
         $event->visible = !$zoom->type == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME;
-        $event->courseid = $zoom->course;
         $event->modulename = 'zoom';
         $event->instance = $zoom->id;
-        $event->eventtype = 'zoom';
-        calendar_event::create($event);
+
+        // Checking the session action triggered from course not
+        if ($COURSE->id == 1) {
+            $event->eventtype = 'sitesession';
+            $event->courseid = 0;
+            $event->userid = 0;
+            $groupids = [0];
+        } else if ($zoom->groupmode == 1) {
+            $event->eventtype = 'session';
+            $event->courseid = 0;
+            $event->userid = 0;
+            $groupids = $DB->get_record('groupings_groups', ['groupingid' => $zoom->groupingid], 'groupid');
+        } else {
+            $event->eventtype = 'session';
+            $event->courseid = $zoom->course;
+            $event->userid = 0;
+            $groupids = [0];
+        }
+
+        foreach ($groupids as $groupid) {
+            $event->groupid = $groupid;
+            calendar_event::create($event);
+        }
     }
 }
 

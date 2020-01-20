@@ -22,7 +22,7 @@ class send_notifications extends \core\task\scheduled_task {
      * @return string
      */
     public function get_name() {
-        return "send zoom meeting notifications and reminders";
+        return get_string('send_zoom_notifications', 'mod_zoom');
     }
 
     /**

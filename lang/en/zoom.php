@@ -212,6 +212,7 @@ $string['zoomerr_usernotfound'] = 'Unable to find your account on Zoom. If you a
 $string['zoomurl'] = 'Zoom home page URL';
 $string['zoomurl_desc'] = '';
 $string['zoom:view'] = 'View Zoom meetings';
+$string['send_zoom_notifications'] = 'Send zoom meeting notifications and reminders';
 
 // Email
 $string['msg_header'] = 'Dear {$a},';
