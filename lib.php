@@ -45,6 +45,7 @@ function zoom_supports($feature) {
     switch($feature) {
         case FEATURE_BACKUP_MOODLE2:
         case FEATURE_GRADE_HAS_GRADE:
+        case FEATURE_GROUPS:
         case FEATURE_GROUPINGS:
         case FEATURE_GROUPMEMBERSONLY:
         case FEATURE_MOD_INTRO:
