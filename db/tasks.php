@@ -55,10 +55,10 @@ $tasks = array(
     array(
         'classname' => 'mod_zoom\task\send_notifications',
         'blocking' => 0,
-        'minute' => '0,15',
+        'minute' => '*/15',
         'hour' => '*',
         'day' => '*',
-        'month' => '*',
-        'dayofweek' => '*'
+        'dayofweek' => '*',
+        'month' => '*'
     )
 );
