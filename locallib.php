@@ -540,7 +540,7 @@ function zoom_send_reminder($config, $currenttime) {
                                      JOIN {zoom} z ON z.id = e.instance
                                      JOIN {course} c ON c.id = z.course
                                      JOIN {course_modules} cm ON cm.instance = z.id
-                                    WHERE z.deleted_at = 0
+                                    WHERE z.deleted_at IS NULL
                                         AND z.notified = 1
                                         AND c.visible = 1
                                         AND cm.visible = 1
