@@ -452,7 +452,7 @@ function zoom_send_mail($param) {
 function zoom_send_notification($config, $currenttime) {
     global $DB;
 
-    $zoom = $DB->get_records_sql("SELECT z.id, z.course as course_id, z.user_id, z.name as sessionname, z.intro, cm.groupingid,
+    $zoom = $DB->get_records_sql("SELECT z.id, z.course as course_id, z.user_id, z.name as sessionname, z.intro, cm.groupingid, cm.id as meeting_id,
                                            z.start_time as sessiontime, z.duration as sessionduration, z.enable_notify_mail as enablenotifymail, 
                                            z.enable_notify_mail as enableremaindermail, z.duration, z.timezone, z.created_at, 
                                            z.timemodified, cm.groupingid
@@ -533,7 +533,7 @@ function zoom_send_reminder($config, $currenttime) {
     // Added notified = 1 in order to avoid sending the notification
     // and the reminder simultaneously for the same session.
     $zoom = $DB->get_records_sql("SELECT z.id id, z.course course_id, z.enable_reminder_mail as enableremaindermail, 
-                                          z.name as sessionname, z.intro, cm.groupingid,
+                                          z.name as sessionname, z.intro, cm.groupingid, cm.id as meeting_id,
                                           z.duration as sessionduration, z.timezone, z.user_id,
                                           z.start_time as sessiontime, cm.groupingid
                                      FROM {event} e 
@@ -604,7 +604,7 @@ function zoom_get_mail_body($event, $attendee, &$param) {
     $param->message .= get_string('msg_session_duration', 'zoom', $event->sessionduration).PHP_EOL;
     $param->message .= get_string('msg_session_agenda', 'zoom', html_entity_decode($event->intro)).PHP_EOL;
     $param->message .= PHP_EOL;
-    $param->message .= get_string('msg_footer', 'zoom', $CFG->wwwroot.'/mod/zoom/view.php?id='.$event->id).PHP_EOL;
+    $param->message .= get_string('msg_footer', 'zoom', $CFG->wwwroot.'/mod/zoom/view.php?id='.$event->meeting_id).PHP_EOL;
 }
 
 /**
