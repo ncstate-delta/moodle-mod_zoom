@@ -179,14 +179,6 @@ if (!$zoom->webinar) {
     $haspassword = (isset($zoom->password) && $zoom->password !== '');
     $strhaspass = ($haspassword) ? $stryes : $strno;
     $table->data[] = array($strpassprotect, $strhaspass);
-
-    if ($userishost && $haspassword) {
-        $table->data[] = array($strpassword, $zoom->password);
-    }
-}
-
-if ($userishost) {
-    $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, array('target' => '_blank')));
 }
 
 if (!$zoom->webinar) {
