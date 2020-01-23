@@ -110,6 +110,7 @@ $string['option_mute_upon_entry'] = 'Mute attendees upon entry';
 $string['option_participants_video'] = 'Participants video';
 $string['participants'] = 'Participants';
 $string['password'] = 'Password';
+$string['session_dates'] = 'Session dates';
 $string['passwordprotected'] = 'Password Protected';
 $string['pluginadministration'] = 'Manage Zoom meeting';
 $string['pluginname'] = 'Zoom meeting';

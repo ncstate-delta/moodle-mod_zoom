@@ -75,6 +75,7 @@ $strjoin = get_string('join_meeting', 'mod_zoom');
 $strunavailable = get_string('unavailable', 'mod_zoom');
 $strtime = get_string('meeting_time', 'mod_zoom');
 $strduration = get_string('duration', 'mod_zoom');
+$strsessiondates = get_string('session_dates', 'mod_zoom');
 $strpassprotect = get_string('passwordprotected', 'mod_zoom');
 $strpassword = get_string('password', 'mod_zoom');
 $strjoinlink = get_string('join_link', 'mod_zoom');
@@ -142,13 +143,13 @@ if (in_array($zoom->type, [ZOOM_RECURRING_MEETING_WITH_FIXED_TIME, ZOOM_RECURRIN
                          ORDER BY timestart ASC");
 
     foreach ($events as $value) {
-        $sessiondates .= zoom_convert_date_time($value->timestart, 'jS F Y, g:i A').'<br/>';
+        $sessiondates .= zoom_convert_date_time($value->timestart, 'jS F Y, g:i A') . ' ' . usertimezone().'<br/>';
     }
 }
 
 //Display session dates
 $table->data[] = !empty($sessiondates)
-    ? array('session dates', $sessiondates)
+    ? array($strsessiondates, $sessiondates)
     : zoom_convert_date_time($zoom->start_time, 'jS F Y, g:i A');
 
 // Generate add-to-calendar button if meeting was found and isn't recurring.
@@ -166,7 +167,7 @@ if (in_array($zoom->type, [ZOOM_SCHEDULED_MEETING, ZOOM_RECURRING_MEETING_WITH_F
     $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
     $buttonhtml = html_writer::link((string)$icallink, $calendarbutton, array('target' => '_blank'));
     $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
-    $table->data[] = array($strtime, zoom_convert_date_time($start_time, 'jS F Y, g:i A'));
+    $table->data[] = array($strtime, zoom_convert_date_time($start_time, 'jS F Y, g:i A'). ' '. usertimezone());
     $table->data[] = array($strduration, (int)$zoom->duration);
 } else {
     $recurringmessage = new html_table_cell(get_string('recurringmeetinglong', 'mod_zoom'));
