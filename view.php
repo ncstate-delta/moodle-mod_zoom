@@ -133,19 +133,23 @@ $title->header = true;
 $title->colspan = $numcolumns;
 $table->data[] = array($title);
 
-if ($iszoommanager) {
-    // Only show sessions link to users with edit capability.
-    $sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
-    $sessionslink = html_writer::link($sessionsurl, get_string('sessions', 'mod_zoom'));
-    $sessions = new html_table_cell($sessionslink);
-    $sessions->colspan = $numcolumns;
-    $table->data[] = array($sessions);
+if (in_array($zoom->type, [ZOOM_RECURRING_MEETING_WITH_FIXED_TIME, ZOOM_RECURRING_WEBINAR])) {
+    $sessiondates = '';
+    $events = $DB->get_records_sql("SELECT *
+                             FROM {event} e
+                            WHERE modulename = 'zoom'
+                                AND instance = $zoom->id
+                         ORDER BY timestart ASC");
 
-    // Display alternate hosts if they exist.
-    if (!empty($zoom->alternative_hosts)) {
-        $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts);
+    foreach ($events as $value) {
+        $sessiondates .= zoom_convert_date_time($value->timestart, 'jS F Y, g:i A').'<br/>';
     }
 }
+
+//Display session dates
+$table->data[] = !empty($sessiondates)
+    ? array('session dates', $sessiondates)
+    : zoom_convert_date_time($zoom->start_time, 'jS F Y, g:i A');
 
 // Generate add-to-calendar button if meeting was found and isn't recurring.
 if (!($showrecreate || $zoom->recurring)) {
@@ -199,6 +203,20 @@ $table->data[] = array($strmuteopt, $strmuteonentry);
 
 $table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom'));
 $table->data[] = array($strautorec, get_string('auto_rec_' . $zoom->auto_recording, 'mod_zoom'));
+
+if ($iszoommanager) {
+    // Only show sessions link to users with edit capability.
+    $sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
+    $sessionslink = html_writer::link($sessionsurl, get_string('sessions', 'mod_zoom'));
+    $sessions = new html_table_cell($sessionslink);
+    $sessions->colspan = $numcolumns;
+    $table->data[] = array($sessions);
+
+    // Display alternate hosts if they exist.
+    if (!empty($zoom->alternative_hosts)) {
+        $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts);
+    }
+}
 
 if (!$zoom->recurring) {
     if (!$zoom->exists_on_zoom) {
