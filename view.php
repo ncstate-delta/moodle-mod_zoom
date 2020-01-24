@@ -176,12 +176,6 @@ if (in_array($zoom->type, [ZOOM_SCHEDULED_MEETING, ZOOM_RECURRING_MEETING_WITH_F
 }
 
 if (!$zoom->webinar) {
-    $haspassword = (isset($zoom->password) && $zoom->password !== '');
-    $strhaspass = ($haspassword) ? $stryes : $strno;
-    $table->data[] = array($strpassprotect, $strhaspass);
-}
-
-if (!$zoom->webinar) {
     $strjbh = ($zoom->option_jbh) ? $stryes : $strno;
     $table->data[] = array($strjoinbeforehost, $strjbh);
 
