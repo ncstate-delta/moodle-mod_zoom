@@ -421,6 +421,12 @@ class mod_zoom_webservice {
         $this->_make_call($url, null, 'delete');
     }
 
+    //Display Recording Links
+    public function get_meeting_recording($meeting_id)
+    {
+        return $this->_make_call('meetings/'.$meeting_id.'/recordings');
+    }
+
     /**
      * Get a meeting or webinar's information from Zoom.
      *
