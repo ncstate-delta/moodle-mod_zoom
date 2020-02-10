@@ -60,5 +60,14 @@ $tasks = array(
         'day' => '*',
         'dayofweek' => '*',
         'month' => '*'
+    ),
+    array(
+        'classname' => 'mod_zoom\task\insert_recordings',
+        'blocking' => 0,
+        'minute' => '*/30',
+        'hour' => '*',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
     )
 );

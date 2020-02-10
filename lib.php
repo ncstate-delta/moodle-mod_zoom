@@ -313,6 +313,7 @@ function zoom_calendar_item_update(stdClass $zoom) {
             $event->format = $zoom->introformat;
         }
         $event->timestart = strtotime($meeting_occurrences->start_time);
+        $event->endtime = strtotime($meeting_occurrences->start_time) + ($zoom->duration * MINSECS);
         $event->timeduration = $zoom->duration;
         $event->visible = !$zoom->type == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME;
         $event->modulename = 'zoom';

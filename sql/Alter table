@@ -1,0 +1,1 @@
+ALTER TABLE `mdl_event` ADD `recording_created` TINYINT(1) NOT NULL DEFAULT '0' AFTER `location`;
