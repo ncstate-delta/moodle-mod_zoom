@@ -192,18 +192,20 @@ $table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 
 $table->data[] = array($strautorec, get_string('auto_rec_' . $zoom->auto_recording, 'mod_zoom'));
 $sql = "SELECT rec.play_url,rec.download_url,rec.status,rec.start_time from mdl_zoom_recordings as rec join mdl_zoom as zoom ON zoom.meeting_id=rec.meeting_id where rec.meeting_id = {$zoom->meeting_id}";
 $records = $DB->get_records_sql($sql);
-foreach ($records as $key => $value) {
-   if ($value->status == "completed"){
-        $play_urls = $value->play_url;
-        $download_urls = $value->download_url;
-        $dates = $value->start_time;
-        $rec_date = date_create($dates);
-        $date = date_format($rec_date, 'd-m-Y');
-        $table->data[] = array(get_string('view_recording','zoom'),$date.'<br>'.'&nbsp;<a target="_blank" href="'.$play_urls.'">View |</a>&nbsp;<a target="_blank" href="'.$download_urls.'">Download</a>');
-    }else{
-        $table->data[] = [get_string('view_recording', 'zoom'), get_string('err_recording_not_found', 'zoom')];
+if($zoom->auto_recording == "cloud")
+{
+    $table->data[] = array(get_string('view_recording','zoom'));
+    foreach ($records as $key => $value) {
+            $play_urls = $value->play_url;
+            $download_urls = $value->download_url;
+            $dates = $value->start_time;
+            $rec_date = date_create($dates);
+            $date = date_format($rec_date, 'd-m-Y');
+            $table->data[] = array('&nbsp;',$date.'<br>'.'&nbsp;<a target="_blank" href="'.$play_urls.'">View |</a>&nbsp;<a target="_blank" href="'.$download_urls.'">Download</a>');
     }
-}
+}else{
+        $table->data[] = array(get_string('view_recording', 'zoom'), get_string('err_recording_not_found', 'zoom'));
+    }
 if ($iszoommanager) {
     // Only show sessions link to users with edit capability.
     $sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
