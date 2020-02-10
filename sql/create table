@@ -1,7 +1,7 @@
 
-CREATE TABLE mdl_zoom_recordings( `id` INT NOT NULL AUTO_INCREMENT , `meeting_id` BIGINT(10) NOT NULL , `uuid` VARCHAR(100) NOT NULL , `play_url` LONGTEXT NOT NULL , `download_url` LONGTEXT NOT NULL , `start_time` VARCHAR(20) NOT NULL , `end_time` VARCHAR(20) NOT NULL , `status` VARCHAR(10) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
+CREATE TABLE mdl_zoom_recordings( `id` INT NOT NULL AUTO_INCREMENT , `meeting_id` BIGINT(10) NOT NULL , `uuid` VARCHAR(100) NULL , `play_url` LONGTEXT NULL , `download_url` LONGTEXT NULL , `start_time` VARCHAR(20) NULL , `end_time` VARCHAR(20) NULL , `status` VARCHAR(10)  NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
 
 
 Foreign Key
 
-ALTER TABLE `moodle`.`mdl_zoom_recordings` ADD INDEX `mdl_zoom_mee_ix` (`meeting_id`);
+ALTER TABLE `moodle`.`mdl_zoom_recordings` ADD INDEX `mdl_zoom_rec_ix` (`meeting_id`);
