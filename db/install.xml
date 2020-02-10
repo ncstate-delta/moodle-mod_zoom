@@ -66,6 +66,25 @@
         <INDEX NAME="meeting_id_idx" UNIQUE="false" FIELDS="meeting_id"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="zoom_recordings" COMMENT="Storing the record from the cloud and diplaying in the Moodle.">
+        <FIELDS>
+            <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true
+                "/>
+            <FIELD NAME="meeting_id" TYPE="bigint" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+            <FIELD NAME="uuid" TYPE="varchar" LENGTH="100" NOTNULL="false"/>
+            <FIELD NAME="play_url" TYPE="longtext" NOTNULL="false"/>
+            <FIELD NAME="download_url" TYPE="longtext" NOTNULL="false"/>
+            <FIELD NAME="start_time" TYPE="varchar" LENGTH="20"/>
+            <FIELD NAME="end_time" TYPE="varchar" LENGTH="20"/>
+            <FIELD NAME="status" TYPE="varchar" LENGTH="10"/>
+        </FIELDS>
+        <KEYS>
+            <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="mdl_zoom_rec_ix" UNIQUE="false" FIELDS="meeting_id"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="zoom_meeting_details" COMMENT="A queue for the Cron to add meeting report info to zoom_meetings_participants table.">
       <FIELDS>
         <FIELD NAME="uuid" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting UUID or webinar UUID per Zoom API."/>
