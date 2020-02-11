@@ -21,7 +21,7 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
      * @return string
      */
     public function get_name() {
-        return "update zoom recordings";
+        return get_string("update_recording","zoom");
     }
 
       /**
@@ -49,6 +49,7 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
             } catch (\moodle_exception $error) {
                 throw zoom_is_meeting_gone_error($error);
             }
+             var_dump($recordings);
         }
 
         if (!empty($recordings)) {
@@ -61,6 +62,7 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
             $record->start_time = $rec->recording_start;
             $record->end_time = $rec->recording_end;
             $record->status = $rec->status;
+            var_dump($record);
             if($rec->status == 'completed'){
                 $DB->insert_record('zoom_recordings',$record);
             }   
