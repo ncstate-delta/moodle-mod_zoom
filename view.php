@@ -192,8 +192,10 @@ $table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 
 $table->data[] = array($strautorec, get_string('auto_rec_' . $zoom->auto_recording, 'mod_zoom'));
 $sql = "SELECT rec.play_url,rec.download_url,rec.status,rec.start_time from mdl_zoom_recordings as rec join mdl_zoom as zoom ON zoom.meeting_id=rec.meeting_id where rec.meeting_id = {$zoom->meeting_id}";
 $records = $DB->get_records_sql($sql);
-if($zoom->auto_recording == "cloud")
-{
+foreach ($records as $key => $value) {
+    $stat = $value->status;
+}
+if($stat == "completed"){
     $table->data[] = array(get_string('view_recording','zoom'));
     foreach ($records as $key => $value) {
             $play_urls = $value->play_url;
