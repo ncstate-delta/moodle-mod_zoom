@@ -193,6 +193,7 @@ $string['form_endingtype_help'] = '<p>Set an ending type for your recurring sess
 		For example, you can define a session to end after 6 meetings. This would set a daily session to end after 6 days, a weekly session to end after 6 weeks, and a monthly session to end after 6 months.</p>
 	</li>
 </ol>';
+$string['update_recording'] = "Update zoom recordings";
 $string['form_enddate'] = 'Ending on';
 $string['form_enddate_help'] = 'This setting works with the Ending type "Ending."  The date you set here will be the last date your recurring session occurs on.';
 $string['form_endafter'] = 'Every after X sessions(s)';
@@ -217,6 +218,16 @@ $string['zoomurl'] = 'Zoom home page URL';
 $string['zoomurl_desc'] = '';
 $string['zoom:view'] = 'View Zoom meetings';
 $string['send_zoom_notifications'] = 'Send zoom meeting notifications and reminders';
+
+$string['record_settings'] = 'Recording';
+$string['form_enable_stream_url'] = 'Allow users to view';
+$string['form_enable_stream_url_help'] = '';
+$string['form_enable_download_url'] = 'Allow users to download';
+$string['form_enable_download_url_help'] = '';
+$string['enablestreamurl'] = 'Viewing Recordings';
+$string['enabledownloadurl'] = 'Download Recordings';
+$string['enablestreamurl_desc'] = '';
+$string['enabledownloadurl_desc'] = '';
 
 // Email
 $string['msg_header'] = 'Dear {$a},';

@@ -233,6 +233,17 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->hideIf('endafter', 'type', 'neq', ZOOM_RECURRING_MEETING_WITH_FIXED_TIME);
         $mform->hideIf('endafter', 'endtype', 'neq', EndType::END_AFTER_X_OCCURRENCE);
 
+        //Adding Recording video visibility
+        $mform->addElement('header', 'record_settings', get_string('record_settings', 'zoom'));
+        $mform->setExpanded('record_settings');
+
+        $mform->addElement('selectyesno', 'enablestreamurl', get_string('form_enable_stream_url', 'zoom'));
+        $mform->setDefault('enablestreamurl', $config->enablestreamurl);
+        $mform->addHelpButton('enablestreamurl', 'form_enable_stream_url', 'zoom');
+
+        $mform->addElement('selectyesno', 'enabledownloadurl', get_string('form_enable_download_url', 'zoom'));
+        $mform->setDefault('enabledownloadurl', $config->enabledownloadurl);
+        $mform->addHelpButton('enabledownloadurl', 'form_enable_download_url', 'zoom');
 
         // Adding the "recurring" fieldset, where all the recurring based settings are showed
         $mform->addElement('header', 'other', 'Others');

@@ -117,6 +117,12 @@ if ($ADMIN->fulltree) {
             '', 0, 1, 0);
     $settings->add($defaultjoinbeforehost);
 
+    $settings->add(new admin_setting_configcheckbox('mod_zoom/enablestreamurl',get_string('enablestreamurl','zoom'),
+        get_string('enablestreamurl_desc','zoom'),1));
+
+    $settings->add(new admin_setting_configcheckbox('mod_zoom/enabledownloadurl',get_string('enabledownloadurl','zoom'),
+        get_string('enabledownloadurl_desc','zoom'),1));
+
     $settings->add(new admin_setting_configcheckbox('mod_zoom/enablenotifymail',get_string('enablenotifymail','zoom'),
         get_string('enablenotifymail_desc','zoom'),1));
 
