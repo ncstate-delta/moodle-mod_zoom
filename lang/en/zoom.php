@@ -224,10 +224,10 @@ $string['form_enable_stream_url'] = 'Allow users to view';
 $string['form_enable_stream_url_help'] = '';
 $string['form_enable_download_url'] = 'Allow users to download';
 $string['form_enable_download_url_help'] = '';
-$string['enablestreamurl'] = 'Viewing Recordings';
-$string['enabledownloadurl'] = 'Download Recordings';
-$string['enablestreamurl_desc'] = '';
-$string['enabledownloadurl_desc'] = '';
+$string['enable_stream_url'] = 'Viewing Recordings';
+$string['enable_download_url'] = 'Download Recordings';
+$string['enable_stream_url_desc'] = '';
+$string['enable_download_url_desc'] = '';
 
 // Email
 $string['msg_header'] = 'Dear {$a},';

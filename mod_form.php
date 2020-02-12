@@ -237,13 +237,13 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addElement('header', 'record_settings', get_string('record_settings', 'zoom'));
         $mform->setExpanded('record_settings');
 
-        $mform->addElement('selectyesno', 'enablestreamurl', get_string('form_enable_stream_url', 'zoom'));
-        $mform->setDefault('enablestreamurl', $config->enablestreamurl);
-        $mform->addHelpButton('enablestreamurl', 'form_enable_stream_url', 'zoom');
+        $mform->addElement('selectyesno', 'enable_stream_url', get_string('form_enable_stream_url', 'zoom'));
+        $mform->setDefault('enable_stream_url', $config->enablestreamurl);
+        $mform->addHelpButton('enable_stream_url', 'form_enable_stream_url', 'zoom');
 
-        $mform->addElement('selectyesno', 'enabledownloadurl', get_string('form_enable_download_url', 'zoom'));
-        $mform->setDefault('enabledownloadurl', $config->enabledownloadurl);
-        $mform->addHelpButton('enabledownloadurl', 'form_enable_download_url', 'zoom');
+        $mform->addElement('selectyesno', 'enable_download_url', get_string('form_enable_download_url', 'zoom'));
+        $mform->setDefault('enable_download_url', $config->enabledownloadurl);
+        $mform->addHelpButton('enable_download_url', 'form_enable_download_url', 'zoom');
 
         // Adding the "recurring" fieldset, where all the recurring based settings are showed
         $mform->addElement('header', 'other', 'Others');
