@@ -58,6 +58,8 @@
         <FIELD NAME="enable_reminder_mail" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="Enable reminder mail"/>
         <FIELD NAME="notified" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
         <FIELD NAME="deleted_at" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="enable_stream_url" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="enable_download_url" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
