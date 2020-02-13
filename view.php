@@ -208,8 +208,26 @@ if($stat == "completed" && $zoom->enable_stream_url == 1 && $zoom->enable_downlo
             $rec_date = date_create($dates);
             $date = date_format($rec_date, 'd-m-Y');
             $table->data[] = array('&nbsp;',$date.'<br>'.'&nbsp;<a target="_blank" href="'.$play_urls.'">View |</a>&nbsp;<a target="_blank" href="'.$download_urls.'">Download</a>');
-    }
-}else{
+        }
+} else if($stat == "completed" && $zoom->enable_stream_url == 1){
+    $table->data[] = array(get_string('view_recording','zoom'));
+    foreach ($records as $key => $value) {
+            $play_urls = $value->play_url;
+            $dates = $value->start_time;
+            $rec_date = date_create($dates);
+            $date = date_format($rec_date, 'd-m-Y');
+            $table->data[] = array('&nbsp;',$date.'<br>'.'&nbsp;<a target="_blank" href="'.$play_urls.'">View');
+        }
+}else if($stat == "completed" && $zoom->enable_download_url== 1){
+    $table->data[] = array(get_string('view_recording','zoom'));
+    foreach ($records as $key => $value) {
+            $download_urls = $value->download_url;
+            $dates = $value->start_time;
+            $rec_date = date_create($dates);
+            $date = date_format($rec_date, 'd-m-Y');
+            $table->data[] = array('&nbsp;',$date.'<br>'.'&nbsp;<a target="_blank" href="'.$download_urls.'">Download');
+        }
+} else{
         $table->data[] = array(get_string('view_recording', 'zoom'), get_string('err_recording_not_found', 'zoom'));
     }
 if ($iszoommanager) {
