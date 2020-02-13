@@ -3,8 +3,8 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
-  <TABLES>
-    <TABLE NAME="zoom" COMMENT="Zoom meetings and webinars">
+<TABLES>
+<TABLE NAME="zoom" COMMENT="Zoom meetings and webinars">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Moodle course that this meeting belongs to."/>
@@ -68,25 +68,27 @@
         <INDEX NAME="meeting_id_idx" UNIQUE="false" FIELDS="meeting_id"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="zoom_recordings" COMMENT="Storing the record from the cloud and diplaying in the Moodle.">
+
+  <TABLE NAME="zoom_recordings" COMMENT="Storing the record from the cloud and diplaying in the Moodle.">
         <FIELDS>
             <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true
                 "/>
-            <FIELD NAME="meeting_id" TYPE="bigint" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-            <FIELD NAME="uuid" TYPE="varchar" LENGTH="100" NOTNULL="false"/>
-            <FIELD NAME="play_url" TYPE="longtext" NOTNULL="false"/>
-            <FIELD NAME="download_url" TYPE="longtext" NOTNULL="false"/>
-            <FIELD NAME="start_time" TYPE="varchar" LENGTH="20"/>
-            <FIELD NAME="end_time" TYPE="varchar" LENGTH="20"/>
-            <FIELD NAME="status" TYPE="varchar" LENGTH="10"/>
+            <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+            <FIELD NAME="uuid" TYPE="char" LENGTH="100" NOTNULL="false"/>
+            <FIELD NAME="play_url" TYPE="text" NOTNULL="false"/>
+            <FIELD NAME="download_url" TYPE="text" NOTNULL="false"/>
+            <FIELD NAME="start_time" TYPE="char" LENGTH="20"/>
+            <FIELD NAME="end_time" TYPE="char" LENGTH="20"/>
+            <FIELD NAME="status" TYPE="char" LENGTH="10"/>
         </FIELDS>
         <KEYS>
             <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="mdl_zoom_rec_ix" UNIQUE="false" FIELDS="meeting_id"/>
+        <INDEX NAME="mdl_zoom_mee_ix" UNIQUE="false" FIELDS="meeting_id"/>
       </INDEXES>
     </TABLE>
+
     <TABLE NAME="zoom_meeting_details" COMMENT="A queue for the Cron to add meeting report info to zoom_meetings_participants table.">
       <FIELDS>
         <FIELD NAME="uuid" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting UUID or webinar UUID per Zoom API."/>
