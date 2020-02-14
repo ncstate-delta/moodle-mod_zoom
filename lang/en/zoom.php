@@ -228,6 +228,10 @@ $string['enable_stream_url'] = 'Viewing Recordings';
 $string['enable_download_url'] = 'Download Recordings';
 $string['enable_stream_url_desc'] = '';
 $string['enable_download_url_desc'] = '';
+$string['enablestreamurl'] = 'Enable Streaming URL';
+$string['enabledownloadurl'] = 'Enable Download URL';
+$string['enablestreamurl_desc'] = '';
+$string['enabledownloadurl_desc'] = '';
 
 // Email
 $string['msg_header'] = 'Dear {$a},';
