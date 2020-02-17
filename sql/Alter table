@@ -1,7 +1,7 @@
 ALTER TABLE `mdl_event` ADD `recording_created` TINYINT(1) NOT NULL DEFAULT '0' AFTER `location`;
 
 
-ALTER TABLE `mdl_event` ADD `enddate` bigint(12) NULL AFTER `endtype`;
+ALTER TABLE `mdl_event` ADD `endtime` bigint(12) NULL;
 
 
 ALTER TABLE `mdl_zoom` ADD `enable_stream_url` TINYINT(1) NOT NULL DEFAULT '0'AFTER `deleted_at`;
