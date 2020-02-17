@@ -36,10 +36,13 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
         global $CFG, $DB;
         $config = get_config('mod_zoom');
        
-        $sql = "SELECT e.*, mz.meeting_id, mz.auto_recording from mdl_event as e
-                join mdl_zoom mz on e.instance = mz.id
-                where e.modulename = 'zoom'and e.recording_created = 0
-                and mz.deleted_at IS NULL and e.endtime < UNIX_TIMESTAMP(NOW())";
+        $sql = "SELECT e.*, mz.meeting_id, mz.auto_recording 
+                FROM mdl_event as e
+                JOIN mdl_zoom mz on e.instance = mz.id
+                WHERE e.modulename = 'zoom'
+                  AND e.recording_created = 0
+                  AND mz.deleted_at IS NULL 
+                  AND e.endtime < UNIX_TIMESTAMP(NOW())";
 
         $zoom_events = $DB->get_records_sql($sql);
         $service = new \mod_zoom_webservice();
@@ -75,6 +78,6 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
     private function disable_download_in_stream($meeting_id)
     {
        $service = new \mod_zoom_webservice();
-       $service->disable_view_downloader($meeting_id, ['viewer_download' => false]);
+       $service->update_recording_settings($meeting_id, ['viewer_download' => false]);
     }
 }

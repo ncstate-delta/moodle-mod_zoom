@@ -420,22 +420,24 @@ class mod_zoom_webservice {
         $this->_make_call($url, null, 'delete');
     }
 
-    //Display Recording Links
+    /**
+     * Get meeting recordings
+     * @param $meeting_id
+     * @return stdClass
+     */
     public function get_meeting_recording($meeting_id)
     {
         return $this->_make_call('meetings/'.$meeting_id.'/recordings');
     }
 
-    public function disable_view_downloader($meeting_id, array $params)
+    /**
+     * Update recording settings
+     * @param $meeting_id
+     * @param array $params
+     */
+    public function update_recording_settings($meeting_id, array $params)
     {
-        $url = ('meetings/'.$meeting_id.'/recordings/settings');
-        $response = null;
-        try {
-            $response = $this->_make_call($url, $params, 'patch');
-        } catch (moodle_exception $error) {
-            throw $error;
-        }
-        return $response;
+        $this->_make_call('meetings/'.$meeting_id.'/recordings/settings', $params, 'patch');
     }
 
     /**
