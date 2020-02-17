@@ -190,16 +190,11 @@ $table->data[] = array($strmuteopt, $strmuteonentry);
 
 $table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom'));
 $table->data[] = array($strautorec, get_string('auto_rec_' . $zoom->auto_recording, 'mod_zoom'));
-$sql = "SELECT rec.play_url,rec.download_url,
-        rec.status,rec.start_time
-        from mdl_zoom_recordings as rec
-        join mdl_zoom as zoom ON zoom.meeting_id=rec.meeting_id 
-        where rec.meeting_id = {$zoom->meeting_id}";
-$records = $DB->get_records_sql($sql);
+
+$records = get_zoom_meeting_recordings($zoom->meeting_id);
 
 if (!empty($records)) {
-    
-    if($zoom->enable_stream_url == 1 && $zoom->enable_download_url== 1){
+    if($zoom->enable_stream_url == 1 && $zoom->enable_download_url == 1){
         //$table->data[] = array(get_string('view_recording','zoom'));
         $display = '';
         foreach ($records as $key => $value) {

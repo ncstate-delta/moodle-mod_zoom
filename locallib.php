@@ -639,3 +639,16 @@ function get_zoom_users_from_group($groupingid) {
                                         AND u.suspended = 0
                                 ");
 }
+
+/**
+ * Get meeting recordings
+ * @param $meeting_id
+ * @return mixed
+ */
+function get_zoom_meeting_recordings($meeting_id) {
+    global $DB;
+    return $DB->get_records_sql("SELECT rec.play_url,rec.download_url,
+        rec.status,rec.start_time
+        from mdl_zoom_recordings as rec
+        where rec.meeting_id = {$meeting_id}");
+}

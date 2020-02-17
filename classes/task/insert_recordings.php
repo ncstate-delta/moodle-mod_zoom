@@ -52,7 +52,7 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
                 $this->disable_download_in_stream($value->meeting_id);
                 $recordings = $service->get_meeting_recording($value->meeting_id);
             } catch (\moodle_exception $error) {
-                throw zoom_is_meeting_gone_error($error);
+                mtrace('No recordings found for the meeting_id: '. $value->meeting_id);
             }
             if (!empty($recordings)) {
                 //Get only the first recording file
