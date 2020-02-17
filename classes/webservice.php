@@ -445,8 +445,7 @@ class mod_zoom_webservice {
      *
      * @param int $id The meeting_id or webinar_id of the meeting or webinar to retrieve.
      * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
-     * @return stdClass The meeting's or webinar's 
-     information.
+     * @return stdClass The meeting's or webinar's information.
      */
     public function get_meeting_webinar_info($id, $webinar) {
         $url = ($webinar ? 'webinars/' : 'meetings/') . $id;
