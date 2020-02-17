@@ -48,6 +48,7 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
         foreach ($zoom_events as $value) {
             try {
+                $this->disable_download_in_stream($value->meeting_id);
                 $recordings = $service->get_meeting_recording($value->meeting_id);
             } catch (\moodle_exception $error) {
                 throw zoom_is_meeting_gone_error($error);
@@ -71,6 +72,6 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
     public function disable_download_in_stream(int $meeting_id)
     {
        $service = new \mod_zoom_webservice();
-       $downloader = $service->disable_view_downloader($meeting_id, ['viewer_download' => false]);
+       $service->disable_view_downloader($meeting_id, ['viewer_download' => false]);
     }
 }
