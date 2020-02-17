@@ -14,8 +14,6 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
  * Scheduled task to sychronize meeting data.
  *
  * @package   mod_zoom
- * @copyright 2018 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
  class insert_recordings extends \core\task\scheduled_task {
 
@@ -25,10 +23,10 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
      * @return string
      */
     public function get_name() {
-        return get_string("update_recording","zoom");
+        return get_string("update_recording", "zoom");
     }
 
-      /**
+    /**
      * Updates recordings that are not expired.
      *
      * @return boolean
@@ -54,6 +52,7 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
                 throw zoom_is_meeting_gone_error($error);
             }
             if (!empty($recordings)) {
+                //Get only the first recording file
                 $rec = $recordings->recording_files{0};
                 $record = new\stdClass();
                 $record->meeting_id = $recordings->id;
@@ -63,13 +62,17 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
                 $record->start_time = $rec->recording_start;
                 $record->end_time = $rec->recording_end;
                 $record->status = $rec->status;
-                $DB->insert_record('zoom_recordings',$record);
+                $DB->insert_record('zoom_recordings', $record);
                 $DB->update_record('event', (object)['id' => $value->id, 'recording_created' => 1]);
             }
         }  
     }
 
-    public function disable_download_in_stream(int $meeting_id)
+     /**
+      * Disable download option in stream
+      * @param int $meeting_id
+      */
+    public function disable_download_in_stream($meeting_id)
     {
        $service = new \mod_zoom_webservice();
        $service->disable_view_downloader($meeting_id, ['viewer_download' => false]);
