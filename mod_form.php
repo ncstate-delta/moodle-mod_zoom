@@ -107,7 +107,6 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->hideIf('duration', 'type', 'eq', ZOOM_RECURRING_MEETING);
 
         $mform->addElement('advcheckbox', 'recurring', 'Recurring');
-        $mform->addRule('recurring', null, 'required');
 
         // Repeat type
         $meeting_types = [
@@ -363,11 +362,6 @@ class mod_zoom_mod_form extends moodleform_mod {
         global $CFG;
         $errors = array();
 
-        // Make sure the recurring checkbox is checked or not.
-        if ($data['recurring'] == false) {
-            $errors['recurring'] = 'You must check this field';
-        }
-
         // Only check for scheduled meetings.
         if (empty($data['recurring']) || $data['type'] == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME) {
             // Make sure start date is in the future.
@@ -382,7 +376,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $errors['duration'] = get_string('err_duration_too_long', 'zoom');
             }
 
-            if ($data['endtype'] == EndType::END_BY_DATE && $data['enddate'] <= strtotime('today')) {
+            if ((isset($data['endtype']) && $data['endtype'] == EndType::END_BY_DATE) && (isset($data['enddate']) && $data['enddate'] <= strtotime('today'))) {
                 $errors['enddate'] = 'End date should be greater than current date';
             }
         }

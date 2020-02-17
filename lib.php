@@ -305,42 +305,61 @@ function zoom_calendar_item_update(stdClass $zoom) {
     $service = new mod_zoom_webservice();
     $zoom_meeting = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
     // Create new events
-    foreach ($zoom_meeting->occurrences AS $meeting_occurrences) {
-        $event = new stdClass();
-        $event->name = $zoom->name;
-        if ($zoom->intro) {
-            $event->description = $zoom->intro;
-            $event->format = $zoom->introformat;
-        }
-        $event->timestart = strtotime($meeting_occurrences->start_time);
-        $event->endtime = strtotime($meeting_occurrences->start_time) + ($zoom->duration * MINSECS);
-        $event->timeduration = $zoom->duration;
-        $event->visible = !$zoom->type == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME;
-        $event->modulename = 'zoom';
-        $event->instance = $zoom->id;
+    if (isset($zoom_meeting->occurrences)) {
+        foreach ($zoom_meeting->occurrences AS $meeting_occurrences) {
+            $event = new stdClass();
+            $event->name = $zoom->name;
+            if ($zoom->intro) {
+                $event->description = $zoom->intro;
+                $event->format = $zoom->introformat;
+            }
+            $event->timestart = strtotime($meeting_occurrences->start_time);
+            $event->endtime = strtotime($meeting_occurrences->start_time) + ($zoom->duration * MINSECS);
+            $event->timeduration = $zoom->duration;
+            $event->visible = !$zoom->type == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME;
+            $event->modulename = 'zoom';
+            $event->instance = $zoom->id;
 
-        // Checking the session action triggered from course not
-        if ($COURSE->id == 1) {
-            $event->eventtype = 'sitesession';
-            $event->courseid = 0;
-            $event->userid = 0;
-            $groupids = [0];
-        } else if ($zoom->groupmode == 1) {
-            $event->eventtype = 'session';
-            $event->courseid = 0;
-            $event->userid = 0;
-            $groupids = $DB->get_record('groupings_groups', ['groupingid' => $zoom->groupingid], 'groupid');
-        } else {
+            // Checking the session action triggered from course not
+            if ($COURSE->id == 1) {
+                $event->eventtype = 'sitesession';
+                $event->courseid = 0;
+                $event->userid = 0;
+                $groupids = [0];
+            } else if ($zoom->groupmode == 1) {
+                $event->eventtype = 'session';
+                $event->courseid = 0;
+                $event->userid = 0;
+                $groupids = $DB->get_record('groupings_groups', ['groupingid' => $zoom->groupingid], 'groupid');
+            } else {
+                $event->eventtype = 'session';
+                $event->courseid = $zoom->course;
+                $event->userid = 0;
+                $groupids = [0];
+            }
+
+            foreach ($groupids as $groupid) {
+                $event->groupid = $groupid;
+                calendar_event::create($event);
+            }
+        }
+    } else {
+        $event = new stdClass();
+            $event->name = $zoom->name;
+            if ($zoom->intro) {
+                $event->description = $zoom->intro;
+                $event->format = $zoom->introformat;
+            }
+            $event->timestart = $zoom->start_time;
+            $event->endtime = $zoom->start_time + ($zoom->duration * MINSECS);
+            $event->timeduration = $zoom->duration;
+            $event->visible = true;
+            $event->modulename = 'zoom';
             $event->eventtype = 'session';
             $event->courseid = $zoom->course;
             $event->userid = 0;
-            $groupids = [0];
-        }
-
-        foreach ($groupids as $groupid) {
-            $event->groupid = $groupid;
+            $event->instance = $zoom->id;
             calendar_event::create($event);
-        }
     }
 }
 

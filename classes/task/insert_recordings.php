@@ -45,6 +45,7 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
         $zoom_events = $DB->get_records_sql($sql);
         $service = new \mod_zoom_webservice();
+
         foreach ($zoom_events as $value) {
             try {
                 $recordings = $service->get_meeting_recording($value->meeting_id);
@@ -65,5 +66,11 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
                 $DB->update_record('event', (object)['id' => $value->id, 'recording_created' => 1]);
             }
         }  
+    }
+
+    public function disable_download_in_stream(int $meeting_id)
+    {
+       $service = new \mod_zoom_webservice();
+       $downloader = $service->disable_view_downloader($meeting_id, ['viewer_download' => false]);
     }
 }

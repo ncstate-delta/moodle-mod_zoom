@@ -130,13 +130,11 @@ class mod_zoom_webservice {
         );
         $token = \Firebase\JWT\JWT::encode($payload, $this->apisecret);
         $curl->setHeader('Authorization: Bearer ' . $token);
-
         if ($method != 'get') {
             $curl->setHeader('Content-Type: application/json');
             $data = is_array($data) ? json_encode($data) : $data;
         }
         $response = call_user_func_array(array($curl, $method), array($url, $data));
-
         if ($curl->get_errno()) {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', $curl->error);
         }
@@ -343,10 +341,11 @@ class mod_zoom_webservice {
             $data['type'] = $zoom->recurring ? ZOOM_RECURRING_WEBINAR : ZOOM_SCHEDULED_WEBINAR;
         } else {
             //User provided meeting type
-            $data['type'] = isset($zoom->type) ? (int) $zoom->type : ZOOM_SCHEDULED_MEETING;
+            $data['type'] = (isset($zoom->type) && ((bool)$zoom->recurring == true)) ? (int) $zoom->type : ZOOM_SCHEDULED_MEETING;
             $data['settings']['join_before_host'] = (bool) ($zoom->option_jbh);
             $data['settings']['participant_video'] = (bool) ($zoom->option_participants_video);
         }
+
         if ($zoom->recurring && ($zoom->type == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME)) {
             $data['recurrence'] = $this->prepareRecurrenceSettings($zoom);
         }
@@ -427,12 +426,25 @@ class mod_zoom_webservice {
         return $this->_make_call('meetings/'.$meeting_id.'/recordings');
     }
 
+    public function disable_view_downloader($meeting_id, array $params)
+    {
+        $url = ('meetings/'.$meeting_id.'/recordings/settings');
+        $response = null;
+        try {
+            $response = $this->_make_call($url, $params, 'patch');
+        } catch (moodle_exception $error) {
+            throw $error;
+        }
+        return $response;
+    }
+
     /**
      * Get a meeting or webinar's information from Zoom.
      *
      * @param int $id The meeting_id or webinar_id of the meeting or webinar to retrieve.
      * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
-     * @return stdClass The meeting's or webinar's information.
+     * @return stdClass The meeting's or webinar's 
+     information.
      */
     public function get_meeting_webinar_info($id, $webinar) {
         $url = ($webinar ? 'webinars/' : 'meetings/') . $id;

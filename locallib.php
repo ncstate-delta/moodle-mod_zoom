@@ -127,7 +127,7 @@ function zoom_get_state($zoom) {
     $config = get_config('mod_zoom');
     $now = time();
 
-    if ($zoom->type == ZOOM_RECURRING_MEETING_WITH_FIXED_TIME) {
+    if ($zoom->recurring == true) {
         $service = new mod_zoom_webservice();
         $meetings = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar)->occurrences;
         //Get the latest meeting start time
