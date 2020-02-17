@@ -72,7 +72,7 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
       * Disable download option in stream
       * @param int $meeting_id
       */
-    public function disable_download_in_stream($meeting_id)
+    private function disable_download_in_stream($meeting_id)
     {
        $service = new \mod_zoom_webservice();
        $service->disable_view_downloader($meeting_id, ['viewer_download' => false]);
