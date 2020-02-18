@@ -195,7 +195,7 @@ $records = get_zoom_meeting_recordings($zoom->meeting_id);
 if (!empty($records)) {
         $display = '';
         foreach ($records as $key => $value) {
-                $play_urls = $value->play_url;
+               $play_urls = $value->play_url;
                 $download_urls = $value->download_url;
                 $dates = $value->start_time;
                 $rec_date = date_create($dates);
