@@ -207,28 +207,6 @@ if (!empty($records)) {
             }
             $display .= '</br>';
             $table->data[] = [get_string('view_recording','zoom'),$display];
-    } else if($zoom->enable_stream_url == 1){
-        $display = '';
-        foreach ($records as $key => $value) {
-                $play_urls = $value->play_url;
-                $dates = $value->start_time;
-                $rec_date = date_create($dates);
-                $date = date_format($rec_date, 'd-m-Y');
-                $display .= '<br>&nbsp;'.$date.'<br>'.'&nbsp;<a target="_blank" href="'.$play_urls.'">View';
-            }
-            $display .= '</br>';
-            $table->data[] = [get_string('view_recording','zoom'),$display];
-    }else if($zoom->enable_download_url== 1){
-        $display = '';
-        foreach ($records as $key => $value) {
-                $download_urls = $value->download_url;
-                $dates = $value->start_time;
-                $rec_date = date_create($dates);
-                $date = date_format($rec_date, 'd-m-Y');
-                $display .= '<br>&nbsp;'.$date.'<br>'.'&nbsp;<a target="_blank" href="'.$download_urls.'">Download';
-            }
-            $display .= '</br>';
-            $table->data[] = [get_string('view_recording','zoom'),$display];
     } else{
             $table->data[] = array(get_string('view_recording', 'zoom'), get_string('err_recording_not_found', 'zoom'));
         }
