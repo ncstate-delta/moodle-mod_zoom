@@ -192,13 +192,10 @@ $table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 
 $table->data[] = array($strautorec, get_string('auto_rec_' . $zoom->auto_recording, 'mod_zoom'));
 
 $records = get_zoom_meeting_recordings($zoom->meeting_id);
-
 if (!empty($records)) {
-    if($zoom->enable_stream_url == 1 && $zoom->enable_download_url == 1){
-        //$table->data[] = array(get_string('view_recording','zoom'));
         $display = '';
         foreach ($records as $key => $value) {
-            $play_urls = $value->play_url;
+                $play_urls = $value->play_url;
                 $download_urls = $value->download_url;
                 $dates = $value->start_time;
                 $rec_date = date_create($dates);
@@ -210,7 +207,6 @@ if (!empty($records)) {
     } else{
             $table->data[] = array(get_string('view_recording', 'zoom'), get_string('err_recording_not_found', 'zoom'));
         }
-}
 if ($iszoommanager) {
     // Only show sessions link to users with edit capability.
     $sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
