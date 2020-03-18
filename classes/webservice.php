@@ -121,9 +121,35 @@ class mod_zoom_webservice {
      * @throws moodle_exception Moodle exception is thrown for curl errors.
      */
     protected function _make_call($url, $data = array(), $method = 'get') {
+        global $CFG;
         $url = API_URL . $url;
         $method = strtolower($method);
-        $curl = new curl();
+        $proxyhost = get_config('mod_zoom', 'proxyhost');
+        $cfg = new stdClass();
+        if(!empty($proxyhost)) {
+            $cfg->proxyhost = $CFG->proxyhost;
+            $cfg->proxyport = $CFG->proxyport;
+            $cfg->proxyuser = $CFG->proxyuser;
+            $cfg->proxypassword = $CFG->proxypassword;
+            $cfg->proxytype = $CFG->proxytype;
+            // parse host:port
+            list($host,$port) = explode(':', $proxyhost);
+            // temporarily set new values
+            $CFG->proxyhost = $host;
+            $CFG->proxyport = $port;
+            $CFG->proxytype = 'HTTP';
+            $CFG->proxyuser = '';
+            $CFG->proxypassword = '';
+        }
+        $curl = new curl(); // create curl which implicitly uses the proxy settings from $CFG
+        if(!empty($proxyhost)) {
+            // restore stored global proxy settings from above
+            $CFG->proxyhost = $cfg->proxyhost;
+            $CFG->proxyport = $cfg->proxyport;
+            $CFG->proxyuser = $cfg->proxyuser;
+            $CFG->proxypassword = $cfg->proxypassword;
+            $CFG->proxytype = $cfg->proxytype;
+        }
         $payload = array(
             'iss' => $this->apikey,
             'exp' => time() + 40
