@@ -126,24 +126,24 @@ class mod_zoom_webservice {
         $method = strtolower($method);
         $proxyhost = get_config('mod_zoom', 'proxyhost');
         $cfg = new stdClass();
-        if(!empty($proxyhost)) {
+        if (!empty($proxyhost)) {
             $cfg->proxyhost = $CFG->proxyhost;
             $cfg->proxyport = $CFG->proxyport;
             $cfg->proxyuser = $CFG->proxyuser;
             $cfg->proxypassword = $CFG->proxypassword;
             $cfg->proxytype = $CFG->proxytype;
-            // parse host:port
+            // Parse string as host:port, delimited by a colon (:).
             list($host,$port) = explode(':', $proxyhost);
-            // temporarily set new values
+            // Temporarily set new values on the global $CFG.
             $CFG->proxyhost = $host;
             $CFG->proxyport = $port;
             $CFG->proxytype = 'HTTP';
             $CFG->proxyuser = '';
             $CFG->proxypassword = '';
         }
-        $curl = new curl(); // create curl which implicitly uses the proxy settings from $CFG
+        $curl = new curl(); // Create $curl, which implicitly uses the proxy settings from $CFG.
         if(!empty($proxyhost)) {
-            // restore stored global proxy settings from above
+            // Restore the stored global proxy settings from above.
             $CFG->proxyhost = $cfg->proxyhost;
             $CFG->proxyport = $cfg->proxyport;
             $CFG->proxyuser = $cfg->proxyuser;
