@@ -103,10 +103,10 @@ class mod_zoom_webservice {
             $this->recyclelicenses = $config->utmost;
         }
         if ($this->recyclelicenses) {
-            if (!empty($config->licensescount)) {
-                $this->numlicenses = $config->licensescount;
+            if (!empty($config->licensesnumber)) {
+                $this->numlicenses = $config->licensesnumber;
             } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_licensescount_missing', 'zoom'));
+                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_licensesnumber_missing', 'zoom'));
             }
         }
     }
@@ -121,9 +121,35 @@ class mod_zoom_webservice {
      * @throws moodle_exception Moodle exception is thrown for curl errors.
      */
     protected function _make_call($url, $data = array(), $method = 'get') {
+        global $CFG;
         $url = API_URL . $url;
         $method = strtolower($method);
-        $curl = new curl();
+        $proxyhost = get_config('mod_zoom', 'proxyhost');
+        $cfg = new stdClass();
+        if (!empty($proxyhost)) {
+            $cfg->proxyhost = $CFG->proxyhost;
+            $cfg->proxyport = $CFG->proxyport;
+            $cfg->proxyuser = $CFG->proxyuser;
+            $cfg->proxypassword = $CFG->proxypassword;
+            $cfg->proxytype = $CFG->proxytype;
+            // Parse string as host:port, delimited by a colon (:).
+            list($host,$port) = explode(':', $proxyhost);
+            // Temporarily set new values on the global $CFG.
+            $CFG->proxyhost = $host;
+            $CFG->proxyport = $port;
+            $CFG->proxytype = 'HTTP';
+            $CFG->proxyuser = '';
+            $CFG->proxypassword = '';
+        }
+        $curl = new curl(); // Create $curl, which implicitly uses the proxy settings from $CFG.
+        if(!empty($proxyhost)) {
+            // Restore the stored global proxy settings from above.
+            $CFG->proxyhost = $cfg->proxyhost;
+            $CFG->proxyport = $cfg->proxyport;
+            $CFG->proxyuser = $cfg->proxyuser;
+            $CFG->proxypassword = $cfg->proxypassword;
+            $CFG->proxytype = $cfg->proxytype;
+        }
         $payload = array(
             'iss' => $this->apikey,
             'exp' => time() + 40

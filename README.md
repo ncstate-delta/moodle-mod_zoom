@@ -3,7 +3,7 @@ Zoom is the web and app based video conferencing service (http://zoom.us). This 
 
 ## Installation
 Requires Zoom API key and secret.
-See https://developer.zoom.us/docs/api/ and follow the link to "Get your API key pair from here (https://developer.zoom.us/me/#api)"
+See https://marketplace.zoom.us/docs/guides/authorization/jwt/jwt-with-zoom. You will need to create a JWT app and that will generate the API key and secret.
 
 You will need to have Zoom administrator access. Please note that the API key and secret is not the same as the LTI key/secret.
 
@@ -15,6 +15,13 @@ Must set the following settings to enable the plugin:
 * Zoom home page URL (mod_zoom | zoomurl), Link to your organization's custom Zoom landing page.
 
 ## Changelog
+
+v2.2
+* Resized svg icon (Thanks stopfstedt)
+* Fixed error handling for 'User not found on this account' (Thanks nstefanski and tzerafnx)
+* Incorrect return value for zoom_update_instance (Thanks jrchamp)
+* Added global search support
+* Fixed inconsistent "start_time" column (Thanks tuanngocnguyen)
 
 v2.1
 * Moodle 3.7 support (Thanks danmarsden) 

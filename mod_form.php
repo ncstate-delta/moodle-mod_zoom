@@ -53,7 +53,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             $errstring = 'zoomerr_usernotfound';
             // After they set up their account, the user should continue to the page they were on.
             $nexturl = $PAGE->url;
-            throw new moodle_exception($errstring, 'mod_zoom', $nexturl, $config->zoomurl);
+            zoom_fatal_error($errstring, 'mod_zoom', $nexturl, $config->zoomurl);
         }
 
         // If updating, ensure we can get the meeting on Zoom.
@@ -67,7 +67,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                     $errstring = 'zoomerr_meetingnotfound';
                     $param = zoom_meetingnotfound_param($this->_cm->id);
                     $nexturl = "/mod/zoom/view.php?id=" . $this->_cm->id;
-                    throw new moodle_exception($errstring, 'mod_zoom', $nexturl, $param, "meeting/get : $error");
+                    zoom_fatal_error($errstring, 'mod_zoom', $nexturl, $param, "meeting/get : $error");
                 } else {
                     throw $error;
                 }

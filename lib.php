@@ -91,7 +91,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
  *
  * @param stdClass $zoom An object from the form in mod_form.php
  * @param mod_zoom_mod_form $mform The form instance (included because the function is used as a callback)
- * @return int The id of the newly inserted zoom record
+ * @return boolean Success/Failure
  */
 function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
@@ -108,12 +108,16 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     // Update meeting on Zoom.
     $service = new mod_zoom_webservice();
-    $service->update_meeting($zoom);
+    try {
+        $service->update_meeting($zoom);
+    } catch (moodle_exception $error) {
+        return false;
+    }
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
 
-    return $zoom->id;
+    return true;
 }
 
 /**
@@ -330,26 +334,6 @@ function zoom_calendar_item_delete(stdClass $zoom) {
 }
 
 /* Gradebook API */
-
-/**
- * Is a given scale used by the instance of zoom?
- *
- * This function returns if a scale is being used by one zoom
- * if it has support for grading and scales.
- *
- * @param int $zoomid ID of an instance of this module
- * @param int $scaleid ID of the scale
- * @return bool true if the scale is used by the given zoom instance
- */
-function zoom_scale_used($zoomid, $scaleid) {
-    global $DB;
-
-    if ($scaleid and $DB->record_exists('zoom', array('id' => $zoomid, 'grade' => -$scaleid))) {
-        return true;
-    } else {
-        return false;
-    }
-}
 
 /**
  * Checks if scale is being used by any instance of zoom.
