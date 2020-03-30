@@ -62,7 +62,7 @@ $event->add_property('dtend', Bennu::timestamp_to_datetime($zoom->start_time + $
 
 // Compute and add description property to event.
 $convertedtext = html_to_text($zoom->intro);
-$descriptiontext = get_string('calendardescriptionURL', 'mod_zoom', $zoom->join_url);
+$descriptiontext = get_string('calendardescriptionURL', 'mod_zoom', $CFG->wwwroot . '/mod/zoom/view.php?id=' . $cm->id);
 if (!empty($convertedtext)) {
     $descriptiontext .= get_string('calendardescriptionintro', 'mod_zoom', $convertedtext);
 }
