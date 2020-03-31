@@ -107,6 +107,6 @@ if ($ADMIN->fulltree) {
     $settings->add($defaultjoinbeforehost);
 
     $proxyhost = new admin_setting_configtext('mod_zoom/proxyhost', get_string('option_proxyhost', 'zoom'),
-            get_string('option_proxyhost_desc', 'mod_zoom'), '', '/^[a-zA-Z0-9.-]+:[0-9]+$/');
+            get_string('option_proxyhost_desc', 'mod_zoom'), '', '/^[a-zA-Z0-9.-]+:[0-9]+$|^$/');
     $settings->add($proxyhost);
 }
