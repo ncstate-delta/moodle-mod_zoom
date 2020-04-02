@@ -139,7 +139,20 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
                 foreach ($participants as $rawparticipant) {
                     $participant = $this->format_participant($rawparticipant, $detailsid, $names, $emails);
-                    $DB->insert_record('zoom_meeting_participants', $participant, false);
+                    try {
+                        $DB->insert_record('zoom_meeting_participants', $participant, false);
+                    } catch (\dml_write_exception $ex) {
+                        // Error might be because record already exists, so update.
+                        $recordid = $DB->get_field('zoom_meeting_participants',
+                                'id', ['detailsid' => $participant-detailsid,
+                                    'zoomuserid' => $participant->zoomuserid]);
+                        if (!empty($recordid)) {
+                            $participant->id = $recordid;
+                            $DB->update_record('zoom_meeting_participants', $participant);
+                        } else {
+                            throw $ex;  // Must be another error.
+                        }
+                    }
                 }
             }
         }
