@@ -152,7 +152,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                     } catch (\dml_write_exception $ex) {
                         // Error might be because record already exists, so update.
                         $recordid = $DB->get_field('zoom_meeting_participants',
-                                'id', ['detailsid' => $participant-detailsid,
+                                'id', ['detailsid' => $participant->detailsid,
                                     'zoomuserid' => $participant->zoomuserid]);
                         if (!empty($recordid)) {
                             $participant->id = $recordid;
