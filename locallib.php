@@ -51,6 +51,22 @@ define('ZOOM_USER_TYPE_PRO', 2);
 define('ZOOM_USER_TYPE_CORP', 3);
 
 /**
+ * Entry not found on Zoom.
+ */
+class zoom_not_found_exception extends moodle_exception {
+    // Web service response.
+    public $response = null;
+    /**
+     * @param string $response  Web service response
+     */
+    public function __construct($response) {
+        $this->response = $response;
+        parent::__construct('errorwebservice_notfound', 'mod_zoom', $response);
+    }
+}
+
+
+/**
  * Terminate the current script with a fatal error.
  *
  * Adapted from core_renderer's fatal_error() method. Needed because throwing errors with HTML links in them will convert links
@@ -60,7 +76,8 @@ define('ZOOM_USER_TYPE_CORP', 3);
  *
  * @param string $errorcode The name of the string from error.php to print
  * @param string $module name of module
- * @param string $link The url where the user will be prompted to continue. If no url is provided the user will be directed to the site index page.
+ * @param string $link The url where the user will be prompted to continue. If no url is provided the user will be directed to the
+ *                     site index page.
  * @param mixed $a Extra words and phrases that might be required in the error string
  */
 function zoom_fatal_error($errorcode, $module='', $continuelink='', $a=null) {
@@ -85,8 +102,8 @@ function zoom_fatal_error($errorcode, $module='', $continuelink='', $a=null) {
 
     if ($CFG->debugdeveloper) {
         if (!empty($debuginfo)) {
-            $debuginfo = s($debuginfo); // removes all nasty JS
-            $debuginfo = str_replace("\n", '<br />', $debuginfo); // keep newlines
+            $debuginfo = s($debuginfo); // Removes all nasty JS.
+            $debuginfo = str_replace("\n", '<br />', $debuginfo); // Keep newlines.
             $output .= $OUTPUT->notification('<strong>Debug info:</strong> '.$debuginfo, 'notifytiny');
         }
         if (!empty($backtrace)) {
@@ -108,7 +125,7 @@ function zoom_fatal_error($errorcode, $module='', $continuelink='', $a=null) {
 
     echo $output;
 
-    exit(1); // General error code
+    exit(1); // General error code.
 }
 
 /**

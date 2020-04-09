@@ -34,7 +34,8 @@ namespace mod_zoom\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-define('MAX_CALLS', 2000);
+// EDU accounts get 60,000 calls a day. Will be fixed to use Retry-Header later.
+define('MAX_CALLS', 60000);
 
 /**
  * Scheduled task to reset the number of allotted Zoom Report API calls we have left each day.

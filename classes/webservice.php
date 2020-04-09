@@ -29,7 +29,7 @@ require_once($CFG->dirroot.'/lib/filelib.php');
 
 // Some plugins already might include this library, like mod_bigbluebuttonbn.
 // Hacky, but need to create whitelist of plugins that might have JWT library.
-// NOTE: Remove file_exists checks and the JWT library in mod when versions prior to Moodle 3.7 is no longer supported
+// NOTE: Remove file_exists checks and the JWT library in mod when versions prior to Moodle 3.7 is no longer supported.
 if (!class_exists('Firebase\JWT\JWT')) {
     if (file_exists($CFG->dirroot.'/lib/php-jwt/src/JWT.php')) {
         require_once($CFG->dirroot.'/lib/php-jwt/src/JWT.php');
@@ -133,7 +133,7 @@ class mod_zoom_webservice {
             $cfg->proxypassword = $CFG->proxypassword;
             $cfg->proxytype = $CFG->proxytype;
             // Parse string as host:port, delimited by a colon (:).
-            list($host,$port) = explode(':', $proxyhost);
+            list($host, $port) = explode(':', $proxyhost);
             // Temporarily set new values on the global $CFG.
             $CFG->proxyhost = $host;
             $CFG->proxyport = $port;
@@ -142,7 +142,7 @@ class mod_zoom_webservice {
             $CFG->proxypassword = '';
         }
         $curl = new curl(); // Create $curl, which implicitly uses the proxy settings from $CFG.
-        if(!empty($proxyhost)) {
+        if (!empty($proxyhost)) {
             // Restore the stored global proxy settings from above.
             $CFG->proxyhost = $cfg->proxyhost;
             $CFG->proxyport = $cfg->proxyport;
@@ -171,10 +171,15 @@ class mod_zoom_webservice {
 
         $httpstatus = $curl->get_info()['http_code'];
         if ($httpstatus >= 400) {
-            if ($response) {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', $response->message);
-            } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', "HTTP Status $httpstatus");
+            switch($httpstatus) {
+                case 404:
+                    throw new zoom_not_found_exception($response->message);
+                default:
+                    if ($response) {
+                        throw new moodle_exception('errorwebservice', 'mod_zoom', '', $response->message);
+                    } else {
+                        throw new moodle_exception('errorwebservice', 'mod_zoom', '', "HTTP Status $httpstatus");
+                    }
             }
         }
 
@@ -206,6 +211,7 @@ class mod_zoom_webservice {
                 if ($numcalls > 0) {
                     $callresult = $this->_make_call($url, $data);
                     set_config('calls_left', $numcalls - 1, 'mod_zoom');
+                    // We can only do 1 report calls a second.
                     sleep(1);
                 }
             } else {
@@ -497,6 +503,7 @@ class mod_zoom_webservice {
      * @link https://zoom.github.io/api/#list-a-webinars-registrants
      */
     public function list_webinar_attendees($uuid) {
+        $uuid = $this->encode_uuid($uuid);
         $url = 'webinars/' . $uuid . '/registrants';
         return $this->_make_paginated_call($url, null, 'registrants');
     }
@@ -509,6 +516,7 @@ class mod_zoom_webservice {
      * @link https://zoom.github.io/api/#retrieve-a-webinar
      */
     public function get_metrics_webinar_detail($uuid) {
+        $uuid = $this->encode_uuid($uuid);
         return $this->_make_call('webinars/' . $uuid);
     }
 
@@ -519,6 +527,7 @@ class mod_zoom_webservice {
      * @return stdClass The meeting report.
      */
     public function get_meeting_participants($meetinguuid, $webinar) {
+        $meetinguuid = $this->encode_uuid($meetinguuid);
         return $this->_make_paginated_call('report/' . ($webinar ? 'webinars' : 'meetings') . '/'
                                            . $meetinguuid . '/participants', null, 'participants');
     }
@@ -546,5 +555,26 @@ class mod_zoom_webservice {
             $uuids[] = $user->id;
         }
         return $uuids;
+    }
+
+    /**
+     * If the UUID begins with a ‘/’ or contains ‘//’ in it we need to double encode it when using it for API calls.
+     *
+     * See https://devforum.zoom.us/t/cant-retrieve-data-when-meeting-uuid-contains-double-slash/2776
+     *
+     * @param string $uuid
+     * @return string
+     */
+    public function encode_uuid($uuid) {
+        if (substr($uuid, 0, 1) === '/' || strpos($uuid, '//') !== false) {
+            // Use similar function to JS encodeURIComponent, see https://stackoverflow.com/a/1734255/6001.
+            $encodeuricomponent = function($str) {
+                $revert = array('%21' => '!', '%2A' => '*', '%27' => "'", '%28' => '(', '%29' => ')');
+                return strtr(rawurlencode($str), $revert);
+            };
+            $uuid = $encodeuricomponent($encodeuricomponent($uuid));
+        }
+
+        return $uuid;
     }
 }
