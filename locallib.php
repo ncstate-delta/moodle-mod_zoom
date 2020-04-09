@@ -61,7 +61,7 @@ class zoom_not_found_exception extends moodle_exception {
      */
     public function __construct($response) {
         $this->response = $response;
-        parent::__construct('errorwebservice_notfound', 'mod_zoom', $response);
+        parent::__construct('errorwebservice_notfound', 'mod_zoom', '', $response);
     }
 }
 
