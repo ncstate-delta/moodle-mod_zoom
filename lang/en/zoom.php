@@ -60,6 +60,7 @@ $string['err_duration_too_long'] = 'The duration cannot exceed 150 hours.';
 $string['err_long_timeframe'] = 'Requested time frame too long, showing results of latest month in range.';
 $string['err_password'] = 'Password may only contain the following characters: [a-z A-Z 0-9 @ - _ *]. Max of 10 characters.';
 $string['err_start_time_past'] = 'The start date cannot be in the past.';
+$string['errorwebservice_notfound'] = 'The resource does not exists: {$a}';
 $string['errorwebservice'] = 'Zoom webservice error: {$a}.';
 $string['export'] = 'Export';
 $string['firstjoin'] = 'First able to join';

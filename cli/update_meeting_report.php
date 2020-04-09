@@ -36,7 +36,10 @@ list($options, $unrecognized) = cli_get_params(
             'meetinguuid' => false
         ),
         array(
-            'h' => 'help'
+            'h' => 'help',
+            'c' => 'courseid',
+            'm' => 'meetingid',
+            'u' => 'meetinguuid'
         )
 );
 
@@ -91,98 +94,14 @@ if (empty($meetings)) {
 }
 
 $meetingtask = new mod_zoom\task\get_meeting_reports();
+$meetingtask->debuggingenabled = true;  // We want to see detailed progress.
 $service = new \mod_zoom_webservice();
 $trace = new text_progress_trace();
 
 // Go through each meeting and update participants.
 $meetingcache = $enrollmentcache = array();
 foreach ($meetings as $meeting) {
-    $detailsid  = $meeting->id;
-    $meetingid  = $meeting->meeting_id;
-    $uuid       = $meeting->uuid;
-
-    $trace->output(sprintf('Processiing detailsid: %d | meetindid: %d | uuid: %s',
-            $detailsid, $meetingid, $uuid));
-
-    // Query for zoom record.
-    if (!isset($meetingcache[$meetingid])) {
-        if (!($zoomrecord = $DB->get_record('zoom', array('meeting_id' => $meetingid), '*', IGNORE_MULTIPLE))) {
-            // If meeting doesn't exist in the zoom database, the instance is deleted, and we don't need reports for these.
-            $trace->output(sprintf('MeetingID %d does not exist; skipping', $meetingid), 1);
-            continue;
-        }
-        $meetingcache[$meetingid] = $zoomrecord;
-    }
-    $zoomrecord = $meetingcache[$meetingid];
-
-    // Query for course enrollment.
-    if (!isset($enrollmentcache[$zoomrecord->course])) {
-        $enrollmentcache[$zoomrecord->course] = $meetingtask->get_enrollments($zoomrecord->course);
-    }
-    list($names, $emails) = $enrollmentcache[$zoomrecord->course];
-
-    if ($meetingtask->get_num_calls_left() < 1) {
-        cli_error('Error: Zoom Report API calls have been exhausted.');
-    }
-
-    try {
-        $participants = $service->get_meeting_participants($uuid, $zoomrecord->webinar);
-    } catch (Exception $e) {
-        $trace->output('Exception: ' . $e->getMessage(), 1);
-        continue;
-    }
-    $trace->output(sprintf('Processing %d participants', count($participants)), 1);
-    foreach ($participants as $rawparticipant) {
-        $trace->output(sprintf('Working on %s (user_id: %d, uuid: %s)',
-                $rawparticipant->name, $rawparticipant->user_id, $rawparticipant->id), 2);
-
-        $participant = $meetingtask->format_participant($rawparticipant, $detailsid, $names, $emails);
-
-        // Unique keys are detailsid and zoomuserid.
-        if ($record = $DB->get_record('zoom_meeting_participants',
-                array('detailsid' => $participant['detailsid'],
-                    'zoomuserid' => $participant['zoomuserid']))) {
-            // User exists, so need to update record.
-
-            // To update, need to set ID.
-            $participant['id'] = $record->id;
-
-            $olddiff = array_diff_assoc((array) $record, $participant);
-            $newdiff = array_diff_assoc($participant, (array) $record);
-
-            if (empty($olddiff) && empty($newdiff)) {
-                $trace->output('No changes found.', 3);
-            } else {
-                // Using http_build_query since it is an easy way to output array
-                // key/value in one line.
-                $trace->output('Old values: ' . print_diffs($olddiff), 3);
-                $trace->output('New values: ' . print_diffs($newdiff), 3);
-
-                $DB->update_record('zoom_meeting_participants', $participant);
-                $trace->output('Updated record ' . $record->id, 3);
-            }
-        } else {
-            // Participant does not already exist.
-            $recordid = $DB->insert_record('zoom_meeting_participants', $participant, false);
-
-            $trace->output('Inserted record ' . $recordid, 3);
-        }
-    }
-}
-
-/**
- * Builds a string with key/value of given array.
- *
- * @param array $diff
- * @return string
- */
-function print_diffs($diff) {
-    $retval = '';
-    foreach ($diff as $key => $value) {
-        if (!empty($retval)) {
-            $retval .= ', ';
-        }
-        $retval .= "$key => $value";
-    }
-    return $retval;
+    // Task is expecting meeting_id to be in id.
+    $meeting->id = $meeting->meeting_id;
+    $meetingtask->process_meeting_reports($meeting, $service);
 }
