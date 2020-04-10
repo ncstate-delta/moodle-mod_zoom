@@ -169,8 +169,8 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 // Try to pick up where we left off.
                 if (empty($paramstart) && empty($paramend) && empty($hostuuids)) {
                     // Only want to resume if we were processing all reports.
-                    $lastreporttime =  strtotime($meeting->start_time);
-                    set_config('last_call_made_at', $lastreporttime - 1, 'mod_zoom');
+                    // Meeting start time has been converted to timestamp in process_meeting_reports().
+                    set_config('last_call_made_at', $meeting->start_time - 1, 'mod_zoom');
                 }
 
                 $recordedallmeetings = false;
