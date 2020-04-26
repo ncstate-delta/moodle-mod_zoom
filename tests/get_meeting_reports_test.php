@@ -41,10 +41,28 @@ class get_meeting_reports_test extends advanced_testcase {
     private $meetingtask;
 
     /**
+     * Fake data to return for mocked get_meeting_participants() call.
+     * @var array
+     */
+    private $mockparticipantsdata;
+
+    /**
      * Fake data from get_meeting_participants().
      * @var object
      */
     private $zoomdata;
+
+    /**
+     * Mocks the mod_zoom_webservice->get_meeting_participants() call, so we
+     * don't actually call the real Zoom API.
+     *
+     * @param string $meetinguuid The meeting or webinar's UUID.
+     * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
+     * @return array    The specified meeting participants array for given meetinguuid.
+     */
+    public function mock_get_meeting_participants($meetinguuid, $webinar) {
+        return $this->mockparticipantsdata[$meetinguuid] ?? null;
+    }
 
     /**
      * Setup.
@@ -235,5 +253,90 @@ class get_meeting_reports_test extends advanced_testcase {
         $participant = $this->meetingtask->format_participant($this->zoomdata,
                 1, $names, $emails);
         $this->assertEmpty($participant['userid']);
+    }
+
+    /**
+     * Tests that we can handle when the Zoom API sometimes returns invalid
+     * userids in the report/meeting/participants call.
+     */
+    public function test_invalid_userids() {
+        global $DB, $SITE;
+
+        // Make sure we start with nothing.
+        $this->assertEquals(0, $DB->count_records('zoom_meeting_details'));
+        $this->assertEquals(0, $DB->count_records('zoom_meeting_participants'));
+        $this->mockparticipantsdata = [];
+        set_config('calls_left', 3000, 'mod_zoom');
+
+        // First mock the webservice object, so we can inject the return values
+        // for get_meeting_participants().
+        $mockwwebservice = $this->createMock('mod_zoom_webservice');
+
+        // What we want get_meeting_participants to return.
+        $participant1 = new stdClass();
+        // Sometimes Zoom returns timestamps appended to user_ids.
+        $participant1->id = '';
+        $participant1->user_id = '02020-04-01 15:02:01:040';
+        $participant1->name = 'John Smith';
+        $participant1->user_email = 'john@test.com';
+        $participant1->join_time = '2020-04-01T15:02:01Z';
+        $participant1->leave_time = '2020-04-01T15:02:01Z';
+        $participant1->duration = 0;
+        $participant1->attentiveness_score = '';
+        $this->mockparticipantsdata['someuuid'][] = $participant1;
+        // Have another participant with normal data.
+        $participant2 = new stdClass();
+        $participant2->id = '';
+        $participant2->user_id = 123;
+        $participant2->name = 'Jane Smith';
+        $participant2->user_email = 'jane@test.com';
+        $participant2->join_time = '2020-04-01T15:00:00Z';
+        $participant2->leave_time = '2020-04-01T15:10:00Z';
+        $participant2->duration = 10;
+        $participant2->attentiveness_score = '';
+        $this->mockparticipantsdata['someuuid'][] = $participant2;
+
+        // Make get_meeting_participants() return our results array.
+        $mockwwebservice->method('get_meeting_participants')
+                ->will($this->returnCallback([$this, 'mock_get_meeting_participants']));
+
+        $this->assertEquals($this->mockparticipantsdata['someuuid'],
+                $mockwwebservice->get_meeting_participants('someuuid', false));
+
+        // Now fake the meeting details.
+        $meeting = new stdClass();
+        $meeting->id = 12345;
+        $meeting->start_time = '2020-04-01T15:00:00Z';
+        $meeting->end_time = '2020-04-01T16:00:00Z';
+        $meeting->uuid = 'someuuid';
+        $meeting->duration = 60;
+
+        // Insert stub data for zoom table.
+        $DB->insert_record('zoom', ['course' => $SITE->id,
+                'meeting_id' => $meeting->id, 'name' => 'Zoom',
+                'exists_on_zoom' => 1]);
+
+        // Run task process_meeting_reports() and should insert participants.
+        $this->assertTrue($this->meetingtask->process_meeting_reports(clone $meeting, $mockwwebservice));
+
+        // Make sure that only one details is added and two participants.
+        $this->assertEquals(1, $DB->count_records('zoom_meeting_details'));
+        $this->assertEquals(2, $DB->count_records('zoom_meeting_participants'));
+
+        // Add in one more participant, make sure we update details and added
+        // one more participant.
+        $participant3 = new stdClass();
+        $participant3->id = 'someuseruuid';
+        $participant3->user_id = 234;
+        $participant3->name = 'Joe Smith';
+        $participant3->user_email = 'joe@test.com';
+        $participant3->join_time = '2020-04-01T15:05:00Z';
+        $participant3->leave_time = '2020-04-01T15:35:00Z';
+        $participant3->duration = 30;
+        $participant3->attentiveness_score = '';
+        $this->mockparticipantsdata['someuuid'][] = $participant3;
+        $this->assertTrue($this->meetingtask->process_meeting_reports(clone $meeting, $mockwwebservice));
+        $this->assertEquals(1, $DB->count_records('zoom_meeting_details'));
+        $this->assertEquals(3, $DB->count_records('zoom_meeting_participants'));
     }
 }

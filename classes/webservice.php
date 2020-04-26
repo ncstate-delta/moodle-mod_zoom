@@ -524,7 +524,7 @@ class mod_zoom_webservice {
      * Get the participants who attended a meeting
      * @param string $meetinguuid The meeting or webinar's UUID.
      * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
-     * @return stdClass The meeting report.
+     * @return array An array of meeting participant objects.
      */
     public function get_meeting_participants($meetinguuid, $webinar) {
         $meetinguuid = $this->encode_uuid($meetinguuid);

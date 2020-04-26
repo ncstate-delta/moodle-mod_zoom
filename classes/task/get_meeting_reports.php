@@ -177,7 +177,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 break;
             }
         }
-        if ($recordedallmeetings) {
+        if ($recordedallmeetings && empty($paramstart) && empty($paramend) && empty($hostuuids)) {
             // All finished, so save the time that we set end time for the initial query.
             set_config('last_call_made_at', $endtime, 'mod_zoom');
         }
@@ -427,42 +427,37 @@ class get_meeting_reports extends \core\task\scheduled_task {
         list($names, $emails) = $this->get_enrollments($zoomrecord->course);
 
         $this->debugmsg(sprintf('Processing %d participants', count($participants)));
-        foreach ($participants as $rawparticipant) {
-            $this->debugmsg(sprintf('Working on %s (user_id: %d, uuid: %s)',
-                    $rawparticipant->name, $rawparticipant->user_id, $rawparticipant->id));
 
-            $participant = $this->format_participant($rawparticipant, $detailsid, $names, $emails);
-            // Unique keys are detailsid and zoomuserid.
-            if ($record = $DB->get_record('zoom_meeting_participants',
-                    array('detailsid' => $participant['detailsid'],
-                            'zoomuserid' => $participant['zoomuserid']))) {
-                // User exists, so need to update record.
+        // Now try to insert participants, first drop any records for given
+        // meeting and then add. There is no unique key that we can use for
+        // knowing what users existed before.
+        try {
+            $transaction = $DB->start_delegated_transaction();
 
-                // To update, need to set ID.
-                $participant['id'] = $record->id;
+            $count = $DB->count_records('zoom_meeting_participants', ['detailsid' => $detailsid]);
+            if (!empty($count)) {
+                $this->debugmsg(sprintf('Dropping previous records of %d participants', $count));
+                $DB->delete_records('zoom_meeting_participants', ['detailsid' => $detailsid]);
+            }
 
-                $olddiff = array_diff_assoc((array) $record, $participant);
-                $newdiff = array_diff_assoc($participant, (array) $record);
-
-                if (empty($olddiff) && empty($newdiff)) {
-                    $this->debugmsg('No changes found.');
-                } else {
-                    // Using http_build_query since it is an easy way to output array
-                    // key/value in one line.
-                    $this->debugmsg('Old values: ' . $this->print_diffs($olddiff));
-                    $this->debugmsg('New values: ' . $this->print_diffs($newdiff));
-
-                    $DB->update_record('zoom_meeting_participants', $participant);
-                    $this->debugmsg('Updated record ' . $record->id);
-                }
-            } else {
-                // Participant does not already exist.
-                $recordid = $DB->insert_record('zoom_meeting_participants', $participant, false);
-
+            foreach ($participants as $rawparticipant) {
+                $this->debugmsg(sprintf('Working on %s (user_id: %d, uuid: %s)',
+                        $rawparticipant->name, $rawparticipant->user_id, $rawparticipant->id));
+                $participant = $this->format_participant($rawparticipant, $detailsid, $names, $emails);
+                $recordid = $DB->insert_record('zoom_meeting_participants', $participant, true);
                 $this->debugmsg('Inserted record ' . $recordid);
             }
+
+            $transaction->allow_commit();
+        } catch (\dml_exception $exception) {
+            $transaction->rollback($exception);
+            mtrace('ERROR: Cannot insert zoom_meeting_participants: ' .
+                    $exception->getMessage());
+            return false;
         }
+
         $this->debugmsg('Finished updating meeting report');
+        return true;
     }
 
     /**
