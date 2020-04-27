@@ -383,13 +383,18 @@ class mod_zoom_webservice {
         if (isset($zoom->alternative_hosts)) {
             $data['settings']['alternative_hosts'] = $zoom->alternative_hosts;
         }
+        if (isset($zoom->option_authenticated_users)) {
+            $data['settings']['meeting_authentication'] = (bool) $zoom->option_authenticated_users;
+        }
 
         if ($zoom->webinar) {
             $data['type'] = $zoom->recurring ? ZOOM_RECURRING_WEBINAR : ZOOM_SCHEDULED_WEBINAR;
         } else {
             $data['type'] = $zoom->recurring ? ZOOM_RECURRING_MEETING : ZOOM_SCHEDULED_MEETING;
-            $data['settings']['join_before_host'] = (bool) ($zoom->option_jbh);
             $data['settings']['participant_video'] = (bool) ($zoom->option_participants_video);
+            $data['settings']['join_before_host'] = (bool) ($zoom->option_jbh);
+            $data['settings']['waiting_room'] = (bool) ($zoom->option_waiting_room);
+            $data['settings']['mute_upon_entry'] = (bool) ($zoom->option_mute_upon_entry);
         }
 
         if ($data['type'] == ZOOM_SCHEDULED_MEETING || $data['type'] == ZOOM_SCHEDULED_WEBINAR) {
