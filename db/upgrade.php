@@ -317,5 +317,26 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2019091200, 'zoom');
     }
 
+    if ($oldversion < 2020042600) {
+        // Change field zoom_meeting_participants from type int(11) to char(35),
+        // because sometimes zoomuserid is concatenated with a timestamp.
+        // See https://devforum.zoom.us/t/meeting-participant-user-id-value/7886/2.
+        $table = new xmldb_table('zoom_meeting_participants');
+
+        // First drop key, not needed anymore.
+        $key = new xmldb_key('user_by_meeting_key', XMLDB_KEY_UNIQUE,
+                ['detailsid', 'zoomuserid']);
+        $dbman->drop_key($table, $key);
+
+        // Change of type for field zoomuserid to char(35).
+        $field = new xmldb_field('zoomuserid', XMLDB_TYPE_CHAR,
+                '35', null, XMLDB_NOTNULL,
+                null, null, 'userid');
+        $dbman->change_field_type($table, $field);
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2020042600, 'zoom');
+    }
+
     return true;
 }
