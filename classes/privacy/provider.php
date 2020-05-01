@@ -59,8 +59,7 @@ class provider implements
             'user_email' => 'privacy:metadata:zoom_meeting_participants:user_email',
             'join_time' => 'privacy:metadata:zoom_meeting_participants:join_time',
             'leave_time' => 'privacy:metadata:zoom_meeting_participants:leave_time',
-            'duration' => 'privacy:metadata:zoom_meeting_participants:duration',
-            'attentiveness_score' => 'privacy:metadata:zoom_meeting_participants:attentiveness_score'
+            'duration' => 'privacy:metadata:zoom_meeting_participants:duration'
         ], 'privacy:metadata:zoom_meeting_participants');
 
         $collection->add_database_table('zoom_meeting_details',
@@ -153,7 +152,6 @@ class provider implements
                        zmp.join_time,
                        zmp.leave_time,
                        zmp.duration,
-                       zmp.attentiveness_score,
                        cm.id AS cmid
                   FROM {context} c
             INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
@@ -183,8 +181,7 @@ class provider implements
                 'user_email' => $participantinstance->user_email,
                 'join_time' => \core_privacy\local\request\transform::datetime($participantinstance->join_time),
                 'leave_time' => \core_privacy\local\request\transform::datetime($participantinstance->leave_time),
-                'duration' => $participantinstance->duration,
-                'attentiveness_score' => $participantinstance->attentiveness_score
+                'duration' => $participantinstance->duration
             ];
 
             $contextdata = (object) array_merge((array) $contextdata, $instancedata);

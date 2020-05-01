@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/zoom/db" VERSION="20200426" COMMENT="Zoom module"
+<XMLDB PATH="mod/zoom/db" VERSION="20200427" COMMENT="Zoom module"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -68,7 +68,6 @@
         <FIELD NAME="join_time" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="When the particpant joined the meeting."/>
         <FIELD NAME="leave_time" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="When the participant left the meeting."/>
         <FIELD NAME="duration" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="The time for which the participant was in the meeting."/>
-        <FIELD NAME="attentiveness_score" TYPE="char" LENGTH="7" NOTNULL="true" SEQUENCE="false" COMMENT="How attentive the participant was during the meeting."/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="user's name"/>
         <FIELD NAME="detailsid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="link to zoom_meeting_details table"/>
       </FIELDS>

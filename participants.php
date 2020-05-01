@@ -83,15 +83,13 @@ if (!empty($export)) {
                          get_string('email'),
                          get_string('jointime', 'mod_zoom'),
                          get_string('leavetime', 'mod_zoom'),
-                         get_string('duration', 'mod_zoom'),
-                         get_string('attentiveness_score', 'mod_zoom'));
+                         get_string('duration', 'mod_zoom'));
 } else {
     $table->head = array(get_string('idnumber'),
                          get_string('name'),
                          get_string('jointime', 'mod_zoom'),
                          get_string('leavetime', 'mod_zoom'),
-                         get_string('duration', 'mod_zoom'),
-                         get_string('attentiveness_score', 'mod_zoom'));
+                         get_string('duration', 'mod_zoom'));
 }
 
 foreach ($participants as $p) {
@@ -142,16 +140,11 @@ foreach ($participants as $p) {
     }
     $row[] = $p->duration / 60;
 
-    // Attentiveness Score.
-    $row[] = $p->attentiveness_score;
-
     $table->data[] = $row;
 }
 
 if ($export != 'xls') {
     echo html_writer::table($table);
-
-    echo html_writer::tag('p', get_string('attentiveness_score_help', 'zoom'));
 
     $exporturl = new moodle_url('/mod/zoom/participants.php', array(
             'id' => $cm->id,
