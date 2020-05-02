@@ -264,7 +264,6 @@ class get_meeting_reports extends \core\task\scheduled_task {
             'join_time' => strtotime($participant->join_time),
             'leave_time' => strtotime($participant->leave_time),
             'duration' => $participant->duration,
-            'attentiveness_score' => $participant->attentiveness_score
         );
     }
 

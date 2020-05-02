@@ -78,8 +78,7 @@ class get_meeting_reports_test extends advanced_testcase {
             'user_email' => 'joe@test.com',
             'join_time' => '2019-01-01T00:00:00Z',
             'leave_time' => '2019-01-01T00:01:00Z',
-            'duration' => 60,
-            'attentiveness_score' => '100.0%'
+            'duration' => 60
         );
         $this->zoomdata = (object) $data;
     }
@@ -282,7 +281,6 @@ class get_meeting_reports_test extends advanced_testcase {
         $participant1->join_time = '2020-04-01T15:02:01Z';
         $participant1->leave_time = '2020-04-01T15:02:01Z';
         $participant1->duration = 0;
-        $participant1->attentiveness_score = '';
         $this->mockparticipantsdata['someuuid'][] = $participant1;
         // Have another participant with normal data.
         $participant2 = new stdClass();
@@ -293,7 +291,6 @@ class get_meeting_reports_test extends advanced_testcase {
         $participant2->join_time = '2020-04-01T15:00:00Z';
         $participant2->leave_time = '2020-04-01T15:10:00Z';
         $participant2->duration = 10;
-        $participant2->attentiveness_score = '';
         $this->mockparticipantsdata['someuuid'][] = $participant2;
 
         // Make get_meeting_participants() return our results array.
@@ -333,7 +330,6 @@ class get_meeting_reports_test extends advanced_testcase {
         $participant3->join_time = '2020-04-01T15:05:00Z';
         $participant3->leave_time = '2020-04-01T15:35:00Z';
         $participant3->duration = 30;
-        $participant3->attentiveness_score = '';
         $this->mockparticipantsdata['someuuid'][] = $participant3;
         $this->assertTrue($this->meetingtask->process_meeting_reports(clone $meeting, $mockwwebservice));
         $this->assertEquals(1, $DB->count_records('zoom_meeting_details'));

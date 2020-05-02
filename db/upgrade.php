@@ -338,5 +338,19 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2020042600, 'zoom');
     }
 
+    if ($oldversion < 2020042700) {
+        // Define field attentiveness_score to be dropped from zoom_meeting_participants.
+        $table = new xmldb_table('zoom_meeting_participants');
+        $field = new xmldb_field('attentiveness_score');
+
+        // Conditionally launch drop field attentiveness_score.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2020042700, 'zoom');
+    }
+
     return true;
 }

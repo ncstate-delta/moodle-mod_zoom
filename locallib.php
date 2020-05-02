@@ -298,7 +298,6 @@ function zoom_get_participants_report($detailsid) {
                    zmp.join_time,
                    zmp.leave_time,
                    zmp.duration,
-                   zmp.attentiveness_score,
                    zmp.uuid
               FROM {zoom_meeting_participants} zmp
              WHERE zmp.detailsid = :detailsid
