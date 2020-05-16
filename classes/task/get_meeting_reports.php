@@ -142,7 +142,14 @@ class get_meeting_reports extends \core\task\scheduled_task {
             $usersmeetings = array();
             if (in_array($activehostsuuid, $localhosts)) {
                 $this->debugmsg('Getting meetings for host uuid ' . $activehostsuuid);
-                $usersmeetings = $service->get_user_report($activehostsuuid, $start, $end);
+                try {
+                    $usersmeetings = $service->get_user_report($activehostsuuid, $start, $end);
+                } catch (\zoom_not_found_exception $e) {
+                    // Zoom API returned user not found for a user it said had,
+                    // meetings. Have to skip user.
+                    $this->debugmsg("Skipping $activehostsuuid because user does not exist on Zoom");
+                    continue;
+                }
             } else {
                 // Ignore hosts who hosted meetings outside of integration.
                 continue;
