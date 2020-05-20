@@ -43,6 +43,7 @@ if (!class_exists('Firebase\JWT\JWT')) {
 }
 
 define('API_URL', 'https://api.zoom.us/v2/');
+define('MAX_RETRIES', 20);
 
 /**
  * Web service class.
@@ -82,6 +83,12 @@ class mod_zoom_webservice {
      * @var array
      */
     protected static $userslist;
+
+    /**
+     * Number of retries we've made for _make_call
+     * @var int
+     */
+    protected $makecallretries = 0;
 
     /**
      * The constructor for the webservice class.
@@ -174,6 +181,17 @@ class mod_zoom_webservice {
             switch($httpstatus) {
                 case 404:
                     throw new zoom_not_found_exception($response->message);
+                case 429:
+                    $this->makecallretries += 1;
+                    $timediff = strtotime($curl->get_info()['Retry-After']) - time();
+                    if ($timediff <= 60) {
+                        sleep($timediff);
+                        debugging('Received 429 response, sleeping ' . strval($timediff) . ' seconds until next retry. Current retry: ' . $this->makecallretries);
+                    }
+                    if ($this->makecallretries > MAX_RETRIES) {
+                        throw new zoom_api_retry_failed_exception($response->message);
+                    }
+                    return _make_call($url, $data, $method);
                 default:
                     if ($response) {
                         throw new moodle_exception('errorwebservice', 'mod_zoom', '', $response->message);
@@ -182,6 +200,7 @@ class mod_zoom_webservice {
                     }
             }
         }
+        $this->makecallretries = 0;
 
         return $response;
     }

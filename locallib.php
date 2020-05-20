@@ -65,6 +65,24 @@ class zoom_not_found_exception extends moodle_exception {
     }
 }
 
+/**
+ * Couldn't succeed within the allowed number of retries.
+ */
+class zoom_api_retry_failed_exception extends moodle_exception {
+    // Web service response.
+    public $response = null;
+    /**
+     * @param string $response  Web service response
+     */
+    public function __construct($response) {
+        $this->response = $response;
+        $a = new stdClass();
+        $a->response = $response;
+        $a->maxretries = MAX_RETRIES;
+        parent::__construct('zoomerr_maxretries', 'mod_zoom', '', $a);
+    }
+}
+
 
 /**
  * Terminate the current script with a fatal error.
