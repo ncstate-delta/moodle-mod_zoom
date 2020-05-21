@@ -398,5 +398,38 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2020051800, 'zoom');
     }
 
+    if ($oldversion < 2020052100) {
+        // Increase meeting_id since Zoom increased the size from 10 to 11.
+
+        // First need to drop index.
+        $table = new xmldb_table('zoom');
+        $index = new xmldb_index('meeting_id_idx', XMLDB_INDEX_NOTUNIQUE, ['meeting_id']);
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Increase size to 15 for future proofing.
+        $field = new xmldb_field('meeting_id', XMLDB_TYPE_INTEGER, '15', null, XMLDB_NOTNULL, null, null, 'grade');
+        $dbman->change_field_precision($table, $field);
+
+        // Add index back.
+        $dbman->add_index($table, $index);
+
+        // First need to drop key.
+        $table = new xmldb_table('zoom_meeting_details');
+        $key = new xmldb_key('meeting_unique', XMLDB_KEY_UNIQUE, ['meeting_id', 'uuid']);
+        $dbman->drop_key($table, $key);
+
+        // Increase size to 15 for future proofing.
+        $field = new xmldb_field('meeting_id', XMLDB_TYPE_INTEGER, '15', null, XMLDB_NOTNULL, null, null, 'uuid');
+        $dbman->change_field_precision($table, $field);
+
+        // Add key back.
+        $dbman->add_key($table, $key);
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2020052100, 'zoom');
+    }
+
     return true;
 }
