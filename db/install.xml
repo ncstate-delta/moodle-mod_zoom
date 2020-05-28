@@ -11,7 +11,7 @@
         <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="false" SEQUENCE="false" COMMENT="Format of description field"/>
         <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Maximum grade (points possible) for this activity. Negative value indicates a scale being used."/>
-        <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="meeting_id" TYPE="int" LENGTH="15" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="start_url" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="join_url" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="created_at" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="ISO datetime format"/>
@@ -45,7 +45,7 @@
     <TABLE NAME="zoom_meeting_details" COMMENT="A queue for the Cron to add meeting report info to zoom_meetings_participants table.">
       <FIELDS>
         <FIELD NAME="uuid" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting UUID or webinar UUID per Zoom API."/>
-        <FIELD NAME="meeting_id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting_id or webinar_id per Zoom API."/>
+        <FIELD NAME="meeting_id" TYPE="int" LENGTH="15" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting_id or webinar_id per Zoom API."/>
         <FIELD NAME="end_time" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="When the meeting ended/will end"/>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field. Other than that it's useless."/>
         <FIELD NAME="start_time" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false"/>
