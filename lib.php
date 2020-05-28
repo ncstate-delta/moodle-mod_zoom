@@ -74,7 +74,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     unset($zoom->meetingcode);
 
     if (empty($zoom->requirepassword)) {
-        $zoom->password = "";
+        $zoom->password = '';
     }
 
     $zoom->course = (int) $zoom->course;
@@ -114,8 +114,9 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     unset($zoom->meetingcode);
 
     if (empty($zoom->requirepassword)) {
-        $zoom->password = "";
+        $zoom->password = '';
     }
+
     $DB->update_record('zoom', $zoom);
 
     $updatedzoomrecord = $DB->get_record('zoom', array('id' => $zoom->instance));
@@ -181,6 +182,15 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     }
     if (isset($response->settings->alternative_hosts)) {
         $newzoom->alternative_hosts = $response->settings->alternative_hosts;
+    }
+    if(isset($response->settings->mute_upon_entry)) {
+        $newzoom->option_mute_upon_entry = $response->settings->mute_upon_entry;
+    }
+    if(isset($response->settings->meeting_authentication)) {
+        $newzoom->option_authenticated_users = $response->settings->meeting_authentication;
+    }
+    if(isset($response->settings->waiting_room)) {
+        $newzoom->option_waiting_room = $response->settings->waiting_room;
     }
     $newzoom->timemodified = time();
 

@@ -170,6 +170,10 @@ class mod_zoom_mod_form extends moodleform_mod {
         ), null, get_string('option_audio', 'zoom'));
         $mform->setDefault('option_audio', $config->defaultaudiooption);
 
+        $mform->addElement('advcheckbox', 'option_mute_upon_entry', get_string('option_mute_upon_entry', 'mod_zoom'));
+        $mform->setDefault('option_mute_upon_entry', $config->defaultmuteuponentryoption);
+        $mform->addHelpButton('option_mute_upon_entry', 'option_mute_upon_entry', 'mod_zoom');
+
         // Add meeting options. Make sure we pass $appendName as false
         // so the options aren't nested in a 'meetingoptions' array.
         $mform->addGroup(array(
@@ -177,8 +181,15 @@ class mod_zoom_mod_form extends moodleform_mod {
             $mform->createElement('advcheckbox', 'option_jbh', '', get_string('option_jbh', 'zoom'))
         ), 'meetingoptions', get_string('meetingoptions', 'zoom'), null, false);
         $mform->setDefault('option_jbh', $config->defaultjoinbeforehost);
+
         $mform->addHelpButton('meetingoptions', 'meetingoptions', 'zoom');
         $mform->disabledIf('meetingoptions', 'webinar', 'checked');
+
+        $mform->addElement('advcheckbox', 'option_waiting_room', get_string('option_waiting_room', 'mod_zoom'));
+        $mform->setDefault('option_waiting_room', $config->defaultwaitingroomoption);
+
+        $mform->addElement('advcheckbox', 'option_authenticated_users', get_string('option_authenticated_users', 'mod_zoom'));
+        $mform->setDefault('option_authenticated_users', $config->defaultauthusersoption);
 
         // Add alternative hosts.
         $mform->addElement('text', 'alternative_hosts', get_string('alternative_hosts', 'zoom'), array('size' => '64'));

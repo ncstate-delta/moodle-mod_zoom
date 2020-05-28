@@ -352,5 +352,51 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2020042700, 'zoom');
     }
 
+    if ($oldversion < 2020051800) {
+        // Define field option_mute_upon_entry to be added to zoom.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_mute_upon_entry', XMLDB_TYPE_INTEGER, '1', null, null, null, '1', 'option_audio');
+
+        // Conditionally launch add field option_mute_upon_entry.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field option_waiting_room to be added to zoom.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_waiting_room', XMLDB_TYPE_INTEGER, '1', null, null, null, '1', 'option_mute_upon_entry');
+
+        // Conditionally launch add field option_waiting_room.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field authenticated_users to be added to zoom.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_authenticated_users', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'option_waiting_room');
+
+        // Conditionally launch add field authenticated_users.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Changing the default of field option_host_video on table zoom to 0.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_host_video', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'option_start_type');
+
+        // Launch change of default for field option_host_video.
+        $dbman->change_field_default($table, $field);
+
+        // Changing the default of field option_participants_video on table zoom to 0.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_participants_video', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'option_host_video');
+
+        // Launch change of default for field option_participants_video.
+        $dbman->change_field_default($table, $field);
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2020051800, 'zoom');
+    }
+
     return true;
 }
