@@ -50,6 +50,7 @@ echo $OUTPUT->heading($strtitle, 4);
 
 $sessions = zoom_get_sessions_for_display($zoom->meeting_id, $zoom->webinar, $zoom->host_id);
 if (!empty($sessions)) {
+    $maskparticipantdata = get_config('mod_zoom', 'maskparticipantdata');
     $table = new html_table();
     $table->head = array(get_string('title', 'mod_zoom'),
                          get_string('starttime', 'mod_zoom'),
@@ -67,8 +68,17 @@ if (!empty($sessions)) {
         $row[] = $meet['duration'];
 
         if ($meet['count'] > 0) {
-            $url = new moodle_url('/mod/zoom/participants.php', array('id' => $cm->id, 'uuid' => $uuid));
-            $row[] = html_writer::link($url, $meet['count']);
+            if ($maskparticipantdata) {
+                $row[] = $meet['count']
+                         . ' ['
+                         . get_string('participantdatanotavailable', 'mod_zoom')
+                         . '] '
+                         . $OUTPUT->help_icon('participantdatanotavailable', 'mod_zoom');
+
+            } else {
+                $url = new moodle_url('/mod/zoom/participants.php', array('id' => $cm->id, 'uuid' => $uuid));
+                $row[] = html_writer::link($url, $meet['count']);
+            }
         } else {
             $row[] = 0;
         }
