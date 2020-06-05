@@ -42,9 +42,6 @@ if (!class_exists('Firebase\JWT\JWT')) {
     }
 }
 
-define('API_URL', 'https://api.zoom.us/v2/');
-define('MAX_RETRIES', 20);
-
 /**
  * Web service class.
  *
@@ -53,6 +50,24 @@ define('MAX_RETRIES', 20);
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_zoom_webservice {
+
+    /**
+     * API base URL.
+     * @var string
+     */
+    const API_URL = 'https://api.zoom.us/v2/';
+
+    /**
+     * API calls: maximum number of retries.
+     * @var int
+     */
+    const MAX_RETRIES = 20;
+
+    /**
+     * API calls: maximum allowed retry wait time.
+     * @var int
+     */
+    const MAX_RETRY_WAIT = 60;
 
     /**
      * API key
@@ -129,7 +144,7 @@ class mod_zoom_webservice {
      */
     protected function _make_call($url, $data = array(), $method = 'get') {
         global $CFG;
-        $url = API_URL . $url;
+        $url = self::API_URL . $url;
         $method = strtolower($method);
         $proxyhost = get_config('mod_zoom', 'proxyhost');
         $cfg = new stdClass();
@@ -183,16 +198,18 @@ class mod_zoom_webservice {
                     throw new zoom_not_found_exception($response->message);
                 case 429:
                     $this->makecallretries += 1;
-                    if ($this->makecallretries > MAX_RETRIES) {
+                    if ($this->makecallretries > self::MAX_RETRIES) {
                         throw new zoom_api_retry_failed_exception($response->message);
                     }
                     $timediff = strtotime($curl->get_info()['Retry-After']) - time();
-                    if ($timediff <= 60) {
-                        sleep($timediff);
-                        debugging('Received 429 response, sleeping ' . strval($timediff) . ' seconds until next retry. Current retry: ' . $this->makecallretries);
-                        return _make_call($url, $data, $method);
+                    if ($timediff > self::MAX_RETRY_WAIT) {
+                        throw new zoom_api_retry_failed_exception($response->message);
                     }
-                    throw new zoom_api_retry_failed_exception($response->message);
+                    debugging('Received 429 response, sleeping ' . strval($timediff) . ' seconds until next retry. Current retry: ' . $this->makecallretries);
+                    if ($timediff > 0) {
+                        sleep($timediff);
+                    }
+                    return _make_call($url, $data, $method);
                 default:
                     if ($response) {
                         throw new moodle_exception('errorwebservice', 'mod_zoom', '', $response->message);
