@@ -183,15 +183,16 @@ class mod_zoom_webservice {
                     throw new zoom_not_found_exception($response->message);
                 case 429:
                     $this->makecallretries += 1;
+                    if ($this->makecallretries > MAX_RETRIES) {
+                        throw new zoom_api_retry_failed_exception($response->message);
+                    }
                     $timediff = strtotime($curl->get_info()['Retry-After']) - time();
                     if ($timediff <= 60) {
                         sleep($timediff);
                         debugging('Received 429 response, sleeping ' . strval($timediff) . ' seconds until next retry. Current retry: ' . $this->makecallretries);
+                        return _make_call($url, $data, $method);
                     }
-                    if ($this->makecallretries > MAX_RETRIES) {
-                        throw new zoom_api_retry_failed_exception($response->message);
-                    }
-                    return _make_call($url, $data, $method);
+                    throw new zoom_api_retry_failed_exception($response->message);
                 default:
                     if ($response) {
                         throw new moodle_exception('errorwebservice', 'mod_zoom', '', $response->message);
