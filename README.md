@@ -26,6 +26,10 @@ Please note that the API key and secret is not the same as the LTI key/secret.
 
 ## Changelog
 
+v3.1
+
+- Added site config to mask participant data form appearing in reports (useful for sites that mask participant data, e.g., for HIPAA) (Thanks stopfstedt)
+
 v3.0
 
 - Support Retry-After header in Zoom API
