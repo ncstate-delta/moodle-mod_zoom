@@ -78,7 +78,7 @@ class zoom_api_retry_failed_exception extends moodle_exception {
         $this->response = $response;
         $a = new stdClass();
         $a->response = $response;
-        $a->maxretries = MAX_RETRIES;
+        $a->maxretries = mod_zoom_webservice::MAX_RETRIES;
         parent::__construct('zoomerr_maxretries', 'mod_zoom', '', $a);
     }
 }
