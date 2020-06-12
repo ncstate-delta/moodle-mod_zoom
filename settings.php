@@ -76,9 +76,14 @@ if ($ADMIN->fulltree) {
     $licensescount = new admin_setting_configtext('mod_zoom/licensesnumber', get_string('licensesnumber', 'mod_zoom'),
             null, 0, PARAM_INT);
     $settings->add($licensescount);
+
     $utmost = new admin_setting_configcheckbox('mod_zoom/utmost', get_string('redefinelicenses', 'mod_zoom'),
             get_string('lowlicenses', 'mod_zoom'), 0, 1);
     $settings->add($utmost);
+
+    $maskparticipantdata = new admin_setting_configcheckbox('mod_zoom/maskparticipantdata', get_string('maskparticipantdata', 'mod_zoom'),
+        get_string('maskparticipantdata_help', 'mod_zoom'), 0, 1);
+    $settings->add($maskparticipantdata);
 
     $settings->add(new admin_setting_heading('defaultsettings', get_string('defaultsettings', 'mod_zoom'),
             get_string('defaultsettings_help', 'mod_zoom')));

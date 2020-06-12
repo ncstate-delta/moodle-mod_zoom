@@ -49,6 +49,16 @@ $PAGE->set_title("$course->shortname: $strname");
 $PAGE->set_heading($course->fullname);
 $PAGE->set_pagelayout('incourse');
 
+$maskparticipantdata = get_config('mod_zoom', 'maskparticipantdata');
+// If participant data is masked then display a message stating as such and be done with it.
+if ($maskparticipantdata) {
+    zoom_fatal_error(
+        'participantdatanotavailable_help',
+        'mod_zoom',
+        new moodle_url('/mod/zoom/report.php', array('id' => $cm->id))
+    );
+}
+
 $sessions = zoom_get_sessions_for_display($zoom->meeting_id, $zoom->webinar, $zoom->host_id);
 $participants = $sessions[$uuid]['participants'];
 
