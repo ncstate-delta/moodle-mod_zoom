@@ -55,7 +55,7 @@ $PAGE->set_heading(format_string($course->fullname));
 $zoomuserid = zoom_get_user_id(false);
 $alternativehosts = array();
 if (!is_null($zoom->alternative_hosts)) {
-    $alternativehosts = explode(",", $zoom->alternative_hosts);
+    $alternativehosts = explode(',', str_replace(';', ',', $zoom->alternative_hosts));
 }
 
 $userishost = ($zoomuserid === $zoom->host_id || in_array($USER->email, $alternativehosts));

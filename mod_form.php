@@ -251,7 +251,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Check if the listed alternative hosts are valid users on Zoom.
         require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
         $service = new mod_zoom_webservice();
-        $alternativehosts = explode(',', $data['alternative_hosts']);
+        $alternativehosts = explode(',', str_replace(';', ',', $data['alternative_hosts']));
         foreach ($alternativehosts as $alternativehost) {
             if (!($service->get_user($alternativehost))) {
                 $errors['alternative_hosts'] = 'User ' . $alternativehost . ' was not found on Zoom.';
