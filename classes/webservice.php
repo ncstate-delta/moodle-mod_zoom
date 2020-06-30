@@ -417,6 +417,9 @@ class mod_zoom_webservice {
         if (isset($zoom->password)) {
             $data['password'] = $zoom->password;
         }
+        if (isset($zoom->schedule_for)) {
+            $data['schedule_for'] = $zoom->schedule_for;
+        }
         if (isset($zoom->alternative_hosts)) {
             $data['settings']['alternative_hosts'] = $zoom->alternative_hosts;
         }

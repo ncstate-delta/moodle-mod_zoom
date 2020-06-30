@@ -191,6 +191,10 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addElement('advcheckbox', 'option_authenticated_users', get_string('option_authenticated_users', 'mod_zoom'));
         $mform->setDefault('option_authenticated_users', $config->defaultauthusersoption);
 
+        // Add Schedule for
+        $mform->addElement('text', 'schedule_for', get_string('schedule_for', 'zoom'));
+        $mform->setType('schedule_for', PARAM_EMAIL);
+
         // Add alternative hosts.
         $mform->addElement('text', 'alternative_hosts', get_string('alternative_hosts', 'zoom'), array('size' => '64'));
         $mform->setType('alternative_hosts', PARAM_TEXT);
