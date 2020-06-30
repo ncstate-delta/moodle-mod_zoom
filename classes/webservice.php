@@ -444,6 +444,27 @@ class mod_zoom_webservice {
     }
 
     /**
+     * Extracted from create_meeting method.
+     * To be called from elsewhere to provide host with license
+     * following creation of the meeting event.
+     *
+     * @param stdClass $zoom The meeting to update.
+     * @return void
+     */
+    public function provide_license($zoom) {
+    // Checks whether we need to recycle licenses and acts accordingly.
+        if ($this->recyclelicenses && $this->_make_call("users/$zoom->host_id")->type == ZOOM_USER_TYPE_BASIC) {
+            if ($this->_paid_user_limit_reached()) {
+            $leastrecentlyactivepaiduserid = $this->_get_least_recently_active_paid_user_id();
+            // Changes least_recently_active_user to a basic user so we can use their license.
+                $this->_make_call("users/$leastrecentlyactivepaiduserid", array('type' => ZOOM_USER_TYPE_BASIC), 'patch');
+        }
+            // Changes current user to pro so they can make a meeting.
+            $this->_make_call("users/$zoom->host_id", array('type' => ZOOM_USER_TYPE_PRO), 'patch');
+            }
+    }
+    
+    /**
      * Create a meeting/webinar on Zoom.
      * Take a $zoom object as returned from the Moodle form and respond with an object that can be saved to the database.
      *
@@ -451,20 +472,12 @@ class mod_zoom_webservice {
      * @return stdClass The call response.
      */
     public function create_meeting($zoom) {
-        // Checks whether we need to recycle licenses and acts accordingly.
-        if ($this->recyclelicenses && $this->_make_call("users/$zoom->host_id")->type == ZOOM_USER_TYPE_BASIC) {
-            if ($this->_paid_user_limit_reached()) {
-                $leastrecentlyactivepaiduserid = $this->_get_least_recently_active_paid_user_id();
-                // Changes least_recently_active_user to a basic user so we can use their license.
-                $this->_make_call("users/$leastrecentlyactivepaiduserid", array('type' => ZOOM_USER_TYPE_BASIC), 'patch');
-            }
-            // Changes current user to pro so they can make a meeting.
-            $this->_make_call("users/$zoom->host_id", array('type' => ZOOM_USER_TYPE_PRO), 'patch');
-        }
-
+    // Including the external provide_license method, previously part of this method. 
+        $this->provide_license($zoom);
         $url = "users/$zoom->host_id/" . ($zoom->webinar ? 'webinars' : 'meetings');
         return $this->_make_call($url, $this->_database_to_api($zoom), 'post');
     }
+    
 
     /**
      * Update a meeting/webinar on Zoom.

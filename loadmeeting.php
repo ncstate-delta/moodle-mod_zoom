@@ -72,4 +72,8 @@ if ($userishost) {
 // Record user's clicking join.
 \mod_zoom\event\join_meeting_button_clicked::create(array('context' => $context, 'objectid' => $zoom->id, 'other' =>
         array('cmid' => $id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
+// Upgrade host upon user joining meeting, if host if not Licensed [./classes/webservice.php]
+$service = new mod_zoom_webservice();
+$service->provide_license($zoom);
+
 redirect($nexturl);
