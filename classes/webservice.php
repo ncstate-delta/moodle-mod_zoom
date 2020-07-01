@@ -303,8 +303,7 @@ class mod_zoom_webservice {
      * @return array An array of users.
      * @link https://zoom.github.io/api/#list-users
      */
-    public function 
-        () {
+    public function list_users() {
         if (empty(self::$userslist)) {
             self::$userslist = $this->_make_paginated_call('users', null, 'users');
         }
