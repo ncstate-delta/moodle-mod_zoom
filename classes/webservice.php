@@ -303,7 +303,8 @@ class mod_zoom_webservice {
      * @return array An array of users.
      * @link https://zoom.github.io/api/#list-users
      */
-    public function list_users() {
+    public function 
+        () {
         if (empty(self::$userslist)) {
             self::$userslist = $this->_make_paginated_call('users', null, 'users');
         }
@@ -383,6 +384,24 @@ class mod_zoom_webservice {
         }
 
         return $founduser;
+    }
+    
+    /**
+     * @param string $identifier The user's email or the user's ID per Zoom API.
+     * @return array|false If schedulers are returned array of {id,email} objects. Otherwise returns false.
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/users/userschedulers
+     */
+    public function get_schedule_for_users($identifier) {
+        $url = "users/{$identifier}/schedulers";
+        
+        $schedulers = false;
+        try {
+            $response = $this->_make_call($url);
+            $schedulers = $response->schedulers;
+        } catch (moodle_exception $error) {
+            return false;
+        }
+        return $schedulers;
     }
 
     /**
