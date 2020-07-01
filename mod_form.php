@@ -56,6 +56,28 @@ class mod_zoom_mod_form extends moodleform_mod {
             $nexturl = $PAGE->url;
             zoom_fatal_error($errstring, 'mod_zoom', $nexturl, $config->zoomurl);
         }
+        
+        // Get list of schedule for users if supported.
+        // List of users who can use Zoom mod in this class.
+        $moodleusers = get_users_with_capability(); // TODO This should be passed *in* to definition().
+        
+        /**
+         * @var $scheduleusers array Array of emails and proper names of Moodle users in this course that can add Zoom meetings, and the user can schedule.
+        */
+        $scheduleusers = [];
+        // This will either be false (they can't) or the list of users they can schedule.
+        if(($canschedule = $service->get_schedule_for_users($USER->email)) !== false) {
+            foreach($canschedule as $zoomuser) {
+                $zoomid = $zoomuser->id;
+                $zoomemail = $zoomuser->email;
+                foreach($moodleusers as $muser) {
+                    if ($muser->email == $zoomemail) {
+                        $scheduleusers[$muser->email] = fullname($muser);
+                    }
+                }
+            }
+        }
+       
 
         // If updating, ensure we can get the meeting on Zoom.
         $isnew = empty($this->_cm);
@@ -191,9 +213,11 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addElement('advcheckbox', 'option_authenticated_users', get_string('option_authenticated_users', 'mod_zoom'));
         $mform->setDefault('option_authenticated_users', $config->defaultauthusersoption);
 
-        // Add Schedule for
-        $mform->addElement('text', 'schedule_for', get_string('schedule_for', 'zoom'));
-        $mform->setType('schedule_for', PARAM_EMAIL);
+        // Add Schedule for if current user is able to.
+        if (!empty($scheduleusers)) {
+            $mform->addElement('select', 'schedule_for', get_string('schedule_for', 'zoom'), $scheduleusers);
+            $mform->setType('schedule_for', PARAM_EMAIL);
+        }
 
         // Add alternative hosts.
         $mform->addElement('text', 'alternative_hosts', get_string('alternative_hosts', 'zoom'), array('size' => '64'));
