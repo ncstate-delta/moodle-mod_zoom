@@ -66,7 +66,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         */
         $scheduleusers = [];
         // This will either be false (they can't) or the list of users they can schedule.
-        if(($canschedule = $service->get_schedule_for_users($USER->email)) !== false) {
+        $canschedule = $service->get_schedule_for_users($USER->email);
             foreach($canschedule as $zoomuser) {
                 $zoomid = $zoomuser->id;
                 $zoomemail = $zoomuser->email;
