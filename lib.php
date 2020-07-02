@@ -548,6 +548,9 @@ function zoom_pluginfile($course, $cm, $context, $filearea, array $args, $forced
  * @todo implement this function
  */
 function zoom_extend_navigation(navigation_node $navref, stdClass $course, stdClass $module, cm_info $cm) {
+    $url =  new moodle_url('/mod/zoom/breakout.php', ['cmid' => $cm->id]);
+    // $exportrooms = // Here in case we want to do soemthing with $exportrooms later in dev.
+    $navref->add(get_string('breakoutrooms', 'zoom'), $url);
 }
 
 /**
