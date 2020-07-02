@@ -393,7 +393,7 @@ class mod_zoom_webservice {
     public function get_schedule_for_users($identifier) {
         $url = "users/{$identifier}/schedulers";
         
-        $schedulers = false;
+        $schedulers = [];
         try {
             $response = $this->_make_call($url);
             $schedulers = $response->schedulers;
