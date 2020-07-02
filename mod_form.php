@@ -57,9 +57,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             zoom_fatal_error($errstring, 'mod_zoom', $nexturl, $config->zoomurl);
         }
         
-        // Get list of schedule for users if supported.
-        // List of users who can use Zoom mod in this class.
-        $moodleusers = get_enrolled_users($context, 'mod/zoom:addinstance', 0, 'u.*', 'lastname');
+
         
         /**
          * @var $scheduleusers array Array of emails and proper names of Moodle users in this course that can add Zoom meetings, and the user can schedule.
@@ -67,6 +65,12 @@ class mod_zoom_mod_form extends moodleform_mod {
         $scheduleusers = [];
         // This will either be false (they can't) or the list of users they can schedule.
         $canschedule = $service->get_schedule_for_users($USER->email);
+        if (!empty($canschedule)) {
+            // Get list of schedule for users if supported.
+            // List of users who can use Zoom mod in this class.
+            // We can use $this->context as this is set either to the constructor or the activity's context
+            // if it is an existing activity. This is good as the cap could be overridden in the activity permissions.
+            $moodleusers = get_enrolled_users($this->context, 'mod/zoom:addinstance', 0, 'u.*', 'lastname');
             foreach ($canschedule as $zoomuser) {
                 $zoomid = $zoomuser->id;
                 $zoomemail = $zoomuser->email;
@@ -77,7 +81,6 @@ class mod_zoom_mod_form extends moodleform_mod {
                 }
             }
         }
-       
 
         // If updating, ensure we can get the meeting on Zoom.
         $isnew = empty($this->_cm);
