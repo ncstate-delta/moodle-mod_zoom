@@ -396,9 +396,11 @@ class mod_zoom_webservice {
         $schedulers = [];
         try {
             $response = $this->_make_call($url);
-            $schedulers = $response->schedulers;
+            if (is_array($response->schedulers)) {
+                $schedulers = $response->schedulers;
+            }
         } catch (moodle_exception $error) {
-            return false;
+            // We don't care if this throws an exception.
         }
         return $schedulers;
     }
