@@ -59,7 +59,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         
         // Get list of schedule for users if supported.
         // List of users who can use Zoom mod in this class.
-        $moodleusers = get_enrolled_users(context $context, 'mod/zoom:addinstance', 0, $'u.*', 'lastnane');
+        $moodleusers = get_enrolled_users($context, 'mod/zoom:addinstance', 0, 'u.*', 'lastname');
         
         /**
          * @var $scheduleusers array Array of emails and proper names of Moodle users in this course that can add Zoom meetings, and the user can schedule.
