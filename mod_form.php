@@ -71,7 +71,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $zoomid = $zoomuser->id;
                 $zoomemail = $zoomuser->email;
                 foreach ($moodleusers as $muser) {
-                    if ($muser->email == $zoomemail) {
+                    if ($muser->email === $zoomemail) {
                         $scheduleusers[$muser->email] = fullname($muser);
                     }
                 }
