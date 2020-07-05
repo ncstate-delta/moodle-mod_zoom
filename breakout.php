@@ -49,4 +49,4 @@ $filesafename = preg_replace('/[^a-z0-9-]/', '_',core_text::strtolower(strip_tag
 $export->set_filename('mod-zoom-break-'. $filesafename . '.csv');
 
 $grouping = groups_get_grouping($groupingid);
-groups_get_grouping_members()
+$groups = groups_get_all_groups($course->id, 0, $grouping->id);
