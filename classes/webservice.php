@@ -386,6 +386,26 @@ class mod_zoom_webservice {
     }
 
     /**
+     * @param string $identifier The user's email or the user's ID per Zoom API.
+     * @return array|false If schedulers are returned array of {id,email} objects. Otherwise returns false.
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/users/userschedulers
+     */
+    public function get_schedule_for_users($identifier) {
+        $url = "users/{$identifier}/schedulers";
+
+        $schedulers = [];
+        try {
+            $response = $this->_make_call($url);
+            if (is_array($response->schedulers)) {
+                $schedulers = $response->schedulers;
+            }
+        } catch (moodle_exception $error) {
+            // We don't care if this throws an exception.
+        }
+        return $schedulers;
+    }
+
+    /**
      * Converts a zoom object from database format to API format.
      *
      * The database and the API use different fields and formats for the same information. This function changes the
@@ -416,6 +436,9 @@ class mod_zoom_webservice {
         }
         if (isset($zoom->password)) {
             $data['password'] = $zoom->password;
+        }
+        if (isset($zoom->schedule_for)) {
+            $data['schedule_for'] = $zoom->schedule_for;
         }
         if (isset($zoom->alternative_hosts)) {
             $data['settings']['alternative_hosts'] = $zoom->alternative_hosts;

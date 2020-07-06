@@ -68,6 +68,12 @@ function zoom_supports($feature) {
 function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+    $service = new mod_zoom_webservice();
+
+    if (!empty($zoom->schedule_for)) {
+        $correcthostzoomuser = $service->get_user($zoom->schedule_for);
+        $zoom->host_id = $correcthostzoomuser->id;
+    }
 
     // Deals with password manager issues
     $zoom->password = $zoom->meetingcode;
@@ -79,7 +85,6 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     $zoom->course = (int) $zoom->course;
 
-    $service = new mod_zoom_webservice();
     $response = $service->create_meeting($zoom);
     $zoom = populate_zoom_from_response($zoom, $response);
 
@@ -104,6 +109,12 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+    $service = new mod_zoom_webservice();
+
+    if (!empty($zoom->schedule_for)) {
+        $correcthostzoomuser = $service->get_user($zoom->schedule_for);
+        $zoom->host_id = $correcthostzoomuser->id;
+    }
 
     // The object received from mod_form.php returns instance instead of id for some reason.
     $zoom->id = $zoom->instance;
@@ -124,7 +135,6 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom->webinar = $updatedzoomrecord->webinar;
 
     // Update meeting on Zoom.
-    $service = new mod_zoom_webservice();
     try {
         $service->update_meeting($zoom);
     } catch (moodle_exception $error) {

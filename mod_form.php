@@ -57,8 +57,34 @@ class mod_zoom_mod_form extends moodleform_mod {
             zoom_fatal_error($errstring, 'mod_zoom', $nexturl, $config->zoomurl);
         }
 
-        // If updating, ensure we can get the meeting on Zoom.
         $isnew = empty($this->_cm);
+
+        /**
+         * @var $scheduleusers array Array of emails and proper names of Moodle users in this course that can add Zoom meetings, and the user can schedule.
+        */
+        $scheduleusers = [];
+        $scheduleusers[$USER->email] = get_string('scheduleforself', 'zoom');
+        // This will either be false (they can't) or the list of users they can schedule.
+        $canschedule = $service->get_schedule_for_users($USER->email);
+        if (!empty($canschedule)) {
+            // Get list of schedule for users if supported.
+            // List of users who can use Zoom mod in this class.
+            // We can use $this->context as this is set either to the constructor or the activity's context
+            // if it is an existing activity. This is good as the cap could be overridden in the activity permissions.
+            // NOTE we don't do a $scheduleusers[$USER->email] = XX because they should get covered by the next line...
+            $moodleusers = get_enrolled_users($this->context, 'mod/zoom:addinstance', 0, 'u.*', 'lastname');
+            foreach ($canschedule as $zoomuser) {
+                $zoomid = $zoomuser->id;
+                $zoomemail = $zoomuser->email;
+                foreach ($moodleusers as $muser) {
+                    if ($muser->email === $zoomemail) {
+                        $scheduleusers[$muser->email] = fullname($muser);
+                    }
+                }
+            }
+        }
+
+        // If updating, ensure we can get the meeting on Zoom.
         if (!$isnew) {
             try {
                 $service->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
@@ -190,6 +216,17 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         $mform->addElement('advcheckbox', 'option_authenticated_users', get_string('option_authenticated_users', 'mod_zoom'));
         $mform->setDefault('option_authenticated_users', $config->defaultauthusersoption);
+
+        // Add Schedule for if current user is able to.
+        if (!empty($scheduleusers)) {
+            $mform->addElement('select', 'schedule_for', get_string('schedulefor', 'zoom'), $scheduleusers);
+            $mform->setType('schedule_for', PARAM_EMAIL);
+            if (!$isnew) {
+                $mform->disabledIf('schedule_for', 'change_schedule_for');
+                $mform->addElement('checkbox', 'change_schedule_for', get_string('changehost', 'zoom'));
+                $mform->setDefault('schedule_for', $service->get_user($this->current->host_id)->email);
+            }
+        }
 
         // Add alternative hosts.
         $mform->addElement('text', 'alternative_hosts', get_string('alternative_hosts', 'zoom'), array('size' => '64'));
