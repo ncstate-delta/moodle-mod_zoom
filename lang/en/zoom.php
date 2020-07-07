@@ -44,6 +44,7 @@ $string['cachedef_sessions'] = 'Information from the zoom get user report reques
 $string['calendardescriptionURL'] = 'Meeting join URL: {$a}.';
 $string['calendardescriptionintro'] = "\nDescription:\n{\$a}";
 $string['calendariconalt'] = 'Calendar icon';
+$string['changehost'] = 'Change host';
 $string['clickjoin'] = 'Clicked join meeting button';
 $string['connectionok'] = 'Connection working.';
 $string['connectionfailed'] = 'Connection failed: ';
