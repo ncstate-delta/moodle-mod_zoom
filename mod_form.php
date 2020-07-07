@@ -62,7 +62,9 @@ class mod_zoom_mod_form extends moodleform_mod {
         /**
          * @var $scheduleusers array Array of emails and proper names of Moodle users in this course that can add Zoom meetings, and the user can schedule.
         */
-        $scheduleusers = [];
+        $scheduleusers = [
+            '' => get_string('scheduleforself', 'zoom')
+        ];
         // This will either be false (they can't) or the list of users they can schedule.
         $canschedule = $service->get_schedule_for_users($USER->email);
         if (!empty($canschedule)) {
