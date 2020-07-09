@@ -266,7 +266,7 @@ class mod_zoom_mod_form extends moodleform_mod {
      * @return array
      */
     public function validation($data, $files) {
-        global $CFG;
+        global $CFG, $USER;
         $errors = array();
 
         // Only check for scheduled meetings.
@@ -284,13 +284,27 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
         }
 
+
+        require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+        $service = new mod_zoom_webservice();
         if (!empty($data['requirepassword']) && empty($data['meetingcode'])) {
             $errors['meetingcode'] = get_string('err_password_required', 'mod_zoom');
         }
-
+        if ($data['schedule_for'] !== $USER->email) {
+            $scheduleusers = $service->get_schedule_for_users($USER->email);
+            $scheduleok = false;
+            foreach($scheduleusers as $zuser) {
+                if ($zuser['email'] === $data['schedule_for']) {
+                    // Found a matching email address in teh Zoom users list.
+                    $scheduleok = true;
+                    break;
+                }
+            }
+            if (!$scheduleok) {
+                $errors['schedule_for'] = get_string('invalidscheduleuser', 'mod_zoom');
+            }
+        }
         // Check if the listed alternative hosts are valid users on Zoom.
-        require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
-        $service = new mod_zoom_webservice();
         $alternativehosts = explode(',', str_replace(';', ',', $data['alternative_hosts']));
         foreach ($alternativehosts as $alternativehost) {
             if (!($service->get_user($alternativehost))) {
