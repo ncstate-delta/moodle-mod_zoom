@@ -70,10 +70,16 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
     $service = new mod_zoom_webservice();
 
-    if (!empty($zoom->schedule_for)) {
+    // Removing this as the "correct" zoom host is the user *making* the call just now,
+    // as the create call will go to users/CURRENTUSER/meetings.
+    // API doesn't say that the URL for the request is the schedule_for user's path.
+    // For *updates* the URL doesn't make use of host_id as it uses meetings/{meetingid}
+    // Once the meeting is created the host_id *could* be used to store the "notional" host's ID, but
+    // the notional host could be inferred from the schedule_for
+    /*if (!empty($zoom->schedule_for)) {
         $correcthostzoomuser = $service->get_user($zoom->schedule_for);
         $zoom->host_id = $correcthostzoomuser->id;
-    }
+    }*/
 
     // Deals with password manager issues
     $zoom->password = $zoom->meetingcode;
@@ -111,12 +117,7 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
     $service = new mod_zoom_webservice();
 
-    // Removing this as the "correct" zoom host is the user *making* the call just now,
-    // as the create call will go to users/CURRENTUSER/meetings.
-    // API doesn't say that the URL for the request is the schedule_for user's path.
-    // For *updates* the URL doesn't make use of host_id as it uses meetings/{meetingid}
-    // Once the meeting is created the host_id *could* be used to store the "notional" host's ID, but
-    // the notional host could be inferred from the schedule_for
+    // Removing this as per above for the moment.
 /*    if (!empty($zoom->schedule_for)) {
         $correcthostzoomuser = $service->get_user($zoom->schedule_for);
         $zoom->host_id = $correcthostzoomuser->id;
