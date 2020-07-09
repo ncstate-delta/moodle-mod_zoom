@@ -74,6 +74,8 @@ if ($userishost) {
         array('cmid' => $id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
 // Upgrade host upon user joining meeting, if host if not Licensed [./classes/webservice.php]
 $service = new mod_zoom_webservice();
-$service->provide_license($zoom);
+if ($userishost){
+    $service->provide_license($zoom);
+}
 
 redirect($nexturl);
