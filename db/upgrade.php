@@ -431,5 +431,11 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2020052100, 'zoom');
     }
 
+    if ($oldversion < 2020061201) {
+        // Persist the schedule_for setting to the database.
+        $table = new xmldb_table('zoom');
+        $table->add_field('schedule_for', XMLDB_TYPE_CHAR, '300', null, XMLDB_NOTNULL, null, '');        upgrade_mod_savepoint(true, 2020052100, 'zoom');
+    }
+
     return true;
 }
