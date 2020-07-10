@@ -70,17 +70,6 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
     $service = new mod_zoom_webservice();
 
-    // Removing this as the "correct" zoom host is the user *making* the call just now,
-    // as the create call will go to users/CURRENTUSER/meetings.
-    // API doesn't say that the URL for the request is the schedule_for user's path.
-    // For *updates* the URL doesn't make use of host_id as it uses meetings/{meetingid}
-    // Once the meeting is created the host_id *could* be used to store the "notional" host's ID, but
-    // the notional host could be inferred from the schedule_for
-    /*if (!empty($zoom->schedule_for)) {
-        $correcthostzoomuser = $service->get_user($zoom->schedule_for);
-        $zoom->host_id = $correcthostzoomuser->id;
-    }*/
-
     // Deals with password manager issues
     $zoom->password = $zoom->meetingcode;
     unset($zoom->meetingcode);
@@ -88,11 +77,16 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     if (empty($zoom->requirepassword)) {
         $zoom->password = '';
     }
-
     $zoom->course = (int) $zoom->course;
 
     $response = $service->create_meeting($zoom);
     $zoom = populate_zoom_from_response($zoom, $response);
+    if (!empty($zoom->schedule_for)) {
+        // On the basis that Zoom changes the host_id if schedule_for is successful, but don't putz with it
+        // Until *after* the meeting has said it's successfull (as opposed to before with @kubilayagi's patch)
+        $correcthostzoomuser = $service->get_user($zoom->schedule_for);
+        $zoom->host_id = $correcthostzoomuser->id;
+    }
 
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
@@ -144,9 +138,17 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     // Update meeting on Zoom.
     try {
         $service->update_meeting($zoom);
+        if (!empty($zoom->schedule_for)) {
+            // Only update this if we actually get a valid user.
+            if ($correcthostzoomuser = $service->get_user($zoom->schedule_for)) {
+                $zoom->host_id = $correcthostzoomuser->id;
+                $DB->update_record('zoom', $zoom);
+            }
+        }
     } catch (moodle_exception $error) {
         return false;
     }
+
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
