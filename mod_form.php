@@ -56,7 +56,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             $nexturl = $PAGE->url;
             zoom_fatal_error($errstring, 'mod_zoom', $nexturl, $config->zoomurl);
         }
-        $isnew = empty($this->_cm);
+
 
         /**
          * @var $scheduleusers array Array of emails and proper names of Moodle users in this course that can add Zoom meetings, and the user can schedule.
@@ -78,16 +78,18 @@ class mod_zoom_mod_form extends moodleform_mod {
                 foreach ($moodleusers as $muser) {
                     if ($muser->email === $USER->email) {
                         // They're already in the $scheduleusers array in 1st position with "Schedule for self"
-                        continue;
+                        break;
                     }
                     if ($muser->email === $zoomemail) {
                         $scheduleusers[$muser->email] = fullname($muser);
+                        break;
                     }
                 }
             }
         }
 
         // If updating, ensure we can get the meeting on Zoom.
+        $isnew = empty($this->_cm);
         if (!$isnew) {
             try {
                 $service->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
@@ -293,7 +295,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         if ($data['schedule_for'] !== $USER->email) {
             $scheduleusers = $service->get_schedule_for_users($USER->email);
             $scheduleok = false;
-            foreach($scheduleusers as $zuser) {
+            foreach ($scheduleusers as $zuser) {
                 if ($zuser['email'] === $data['schedule_for']) {
                     // Found a matching email address in teh Zoom users list.
                     $scheduleok = true;
