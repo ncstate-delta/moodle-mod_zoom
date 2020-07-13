@@ -119,7 +119,6 @@ $string['recurringmeeting_help'] = 'Hat kein Ende';
 $string['recurringmeetinglong'] = 'Dauerhaftes Meeting (Meeting ohne Endzeit)';
 $string['report'] = 'Berichte';
 $string['reportapicalls'] = 'Bericht über Verbrauch von allen API Calls';
-$string['requirepassword'] = 'Meeting-Passwort notwendig';
 $string['resetapicalls'] = 'Die Anzahl der verfügbaren API Calls zurücksetzen';
 $string['search:activity'] = 'Zoom - Informationen über die Aktivität';
 $string['sessions'] = 'Sitzungen';
