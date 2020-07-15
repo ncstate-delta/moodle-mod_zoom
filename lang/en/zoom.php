@@ -45,6 +45,7 @@ $string['calendardescriptionURL'] = 'Meeting join URL: {$a}.';
 $string['calendardescriptionintro'] = "\nDescription:\n{\$a}";
 $string['calendariconalt'] = 'Calendar icon';
 $string['clickjoin'] = 'Clicked join meeting button';
+$string['completionjoin'] = 'Student must join the meeting to complete this activity';
 $string['connectionok'] = 'Connection working.';
 $string['connectionfailed'] = 'Connection failed: ';
 $string['connectionstatus'] = 'Connection status';

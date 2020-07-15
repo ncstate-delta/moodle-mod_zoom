@@ -252,6 +252,30 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         return $errors;
     }
+
+    /**
+     * Add any custom completion rules to the form.
+     *
+     * @return array Contains the names of the added form elements
+     */
+    public function add_completion_rules() {
+        $mform =& $this->_form;
+
+        $mform->addElement('advcheckbox', 'completionjoin', '', get_string('completionjoin', 'zoom'));
+        // Enable this completion rule by default.
+        $mform->setDefault('completionjoin', 1);
+        return array('completionjoin');
+    }
+
+    /**
+     * Determines if completion is enabled for this module.
+     *
+     * @param array $data
+     * @return bool
+     */
+    public function completion_rule_enabled($data) {
+        return !empty($data['completionjoin']);
+    }
 }
 
 /**
