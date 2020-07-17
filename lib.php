@@ -566,3 +566,44 @@ function mod_zoom_get_fontawesome_icon_map() {
         'mod_zoom:i/calendar' => 'fa-calendar'
     ];
 }
+
+/**
+ * Obtains the automatic completion state for this module based on any conditions
+ * in zoom settings.
+ *
+ * @param object $course Course
+ * @param object $cm Course-module
+ * @param int $userid User ID
+ * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+ * @return bool True if completed, false if not, $type if conditions not set.
+ */
+function zoom_get_completion_state($course, $cm, $userid, $type) {
+    global $CFG, $DB;
+
+    // Get zoom details
+    $zoom = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
+
+    // If completion option is enabled, evaluate it and return true/false 
+    if($zoom->completionjoin) {
+        $participantsql = "SELECT COUNT(zmp.id) AS participant, COUNT(zmd.id) AS details
+                             FROM {zoom_meeting_details} zmd
+                        LEFT JOIN {zoom_meeting_participants} zmp ON zmp.detailsid = zmd.id 
+                            WHERE zmd.zoomid = :zoomid AND zmp.userid = :userid";
+        $participants = $DB->get_record_sql($participantsql, array('userid'=>$userid,'zoomid'=>$zoom->id));
+
+        // If no detail record found, it could be due to a delay in the cron, so check logs too
+        if(!$participants->details){
+           $logsql = "SELECT COUNT(1) 
+                        FROM mdl_logstore_standard_logs l 
+                       WHERE component = 'mod_zoom' AND action = 'clicked'
+                         AND target = 'join_meeting_button' 
+                         AND objectid = :zoomid AND userid = :userid";
+           return $DB->get_field_sql($logsql, array('userid'=>$userid,'zoomid'=>$zoom->id));
+        } else {
+           return $participants->participant;
+        }
+    } else {
+        // Completion option is not enabled so just return $type
+        return $type;
+    }
+}
