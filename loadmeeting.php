@@ -66,6 +66,12 @@ if ($userishost) {
         zoom_grade_item_update($zoom, $grades);
     }
 
+    // Update completion state
+    $completion = new completion_info($course);
+    if($completion->is_enabled($cm) && $zoom->completionjoin) {
+        $completion->update_state($cm,COMPLETION_COMPLETE);
+    }
+
     $nexturl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
 }
 
