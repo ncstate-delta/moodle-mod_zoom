@@ -585,23 +585,12 @@ function zoom_get_completion_state($course, $cm, $userid, $type) {
 
     // If completion option is enabled, evaluate it and return true/false 
     if($zoom->completionjoin) {
-        $participantsql = "SELECT COUNT(zmp.id) AS participant, COUNT(zmd.id) AS details
-                             FROM {zoom_meeting_details} zmd
-                        LEFT JOIN {zoom_meeting_participants} zmp ON zmp.detailsid = zmd.id 
-                            WHERE zmd.zoomid = :zoomid AND zmp.userid = :userid";
-        $participants = $DB->get_record_sql($participantsql, array('userid'=>$userid,'zoomid'=>$zoom->id));
-
-        // If no detail record found, it could be due to a delay in the cron, so check logs too
-        if(!$participants->details){
-           $logsql = "SELECT COUNT(1) 
-                        FROM mdl_logstore_standard_logs l 
-                       WHERE component = 'mod_zoom' AND action = 'clicked'
-                         AND target = 'join_meeting_button' 
-                         AND objectid = :zoomid AND userid = :userid";
-           return $DB->get_field_sql($logsql, array('userid'=>$userid,'zoomid'=>$zoom->id));
-        } else {
-           return $participants->participant;
-        }
+        $logsql = "SELECT COUNT(1) 
+                     FROM {logstore_standard_log} l 
+                    WHERE component = 'mod_zoom' AND action = 'clicked'
+                      AND target = 'join_meeting_button' 
+                      AND objectid = :zoomid AND userid = :userid";
+        return $DB->get_field_sql($logsql, array('userid'=>$userid,'zoomid'=>$zoom->id));
     } else {
         // Completion option is not enabled so just return $type
         return $type;

@@ -66,16 +66,16 @@ if ($userishost) {
         zoom_grade_item_update($zoom, $grades);
     }
 
-    // Update completion state
-    $completion = new completion_info($course);
-    if($completion->is_enabled($cm) && $zoom->completionjoin) {
-        $completion->update_state($cm,COMPLETION_COMPLETE);
-    }
-
     $nexturl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
 }
 
 // Record user's clicking join.
 \mod_zoom\event\join_meeting_button_clicked::create(array('context' => $context, 'objectid' => $zoom->id, 'other' =>
         array('cmid' => $id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
+// Update completion state
+$completion = new completion_info($course);
+if($completion->is_enabled($cm) && $zoom->completionjoin) {
+    $completion->update_state($cm,COMPLETION_COMPLETE);
+}
+
 redirect($nexturl);
