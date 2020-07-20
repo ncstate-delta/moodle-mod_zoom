@@ -590,7 +590,7 @@ function zoom_get_completion_state($course, $cm, $userid, $type) {
                     WHERE component = 'mod_zoom' AND action = 'clicked'
                       AND target = 'join_meeting_button' 
                       AND objectid = :zoomid AND userid = :userid";
-        return $DB->get_field_sql($logsql, array('userid'=>$userid,'zoomid'=>$zoom->id));
+        return $DB->get_field_sql($logsql, array('userid' => $userid, 'zoomid' => $zoom->id));
     } else {
         // Completion option is not enabled so just return $type
         return $type;
