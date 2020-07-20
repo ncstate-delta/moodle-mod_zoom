@@ -584,7 +584,7 @@ function zoom_get_completion_state($course, $cm, $userid, $type) {
     $zoom = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
 
     // If completion option is enabled, evaluate it and return true/false 
-    if($zoom->completionjoin) {
+    if ($zoom->completionjoin) {
         $logsql = "SELECT COUNT(1) 
                      FROM {logstore_standard_log} l 
                     WHERE component = 'mod_zoom' AND action = 'clicked'
