@@ -440,7 +440,7 @@ function xmldb_zoom_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
         
-        upgrade_mod_savepoint(true, 2020052100, 'zoom');
+        upgrade_mod_savepoint(true, 2020071500, 'zoom');
     }
 
     return true;
