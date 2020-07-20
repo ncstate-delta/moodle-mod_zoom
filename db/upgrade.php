@@ -431,7 +431,7 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2020052100, 'zoom');
     }
 
-    if ($oldversion < 2020052100) {
+    if ($oldversion < 2020071500) {
         // Add completionjoin.
         
         $table = new xmldb_table('zoom');
