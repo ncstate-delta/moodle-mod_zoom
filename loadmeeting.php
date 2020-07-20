@@ -75,7 +75,7 @@ if ($userishost) {
 // Update completion state
 $completion = new completion_info($course);
 if ($completion->is_enabled($cm) && $zoom->completionjoin) {
-    $completion->update_state($cm,COMPLETION_COMPLETE);
+    $completion->update_state($cm, COMPLETION_COMPLETE);
 }
 
 redirect($nexturl);
