@@ -74,7 +74,7 @@ if ($userishost) {
         array('cmid' => $id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
 // Update completion state
 $completion = new completion_info($course);
-if($completion->is_enabled($cm) && $zoom->completionjoin) {
+if ($completion->is_enabled($cm) && $zoom->completionjoin) {
     $completion->update_state($cm,COMPLETION_COMPLETE);
 }
 
