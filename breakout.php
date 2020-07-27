@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * EXport breakout room CSV for Zoom.
+ * Export breakout room CSV for Zoom.
  *
  * @package    mod_zoom
  * @copyright  2020 Michael Hughes, University of Strathclyde, <michaelhughes@strath.ac.uk>
