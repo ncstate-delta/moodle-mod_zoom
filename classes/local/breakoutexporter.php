@@ -66,10 +66,10 @@ class breakoutexporter
      */
     public function preview() {
         $data = [];
-        foreach($this->groups as $group) {
+        foreach ($this->groups as $group) {
             $groupname = $group->name;
-            foreach($this->groupmembers[$group->id] as $members) {
-                $data[] = [$groupname, $members->email];
+            foreach ($this->groupmembers[$group->id] as $groupmember) {
+                $data[] = [$groupname, $groupmember->email];
             }
         }
         return $data;
