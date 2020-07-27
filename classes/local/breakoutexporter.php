@@ -22,7 +22,7 @@ class breakoutexporter
      */
     private $dataloaded = false;
 
-    public function __construct(StdClass $zoom)
+    public function __construct(stdClass $zoom)
     {
         $this->zoom = zoom;
         list($course, $cm) = get_course_and_cm_from_instance($zoom, 'zoom');
