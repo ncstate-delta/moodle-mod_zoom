@@ -74,9 +74,6 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom->password = $zoom->meetingcode;
     unset($zoom->meetingcode);
 
-    if (empty($zoom->requirepassword)) {
-        $zoom->password = '';
-    }
     $zoom->course = (int) $zoom->course;
 
     $response = $service->create_meeting($zoom);
@@ -124,10 +121,6 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     // Deals with password manager issues
     $zoom->password = $zoom->meetingcode;
     unset($zoom->meetingcode);
-
-    if (empty($zoom->requirepassword)) {
-        $zoom->password = '';
-    }
 
     $DB->update_record('zoom', $zoom);
 
