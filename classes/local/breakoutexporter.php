@@ -102,13 +102,13 @@ class breakoutexporter
         if (!$preview) {
             $exp = new csv_export_writer();
         }
-        foreach($this->groups as $group) {
+        foreach ($this->groups as $group) {
             $groupname = $group->name;
-            foreach($this->groupmembers[$group->id] as $members) {
+            foreach ($this->groupmembers[$group->id] as $groupmember) {
                 if ($preview) {
-                    $previewdata[] = [$groupname, $members->email];
+                    $previewdata[] = [$groupname, $groupmember->email];
                 } else {
-                    $exp->add_data([$groupname, $members->email]);
+                    $exp->add_data([$groupname, $groupmember->email]);
                 }
             }
         }
