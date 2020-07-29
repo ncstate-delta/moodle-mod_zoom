@@ -69,6 +69,7 @@ function zoom_supports($feature) {
 function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+    $service = new mod_zoom_webservice();
 
     // Deals with password manager issues
     $zoom->password = $zoom->meetingcode;
@@ -76,9 +77,16 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     $zoom->course = (int) $zoom->course;
 
-    $service = new mod_zoom_webservice();
     $response = $service->create_meeting($zoom);
     $zoom = populate_zoom_from_response($zoom, $response);
+    if (!empty($zoom->schedule_for)) {
+        // Wait until after receiving a successful response from zoom to update the host
+        // based on the schedule_for field. Zoom handles the schedule for on their
+        // end, but returns the host as the person who created the meeting, not the person
+        // that it was scheduled for.
+        $correcthostzoomuser = $service->get_user($zoom->schedule_for);
+        $zoom->host_id = $correcthostzoomuser->id;
+    }
 
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
@@ -101,6 +109,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+    $service = new mod_zoom_webservice();
 
     // The object received from mod_form.php returns instance instead of id for some reason.
     $zoom->id = $zoom->instance;
@@ -117,12 +126,19 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom->webinar = $updatedzoomrecord->webinar;
 
     // Update meeting on Zoom.
-    $service = new mod_zoom_webservice();
     try {
         $service->update_meeting($zoom);
+        if (!empty($zoom->schedule_for)) {
+            // Only update this if we actually get a valid user.
+            if ($correcthostzoomuser = $service->get_user($zoom->schedule_for)) {
+                $zoom->host_id = $correcthostzoomuser->id;
+                $DB->update_record('zoom', $zoom);
+            }
+        }
     } catch (moodle_exception $error) {
         return false;
     }
+
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
