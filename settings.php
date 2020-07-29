@@ -81,6 +81,10 @@ if ($ADMIN->fulltree) {
             get_string('lowlicenses', 'mod_zoom'), 0, 1);
     $settings->add($utmost);
 
+    $recycleonjoin = new admin_setting_configcheckbox('mod_zoom/recycleonjoin', get_string('recycleonjoin', 'mod_zoom'),
+            '', 0, 1, 0);
+    $settings->add($recycleonjoin);
+
     $maskparticipantdata = new admin_setting_configcheckbox('mod_zoom/maskparticipantdata', get_string('maskparticipantdata', 'mod_zoom'),
         get_string('maskparticipantdata_help', 'mod_zoom'), 0, 1);
     $settings->add($maskparticipantdata);
