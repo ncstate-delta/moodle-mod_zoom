@@ -77,7 +77,7 @@ if ($userishost) {
 $config = get_config('mod_zoom');
 if (!empty($config->recycleonjoin)) {
     $service = new mod_zoom_webservice();
-    if ($userishost){
+    if ($userishost) {
         $service->provide_license($zoom);
     } 
 }
