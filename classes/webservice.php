@@ -458,7 +458,7 @@ class mod_zoom_webservice {
                 $leastrecentlyactivepaiduserid = $this->_get_least_recently_active_paid_user_id();
             // Changes least_recently_active_user to a basic user so we can use their license.
                 $this->_make_call("users/$leastrecentlyactivepaiduserid", array('type' => ZOOM_USER_TYPE_BASIC), 'patch');
-        }
+            }
             // Changes current user to pro so they can make a meeting.
             $this->_make_call("users/$zoom->host_id", array('type' => ZOOM_USER_TYPE_PRO), 'patch');
             }
