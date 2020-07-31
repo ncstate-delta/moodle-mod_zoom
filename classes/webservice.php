@@ -452,7 +452,7 @@ class mod_zoom_webservice {
      * @return void
      */
     public function provide_license($zoom) {
-    // Checks whether we need to recycle licenses and acts accordingly.
+        // Checks whether we need to recycle licenses and acts accordingly.
         if ($this->recyclelicenses && $this->_make_call("users/$zoom->host_id")->type == ZOOM_USER_TYPE_BASIC) {
             if ($this->_paid_user_limit_reached()) {
             $leastrecentlyactivepaiduserid = $this->_get_least_recently_active_paid_user_id();
