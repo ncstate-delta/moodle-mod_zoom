@@ -444,7 +444,6 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Extracted from create_meeting method.
      * To be called from elsewhere to provide host with license
      * following creation of the meeting event.
      *
