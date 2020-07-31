@@ -461,7 +461,7 @@ class mod_zoom_webservice {
             }
             // Changes current user to pro so they can make a meeting.
             $this->_make_call("users/$zoom->host_id", array('type' => ZOOM_USER_TYPE_PRO), 'patch');
-            }
+        }
     }
     
     /**
