@@ -444,7 +444,7 @@ class mod_zoom_webservice {
     }
 
     /**
-     * To be called from elsewhere to provide host with license
+     * Provide the host with a license if needed and recycling is enabled.
      *
      * @param stdClass $zoom The meeting to update.
      * @return void
