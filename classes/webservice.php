@@ -470,12 +470,11 @@ class mod_zoom_webservice {
      * @return stdClass The call response.
      */
     public function create_meeting($zoom) {
-    // Including the external provide_license method, previously part of this method. 
+        // Including the external provide_license method, previously part of this method. 
         $this->provide_license($zoom);
         $url = "users/$zoom->host_id/" . ($zoom->webinar ? 'webinars' : 'meetings');
         return $this->_make_call($url, $this->_database_to_api($zoom), 'post');
     }
-    
 
     /**
      * Update a meeting/webinar on Zoom.
