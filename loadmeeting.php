@@ -69,7 +69,21 @@ if ($userishost) {
     $nexturl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
 }
 
+// Track completion viewed.
+$completion = new completion_info($course);
+$completion->set_module_viewed($cm);
+
 // Record user's clicking join.
 \mod_zoom\event\join_meeting_button_clicked::create(array('context' => $context, 'objectid' => $zoom->id, 'other' =>
         array('cmid' => $id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
+
+// Upgrade host upon joining meeting, if host if not Licensed.
+if ($userishost) {
+    $config = get_config('mod_zoom');
+    if (!empty($config->recycleonjoin)) {
+        $service = new mod_zoom_webservice();
+        $service->provide_license($zoom->host_id);
+    } 
+}
+
 redirect($nexturl);
