@@ -239,10 +239,9 @@ class mod_zoom_webservice {
         $data['page_size'] = ZOOM_MAX_RECORDS_PER_CALL;
         $reportcheck = explode('/', $url);
         $isreportcall = in_array('report', $reportcheck);
-        // The $currentpage call parameter is 1-indexed.
-        for ($currentpage = $numpages = 1; $currentpage <= $numpages; $currentpage++) {
-            $data['page_number'] = $currentpage;
+        do {
             $callresult = null;
+            $moredata = false;
             if ($isreportcall) {
                 $numcalls = get_config('mod_zoom', 'calls_left');
                 if ($numcalls > 0) {
@@ -257,10 +256,15 @@ class mod_zoom_webservice {
 
             if ($callresult) {
                 $aggregatedata = array_merge($aggregatedata, $callresult->$datatoget);
-                // Note how continually updating $numpages accomodates for the edge case that users are added in between calls.
-                $numpages = $callresult->page_count;
+                if (!empty($callresult->next_page_token)) {
+                    $data['next_page_token'] = $callresult->next_page_token;
+                    $moredata = true;
+                } elseif (!empty($callresult->page_number) && $callresult->page_number < $callresult->page_count) {
+                    $data['page_number'] = $callresult->page_number + 1;
+                    $moredata = true;
+                }
             }
-        }
+        } while ($moredata);
 
         return $aggregatedata;
     }
