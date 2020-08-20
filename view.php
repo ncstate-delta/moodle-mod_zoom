@@ -61,9 +61,11 @@ if (!is_null($zoom->alternative_hosts)) {
 $userishost = ($zoomuserid === $zoom->host_id || in_array($USER->email, $alternativehosts));
 
 $service = new mod_zoom_webservice();
+$hostuser = false;
 try {
     $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
     $showrecreate = false;
+    $hostuser = $service->get_user($zoom->host_id);
 } catch (moodle_exception $error) {
     $showrecreate = zoom_is_meeting_gone_error($error);
 }
@@ -87,6 +89,7 @@ $strall = get_string('allmeetings', 'mod_zoom');
 $strwwaitingroom = get_string('waitingroom', 'mod_zoom');
 $strmuteuponentry = get_string('option_mute_upon_entry', 'mod_zoom');
 $strauthenticatedusers = get_string('option_authenticated_users', 'mod_zoom');
+$strhost = get_string('host', 'mod_zoom');
 
 // Output starts here.
 echo $OUTPUT->header();
@@ -178,6 +181,17 @@ if (!$zoom->webinar) {
 
 if ($userishost) {
     $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, array('target' => '_blank')));
+}
+
+if ($hostuser) {
+    $hostmoodleuser = new stdClass();
+    $hostmoodleuser->firstname = $hostuser->first_name;
+    $hostmoodleuser->lastname = $hostuser->last_name;
+    $hostmoodleuser->alternatename = '';
+    $hostmoodleuser->firstnamephonetic = '';
+    $hostmoodleuser->lastnamephonetic = '';
+    $hostmoodleuser->middlename = '';
+    $table->data[] = array($strhost, fullname($hostmoodleuser));
 }
 
 if (!$zoom->webinar) {
