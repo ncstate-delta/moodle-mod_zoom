@@ -49,6 +49,9 @@ define('ZOOM_MAX_RECORDS_PER_CALL', 300);
 define('ZOOM_USER_TYPE_BASIC', 1);
 define('ZOOM_USER_TYPE_PRO', 2);
 define('ZOOM_USER_TYPE_CORP', 3);
+define('ZOOM_MEETING_NOT_FOUND_ERROR_CODE', 3001);
+define('ZOOM_USER_NOT_FOUND_ERROR_CODE', 1001);
+define('ZOOM_INVALID_USER_ERROR_CODE', 1120);
 
 /**
  * Entry not found on Zoom.
@@ -57,11 +60,30 @@ class zoom_not_found_exception extends moodle_exception {
     // Web service response.
     public $response = null;
     /**
-     * @param string $response  Web service response
+     * @param string $response      Web service response message
+     * @param int $errorcode     Web service response error code
      */
-    public function __construct($response) {
+    public function __construct($response, $errorcode) {
         $this->response = $response;
-        parent::__construct('errorwebservice_notfound', 'mod_zoom', '', $response);
+        $this->zoomerrorcode = $errorcode;
+        parent::__construct('errorwebservice_notfound', 'mod_zoom');
+    }
+}
+
+/**
+ * Bad request received by Zoom.
+ */
+class zoom_bad_request_exception extends moodle_exception {
+    // Web service response.
+    public $response = null;
+    /**
+     * @param string $response      Web service response message
+     * @param int $errorcode     Web service response error code
+     */
+    public function __construct($response, $errorcode) {
+        $this->response = $response;
+        $this->zoomerrorcode = $errorcode;
+        parent::__construct('errorwebservice_badrequest', 'mod_zoom');
     }
 }
 
@@ -72,10 +94,12 @@ class zoom_api_retry_failed_exception extends moodle_exception {
     // Web service response.
     public $response = null;
     /**
-     * @param string $response  Web service response
+     * @param string $response      Web service response
+     * @param int $errorcode     Web service response error code
      */
-    public function __construct($response) {
+    public function __construct($response, $errorcode) {
         $this->response = $response;
+        $this->zoomerrorcode = $errorcode;
         $a = new stdClass();
         $a->response = $response;
         $a->maxretries = mod_zoom_webservice::MAX_RETRIES;
@@ -263,23 +287,22 @@ function zoom_get_user_id($required = true) {
 /**
  * Check if the error indicates that a meeting is gone.
  *
- * @param string $error
+ * @param moodle_exception $error
  * @return bool
  */
 function zoom_is_meeting_gone_error($error) {
     // If the meeting's owner/user cannot be found, we consider the meeting to be gone.
-    return strpos($error, 'not found') !== false || zoom_is_user_not_found_error($error);
+    return ($error->zoomerrorcode === ZOOM_MEETING_NOT_FOUND_ERROR_CODE) || zoom_is_user_not_found_error($error);
 }
 
 /**
  * Check if the error indicates that a user is not found or does not belong to the current account.
  *
- * @param string $error
+ * @param moodle_exception $error
  * @return bool
  */
 function zoom_is_user_not_found_error($error) {
-    return strpos($error, 'not exist') !== false || strpos($error, 'not belong to this account') !== false
-        || strpos($error, 'not found on this account') !== false;
+    return ($error->zoomerrorcode === ZOOM_USER_NOT_FOUND_ERROR_CODE) || ($error->zoomerrorcode === ZOOM_INVALID_USER_ERROR_CODE);
 }
 
 /**
