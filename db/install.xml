@@ -96,7 +96,7 @@
         <KEY NAME="zoomid_foreign" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoom" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoom_meeting_recordings_viewed" COMMENT="A list to track when users view Zoom meeting recordings.">
+    <TABLE NAME="zoom_meeting_recordings_view" COMMENT="A list to track when users view Zoom meeting recordings.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field."/>
         <FIELD NAME="recordingsid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="link to zoom_meeting_recordings table"/>
