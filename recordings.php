@@ -31,8 +31,8 @@ const ACTION_ADD    = 1;
 const ACTION_UPDATE = 2;
 const ACTION_DELETE = 3;
 
-$id                 = required_param('id', PARAM_INT);
-$action             = required_param('action', PARAM_INT);
+$id = required_param('id', PARAM_INT);
+$action = required_param('action', PARAM_INT);
 
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 
@@ -41,9 +41,7 @@ require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/zoom:addinstance', $context);
 
-$url = new moodle_url('/mod/zoom/recordings.php', $params = array('id' => $cm->id, 'action' => $action));
-
-$PAGE->set_url($url);
+$params = array('id' => $cm->id, 'action' => $action);
 
 $strname = $zoom->name;
 $strtitle = get_string('recordings', 'mod_zoom');
@@ -60,10 +58,12 @@ echo $OUTPUT->heading($strtitle, 4);
 $formparams = array('course' => $course, 'cm' => $cm, 'modcontext' => $context);
 switch ($action) {
     case ACTION_ADD:
+        $url = new moodle_url('/mod/zoom/recordings.php', $params);
+        $PAGE->set_url($url);
         $mform = new mod_zoom_recording_form($url, $formparams);
 
         if ($mform->is_cancelled()) {
-            redirect(new moodle_url('/mod/zoom/view.php', $params = array('id' => $cm->id)));
+            redirect(new moodle_url('/mod/zoom/view.php', array('id' => $cm->id)));
         }
 
         if ($formdata = $mform->get_data()) {
@@ -78,7 +78,33 @@ switch ($action) {
             $rec->id = $DB->insert_record('zoom_meeting_recordings', $rec);
 
             // Redirect back to meeting view.
-            redirect(new moodle_url('/mod/zoom/view.php', $params = array('id' => $cm->id)));
+            redirect(new moodle_url('/mod/zoom/view.php', array('id' => $cm->id)));
+        }
+        break;
+    case ACTION_UPDATE:
+        $recordingid = required_param('recordingid', PARAM_INT);
+        $params['recordingid'] = $recordingid;
+        $url = new moodle_url('/mod/zoom/recordings.php', $params);
+        $PAGE->set_url($url);
+        $formparams['recordingid'] = $recordingid;
+        $mform = new mod_zoom_recording_form($url, $formparams);
+
+        if ($mform->is_cancelled()) {
+            redirect(new moodle_url('/mod/zoom/view.php', array('id' => $cm->id)));
+        }
+
+        if ($formdata = $mform->get_data()) {
+            $now = time();
+
+            $rec = new stdClass();
+            $rec->id = $recordingid;
+            $rec->name = $formdata->name;
+            $rec->externalurl = $formdata->externalurl;
+            $rec->timemodified = $now;
+            $DB->update_record('zoom_meeting_recordings', $rec);
+
+            // Redirect back to meeting view.
+            redirect(new moodle_url('/mod/zoom/view.php', array('id' => $cm->id)));
         }
         break;
 }

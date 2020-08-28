@@ -41,8 +41,19 @@ class mod_zoom_recording_form extends moodleform {
      * @return void
      */
     public function definition() {
+        global $DB;
         // Start of form definition.
         $mform = $this->_form;
+
+        $recordingid = $this->_customdata['recordingid'];
+        if($recordingid){
+            $rec = $DB->get_record('zoom_meeting_recordings', array('id' => $recordingid), '*', MUST_EXIST);
+            $data = array(
+                'name' => $rec->name,
+                'externalurl' => $rec->externalurl,
+            );
+        }
+
         $mform->addElement('header', 'general', get_string('recordingadd', 'zoom'));//lang
 
         $mform->addElement('text', 'name', get_string('recordingname', 'zoom'), array('size' => '64'));//lang
@@ -55,6 +66,7 @@ class mod_zoom_recording_form extends moodleform {
         $mform->setType('externalurl', PARAM_RAW_TRIMMED);
         $mform->addRule('externalurl', null, 'required', null, 'client');
 
+        $mform->setDefaults($data);
         $this->add_action_buttons(true, get_string('add', 'zoom'));//lang
     }
 
