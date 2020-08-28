@@ -107,6 +107,29 @@ switch ($action) {
             redirect(new moodle_url('/mod/zoom/view.php', array('id' => $cm->id)));
         }
         break;
+    case ACTION_DELETE:
+        $recordingid = required_param('recordingid', PARAM_INT);
+        $confirm = optional_param('confirm', null, PARAM_INT);
+        $params['recordingid'] = $recordingid;
+        $url = new moodle_url('/mod/zoom/recordings.php', $params);
+        $PAGE->set_url($url);
+
+        if (isset($confirm) && confirm_sesskey()) {
+            $DB->delete_records('zoom_meeting_recordings', array('id' => $recordingid));
+
+            // Redirect back to meeting view.
+            redirect(new moodle_url('/mod/zoom/view.php', array('id' => $cm->id)));
+        }
+
+        $rec = $DB->get_record('zoom_meeting_recordings', array('id' => $recordingid), '*', MUST_EXIST);
+        $message = get_string('recordingdelete', 'zoom', $rec->name); //lang
+
+        $confirmurl = new moodle_url($url, array('confirm'=>1));
+        $cancelurl = new moodle_url('/mod/zoom/view.php', array('id' => $cm->id));
+
+        echo $OUTPUT->confirm($message, $confirmurl, $cancelurl);
+        echo $OUTPUT->footer();
+        exit;
 }
 
 $mform->display();
