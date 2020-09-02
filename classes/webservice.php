@@ -226,7 +226,8 @@ class mod_zoom_webservice {
                     if ($this->makecallretries > self::MAX_RETRIES) {
                         throw new zoom_api_retry_failed_exception($response->message, $response->code);
                     }
-                    $timediff = strtotime($curl->get_info()['Retry-After']) - time();
+                    $curlinfo = $curl->get_info();
+                    $timediff = array_key_exists('Retry-After', $curlinfo) ? (strtotime($curlinfo['Retry-After']) - time()) : 1;
                     if ($timediff > self::MAX_RETRY_WAIT) {
                         throw new zoom_api_retry_failed_exception($response->message, $response->code);
                     }
@@ -234,7 +235,7 @@ class mod_zoom_webservice {
                     if ($timediff > 0) {
                         sleep($timediff);
                     }
-                    return _make_call($url, $data, $method);
+                    return $this->_make_call($url, $data, $method);
                 default:
                     if ($response) {
                         $exception = new moodle_exception('errorwebservice', 'mod_zoom', '', $response->message);
