@@ -60,9 +60,8 @@ class mod_zoom_mod_form extends moodleform_mod {
         // If updating, ensure we can get the meeting on Zoom.
         $isnew = empty($this->_cm);
 
-        /**
-         * @var $scheduleusers array Array of emails and proper names of Moodle users in this course that can add Zoom meetings, and the user can schedule.
-        */
+        // Array of emails and proper names of Moodle users in this course that
+        // can add Zoom meetings, and the user can schedule.
         $scheduleusers = [];
 
         // This will either be false (they can't) or the list of users they can schedule.
@@ -72,14 +71,17 @@ class mod_zoom_mod_form extends moodleform_mod {
         if (!empty($canschedule)) {
             // Get list of schedule for users if supported.
             // List of users who can use Zoom mod in this class.
-            // We can use $this->context as this is set either to the constructor or the activity's context
-            // if it is an existing activity. This is good as the cap could be overridden in the activity permissions.
+            // We can use $this->context as this is set either to the constructor
+            // or the activity's context if it is an existing activity. This is
+            // good as the cap could be overridden in the activity permissions.
             $moodleusers = get_enrolled_users($this->context, 'mod/zoom:addinstance', 0, 'u.*', 'lastname');
             if (!$isnew && $zoomuser->id !== $this->current->host_id) {
-                // Get intersection of current host's schedulers and $USER's schedulers to prevent zoom errors
+                // Get intersection of current host's schedulers and $USER's schedulers to prevent zoom errors.
                 $currenthostschedulers = $service->get_schedule_for_users($this->current->host_id);
                 if (!empty($currenthostschedulers)) {
-                    // Since this is the second argument to array_intersect_key, the entry from $canschedule will be used, so we can just use true to avoid a service call.
+                    // Since this is the second argument to array_intersect_key,
+                    // the entry from $canschedule will be used, so we can just
+                    // use true to avoid a service call.
                     $currenthostschedulers[$this->current->host_id] = true;
                 }
                 $canschedule = array_intersect_key($canschedule, $currenthostschedulers);
@@ -124,17 +126,17 @@ class mod_zoom_mod_form extends moodleform_mod {
         $allowschedule = false;
         if (!$isnew) {
             try {
-                $found_user = $service->get_user($meetinginfo->host_id);
-                if ($found_user && array_key_exists($found_user->email, $scheduleusers)) {
+                $founduser = $service->get_user($meetinginfo->host_id);
+                if ($founduser && array_key_exists($founduser->email, $scheduleusers)) {
                     $allowschedule = true;
                 }
             } catch (moodle_exception $error) {
-                // don't need to throw an error, just leave allowschedule as false
+                // Don't need to throw an error, just leave allowschedule as false.
+                $allowschedule = false;
             }
         } else {
             $allowschedule = true;
         }
-        
 
         // Start of form definition.
         $mform = $this->_form;
@@ -183,7 +185,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             $mform->addElement('html', get_string('webinar_already_false', 'zoom'));
         }
 
-        // Deals with password manager issues
+        // Deals with password manager issues.
         if (isset($this->current->password)) {
             $this->current->meetingcode = $this->current->password;
             unset($this->current->password);
@@ -244,7 +246,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('option_authenticated_users', $config->defaultauthusersoption);
 
         // Add Schedule for if current user is able to.
-        // Check if the size is greater than 1 because we add the editing/creating user by default
+        // Check if the size is greater than 1 because we add the editing/creating user by default.
         if (count($scheduleusers) > 1 && $allowschedule) {
             $mform->addElement('select', 'schedule_for', get_string('schedulefor', 'zoom'), $scheduleusers);
             $mform->setType('schedule_for', PARAM_EMAIL);

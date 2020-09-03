@@ -55,11 +55,19 @@ define('ZOOM_INVALID_USER_ERROR_CODE', 1120);
 
 /**
  * Entry not found on Zoom.
+ *
+ * @copyright  2020 UC Regents
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class zoom_not_found_exception extends moodle_exception {
-    // Web service response.
-    public $response = null;
     /**
+     * Web service response.
+     * @var string
+     */
+    public $response = null;
+
+    /**
+     * Constructor
      * @param string $response      Web service response message
      * @param int $errorcode     Web service response error code
      */
@@ -72,11 +80,19 @@ class zoom_not_found_exception extends moodle_exception {
 
 /**
  * Bad request received by Zoom.
+ *
+ * @copyright  2020 UC Regents
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class zoom_bad_request_exception extends moodle_exception {
-    // Web service response.
-    public $response = null;
     /**
+     * Web service response.
+     * @var string
+     */
+    public $response = null;
+
+    /**
+     * Constructor
      * @param string $response      Web service response message
      * @param int $errorcode     Web service response error code
      */
@@ -89,11 +105,19 @@ class zoom_bad_request_exception extends moodle_exception {
 
 /**
  * Couldn't succeed within the allowed number of retries.
+ *
+ * @copyright  2020 UC Regents
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class zoom_api_retry_failed_exception extends moodle_exception {
-    // Web service response.
-    public $response = null;
     /**
+     * Web service response.
+     * @var string
+     */
+    public $response = null;
+
+    /**
+     * Constructor
      * @param string $response      Web service response
      * @param int $errorcode     Web service response error code
      */
@@ -118,8 +142,9 @@ class zoom_api_retry_failed_exception extends moodle_exception {
  *
  * @param string $errorcode The name of the string from error.php to print
  * @param string $module name of module
- * @param string $link The url where the user will be prompted to continue. If no url is provided the user will be directed to the
- *                     site index page.
+ * @param string $continuelink The url where the user will be prompted to continue.
+ *                             If no url is provided the user will be directed to
+ *                             the site index page.
  * @param mixed $a Extra words and phrases that might be required in the error string
  */
 function zoom_fatal_error($errorcode, $module='', $continuelink='', $a=null) {
@@ -205,14 +230,12 @@ function zoom_get_instance_setup() {
  * Retrieves information for a meeting.
  *
  * @param int $meetingid
- * @param bool $webinar
- * @param string $hostid the host's uuid
  * @return array information about the meeting
  */
-function zoom_get_sessions_for_display($meetingid, $webinar, $hostid) {
+function zoom_get_sessions_for_display($meetingid) {
     require_once(__DIR__.'/../../lib/moodlelib.php');
     global $DB;
-    $service = new mod_zoom_webservice();
+
     $sessions = array();
     $format = get_string('strftimedatetimeshort', 'langconfig');
 
@@ -331,7 +354,6 @@ function zoom_meetingnotfound_param($cmid) {
  */
 function zoom_get_participants_report($detailsid) {
     global $DB;
-    $service = new mod_zoom_webservice();
     $sql = 'SELECT zmp.id,
                    zmp.name,
                    zmp.userid,

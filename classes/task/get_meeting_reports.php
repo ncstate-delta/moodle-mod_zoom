@@ -365,7 +365,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
     /**
      * Outputs finer grained debugging messaging if debug mode is on.
      *
-     * @param $msg
+     * @param string $msg
      */
     public function debugmsg($msg) {
         if ($this->debuggingenabled) {
@@ -464,22 +464,5 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         $this->debugmsg('Finished updating meeting report');
         return true;
-    }
-
-    /**
-     * Builds a string with key/value of given array.
-     *
-     * @param array $diff
-     * @return string
-     */
-    private function print_diffs($diff) {
-        $retval = '';
-        foreach ($diff as $key => $value) {
-            if (!empty($retval)) {
-                $retval .= ', ';
-            }
-            $retval .= "$key => $value";
-        }
-        return $retval;
     }
 }

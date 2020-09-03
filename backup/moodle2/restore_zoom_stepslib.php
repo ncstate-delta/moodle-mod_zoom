@@ -45,7 +45,6 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
      */
     protected function define_structure() {
 
-        $userinfo = $this->get_setting_value('userinfo');
         $paths = array();
         $paths[] = new restore_path_element('zoom', '/activity/zoom');
 
@@ -63,8 +62,8 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
 
         $data = (object)$data;
         $service = new mod_zoom_webservice();
-        
-        // Update start_time before attempting to create a new meeting
+
+        // Update start_time before attempting to create a new meeting.
         $data->start_time = $this->apply_date_offset($data->start_time);
 
         // Either create a new meeting or set meeting as expired.

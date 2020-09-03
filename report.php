@@ -48,7 +48,7 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading($strname);
 echo $OUTPUT->heading($strtitle, 4);
 
-$sessions = zoom_get_sessions_for_display($zoom->meeting_id, $zoom->webinar, $zoom->host_id);
+$sessions = zoom_get_sessions_for_display($zoom->meeting_id);
 if (!empty($sessions)) {
     $maskparticipantdata = get_config('mod_zoom', 'maskparticipantdata');
     $table = new html_table();
