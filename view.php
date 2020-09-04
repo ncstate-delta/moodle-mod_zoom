@@ -169,14 +169,12 @@ if ($zoom->recurring) {
     $table->data[] = array($strduration, format_time($zoom->duration));
 }
 
-if (!$zoom->webinar) {
-    $haspassword = (isset($zoom->password) && $zoom->password !== '');
-    $strhaspass = ($haspassword) ? $stryes : $strno;
-    $table->data[] = array($strpassprotect, $strhaspass);
+$haspassword = (isset($zoom->password) && $zoom->password !== '');
+$strhaspass = ($haspassword) ? $stryes : $strno;
+$table->data[] = array($strpassprotect, $strhaspass);
 
-    if ($userishost && $haspassword) {
-        $table->data[] = array($strpassword, $zoom->password);
-    }
+if ($userishost && $haspassword) {
+    $table->data[] = array($strpassword, $zoom->password);
 }
 
 if ($userishost) {
