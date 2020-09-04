@@ -148,6 +148,39 @@ if ($iszoommanager) {
     }
 }
 
+// Show recordings section if recordings exist or if user has edit capability and can add recordings.
+$recordings = $DB->get_records('zoom_meeting_recordings', array('zoomid' => $zoom->id), 'timecreated ASC');
+if ($iszoommanager || $recordings) {
+    foreach ($recordings as $recording) {
+        $recordingurl = new moodle_url('/mod/zoom/loadrecording.php', array('id' => $cm->id, 'recordingid' => $recording->id));
+        $recordinglink = html_writer::link($recordingurl, $recording->name);
+        $recordinglinkhtml = html_writer::span($recordinglink, 'recording-link', array('style' => 'margin-right:1rem'));
+        // List recording actions for managers.
+        if ($iszoommanager) {
+            $recordingupdateurl = new moodle_url('/mod/zoom/recordings.php', array('id' => $cm->id, 'recordingid' => $recording->id, 'action' => 2));
+            $recordingupdatetitle = get_string('update');
+            $recordingactions = $OUTPUT->action_icon($recordingupdateurl, new pix_icon('t/edit', $recordingupdatetitle));
+
+            $recordingdeleteurl = new moodle_url('/mod/zoom/recordings.php', array('id' => $cm->id, 'recordingid' => $recording->id, 'action' => 3));
+            $recordingdeletetitle = get_string('delete');
+            $recordingactions .= $OUTPUT->action_icon($recordingdeleteurl, new pix_icon('t/delete', $recordingdeletetitle));
+            $recordingactionshtml = html_writer::span($recordingactions, 'recording-actions');
+        }
+        $recordinghtml .= html_writer::div($recordinglinkhtml . $recordingactionshtml, 'recording', array('style' => 'margin-bottom:.5rem'));
+    }
+
+    // Show button to add recordings to managers.
+    if ($iszoommanager) {
+        $recordingaddurl = new moodle_url('/mod/zoom/recordings.php', array('id' => $cm->id, 'action' => 1));
+        $recordingaddbutton = html_writer::div(get_string('recordingadd', 'mod_zoom'), 'btn btn-primary');
+        $recordingaddbuttonhtml = html_writer::link($recordingaddurl, $recordingaddbutton, array('target' => '_blank'));
+        $recordingaddhtml = html_writer::div($recordingaddbuttonhtml);
+        $recordinghtml .= $recordingaddhtml;
+    }
+
+    $table->data[] = array(get_string('recordings', 'mod_zoom'), $recordinghtml);
+}
+
 // Generate add-to-calendar button if meeting was found and isn't recurring.
 if (!($showrecreate || $zoom->recurring)) {
     $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
