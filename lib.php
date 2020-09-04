@@ -71,7 +71,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
     $service = new mod_zoom_webservice();
 
-    // Deals with password manager issues
+    // Deals with password manager issues.
     $zoom->password = $zoom->meetingcode;
     unset($zoom->meetingcode);
 
@@ -115,7 +115,7 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom->id = $zoom->instance;
     $zoom->timemodified = time();
 
-    // Deals with password manager issues
+    // Deals with password manager issues.
     $zoom->password = $zoom->meetingcode;
     unset($zoom->meetingcode);
 
@@ -138,7 +138,6 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     } catch (moodle_exception $error) {
         return false;
     }
-
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
@@ -192,13 +191,13 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->settings->alternative_hosts)) {
         $newzoom->alternative_hosts = $response->settings->alternative_hosts;
     }
-    if(isset($response->settings->mute_upon_entry)) {
+    if (isset($response->settings->mute_upon_entry)) {
         $newzoom->option_mute_upon_entry = $response->settings->mute_upon_entry;
     }
-    if(isset($response->settings->meeting_authentication)) {
+    if (isset($response->settings->meeting_authentication)) {
         $newzoom->option_authenticated_users = $response->settings->meeting_authentication;
     }
-    if(isset($response->settings->waiting_room)) {
+    if (isset($response->settings->waiting_room)) {
         $newzoom->option_waiting_room = $response->settings->waiting_room;
     }
     $newzoom->timemodified = time();
@@ -532,8 +531,6 @@ function zoom_get_file_info($browser, $areas, $course, $cm, $context, $filearea,
  * @param array $options additional options affecting the file serving
  */
 function zoom_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload, array $options=array()) {
-    global $DB, $CFG;
-
     if ($context->contextlevel != CONTEXT_MODULE) {
         send_file_not_found();
     }

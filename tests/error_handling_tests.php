@@ -30,32 +30,33 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 /**
  * PHPunit testcase class.
  *
- * @copyright  2019 UC Regents
+ * @copyright  2020 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class error_code_test extends advanced_testcase {
+class error_code_test extends basic_testcase {
 
     /**
-     * Exception for when the meeting isn't found on Zoom
+     * Exception for when the meeting isn't found on Zoom.
      * @var mod_zoom\zoom_not_found_exception
      */
     private $meetingnotfoundexception;
 
     /**
-     * Exception for when the user isn't found on Zoom
+     * Exception for when the user isn't found on Zoom.
      * @var mod_zoom\zoom_not_found_exception
      */
     private $usernotfoundexception;
 
     /**
-     * Exception for when the user is found in the system but they haven't accepted their
-     * invite, so they don't have permissions to do what was requested
+     * Exception for when the user is found in the system but they haven't
+     * accepted their invite, so they don't have permissions to do what was
+     * requested.
      * @var mod_zoom\zoom_not_found_exception
      */
     private $invaliduserexception;
 
     /**
-     * Exception for when the meeting isn't found on Zoom
+     * Exception for when the meeting isn't found on Zoom.
      * @var mod_zoom\zoom_not_found_exception
      */
     private $othererrorcodeexception;
@@ -64,7 +65,6 @@ class error_code_test extends advanced_testcase {
      * Setup before every test.
      */
     public function setUp() {
-        $this->resetAfterTest();
         $this->meetingnotfoundexception = new zoom_not_found_exception('meeting not found', 3001);
         $this->usernotfoundexception = new zoom_not_found_exception('user not found', 1001);
         $this->invaliduserexception = new zoom_not_found_exception('invalid user found', 1120);
@@ -75,13 +75,13 @@ class error_code_test extends advanced_testcase {
      * Tests that uuid are encoded properly for use in web service calls.
      */
     public function test_correct_error_recognition() {
-        // Check meeting not found behavior
+        // Check meeting not found behavior.
         $this->assertTrue(zoom_is_meeting_gone_error($this->meetingnotfoundexception));
         $this->assertTrue(zoom_is_meeting_gone_error($this->usernotfoundexception));
         $this->assertTrue(zoom_is_meeting_gone_error($this->invaliduserexception));
         $this->assertFalse(zoom_is_meeting_gone_error($this->othererrorcodeexception));
 
-        // Check user not found behavior
+        // Check user not found behavior.
         $this->assertTrue(zoom_is_user_not_found_error($this->usernotfoundexception));
         $this->assertTrue(zoom_is_user_not_found_error($this->invaliduserexception));
         $this->assertFalse(zoom_is_user_not_found_error($this->meetingnotfoundexception));

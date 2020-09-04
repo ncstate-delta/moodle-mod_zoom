@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ucla/moodle-mod_zoom.svg?branch=master)](https://travis-ci.org/github/ucla/moodle-mod_zoom/branches)
+
 # Intro
 
 Zoom is the web and app based video conferencing service (http://zoom.us). This plugin offers tight integration with Moodle, supporting meeting creation, synchronization, grading, and backup/restore.

@@ -83,7 +83,7 @@ if ($userishost) {
     if (!empty($config->recycleonjoin)) {
         $service = new mod_zoom_webservice();
         $service->provide_license($zoom->host_id);
-    } 
+    }
 }
 
 redirect($nexturl);

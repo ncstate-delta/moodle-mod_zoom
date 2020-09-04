@@ -138,9 +138,9 @@ class mod_zoom_webservice {
      * This has been moved out of _make_call to make unit testing possible.
      *
      * @param \curl $curl The curl object used to make the request.
+     * @param string $method The HTTP method to use.
      * @param string $url The URL to append to the API URL
      * @param array|string $data The data to attach to the call.
-     * @param string $method The HTTP method to use.
      * @return stdClass The call's result.
      */
     protected function _make_curl_call(&$curl, $method, $url, $data) {
@@ -231,7 +231,8 @@ class mod_zoom_webservice {
                     if ($timediff > self::MAX_RETRY_WAIT) {
                         throw new zoom_api_retry_failed_exception($response->message, $response->code);
                     }
-                    debugging('Received 429 response, sleeping ' . strval($timediff) . ' seconds until next retry. Current retry: ' . $this->makecallretries);
+                    debugging('Received 429 response, sleeping ' . strval($timediff) .
+                            ' seconds until next retry. Current retry: ' . $this->makecallretries);
                     if ($timediff > 0) {
                         sleep($timediff);
                     }
@@ -288,7 +289,7 @@ class mod_zoom_webservice {
                 if (!empty($callresult->next_page_token)) {
                     $data['next_page_token'] = $callresult->next_page_token;
                     $moredata = true;
-                } elseif (!empty($callresult->page_number) && $callresult->page_number < $callresult->page_count) {
+                } else if (!empty($callresult->page_number) && $callresult->page_number < $callresult->page_count) {
                     $data['page_number'] = $callresult->page_number + 1;
                     $moredata = true;
                 }
@@ -440,6 +441,7 @@ class mod_zoom_webservice {
             }
         } catch (moodle_exception $error) {
             // We don't care if this throws an exception.
+            $schedulers = [];
         }
         return $schedulers;
     }
@@ -523,7 +525,7 @@ class mod_zoom_webservice {
             $this->_make_call("users/$zoomuserid", array('type' => ZOOM_USER_TYPE_PRO), 'patch');
         }
     }
-    
+
     /**
      * Create a meeting/webinar on Zoom.
      * Take a $zoom object as returned from the Moodle form and respond with an object that can be saved to the database.
@@ -532,7 +534,7 @@ class mod_zoom_webservice {
      * @return stdClass The call response.
      */
     public function create_meeting($zoom) {
-        // Provide license if needed. 
+        // Provide license if needed.
         $this->provide_license($zoom->host_id);
         $url = "users/$zoom->host_id/" . ($zoom->webinar ? 'webinars' : 'meetings');
         return $this->_make_call($url, $this->_database_to_api($zoom), 'post');

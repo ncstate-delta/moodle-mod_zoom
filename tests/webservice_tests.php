@@ -38,7 +38,6 @@ class webservice_test extends advanced_testcase {
 
     private $notfoundmockcurl = null;
     private $invalidmockcurl = null;
-    private $retrymockcurl = null;
 
     /**
      * Setup before every test.
@@ -50,6 +49,7 @@ class webservice_test extends advanced_testcase {
         set_config('apisecret', 'test', 'mod_zoom');
 
         $this->notfoundmockcurl = new class {
+            // @codingStandardsIgnoreLine
             public function setHeader($unusedparam) {
                 return;
             }
@@ -62,6 +62,7 @@ class webservice_test extends advanced_testcase {
         };
 
         $this->invalidmockcurl = new class {
+            // @codingStandardsIgnoreLine
             public function setHeader($unusedparam) {
                 return;
             }
@@ -75,6 +76,7 @@ class webservice_test extends advanced_testcase {
 
         $this->retrywithheadermockcurl = new class {
             public $numgetinfocalls = 0;
+            // @codingStandardsIgnoreLine
             public function setHeader($unusedparam) {
                 return;
             }
@@ -92,6 +94,7 @@ class webservice_test extends advanced_testcase {
 
         $this->retrynoheadermockcurl = new class {
             public $numgetinfocalls = 0;
+            // @codingStandardsIgnoreLine
             public function setHeader($unusedparam) {
                 return;
             }
@@ -108,6 +111,7 @@ class webservice_test extends advanced_testcase {
         };
 
         $this->retryfailuremockcurl = new class {
+            // @codingStandardsIgnoreLine
             public function setHeader($unusedparam) {
                 return;
             }
@@ -143,16 +147,16 @@ class webservice_test extends advanced_testcase {
      */
     public function test_meeting_not_found_exception() {
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-                            ->setMethods(array('_make_curl_call', '_get_curl_object'))
-                            ->getMock();
+            ->setMethods(array('_make_curl_call', '_get_curl_object'))
+            ->getMock();
 
         $mockservice->expects($this->any())
-                    ->method('_make_curl_call')
-                    ->willReturn('{"code":3001,"message":"réunion introuvable"}');
+            ->method('_make_curl_call')
+            ->willReturn('{"code":3001,"message":"réunion introuvable"}');
 
         $mockservice->expects($this->any())
-                    ->method('_get_curl_object')
-                    ->willReturn($this->notfoundmockcurl);
+            ->method('_get_curl_object')
+            ->willReturn($this->notfoundmockcurl);
 
         $foundexception = false;
         try {
@@ -170,16 +174,16 @@ class webservice_test extends advanced_testcase {
      */
     public function test_user_not_found_exception() {
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-                            ->setMethods(array('_make_curl_call', '_get_curl_object'))
-                            ->getMock();
+            ->setMethods(array('_make_curl_call', '_get_curl_object'))
+            ->getMock();
 
         $mockservice->expects($this->any())
-                    ->method('_make_curl_call')
-                    ->willReturn('{"code":1001,"message":"n’existe pas ou n’appartient pas à ce compte"}');
+            ->method('_make_curl_call')
+            ->willReturn('{"code":1001,"message":"n’existe pas ou n’appartient pas à ce compte"}');
 
         $mockservice->expects($this->any())
-                    ->method('_get_curl_object')
-                    ->willReturn($this->notfoundmockcurl);
+            ->method('_get_curl_object')
+            ->willReturn($this->notfoundmockcurl);
 
         $foundexception = false;
         try {
@@ -198,16 +202,16 @@ class webservice_test extends advanced_testcase {
      */
     public function test_invalid_user_exception() {
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-                            ->setMethods(array('_make_curl_call', '_get_curl_object'))
-                            ->getMock();
+            ->setMethods(array('_make_curl_call', '_get_curl_object'))
+            ->getMock();
 
         $mockservice->expects($this->any())
-                    ->method('_make_curl_call')
-                    ->willReturn('{"code":1120,"message":"utilisateur invalide"}');
+            ->method('_make_curl_call')
+            ->willReturn('{"code":1120,"message":"utilisateur invalide"}');
 
         $mockservice->expects($this->any())
-                    ->method('_get_curl_object')
-                    ->willReturn($this->invalidmockcurl);
+            ->method('_get_curl_object')
+            ->willReturn($this->invalidmockcurl);
 
         $foundexception = false;
         try {
@@ -227,16 +231,16 @@ class webservice_test extends advanced_testcase {
      */
     public function test_retry_with_header() {
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-                            ->setMethods(array('_make_curl_call', '_get_curl_object'))
-                            ->getMock();
+            ->setMethods(array('_make_curl_call', '_get_curl_object'))
+            ->getMock();
 
         $mockservice->expects($this->any())
-                    ->method('_make_curl_call')
-                    ->willReturn('{"response":"success"}');
+            ->method('_make_curl_call')
+            ->willReturn('{"response":"success"}');
 
         $mockservice->expects($this->any())
-                    ->method('_get_curl_object')
-                    ->willReturn($this->retrywithheadermockcurl);
+            ->method('_get_curl_object')
+            ->willReturn($this->retrywithheadermockcurl);
 
         $result = $mockservice->get_user("1");
         $this->assertDebuggingCalledCount($expectedcount = 3);
@@ -250,16 +254,16 @@ class webservice_test extends advanced_testcase {
      */
     public function test_retry_without_header() {
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-                            ->setMethods(array('_make_curl_call', '_get_curl_object'))
-                            ->getMock();
+            ->setMethods(array('_make_curl_call', '_get_curl_object'))
+            ->getMock();
 
         $mockservice->expects($this->any())
-                    ->method('_make_curl_call')
-                    ->willReturn('{"response":"success"}');
+            ->method('_make_curl_call')
+            ->willReturn('{"response":"success"}');
 
         $mockservice->expects($this->any())
-                    ->method('_get_curl_object')
-                    ->willReturn($this->retrynoheadermockcurl);
+            ->method('_get_curl_object')
+            ->willReturn($this->retrynoheadermockcurl);
 
         $result = $mockservice->get_user("1");
         $this->assertDebuggingCalledCount($expectedcount = 3);
@@ -273,16 +277,16 @@ class webservice_test extends advanced_testcase {
      */
     public function test_retry_exception() {
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-                            ->setMethods(array('_make_curl_call', '_get_curl_object'))
-                            ->getMock();
+            ->setMethods(array('_make_curl_call', '_get_curl_object'))
+            ->getMock();
 
         $mockservice->expects($this->any())
-                    ->method('_make_curl_call')
-                    ->willReturn('{"code":-1, "message":"too many retries"}');
+            ->method('_make_curl_call')
+            ->willReturn('{"code":-1, "message":"too many retries"}');
 
         $mockservice->expects($this->any())
-                    ->method('_get_curl_object')
-                    ->willReturn($this->retryfailuremockcurl);
+            ->method('_get_curl_object')
+            ->willReturn($this->retryfailuremockcurl);
 
         $foundexception = false;
         try {

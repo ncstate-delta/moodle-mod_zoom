@@ -51,7 +51,7 @@ if ($options['help'] || empty($options['start'] || empty($options['end']))) {
 
 Options:
 -h, --help          Print out this help
---start             Required. In YYYY-MM-DD format      
+--start             Required. In YYYY-MM-DD format
 --end               Required. In YYYY-MM-DD format
 --hostuuid          Optional. Specific host we want to get meetings for.
 --courseid          Optional. If given, will find all hosts for course and get meeting reports.

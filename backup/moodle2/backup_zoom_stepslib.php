@@ -40,9 +40,6 @@ class backup_zoom_activity_structure_step extends backup_activity_structure_step
      * @return backup_nested_element
      */
     protected function define_structure() {
-        // Are we including userinfo?
-        $userinfo = $this->get_setting_value('userinfo');
-
         // Define the root element describing the zoom instance.
         $zoom = new backup_nested_element('zoom', array('id'), array(
             'intro', 'introformat', 'grade',

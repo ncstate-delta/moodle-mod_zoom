@@ -268,7 +268,7 @@ class get_meeting_reports_test extends advanced_testcase {
         set_config('calls_left', 3000, 'mod_zoom');
 
         // First mock the webservice object, so we can inject the return values
-        // for get_meeting_participants().
+        // for get_meeting_participants.
         $mockwwebservice = $this->createMock('mod_zoom_webservice');
 
         // What we want get_meeting_participants to return.
@@ -295,7 +295,7 @@ class get_meeting_reports_test extends advanced_testcase {
 
         // Make get_meeting_participants() return our results array.
         $mockwwebservice->method('get_meeting_participants')
-                ->will($this->returnCallback([$this, 'mock_get_meeting_participants']));
+            ->will($this->returnCallback([$this, 'mock_get_meeting_participants']));
 
         $this->assertEquals($this->mockparticipantsdata['someuuid'],
                 $mockwwebservice->get_meeting_participants('someuuid', false));
