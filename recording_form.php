@@ -46,28 +46,30 @@ class mod_zoom_recording_form extends moodleform {
         $mform = $this->_form;
 
         $recordingid = $this->_customdata['recordingid'];
-        if($recordingid){
+        if ($recordingid) {
             $rec = $DB->get_record('zoom_meeting_recordings', array('id' => $recordingid), '*', MUST_EXIST);
             $data = array(
                 'name' => $rec->name,
                 'externalurl' => $rec->externalurl,
             );
+        } else {
+            $data = array('name' => get_string('recording', 'zoom'));
         }
 
-        $mform->addElement('header', 'general', get_string('recordingadd', 'zoom'));//lang
+        $mform->addElement('header', 'general', get_string('recordingadd', 'zoom'));
 
-        $mform->addElement('text', 'name', get_string('recordingname', 'zoom'), array('size' => '64'));//lang
+        $mform->addElement('text', 'name', get_string('recordingname', 'zoom'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 310), 'maxlength', 310, 'client');
 
         $mform->addElement('url', 'externalurl', get_string('recordingurl', 'zoom'), 
-                           array('size'=>'60'), array('usefilepicker'=>true));//lang
+                           array('size'=>'60'), array('usefilepicker'=>true));
         $mform->setType('externalurl', PARAM_RAW_TRIMMED);
         $mform->addRule('externalurl', null, 'required', null, 'client');
 
         $mform->setDefaults($data);
-        $this->add_action_buttons(true, get_string('add', 'zoom'));//lang
+        $this->add_action_buttons(true);
     }
 
     /**

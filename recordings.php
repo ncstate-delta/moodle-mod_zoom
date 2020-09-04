@@ -54,7 +54,6 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading($strname);
 echo $OUTPUT->heading($strtitle, 4);
 
-//$currenttab = attendance_tabs::TAB_ADD;
 $formparams = array('course' => $course, 'cm' => $cm, 'modcontext' => $context);
 switch ($action) {
     case ACTION_ADD:
@@ -122,7 +121,7 @@ switch ($action) {
         }
 
         $rec = $DB->get_record('zoom_meeting_recordings', array('id' => $recordingid), '*', MUST_EXIST);
-        $message = get_string('recordingdelete', 'zoom', $rec->name); //lang
+        $message = get_string('recordingdelete', 'zoom', $rec->name);
 
         $confirmurl = new moodle_url($url, array('confirm'=>1));
         $cancelurl = new moodle_url('/mod/zoom/view.php', array('id' => $cm->id));
