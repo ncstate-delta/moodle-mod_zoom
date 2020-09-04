@@ -28,6 +28,19 @@ Please note that the API key and secret is not the same as the LTI key/secret.
 
 ## Changelog
 
+v3.2
+
+- Password/Passcode changes
+  - Renamed passwords to passcodes
+  - Added passcodes to Webinars (Thanks jrchamp)
+  - Passcodes are now required
+- Implement completion viewed when user joins meeting (Thanks nstefanski)
+- License recycling improvement (Thanks mrvinceo)
+- Added scheduler support (Thanks mhughes2k)
+- Added support for Zoom API changes related to next_page_token and rate limiting
+- Fixed error handling for non-English Zoom deployments
+- Added Travis CI support
+
 v3.1
 
 - Added site config to mask participant data form appearing in reports (useful for sites that mask participant data, e.g., for HIPAA) (Thanks stopfstedt)
