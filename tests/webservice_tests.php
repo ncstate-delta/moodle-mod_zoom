@@ -121,6 +121,16 @@ class webservice_test extends advanced_testcase {
             public function get_info() {
                 return array('http_code' => 429);
             }
+            public $urlpath = null;
+            public function get($url, $data) {
+                if ($this->urlpath === null) {
+                    $this->urlpath = $url;
+                } else if ($this->urlpath !== $url) {
+                    // We should be getting the same path every time
+                    return '{"code":-1, "message":"incorrect url"}';
+                }
+                return '{"code":-1, "message":"too many retries"}';
+            }
         };
     }
 
@@ -277,12 +287,8 @@ class webservice_test extends advanced_testcase {
      */
     public function test_retry_exception() {
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('_make_curl_call', '_get_curl_object'))
+            ->setMethods(array('_get_curl_object'))
             ->getMock();
-
-        $mockservice->expects($this->any())
-            ->method('_make_curl_call')
-            ->willReturn('{"code":-1, "message":"too many retries"}');
 
         $mockservice->expects($this->any())
             ->method('_get_curl_object')
