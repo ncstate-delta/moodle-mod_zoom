@@ -167,7 +167,7 @@ class mod_zoom_webservice {
      */
     protected function _make_call($url, $data = array(), $method = 'get') {
         global $CFG;
-        $zoom_url = self::API_URL . $url;
+        $zoomurl = self::API_URL . $url;
         $method = strtolower($method);
         $proxyhost = get_config('mod_zoom', 'proxyhost');
         $cfg = new stdClass();
@@ -206,7 +206,7 @@ class mod_zoom_webservice {
             $curl->setHeader('Content-Type: application/json');
             $data = is_array($data) ? json_encode($data) : $data;
         }
-        $response = $this->_make_curl_call($curl, $method, $zoom_url, $data);
+        $response = $this->_make_curl_call($curl, $method, $zoomurl, $data);
 
         if ($curl->get_errno()) {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', $curl->error);
