@@ -99,7 +99,7 @@ class zoom_bad_request_exception extends moodle_exception {
     public function __construct($response, $errorcode) {
         $this->response = $response;
         $this->zoomerrorcode = $errorcode;
-        parent::__construct('errorwebservice_badrequest', 'mod_zoom');
+        parent::__construct('errorwebservice_badrequest', 'mod_zoom', '', $response);
     }
 }
 
