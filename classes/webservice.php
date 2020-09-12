@@ -159,15 +159,15 @@ class mod_zoom_webservice {
     /**
      * Makes a REST call.
      *
-     * @param string $url The URL to append to the API URL
+     * @param string $path The path to append to the API URL
      * @param array|string $data The data to attach to the call.
      * @param string $method The HTTP method to use.
      * @return stdClass The call's result in JSON format.
      * @throws moodle_exception Moodle exception is thrown for curl errors.
      */
-    protected function _make_call($url, $data = array(), $method = 'get') {
+    protected function _make_call($path, $data = array(), $method = 'get') {
         global $CFG;
-        $url = self::API_URL . $url;
+        $url = self::API_URL . $path;
         $method = strtolower($method);
         $proxyhost = get_config('mod_zoom', 'proxyhost');
         $cfg = new stdClass();
@@ -236,7 +236,7 @@ class mod_zoom_webservice {
                     if ($timediff > 0) {
                         sleep($timediff);
                     }
-                    return $this->_make_call($url, $data, $method);
+                    return $this->_make_call($path, $data, $method);
                 default:
                     if ($response) {
                         $exception = new moodle_exception('errorwebservice', 'mod_zoom', '', $response->message);
