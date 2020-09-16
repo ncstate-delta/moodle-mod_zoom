@@ -69,6 +69,7 @@ class error_code_test extends basic_testcase {
         $this->usernotfoundexception = new zoom_not_found_exception('user not found', 1001);
         $this->invaliduserexception = new zoom_not_found_exception('invalid user found', 1120);
         $this->othererrorcodeexception = new zoom_not_found_exception('other exception', -1);
+        $this->badrequestexception = new zoom_bad_request_exception('Example bad request response', 12345);
     }
 
     /**
@@ -86,5 +87,12 @@ class error_code_test extends basic_testcase {
         $this->assertTrue(zoom_is_user_not_found_error($this->invaliduserexception));
         $this->assertFalse(zoom_is_user_not_found_error($this->meetingnotfoundexception));
         $this->assertFalse(zoom_is_user_not_found_error($this->othererrorcodeexception));
+    }
+
+    /**
+     * Tests that bad request messages are coming through properly.
+     */
+    public function test_correct_error_message() {
+        $this->assertEqual($this->badrequestexception->getMessage(), str_replace('{$a}', 'Example bad request response', get_string('errorwebservice_badrequest', 'mod_zoom')));
     }
 }
