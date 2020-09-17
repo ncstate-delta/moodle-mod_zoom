@@ -21,6 +21,8 @@ php:
 env:
   global:
     - MOODLE_BRANCH=MOODLE_39_STABLE
+    - PHPDOC_IGNORE_PATHS=jwt,tests/webservice_tests.php
+    - MUSTACHE_IGNORE_PATHS=templates/mobile_view_page.mustache
   matrix:
     - DB=pgsql
     - DB=mysqli
@@ -37,9 +39,12 @@ install:
 script:
   - moodle-plugin-ci phplint
   - moodle-plugin-ci phpcpd
+  - moodle-plugin-ci phpmd
   - moodle-plugin-ci codechecker
   - moodle-plugin-ci validate
   - moodle-plugin-ci savepoints
+  - moodle-plugin-ci mustache
   - moodle-plugin-ci grunt
+  - moodle-plugin-ci phpdoc
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat

@@ -41,7 +41,7 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
     /**
      * Defines structure of path elements to be processed during the restore
      *
-     * @return array of {@link restore_path_element}
+     * @return array of restore_path_element
      */
     protected function define_structure() {
 

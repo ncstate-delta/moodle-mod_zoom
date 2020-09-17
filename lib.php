@@ -34,9 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 /* Moodle core API */
 
 /**
- * Returns the information on whether the module supports a feature
- *
- * See {@link plugin_supports()} for more info.
+ * Returns the information on whether the module supports a feature.
  *
  * @param string $feature FEATURE_xx constant for requested feature
  * @return mixed true if the feature is supported, null if unknown
@@ -270,8 +268,8 @@ function zoom_print_recent_activity($course, $viewfullnames, $timestart) {
  * Prepares the recent activity data
  *
  * This callback function is supposed to populate the passed array with
- * custom activity records. These records are then rendered into HTML via
- * {@link zoom_print_recent_mod_activity()}.
+ * custom activity records. These records are then rendered into HTML
+ * zoom_print_recent_mod_activity().
  *
  * Returns void, it adds items into $activities and increases $index.
  *
@@ -288,12 +286,12 @@ function zoom_get_recent_mod_activity(&$activities, &$index, $timestart, $course
 }
 
 /**
- * Prints single activity item prepared by {@link zoom_get_recent_mod_activity()}
+ * Prints single activity item prepared by zoom_get_recent_mod_activity()
  *
  * @param stdClass $activity activity record with added 'cmid' property
  * @param int $courseid the id of the course we produce the report for
  * @param bool $detail print detailed report
- * @param array $modnames as returned by {@link get_module_types_names()}
+ * @param array $modnames as returned by get_module_types_names()
  * @param bool $viewfullnames display users' full names
  * @todo implement this function
  */
@@ -390,7 +388,7 @@ function zoom_scale_used_anywhere($scaleid) {
 /**
  * Creates or updates grade item for the given zoom instance
  *
- * Needed by {@link grade_update_mod_grades()}.
+ * Needed by grade_update_mod_grades().
  *
  * @param stdClass $zoom instance object with extra cmidnumber and modname property
  * @param array $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
@@ -441,7 +439,7 @@ function zoom_grade_item_delete($zoom) {
 /**
  * Update zoom grades in the gradebook
  *
- * Needed by {@link grade_update_mod_grades()}.
+ * Needed by grade_update_mod_grades().
  *
  * @param stdClass $zoom instance object with extra cmidnumber and modname property
  * @param int $userid update grade of specific user only, 0 means all participants
@@ -482,7 +480,7 @@ function zoom_update_grades(stdClass $zoom, $userid = 0) {
  * Returns the lists of all browsable file areas within the given module context
  *
  * The file area 'intro' for the activity introduction field is added automatically
- * by {@link file_browser::get_file_info_context_module()}
+ * by file_browser::get_file_info_context_module()
  *
  * @param stdClass $course
  * @param stdClass $cm

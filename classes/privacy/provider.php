@@ -107,7 +107,7 @@ class provider implements
     public static function get_users_in_context(\core_privacy\local\request\userlist $userlist) {
         $context = $userlist->get_context();
 
-        if (!is_a($context, \context_module::class)) {
+        if (!($context instanceof \context_module)) {
             return;
         }
 
@@ -250,7 +250,7 @@ class provider implements
         global $DB;
         $context = $userlist->get_context();
 
-        if (!is_a($context, \context_module::class)) {
+        if (!($context instanceof \context_module)) {
             return;
         }
 
