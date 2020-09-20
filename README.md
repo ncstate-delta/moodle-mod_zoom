@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ucla/moodle-mod_zoom.svg?branch=master)](https://travis-ci.org/github/ucla/moodle-mod_zoom/branches)
+[![Build Status](https://travis-ci.com/ucla/moodle-mod_zoom.svg?branch=master)](https://travis-ci.com/github/ucla/moodle-mod_zoom/branches)
 
 # Intro
 
