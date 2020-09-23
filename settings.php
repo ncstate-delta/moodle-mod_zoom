@@ -144,7 +144,6 @@ if ($ADMIN->fulltree) {
             '', 1, 1, 0);
     $settings->add($defaultmuteuponentryoption);
 
-    $settings->add(new admin_setting_heading('othersettings', 'Other Settings', ''));
     $displaypassword = new admin_setting_configcheckbox('mod_zoom/displaypassword',
         get_string('displaypassword', 'zoom'),
         get_string('displaypassword_help', 'zoom'), 0, 1, 0);
