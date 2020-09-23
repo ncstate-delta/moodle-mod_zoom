@@ -198,6 +198,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addRule('meetingcode', get_string('err_invalid_password', 'mod_zoom'), 'regex', $regex, 'client');
         $mform->setDefault('meetingcode', strval(rand(100000, 999999)));
         $mform->addRule('meetingcode', null, 'required', null, 'client');
+
         $mform->addElement('static', 'passwordrequirements', '', get_string('err_password', 'mod_zoom'));
 
         // Add host/participants video (checked by default).
