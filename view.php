@@ -173,7 +173,7 @@ $haspassword = (isset($zoom->password) && $zoom->password !== '');
 $strhaspass = ($haspassword) ? $stryes : $strno;
 $table->data[] = array($strpassprotect, $strhaspass);
 
-if ($userishost && $haspassword) {
+if ($userishost && $haspassword || get_config('mod_zoom', 'displaypassword')) {
     $table->data[] = array($strpassword, $zoom->password);
 }
 
