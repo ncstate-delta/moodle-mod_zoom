@@ -26,10 +26,10 @@
         <FIELD NAME="password" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting password. Password may only contain the following characters: [a-zA-Z0-9@-_*]. Max of 10 characters"/>
         <FIELD NAME="option_jbh" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Join meeting before host start the meeting."/>
         <FIELD NAME="option_start_type" TYPE="char" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting start type. Can be &quot;video&quot; or &quot;screen_share&quot;. (deprecated)"/>
-        <FIELD NAME="option_host_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Start video when host joins meeting."/>
-        <FIELD NAME="option_participants_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Start video when participants join meeting."/>
+        <FIELD NAME="option_host_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Start video when host joins meeting."/>
+        <FIELD NAME="option_participants_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Start video when participants join meeting."/>
         <FIELD NAME="option_audio" TYPE="char" LENGTH="9" NOTNULL="false" DEFAULT="both" SEQUENCE="false" COMMENT="Meeting audio options. Can be &quot;both&quot;, &quot;telephony&quot;, &quot;voip&quot;."/>
-        <FIELD NAME="option_mute_upon_entry" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="option_mute_upon_entry" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
         <FIELD NAME="option_waiting_room" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
         <FIELD NAME="option_authenticated_users" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="exists_on_zoom" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether the meeting can be found on Zoom servers. Usually should be true, should only be false if API call returned that meeting can't be found."/>
