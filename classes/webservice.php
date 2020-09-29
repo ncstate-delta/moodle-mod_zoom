@@ -559,7 +559,7 @@ class mod_zoom_webservice {
      * @return void
      */
     public function delete_meeting($id, $webinar) {
-        $url = ($webinar ? 'webinars/' : 'meetings/') . $id;
+        $url = ($webinar ? 'webinars/' : 'meetings/') . $id . '?schedule_for_reminder=false';
         $this->_make_call($url, null, 'delete');
     }
 
