@@ -64,17 +64,14 @@ class mod_zoom_mod_form extends moodleform_mod {
         // can add Zoom meetings, and the user can schedule.
         $scheduleusers = [];
 
-        // This will either be false (they can't) or the list of users they can schedule.
+        // Get the array of users they can schedule.
         $canschedule = $service->get_schedule_for_users($USER->email);
-        $canschedule[$zoomuser->id] = new stdClass();
-        $canschedule[$zoomuser->id]->email = $USER->email;
         if (!empty($canschedule)) {
-            // Get list of schedule for users if supported.
-            // List of users who can use Zoom mod in this class.
-            // We can use $this->context as this is set either to the constructor
-            // or the activity's context if it is an existing activity. This is
-            // good as the cap could be overridden in the activity permissions.
-            $moodleusers = get_enrolled_users($this->context, 'mod/zoom:addinstance', 0, 'u.*', 'lastname');
+            // Add the current user.
+            $canschedule[$zoomuser->id] = new stdClass();
+            $canschedule[$zoomuser->id]->email = $USER->email;
+
+            // If the activity exists and the current user is not the current host.
             if (!$isnew && $zoomuser->id !== $this->current->host_id) {
                 // Get intersection of current host's schedulers and $USER's schedulers to prevent zoom errors.
                 $currenthostschedulers = $service->get_schedule_for_users($this->current->host_id);
@@ -86,6 +83,11 @@ class mod_zoom_mod_form extends moodleform_mod {
                 }
                 $canschedule = array_intersect_key($canschedule, $currenthostschedulers);
             }
+
+            // Get list of users who can add Zoom activities in this context.
+            $moodleusers = get_enrolled_users($this->context, 'mod/zoom:addinstance', 0, 'u.*', 'lastname');
+
+            // Check each potential host to see if they are a valid host.
             foreach ($canschedule as $zoomuserinfo) {
                 $zoomemail = strtolower($zoomuserinfo->email);
                 if (isset($scheduleusers[$zoomemail])) {
