@@ -197,8 +197,17 @@ class mod_zoom_mod_form extends moodleform_mod {
         $regex = '/^[a-zA-Z0-9@_*-]{1,10}$/';
         $mform->addRule('meetingcode', get_string('err_invalid_password', 'mod_zoom'), 'regex', $regex, 'client');
         $mform->setDefault('meetingcode', strval(rand(100000, 999999)));
-        $mform->addRule('meetingcode', null, 'required', null, 'client');
+        $mform->disabledIf('meetingcode', 'requirepasscode', 'notchecked');
         $mform->addElement('static', 'passwordrequirements', '', get_string('err_password', 'mod_zoom'));
+
+        // Add password requirement prompt.
+        $mform->addElement('advcheckbox', 'requirepasscode', get_string('requirepasscode', 'zoom'));
+
+        if (isset($this->current->meetingcode) && strval($this->current->meetingcode) === "") {
+            $mform->setDefault('requirepasscode', 0);
+        } else {
+            $mform->setDefault('requirepasscode', 1);
+        }
 
         // Add host/participants video (checked by default).
         $mform->addGroup(array(
@@ -279,6 +288,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();
+        $this->apply_admin_defaults();
 
         // Add standard buttons, common to all modules.
         $this->add_action_buttons();
@@ -314,7 +324,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
         $service = new mod_zoom_webservice();
 
-        if (empty($data['meetingcode'])) {
+        if (!empty($data['requirepasscode']) && empty($data['meetingcode'])) {
             $errors['meetingcode'] = get_string('err_password_required', 'mod_zoom');
         }
         if (isset($data['schedule_for']) &&  $data['schedule_for'] !== $USER->email) {

@@ -26,8 +26,23 @@
 define(['jquery'], function($) {
     return {
         init: function() {
+//            var pwd = $('input[name="meetingcode"]');
+//            var reqpwd = $('input[name="requirepassword"][type!="hidden"]');
             var option_jbh = $('input[name="option_jbh"][type!="hidden"]');
             var option_waiting_room = $('input[name="option_waiting_room"][type!="hidden"]');
+//            $(document).ready(function() {
+//                if (!reqpwd.is(':checked')) {
+//                    pwd.val('');
+//                }
+//            });
+//            reqpwd.change(function() {
+//                if (pwd.attr('disabled') == 'disabled') {
+//                    pwd.val('');
+//                } else {
+//                    // Set value to be a new random 6 digit number
+//                    pwd.val(Math.floor(Math.random() * (999999 - 100000) + 100000).toString());
+//                }
+//            });
             option_jbh.change(function() {
                 if (option_jbh.is(':checked') == true) {
                     option_waiting_room.prop('checked', false);
