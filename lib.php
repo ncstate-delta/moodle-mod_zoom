@@ -217,7 +217,8 @@ function zoom_delete_instance($id) {
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
     if (!$zoom = $DB->get_record('zoom', array('id' => $id))) {
-        return false;
+        // For some reason already deleted, so let Moodle take care of the rest.
+        return true;
     }
 
     // Include locallib.php for constants.
@@ -228,10 +229,12 @@ function zoom_delete_instance($id) {
         $service = new mod_zoom_webservice();
         try {
             $service->delete_meeting($zoom->meeting_id, $zoom->webinar);
+        } catch (zoom_not_found_exception $error) {
+            // Meeting not on Zoom, so continue.
+            mtrace('Meeting not on Zoom; continuing');
         } catch (moodle_exception $error) {
-            if (strpos($error, 'is not found or has expired') === false) {
-                throw $error;
-            }
+            // Some other error, so throw error.
+            throw $error;
         }
     }
 
