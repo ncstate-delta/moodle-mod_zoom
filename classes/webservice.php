@@ -468,7 +468,7 @@ class mod_zoom_webservice {
             )
         );
         if (isset($zoom->intro)) {
-            $data['agenda'] = strip_tags($zoom->intro);
+            $data['agenda'] = $zoom->intro;
         }
         if (isset($CFG->timezone) && !empty($CFG->timezone)) {
             $data['timezone'] = $CFG->timezone;
