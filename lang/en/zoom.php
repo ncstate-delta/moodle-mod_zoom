@@ -135,6 +135,7 @@ $string['licenseonjoin'] = 'Select this option if you would like the host to rec
 $string['report'] = 'Reports';
 $string['reportapicalls'] = 'Report API calls exhausted';
 $string['requirepasscode'] = 'Require meeting passcode';
+$string['requirepasscode_help'] = 'If enabled, passcodes are required by default for meetings.';
 $string['resetapicalls'] = 'Reset the number of available API calls';
 $string['schedulefor'] = 'Schedule meeting for';
 $string['scheduleforself'] = 'Schedule for yourself';
