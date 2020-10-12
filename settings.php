@@ -93,6 +93,7 @@ if ($ADMIN->fulltree) {
             get_string('maskparticipantdata_help', 'mod_zoom'), 0, 1);
     $settings->add($maskparticipantdata);
 
+    // Default Zoom settings.
     $settings->add(new admin_setting_heading('defaultsettings',
             get_string('defaultsettings', 'mod_zoom'),
             get_string('defaultsettings_help', 'mod_zoom')));
@@ -101,6 +102,13 @@ if ($ADMIN->fulltree) {
             get_string('recurringmeeting', 'zoom'),
             get_string('recurringmeeting_help', 'zoom'), 0, 1, 0);
     $settings->add($defaultrecurring);
+
+    $defaultrequirepasscode = new admin_setting_configcheckbox('zoom/requirepasscode',
+            get_string('requirepasscode', 'zoom'),
+            get_string('requirepasscode_help', 'zoom'),
+            1);
+    $defaultrequirepasscode->set_locked_flag_options(admin_setting_flag::ENABLED, true);
+    $settings->add($defaultrequirepasscode);
 
     $defaulthostvideo = new admin_setting_configcheckbox('mod_zoom/defaulthostvideo',
             get_string('option_host_video', 'zoom'),
