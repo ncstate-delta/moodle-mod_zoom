@@ -15,9 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for get_meeting_reports task class.
+ * Unit tests for mod_zoom_webservice class.
  *
  * @package    mod_zoom
+ * @category   test
  * @copyright  2019 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -31,10 +32,12 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 /**
  * PHPunit testcase class.
  *
+ * @package    mod_zoom
  * @copyright  2019 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @group      mod_zoom
  */
-class webservice_test extends advanced_testcase {
+class mod_zoom_webservice_test extends advanced_testcase {
 
     private $notfoundmockcurl = null;
     private $invalidmockcurl = null;
@@ -126,7 +129,7 @@ class webservice_test extends advanced_testcase {
                 if ($this->urlpath === null) {
                     $this->urlpath = $url;
                 } else if ($this->urlpath !== $url) {
-                    // We should be getting the same path every time
+                    // We should be getting the same path every time.
                     return '{"code":-1, "message":"incorrect url"}';
                 }
                 return '{"code":-1, "message":"too many retries"}';

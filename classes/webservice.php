@@ -111,6 +111,13 @@ class mod_zoom_webservice {
      */
     public function __construct() {
         $config = get_config('mod_zoom');
+
+        // If running PHPUNIT and api keys not set, then just return.
+        if (defined('PHPUNIT_TEST') && PHPUNIT_TEST &&
+                (empty($config->apikey) || empty($config->apisecret))) {
+            return;
+        }
+
         if (!empty($config->apikey)) {
             $this->apikey = $config->apikey;
         } else {
