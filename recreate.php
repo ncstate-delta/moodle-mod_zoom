@@ -28,10 +28,9 @@ require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
 require_once(dirname(__FILE__).'/classes/webservice.php');
 
-list($course, $cm, $zoom) = zoom_get_instance_setup();
+list($course, $cm, $zoom, $context) = zoom_get_instance_setup();
 
 require_sesskey();
-$context = context_module::instance($cm->id);
 // This capability is for managing Zoom instances in general.
 require_capability('mod/zoom:addinstance', $context);
 
