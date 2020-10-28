@@ -62,7 +62,7 @@ $completion->set_module_viewed($cm);
 
 // Record user's clicking join.
 \mod_zoom\event\join_meeting_button_clicked::create(array('context' => $context, 'objectid' => $zoom->id, 'other' =>
-        array('cmid' => $id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
+        array('cmid' => (int) $cm->id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
 
 // Upgrade host upon joining meeting, if host if not Licensed.
 if ($userishost) {
