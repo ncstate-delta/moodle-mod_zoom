@@ -47,9 +47,14 @@ class mod_zoom_mod_form extends moodleform_mod {
         global $PAGE, $USER;
         $config = get_config('mod_zoom');
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
+
+        $isnew = empty($this->_cm);
+
         $service = new mod_zoom_webservice();
         $zoomuser = $service->get_user($USER->email);
-        if ($zoomuser === false) {
+
+        // If creating a new instance, but the Zoom user does not exist.
+        if ($isnew && $zoomuser === false) {
             // Assume user is using Zoom for the first time.
             $errstring = 'zoomerr_usernotfound';
             // After they set up their account, the user should continue to the page they were on.
@@ -57,15 +62,16 @@ class mod_zoom_mod_form extends moodleform_mod {
             zoom_fatal_error($errstring, 'mod_zoom', $nexturl, $config->zoomurl);
         }
 
-        // If updating, ensure we can get the meeting on Zoom.
-        $isnew = empty($this->_cm);
-
         // Array of emails and proper names of Moodle users in this course that
         // can add Zoom meetings, and the user can schedule.
         $scheduleusers = [];
 
-        // Get the array of users they can schedule.
-        $canschedule = $service->get_schedule_for_users($USER->email);
+        $canschedule = false;
+        if ($zoomuser !== false) {
+            // Get the array of users they can schedule.
+            $canschedule = $service->get_schedule_for_users($USER->email);
+        }
+
         if (!empty($canschedule)) {
             // Add the current user.
             $canschedule[$zoomuser->id] = new stdClass();
