@@ -33,16 +33,17 @@ require_once(dirname(__FILE__).'/../../lib/moodlelib.php');
 
 $config = get_config('mod_zoom');
 
-list($course, $cm, $zoom, $context) = zoom_get_instance_setup();
+list($course, $cm, $zoom) = zoom_get_instance_setup();
 
+$context = context_module::instance($cm->id);
 $iszoommanager = has_capability('mod/zoom:addinstance', $context);
 
 $event = \mod_zoom\event\course_module_viewed::create(array(
-    'objectid' => $cm->instance,
-    'context' => $context,
+    'objectid' => $PAGE->cm->instance,
+    'context' => $PAGE->context,
 ));
-$event->add_record_snapshot('course', $course);
-$event->add_record_snapshot($cm->modname, $zoom);
+$event->add_record_snapshot('course', $PAGE->course);
+$event->add_record_snapshot($PAGE->cm->modname, $zoom);
 $event->trigger();
 
 // Print the page header.
@@ -51,7 +52,13 @@ $PAGE->set_url('/mod/zoom/view.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($zoom->name));
 $PAGE->set_heading(format_string($course->fullname));
 
-$userishost = zoom_userishost($zoom);
+$zoomuserid = zoom_get_user_id(false);
+$alternativehosts = array();
+if (!is_null($zoom->alternative_hosts)) {
+    $alternativehosts = explode(',', str_replace(';', ',', $zoom->alternative_hosts));
+}
+
+$userishost = ($zoomuserid === $zoom->host_id || in_array($USER->email, $alternativehosts));
 
 $service = new mod_zoom_webservice();
 $hostuser = false;

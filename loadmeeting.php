@@ -24,16 +24,29 @@
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-// Login check require_login() is called in zoom_get_instance_setup();.
-// @codingStandardsIgnoreLine
+
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once($CFG->libdir . '/gradelib.php');
 require_once($CFG->libdir . '/moodlelib.php');
 require_once(dirname(__FILE__).'/locallib.php');
 
-list($course, $cm, $zoom, $context) = zoom_get_instance_setup();
-$userishost = zoom_userishost($zoom);
+// Course_module ID.
+$id = required_param('id', PARAM_INT);
+if ($id) {
+    $cm         = get_coursemodule_from_id('zoom', $id, 0, false, MUST_EXIST);
+    $course     = get_course($cm->course);
+    $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
+} else {
+    print_error('You must specify a course_module ID');
+}
+$userishost = (zoom_get_user_id(false) == $zoom->host_id);
 
+require_login($course, true, $cm);
+
+$context = context_module::instance($cm->id);
+$PAGE->set_context($context);
+
+require_capability('mod/zoom:view', $context);
 if ($userishost) {
     $nexturl = new moodle_url($zoom->start_url);
 } else {

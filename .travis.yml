@@ -21,7 +21,7 @@ php:
 env:
   global:
     - MOODLE_BRANCH=MOODLE_39_STABLE
-    - PHPDOC_IGNORE_PATHS=jwt,tests/mod_zoom_webservice_test.php
+    - PHPDOC_IGNORE_PATHS=jwt,tests/webservice_tests.php
     - MUSTACHE_IGNORE_PATHS=templates/mobile_view_page.mustache
   matrix:
     - DB=pgsql

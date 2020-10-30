@@ -18,7 +18,6 @@
  * Unit tests for get_meeting_reports task class.
  *
  * @package    mod_zoom
- * @category   test
  * @copyright  2019 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,10 +29,8 @@ global $CFG;
 /**
  * PHPunit testcase class.
  *
- * @package    mod_zoom
  * @copyright  2019 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @group      mod_zoom
  */
 class get_meeting_reports_test extends advanced_testcase {
 

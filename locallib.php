@@ -196,25 +196,24 @@ function zoom_fatal_error($errorcode, $module='', $continuelink='', $a=null) {
 }
 
 /**
- * Get course/cm/zoom/context objects from url parameters, and check for
- * login/permissions.
+ * Get course/cm/zoom objects from url parameters, and check for login/permissions.
  *
- * @return array Array of ($course, $cm, $zoom, $context)
+ * @return array Array of ($course, $cm, $zoom)
  */
 function zoom_get_instance_setup() {
     global $DB;
 
     $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
-    $n  = optional_param('n', 0, PARAM_INT);  // Zoom instance ID - it should be named as the first character of the module.
+    $n  = optional_param('n', 0, PARAM_INT);  // ... zoom instance ID - it should be named as the first character of the module.
 
     if ($id) {
-        $cm     = get_coursemodule_from_id('zoom', $id, 0, false, MUST_EXIST);
-        $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-        $zoom   = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
+        $cm         = get_coursemodule_from_id('zoom', $id, 0, false, MUST_EXIST);
+        $course     = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+        $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
     } else if ($n) {
-        $zoom   = $DB->get_record('zoom', array('id' => $n), '*', MUST_EXIST);
-        $course = $DB->get_record('course', array('id' => $zoom->course), '*', MUST_EXIST);
-        $cm     = get_coursemodule_from_instance('zoom', $zoom->id, $course->id, false, MUST_EXIST);
+        $zoom  = $DB->get_record('zoom', array('id' => $n), '*', MUST_EXIST);
+        $course     = $DB->get_record('course', array('id' => $zoom->course), '*', MUST_EXIST);
+        $cm         = get_coursemodule_from_instance('zoom', $zoom->id, $course->id, false, MUST_EXIST);
     } else {
         print_error(get_string('zoomerr_id_missing', 'zoom'));
     }
@@ -224,7 +223,7 @@ function zoom_get_instance_setup() {
     $context = context_module::instance($cm->id);
     require_capability('mod/zoom:view', $context);
 
-    return array($course, $cm, $zoom, $context);
+    return array($course, $cm, $zoom);
 }
 
 /**
@@ -310,7 +309,7 @@ function zoom_get_state($zoom) {
  * Get the Zoom id of the currently logged-in user.
  *
  * @param boolean $required If true, will error if the user doesn't have a Zoom account.
- * @return string   Returns false or exception if no user found
+ * @return string
  */
 function zoom_get_user_id($required = true) {
     global $USER;
@@ -327,6 +326,8 @@ function zoom_get_user_id($required = true) {
         } catch (moodle_exception $error) {
             if ($required) {
                 throw $error;
+            } else {
+                $zoomuserid = $zoomuser->id;
             }
         }
         $cache->set($USER->id, $zoomuserid);
@@ -398,23 +399,4 @@ function zoom_get_participants_report($detailsid) {
     ];
     $participants = $DB->get_records_sql($sql, $params);
     return $participants;
-}
-
-/**
- * Determines if logged in user is the host or alternative host.
- *
- * @param object $zoom  Zoom record from database.
- * @return boolean
- */
-function zoom_userishost($zoom) {
-    global $USER;
-    $zoomuserid = zoom_get_user_id(false);
-    $alternativehosts = array();
-    if (!is_null($zoom->alternative_hosts)) {
-        $alternativehosts = explode(',', str_replace(';', ',',
-                core_text::strtolower($zoom->alternative_hosts)));
-    }
-
-    return ($zoomuserid === $zoom->host_id ||
-            in_array(core_text::strtolower($USER->email), $alternativehosts));
 }

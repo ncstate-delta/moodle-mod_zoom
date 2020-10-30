@@ -29,11 +29,12 @@ require_once(dirname(__FILE__).'/locallib.php');
 require_once(dirname(__FILE__).'/../../lib/accesslib.php');
 require_once(dirname(__FILE__).'/../../lib/moodlelib.php');
 
-list($course, $cm, $zoom, $context) = zoom_get_instance_setup();
+list($course, $cm, $zoom) = zoom_get_instance_setup();
 
 global $DB;
 
 // Check capability.
+$context = context_module::instance($cm->id);
 require_capability('mod/zoom:addinstance', $context);
 
 $uuid = required_param('uuid', PARAM_RAW);

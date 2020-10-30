@@ -18,7 +18,6 @@
  * Unit tests for error handling for zoom exceptions.
  *
  * @package    mod_zoom
- * @category   test
  * @copyright  2019 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -31,10 +30,8 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 /**
  * PHPunit testcase class.
  *
- * @package    mod_zoom
  * @copyright  2020 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @group      mod_zoom
  */
 class error_code_test extends basic_testcase {
 

@@ -79,18 +79,15 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     $zoom->course = (int) $zoom->course;
 
-    // Skip if running PHPunit test.
-    if (!defined('PHPUNIT_TEST') || !PHPUNIT_TEST) {
-        $response = $service->create_meeting($zoom);
-        $zoom = populate_zoom_from_response($zoom, $response);
-        if (!empty($zoom->schedule_for)) {
-            // Wait until after receiving a successful response from zoom to update the host
-            // based on the schedule_for field. Zoom handles the schedule for on their
-            // end, but returns the host as the person who created the meeting, not the person
-            // that it was scheduled for.
-            $correcthostzoomuser = $service->get_user($zoom->schedule_for);
-            $zoom->host_id = $correcthostzoomuser->id;
-        }
+    $response = $service->create_meeting($zoom);
+    $zoom = populate_zoom_from_response($zoom, $response);
+    if (!empty($zoom->schedule_for)) {
+        // Wait until after receiving a successful response from zoom to update the host
+        // based on the schedule_for field. Zoom handles the schedule for on their
+        // end, but returns the host as the person who created the meeting, not the person
+        // that it was scheduled for.
+        $correcthostzoomuser = $service->get_user($zoom->schedule_for);
+        $zoom->host_id = $correcthostzoomuser->id;
     }
 
     $zoom->id = $DB->insert_record('zoom', $zoom);
