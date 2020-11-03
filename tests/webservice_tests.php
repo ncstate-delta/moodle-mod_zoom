@@ -42,7 +42,7 @@ class webservice_test extends advanced_testcase {
     /**
      * Setup before every test.
      */
-    public function setUp() {
+    public function setUp(): void {
         $this->resetAfterTest();
         // Set fake values so we can test methods in class.
         set_config('apikey', 'test', 'mod_zoom');
@@ -126,7 +126,7 @@ class webservice_test extends advanced_testcase {
                 if ($this->urlpath === null) {
                     $this->urlpath = $url;
                 } else if ($this->urlpath !== $url) {
-                    // We should be getting the same path every time
+                    // We should be getting the same path every time.
                     return '{"code":-1, "message":"incorrect url"}';
                 }
                 return '{"code":-1, "message":"too many retries"}';

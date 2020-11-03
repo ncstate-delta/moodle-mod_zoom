@@ -13,19 +13,39 @@ cache:
     - $HOME/.composer/cache
     - $HOME/.npm
 
-php:
-  - 7.2
-  - 7.3
-  - 7.4
-
 env:
   global:
-    - MOODLE_BRANCH=MOODLE_39_STABLE
     - PHPDOC_IGNORE_PATHS=jwt,tests/webservice_tests.php
     - MUSTACHE_IGNORE_PATHS=templates/mobile_view_page.mustache
-  matrix:
-    - DB=pgsql
-    - DB=mysqli
+
+jobs:
+  include:
+    - php: 7.4
+      env: DB=mysqli MOODLE_BRANCH=master
+    - php: 7.4
+      env: DB=pgsql MOODLE_BRANCH=master
+    - php: 7.4
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_310_STABLE
+    - php: 7.4
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_310_STABLE
+    - php: 7.4
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_310_STABLE
+    - php: 7.3
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_39_STABLE
+    - php: 7.3
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_39_STABLE
+    - php: 7.3
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE
+    - php: 7.3
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_38_STABLE
+    - php: 7.2
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE
+    - php: 7.2
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_35_STABLE
+    - php: 7.1
+      env: DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE
+    - php: 7.1
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_35_STABLE
 
 before_install:
   - phpenv config-rm xdebug.ini
@@ -44,7 +64,10 @@ script:
   - moodle-plugin-ci validate
   - moodle-plugin-ci savepoints
   - moodle-plugin-ci mustache
-  - moodle-plugin-ci grunt
+  - moodle-plugin-ci grunt || [ \
+        "$MOODLE_BRANCH" != 'master' -a \
+        "$MOODLE_BRANCH" != 'MOODLE_310_STABLE' -a \
+        "$MOODLE_BRANCH" != 'MOODLE_39_STABLE' ]
   - moodle-plugin-ci phpdoc
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat
