@@ -67,7 +67,7 @@ class get_meeting_reports_test extends advanced_testcase {
     /**
      * Setup.
      */
-    public function setUp() {
+    public function setUp(): void {
         $this->resetAfterTest(true);
 
         $this->meetingtask = new mod_zoom\task\get_meeting_reports();

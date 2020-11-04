@@ -64,7 +64,7 @@ class error_code_test extends basic_testcase {
     /**
      * Setup before every test.
      */
-    public function setUp() {
+    public function setUp(): void {
         $this->meetingnotfoundexception = new zoom_not_found_exception('meeting not found', 3001);
         $this->usernotfoundexception = new zoom_not_found_exception('user not found', 1001);
         $this->invaliduserexception = new zoom_not_found_exception('invalid user found', 1120);
