@@ -226,8 +226,10 @@ class mod_zoom_webservice {
                     if ($this->makecallretries > self::MAX_RETRIES) {
                         throw new zoom_api_retry_failed_exception($response->message, $response->code);
                     }
-                    $curlinfo = $curl->get_info();
-                    $timediff = array_key_exists('Retry-After', $curlinfo) ? (strtotime($curlinfo['Retry-After']) - time()) : 1;
+                    $header = $curl->getResponse();
+                    // Header can have mixed case, normalize it.
+                    $header = array_change_key_case($header, CASE_LOWER);
+                    $timediff = array_key_exists('retry-after', $header) ? (strtotime($header['retry-after']) - time()) : 1;
                     if ($timediff > self::MAX_RETRY_WAIT) {
                         throw new zoom_api_retry_failed_exception($response->message, $response->code);
                     }
@@ -272,17 +274,7 @@ class mod_zoom_webservice {
         do {
             $callresult = null;
             $moredata = false;
-            if ($isreportcall) {
-                $numcalls = get_config('mod_zoom', 'calls_left');
-                if ($numcalls > 0) {
-                    $callresult = $this->_make_call($url, $data);
-                    set_config('calls_left', $numcalls - 1, 'mod_zoom');
-                    // We can only do 1 report calls a second.
-                    sleep(1);
-                }
-            } else {
-                $callresult = $this->_make_call($url, $data);
-            }
+            $callresult = $this->_make_call($url, $data);
 
             if ($callresult) {
                 $aggregatedata = array_merge($aggregatedata, $callresult->$datatoget);

@@ -265,7 +265,6 @@ class get_meeting_reports_test extends advanced_testcase {
         $this->assertEquals(0, $DB->count_records('zoom_meeting_details'));
         $this->assertEquals(0, $DB->count_records('zoom_meeting_participants'));
         $this->mockparticipantsdata = [];
-        set_config('calls_left', 3000, 'mod_zoom');
 
         // First mock the webservice object, so we can inject the return values
         // for get_meeting_participants.
