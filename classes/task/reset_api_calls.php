@@ -40,6 +40,8 @@ define('MAX_CALLS', 60000);
 /**
  * Scheduled task to reset the number of allotted Zoom Report API calls we have left each day.
  *
+ * TODO: Delete class and related configs.
+ *
  * @package   mod_zoom
  * @copyright 2018 UC Regents
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
