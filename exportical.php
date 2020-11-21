@@ -60,12 +60,18 @@ $event->add_property('last-modified', Bennu::timestamp_to_datetime($zoom->timemo
 $event->add_property('dtstart', Bennu::timestamp_to_datetime($zoom->start_time)); // Start time.
 $event->add_property('dtend', Bennu::timestamp_to_datetime($zoom->start_time + $zoom->duration)); // End time.
 
+// Get the meeting invite note to add to the description property.
+$service = new mod_zoom_webservice();
+$response = $service->get_meeting_invitation($zoom->meeting_id);
+$meeting_invite = $response->invitation;
+
 // Compute and add description property to event.
 $convertedtext = html_to_text($zoom->intro);
 $descriptiontext = get_string('calendardescriptionURL', 'mod_zoom', $CFG->wwwroot . '/mod/zoom/view.php?id=' . $cm->id);
 if (!empty($convertedtext)) {
     $descriptiontext .= get_string('calendardescriptionintro', 'mod_zoom', $convertedtext);
 }
+$descriptiontext .= PHP_EOL . $meeting_invite;
 $event->add_property('description', $descriptiontext);
 
 // Start formatting ical.
