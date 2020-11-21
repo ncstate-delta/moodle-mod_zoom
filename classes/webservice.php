@@ -586,7 +586,7 @@ class mod_zoom_webservice {
      *
      * @param int $id The meeting_id of the meeting to retrieve.
      * @return stdClass The meeting's invite note.
-     * @link 
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetinginvitation
      */
     public function get_meeting_invitation($id) {
         $url = 'meetings/' . $id . '/invitation';
