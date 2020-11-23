@@ -71,7 +71,9 @@ $descriptiontext = get_string('calendardescriptionURL', 'mod_zoom', $CFG->wwwroo
 if (!empty($convertedtext)) {
     $descriptiontext .= get_string('calendardescriptionintro', 'mod_zoom', $convertedtext);
 }
-$descriptiontext .= PHP_EOL . $meetinginvite;
+if (!empty($meetinginvite)) {
+    $descriptiontext .= "\n\n" . $meetinginvite;
+}
 $event->add_property('description', $descriptiontext);
 
 // Start formatting ical.

@@ -576,7 +576,7 @@ class mod_zoom_webservice {
         try {
             $response = $this->_make_call($url);
         } catch (moodle_exception $error) {
-            throw $error;
+            debugging($error->getMessage());
         }
         return $response;
     }
