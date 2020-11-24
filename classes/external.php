@@ -78,7 +78,6 @@ class mod_zoom_external extends external_api {
         // Request and permission validation.
         $cm = $DB->get_record('course_modules', array('id' => $params['zoomid']), '*', MUST_EXIST);
         $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
-        $course  = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
         $context = context_module::instance($cm->id);
         self::validate_context($context);

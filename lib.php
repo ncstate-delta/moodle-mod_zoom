@@ -34,9 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 /* Moodle core API */
 
 /**
- * Returns the information on whether the module supports a feature
- *
- * See {@link plugin_supports()} for more info.
+ * Returns the information on whether the module supports a feature.
  *
  * @param string $feature FEATURE_xx constant for requested feature
  * @return mixed true if the feature is supported, null if unknown
@@ -69,16 +67,28 @@ function zoom_supports($feature) {
 function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+    $service = new mod_zoom_webservice();
 
-    // Deals with password manager issues
+    // Deals with password manager issues.
     $zoom->password = $zoom->meetingcode;
     unset($zoom->meetingcode);
 
+    if (empty($zoom->requirepasscode)) {
+        $zoom->password = '';
+    }
+
     $zoom->course = (int) $zoom->course;
 
-    $service = new mod_zoom_webservice();
     $response = $service->create_meeting($zoom);
     $zoom = populate_zoom_from_response($zoom, $response);
+    if (!empty($zoom->schedule_for)) {
+        // Wait until after receiving a successful response from zoom to update the host
+        // based on the schedule_for field. Zoom handles the schedule for on their
+        // end, but returns the host as the person who created the meeting, not the person
+        // that it was scheduled for.
+        $correcthostzoomuser = $service->get_user($zoom->schedule_for);
+        $zoom->host_id = $correcthostzoomuser->id;
+    }
 
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
@@ -101,14 +111,19 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+    $service = new mod_zoom_webservice();
 
     // The object received from mod_form.php returns instance instead of id for some reason.
     $zoom->id = $zoom->instance;
     $zoom->timemodified = time();
 
-    // Deals with password manager issues
+    // Deals with password manager issues.
     $zoom->password = $zoom->meetingcode;
     unset($zoom->meetingcode);
+
+    if (empty($zoom->requirepasscode)) {
+        $zoom->password = '';
+    }
 
     $DB->update_record('zoom', $zoom);
 
@@ -117,9 +132,15 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom->webinar = $updatedzoomrecord->webinar;
 
     // Update meeting on Zoom.
-    $service = new mod_zoom_webservice();
     try {
         $service->update_meeting($zoom);
+        if (!empty($zoom->schedule_for)) {
+            // Only update this if we actually get a valid user.
+            if ($correcthostzoomuser = $service->get_user($zoom->schedule_for)) {
+                $zoom->host_id = $correcthostzoomuser->id;
+                $DB->update_record('zoom', $zoom);
+            }
+        }
     } catch (moodle_exception $error) {
         return false;
     }
@@ -176,13 +197,13 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->settings->alternative_hosts)) {
         $newzoom->alternative_hosts = $response->settings->alternative_hosts;
     }
-    if(isset($response->settings->mute_upon_entry)) {
+    if (isset($response->settings->mute_upon_entry)) {
         $newzoom->option_mute_upon_entry = $response->settings->mute_upon_entry;
     }
-    if(isset($response->settings->meeting_authentication)) {
+    if (isset($response->settings->meeting_authentication)) {
         $newzoom->option_authenticated_users = $response->settings->meeting_authentication;
     }
-    if(isset($response->settings->waiting_room)) {
+    if (isset($response->settings->waiting_room)) {
         $newzoom->option_waiting_room = $response->settings->waiting_room;
     }
     $newzoom->timemodified = time();
@@ -204,7 +225,8 @@ function zoom_delete_instance($id) {
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
     if (!$zoom = $DB->get_record('zoom', array('id' => $id))) {
-        return false;
+        // For some reason already deleted, so let Moodle take care of the rest.
+        return true;
     }
 
     // Include locallib.php for constants.
@@ -215,10 +237,12 @@ function zoom_delete_instance($id) {
         $service = new mod_zoom_webservice();
         try {
             $service->delete_meeting($zoom->meeting_id, $zoom->webinar);
+        } catch (zoom_not_found_exception $error) {
+            // Meeting not on Zoom, so continue.
+            mtrace('Meeting not on Zoom; continuing');
         } catch (moodle_exception $error) {
-            if (strpos($error, 'is not found or has expired') === false) {
-                throw $error;
-            }
+            // Some other error, so throw error.
+            throw $error;
         }
     }
 
@@ -255,8 +279,8 @@ function zoom_print_recent_activity($course, $viewfullnames, $timestart) {
  * Prepares the recent activity data
  *
  * This callback function is supposed to populate the passed array with
- * custom activity records. These records are then rendered into HTML via
- * {@link zoom_print_recent_mod_activity()}.
+ * custom activity records. These records are then rendered into HTML
+ * zoom_print_recent_mod_activity().
  *
  * Returns void, it adds items into $activities and increases $index.
  *
@@ -273,12 +297,12 @@ function zoom_get_recent_mod_activity(&$activities, &$index, $timestart, $course
 }
 
 /**
- * Prints single activity item prepared by {@link zoom_get_recent_mod_activity()}
+ * Prints single activity item prepared by zoom_get_recent_mod_activity()
  *
  * @param stdClass $activity activity record with added 'cmid' property
  * @param int $courseid the id of the course we produce the report for
  * @param bool $detail print detailed report
- * @param array $modnames as returned by {@link get_module_types_names()}
+ * @param array $modnames as returned by get_module_types_names()
  * @param bool $viewfullnames display users' full names
  * @todo implement this function
  */
@@ -375,7 +399,7 @@ function zoom_scale_used_anywhere($scaleid) {
 /**
  * Creates or updates grade item for the given zoom instance
  *
- * Needed by {@link grade_update_mod_grades()}.
+ * Needed by grade_update_mod_grades().
  *
  * @param stdClass $zoom instance object with extra cmidnumber and modname property
  * @param array $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
@@ -426,7 +450,7 @@ function zoom_grade_item_delete($zoom) {
 /**
  * Update zoom grades in the gradebook
  *
- * Needed by {@link grade_update_mod_grades()}.
+ * Needed by grade_update_mod_grades().
  *
  * @param stdClass $zoom instance object with extra cmidnumber and modname property
  * @param int $userid update grade of specific user only, 0 means all participants
@@ -467,7 +491,7 @@ function zoom_update_grades(stdClass $zoom, $userid = 0) {
  * Returns the lists of all browsable file areas within the given module context
  *
  * The file area 'intro' for the activity introduction field is added automatically
- * by {@link file_browser::get_file_info_context_module()}
+ * by file_browser::get_file_info_context_module()
  *
  * @param stdClass $course
  * @param stdClass $cm
@@ -516,8 +540,6 @@ function zoom_get_file_info($browser, $areas, $course, $cm, $context, $filearea,
  * @param array $options additional options affecting the file serving
  */
 function zoom_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload, array $options=array()) {
-    global $DB, $CFG;
-
     if ($context->contextlevel != CONTEXT_MODULE) {
         send_file_not_found();
     }

@@ -91,14 +91,6 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         $this->debuggingenabled = debugging();
 
-        $numcalls = $this->get_num_calls_left();
-        $this->debugmsg("Number of calls left: " . $numcalls);
-        if ($numcalls < 1) {
-            // If we run out of API calls here, there's no point in doing the next step, which requires API calls.
-            mtrace('Error: Zoom Report API calls have been exhausted.');
-            return;
-        }
-
         $starttime = get_config('mod_zoom', 'last_call_made_at');
         if (empty($starttime)) {
             // Zoom only provides data from 30 days ago.
@@ -119,6 +111,13 @@ class get_meeting_reports extends \core\task\scheduled_task {
             $start = gmdate('Y-m-d', $starttime) . 'T' . gmdate('H:i:s', $starttime) . 'Z';
         }
 
+        // If running as a task, then record when we last left off if
+        // interrupted or finish.
+        $runningastask = true;
+        if (!empty($paramstart) || !empty($paramend) || !empty($hostuuids)) {
+            $runningastask = false;
+        }
+
         mtrace(sprintf('Finding meetings between %s to %s', $start, $end));
 
         if (empty($hostuuids)) {
@@ -136,7 +135,6 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         mtrace("Processing " . count($activehostsuuids) . " active host uuids");
 
-        // We are only allowed to use 1 report API call per second, sleep() calls are put into webservice.php.
         foreach ($activehostsuuids as $activehostsuuid) {
             // This API call returns information about meetings and webinars, don't need extra functionality for webinars.
             $usersmeetings = array();
@@ -149,6 +147,10 @@ class get_meeting_reports extends \core\task\scheduled_task {
                     // meetings. Have to skip user.
                     $this->debugmsg("Skipping $activehostsuuid because user does not exist on Zoom");
                     continue;
+                } catch (\zoom_api_retry_failed_exception $e) {
+                    // Hit API limit, so cannot continue.
+                    mtrace($ex->response . ': ' . $ex->zoomerrorcode);
+                    return;
                 }
             } else {
                 // Ignore hosts who hosted meetings outside of integration.
@@ -158,11 +160,6 @@ class get_meeting_reports extends \core\task\scheduled_task {
             foreach ($usersmeetings as $usermeeting) {
                 $allmeetings[] = $usermeeting;
             }
-            if ($this->get_num_calls_left() < 1) {
-                // If we run out of API calls here, there's no point in doing the next step, which requires API calls.
-                mtrace('Error: Zoom Report API calls have been exhausted.');
-                return;
-            }
         }
 
         // Sort all meetings based on start_time so that we know where to pick up again if we run out of API calls.
@@ -171,20 +168,33 @@ class get_meeting_reports extends \core\task\scheduled_task {
         mtrace("Processing " . count($allmeetings) . " meetings");
 
         foreach ($allmeetings as $meeting) {
-            if (!$this->process_meeting_reports($meeting, $service)) {
-                // If returned false, then ran out of API calls or got unrecoverable error.
-                // Try to pick up where we left off.
-                if (empty($paramstart) && empty($paramend) && empty($hostuuids)) {
-                    // Only want to resume if we were processing all reports.
-                    // Meeting start time has been converted to timestamp in process_meeting_reports().
-                    set_config('last_call_made_at', $meeting->start_time - 1, 'mod_zoom');
-                }
+            // Only process meetings if they happened after the time we left off.
+            $meetingtime = strtotime($meeting->start_time);
+            if ($runningastask && $meetingtime <= $starttime) {
+                continue;
+            }
 
-                $recordedallmeetings = false;
-                break;
+            try {
+                if (!$this->process_meeting_reports($meeting, $service)) {
+                    // If returned false, then ran out of API calls or got unrecoverable error.
+                    // Try to pick up where we left off.
+                    if ($runningastask) {
+                        // Only want to resume if we were processing all reports.
+                        set_config('last_call_made_at', $meetingtime - 1, 'mod_zoom');
+                    }
+
+                    $recordedallmeetings = false;
+                    break;
+                }
+            } catch (\Exception $e) {
+                // Some unknown error, need to handle it so we can record
+                // where we left off.
+                if ($runningastask) {
+                    set_config('last_call_made_at', $meetingtime - 1, 'mod_zoom');
+                }
             }
         }
-        if ($recordedallmeetings && empty($paramstart) && empty($paramend) && empty($hostuuids)) {
+        if ($recordedallmeetings && $runningastask) {
             // All finished, so save the time that we set end time for the initial query.
             set_config('last_call_made_at', $endtime, 'mod_zoom');
         }
@@ -304,15 +314,6 @@ class get_meeting_reports extends \core\task\scheduled_task {
     }
 
     /**
-     * Retrieves the number of API report calls that are still available.
-     *
-     * @return int The number of available calls that are left.
-     */
-    public function get_num_calls_left() {
-        return get_config('mod_zoom', 'calls_left');
-    }
-
-    /**
      * Tries to match a given name to the roster using two different fuzzy text
      * matching algorithms and if they match, then returns the match.
      *
@@ -365,7 +366,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
     /**
      * Outputs finer grained debugging messaging if debug mode is on.
      *
-     * @param $msg
+     * @param string $msg
      */
     public function debugmsg($msg) {
         if ($this->debuggingenabled) {
@@ -414,19 +415,14 @@ class get_meeting_reports extends \core\task\scheduled_task {
             $DB->update_record('zoom_meeting_details', $meeting);
         }
 
-        if ($this->get_num_calls_left() < 1) {
-            mtrace('Error: Zoom Report API calls have been exhausted. Will resume later with meetings starting ' .
-                    date('r', $meeting->start_time - 1) . ' or later');
-            set_config('last_call_made_at', $meeting->start_time - 1, 'mod_zoom');
-            // Need to pick up from where you left off the last time the cron task ran.
-            return false;
-        }
-
         try {
             $participants = $service->get_meeting_participants($meeting->uuid, $zoomrecord->webinar);
         } catch (\zoom_not_found_exception $ex) {
             mtrace(sprintf('Warning: Cannot find meeting %s|%s; skipping', $meeting->meeting_id, $meeting->uuid));
             return true;    // Not really a show stopping error.
+        } catch (\zoom_api_retry_failed_exception $ex) {
+            mtrace($ex->response . ': ' . $ex->zoomerrorcode);
+            return false;
         }
 
         // Loop through each user to generate name->uids mapping.
@@ -464,22 +460,5 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         $this->debugmsg('Finished updating meeting report');
         return true;
-    }
-
-    /**
-     * Builds a string with key/value of given array.
-     *
-     * @param array $diff
-     * @return string
-     */
-    private function print_diffs($diff) {
-        $retval = '';
-        foreach ($diff as $key => $value) {
-            if (!empty($retval)) {
-                $retval .= ', ';
-            }
-            $retval .= "$key => $value";
-        }
-        return $retval;
     }
 }

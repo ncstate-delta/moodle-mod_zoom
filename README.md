@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/ucla/moodle-mod_zoom.svg?branch=master)](https://travis-ci.com/github/ucla/moodle-mod_zoom/branches)
+
 # Intro
 
 Zoom is the web and app based video conferencing service (http://zoom.us). This plugin offers tight integration with Moodle, supporting meeting creation, synchronization, grading, and backup/restore.
@@ -25,6 +27,25 @@ See https://marketplace.zoom.us/docs/guides/build/jwt-app. You will need to crea
 Please note that the API key and secret is not the same as the LTI key/secret.
 
 ## Changelog
+
+v3.3
+
+- Fixed problems with error handling (Thanks kbowlerarden and jrchamp)
+- Added language translations for uk, pl, and ru (Thanks mkikets99)
+- Thanks to kubilayagi for all his work on the Zoom plugin these past 2.5 years and good luck on future endevors
+
+v3.2
+
+- Password/Passcode changes
+  - Renamed passwords to passcodes
+  - Added passcodes to Webinars (Thanks jrchamp)
+  - Passcodes are now required
+- Implement completion viewed when user joins meeting (Thanks nstefanski)
+- License recycling improvement (Thanks mrvinceo)
+- Added scheduler support (Thanks mhughes2k)
+- Added support for Zoom API changes related to next_page_token and rate limiting
+- Fixed error handling for non-English Zoom deployments
+- Added Travis CI support
 
 v3.1
 

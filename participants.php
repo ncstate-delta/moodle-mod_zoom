@@ -59,7 +59,7 @@ if ($maskparticipantdata) {
     );
 }
 
-$sessions = zoom_get_sessions_for_display($zoom->meeting_id, $zoom->webinar, $zoom->host_id);
+$sessions = zoom_get_sessions_for_display($zoom->meeting_id);
 $participants = $sessions[$uuid]['participants'];
 
 // Display the headers/etc if we're not exporting, or if there is no data.

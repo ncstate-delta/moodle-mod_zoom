@@ -47,14 +47,13 @@ class provider implements
     /**
      * Returns meta data about this system.
      *
-     * @param   collection $collection The collection to add metadata to.
+     * @param   collection $coll The collection to add metadata to.
      * @return  collection  The array of metadata
      */
-    public static function get_metadata(\core_privacy\local\metadata\collection $collection):
-        \core_privacy\local\metadata\collection {
+    public static function get_metadata(\core_privacy\local\metadata\collection $coll): \core_privacy\local\metadata\collection {
         // Add all user data fields to the collection.
 
-        $collection->add_database_table('zoom_meeting_participants', [
+        $coll->add_database_table('zoom_meeting_participants', [
             'name' => 'privacy:metadata:zoom_meeting_participants:name',
             'user_email' => 'privacy:metadata:zoom_meeting_participants:user_email',
             'join_time' => 'privacy:metadata:zoom_meeting_participants:join_time',
@@ -62,10 +61,10 @@ class provider implements
             'duration' => 'privacy:metadata:zoom_meeting_participants:duration'
         ], 'privacy:metadata:zoom_meeting_participants');
 
-        $collection->add_database_table('zoom_meeting_details',
+        $coll->add_database_table('zoom_meeting_details',
                                         ['topic' => 'privacy:metadata:zoom_meeting_details:topic'],
                                         'privacy:metadata:zoom_meeting_details');
-        return $collection;
+        return $coll;
     }
 
     /**
@@ -108,7 +107,7 @@ class provider implements
     public static function get_users_in_context(\core_privacy\local\request\userlist $userlist) {
         $context = $userlist->get_context();
 
-        if (!is_a($context, \context_module::class)) {
+        if (!($context instanceof \context_module)) {
             return;
         }
 
@@ -251,7 +250,7 @@ class provider implements
         global $DB;
         $context = $userlist->get_context();
 
-        if (!is_a($context, \context_module::class)) {
+        if (!($context instanceof \context_module)) {
             return;
         }
 

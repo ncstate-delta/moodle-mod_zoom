@@ -47,9 +47,14 @@ class mod_zoom_mod_form extends moodleform_mod {
         global $PAGE, $USER;
         $config = get_config('mod_zoom');
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
+
+        $isnew = empty($this->_cm);
+
         $service = new mod_zoom_webservice();
         $zoomuser = $service->get_user($USER->email);
-        if ($zoomuser === false) {
+
+        // If creating a new instance, but the Zoom user does not exist.
+        if ($isnew && $zoomuser === false) {
             // Assume user is using Zoom for the first time.
             $errstring = 'zoomerr_usernotfound';
             // After they set up their account, the user should continue to the page they were on.
@@ -57,11 +62,60 @@ class mod_zoom_mod_form extends moodleform_mod {
             zoom_fatal_error($errstring, 'mod_zoom', $nexturl, $config->zoomurl);
         }
 
-        // If updating, ensure we can get the meeting on Zoom.
-        $isnew = empty($this->_cm);
+        // Array of emails and proper names of Moodle users in this course that
+        // can add Zoom meetings, and the user can schedule.
+        $scheduleusers = [];
+
+        $canschedule = false;
+        if ($zoomuser !== false) {
+            // Get the array of users they can schedule.
+            $canschedule = $service->get_schedule_for_users($USER->email);
+        }
+
+        if (!empty($canschedule)) {
+            // Add the current user.
+            $canschedule[$zoomuser->id] = new stdClass();
+            $canschedule[$zoomuser->id]->email = $USER->email;
+
+            // If the activity exists and the current user is not the current host.
+            if (!$isnew && $zoomuser->id !== $this->current->host_id) {
+                // Get intersection of current host's schedulers and $USER's schedulers to prevent zoom errors.
+                $currenthostschedulers = $service->get_schedule_for_users($this->current->host_id);
+                if (!empty($currenthostschedulers)) {
+                    // Since this is the second argument to array_intersect_key,
+                    // the entry from $canschedule will be used, so we can just
+                    // use true to avoid a service call.
+                    $currenthostschedulers[$this->current->host_id] = true;
+                }
+                $canschedule = array_intersect_key($canschedule, $currenthostschedulers);
+            }
+
+            // Get list of users who can add Zoom activities in this context.
+            $moodleusers = get_enrolled_users($this->context, 'mod/zoom:addinstance', 0, 'u.*', 'lastname');
+
+            // Check each potential host to see if they are a valid host.
+            foreach ($canschedule as $zoomuserinfo) {
+                $zoomemail = strtolower($zoomuserinfo->email);
+                if (isset($scheduleusers[$zoomemail])) {
+                    continue;
+                }
+                if ($zoomemail === strtolower($USER->email)) {
+                    $scheduleusers[$zoomemail] = get_string('scheduleforself', 'zoom');
+                    continue;
+                }
+                foreach ($moodleusers as $muser) {
+                    if ($zoomemail === strtolower($muser->email)) {
+                        $scheduleusers[$zoomemail] = fullname($muser);
+                        break;
+                    }
+                }
+            }
+        }
+
+        $meetinginfo = new stdClass();
         if (!$isnew) {
             try {
-                $service->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
+                $meetinginfo = $service->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
             } catch (moodle_exception $error) {
                 // If the meeting can't be found, offer to recreate the meeting on Zoom.
                 if (zoom_is_meeting_gone_error($error)) {
@@ -73,6 +127,23 @@ class mod_zoom_mod_form extends moodleform_mod {
                     throw $error;
                 }
             }
+        }
+
+        // If the current editing user has the host saved in the db for this meeting on their list
+        // of people that they can schedule for, allow them to change the host, otherwise don't.
+        $allowschedule = false;
+        if (!$isnew) {
+            try {
+                $founduser = $service->get_user($meetinginfo->host_id);
+                if ($founduser && array_key_exists($founduser->email, $scheduleusers)) {
+                    $allowschedule = true;
+                }
+            } catch (moodle_exception $error) {
+                // Don't need to throw an error, just leave allowschedule as false.
+                $allowschedule = false;
+            }
+        } else {
+            $allowschedule = true;
         }
 
         // Start of form definition.
@@ -122,7 +193,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             $mform->addElement('html', get_string('webinar_already_false', 'zoom'));
         }
 
-        // Deals with password manager issues
+        // Deals with password manager issues.
         if (isset($this->current->password)) {
             $this->current->meetingcode = $this->current->password;
             unset($this->current->password);
@@ -134,9 +205,17 @@ class mod_zoom_mod_form extends moodleform_mod {
         $regex = '/^[a-zA-Z0-9@_*-]{1,10}$/';
         $mform->addRule('meetingcode', get_string('err_invalid_password', 'mod_zoom'), 'regex', $regex, 'client');
         $mform->setDefault('meetingcode', strval(rand(100000, 999999)));
-        $mform->disabledIf('meetingcode', 'webinar', 'checked');
-        $mform->addRule('meetingcode', null, 'required', null, 'client');
+        $mform->disabledIf('meetingcode', 'requirepasscode', 'notchecked');
         $mform->addElement('static', 'passwordrequirements', '', get_string('err_password', 'mod_zoom'));
+
+        // Add password requirement prompt.
+        $mform->addElement('advcheckbox', 'requirepasscode', get_string('requirepasscode', 'zoom'));
+
+        if (isset($this->current->meetingcode) && strval($this->current->meetingcode) === "") {
+            $mform->setDefault('requirepasscode', 0);
+        } else {
+            $mform->setDefault('requirepasscode', 1);
+        }
 
         // Add host/participants video (checked by default).
         $mform->addGroup(array(
@@ -182,6 +261,20 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addElement('advcheckbox', 'option_authenticated_users', get_string('option_authenticated_users', 'mod_zoom'));
         $mform->setDefault('option_authenticated_users', $config->defaultauthusersoption);
 
+        // Add Schedule for if current user is able to.
+        // Check if the size is greater than 1 because we add the editing/creating user by default.
+        if (count($scheduleusers) > 1 && $allowschedule) {
+            $mform->addElement('select', 'schedule_for', get_string('schedulefor', 'zoom'), $scheduleusers);
+            $mform->setType('schedule_for', PARAM_EMAIL);
+            if (!$isnew) {
+                $mform->disabledIf('schedule_for', 'change_schedule_for');
+                $mform->addElement('checkbox', 'change_schedule_for', get_string('changehost', 'zoom'));
+                $mform->setDefault('schedule_for', strtolower($service->get_user($this->current->host_id)->email));
+            } else {
+                $mform->setDefault('schedule_for', strtolower($USER->email));
+            }
+        }
+
         // Add alternative hosts.
         $mform->addElement('text', 'alternative_hosts', get_string('alternative_hosts', 'zoom'), array('size' => '64'));
         $mform->setType('alternative_hosts', PARAM_TEXT);
@@ -203,6 +296,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();
+        $this->apply_admin_defaults();
 
         // Add standard buttons, common to all modules.
         $this->add_action_buttons();
@@ -217,7 +311,7 @@ class mod_zoom_mod_form extends moodleform_mod {
      * @return array
      */
     public function validation($data, $files) {
-        global $CFG;
+        global $CFG, $USER;
         $errors = array();
 
         // Only check for scheduled meetings.
@@ -235,13 +329,27 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
         }
 
-        if (empty($data['meetingcode'])) {
-            $errors['meetingcode'] = get_string('err_password_required', 'mod_zoom');
-        }
-
-        // Check if the listed alternative hosts are valid users on Zoom.
         require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
         $service = new mod_zoom_webservice();
+
+        if (!empty($data['requirepasscode']) && empty($data['meetingcode'])) {
+            $errors['meetingcode'] = get_string('err_password_required', 'mod_zoom');
+        }
+        if (isset($data['schedule_for']) &&  $data['schedule_for'] !== $USER->email) {
+            $scheduleusers = $service->get_schedule_for_users($USER->email);
+            $scheduleok = false;
+            foreach ($scheduleusers as $zuser) {
+                if (strtolower($zuser->email) === strtolower($data['schedule_for'])) {
+                    // Found a matching email address in the Zoom users list.
+                    $scheduleok = true;
+                    break;
+                }
+            }
+            if (!$scheduleok) {
+                $errors['schedule_for'] = get_string('invalidscheduleuser', 'mod_zoom');
+            }
+        }
+        // Check if the listed alternative hosts are valid users on Zoom.
         $alternativehosts = explode(',', str_replace(';', ',', $data['alternative_hosts']));
         foreach ($alternativehosts as $alternativehost) {
             if (!($service->get_user($alternativehost))) {

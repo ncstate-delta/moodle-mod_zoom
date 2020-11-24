@@ -1,5 +1,5 @@
 <?php
-// This file is part of the Zoom plugin for Moodle - http://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,18 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the version and other meta-info about the plugin.
+ * Activity base class.
  *
- * @package    mod_zoom
- * @copyright  2015 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_zoom
+ * @copyright 2020 Catalyst IT
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+namespace mod_zoom\analytics\indicator;
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'mod_zoom';
-$plugin->version = 2020100800;
-$plugin->release = 'v3.3';
-$plugin->requires = 2017051500.00;
-$plugin->maturity = MATURITY_STABLE;
-$plugin->cron = 0;
+/**
+ * Activity base class.
+ *
+ * @package   mod_zoom
+ * @copyright 2020 Catalyst IT
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+abstract class activity_base extends \core_analytics\local\indicator\community_of_inquiry_activity {
+
+    /**
+     * Grading not implemented.
+     *
+     * @return bool
+     */
+    public function feedback_check_grades() {
+        return false;
+    }
+}
