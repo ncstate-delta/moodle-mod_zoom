@@ -574,6 +574,24 @@ class mod_zoom_webservice {
     }
 
     /**
+     * Get the meeting invite note that was sent for a specific meeting from Zoom.
+     *
+     * @param int $id The meeting_id of the meeting to retrieve.
+     * @return stdClass The meeting's invite note.
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetinginvitation
+     */
+    public function get_meeting_invitation($id) {
+        $url = 'meetings/' . $id . '/invitation';
+        $response = null;
+        try {
+            $response = $this->_make_call($url);
+        } catch (moodle_exception $error) {
+            debugging($error->getMessage());
+        }
+        return $response;
+    }
+
+    /**
      * Retrieve ended meetings report for a specified user and period. Handles multiple pages.
      *
      * @param int $userid Id of user of interest
