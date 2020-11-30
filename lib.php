@@ -332,6 +332,8 @@ function zoom_calendar_item_update(stdClass $zoom) {
     require_once($CFG->dirroot.'/calendar/lib.php');
 
     $event = new stdClass();
+    $event->type = CALENDAR_EVENT_TYPE_ACTION;
+    $event->timesort = $zoom->start_time;
     $event->name = $zoom->name;
     if ($zoom->intro) {
         $event->description = $zoom->intro;
@@ -374,6 +376,39 @@ function zoom_calendar_item_delete(stdClass $zoom) {
     if (!empty($eventid)) {
         calendar_event::load($eventid)->delete();
     }
+}
+
+/**
+ * This function receives a calendar event and returns the action associated with it, or null if there is none.
+ *
+ * This is used by block_myoverview in order to display the event appropriately. If null is returned then the event
+ * is not displayed on the block.
+ *
+ * @param calendar_event $event
+ * @param \core_calendar\action_factory $factory
+ * @param int $userid User id override
+ * @return \core_calendar\local\event\entities\action_interface|null
+ */
+function mod_zoom_core_calendar_provide_event_action(calendar_event $event,
+                                                      \core_calendar\action_factory $factory, $userid = null) {
+    global $CFG, $DB, $USER;
+
+    require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+
+    if (empty($userid)) {
+        $userid = $USER->id;
+    }
+
+    $cm = get_fast_modinfo($event->courseid, $userid)->instances['zoom'][$event->instance];
+    $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*');
+    list($inprogress, $available, $finished) = zoom_get_state($zoom);
+
+    return $factory->create_instance(
+        get_string('join_meeting', 'zoom'),
+        new \moodle_url('/mod/zoom/view.php', array('id' => $cm->id)),
+        1,
+        $available
+    );
 }
 
 /* Gradebook API */
