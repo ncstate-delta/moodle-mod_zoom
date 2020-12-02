@@ -22,16 +22,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-export const init = (showMoreText, showLessText) => {
+import { get_string as getString } from "core/str";
+
+export const init = () => {
   const button = document.querySelector("#show-more-button");
   const body = document.querySelector("#show-more-body");
-  button.addEventListener("click", () => {
+  button.addEventListener("click", async () => {
     if (body.style.display == "") {
       body.style.display = "none";
-      button.innerHTML = showMoreText;
+      button.innerHTML = await getString("meeting_invite_show", "mod_zoom");
     } else {
       body.style.display = "";
-      button.innerHTML = showLessText;
+      button.innerHTML = await getString("meeting_invite_hide", "mod_zoom");
     }
   });
 };

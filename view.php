@@ -51,6 +51,7 @@ $event->trigger();
 $PAGE->set_url('/mod/zoom/view.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($zoom->name));
 $PAGE->set_heading(format_string($course->fullname));
+$PAGE->requires->js_call_amd("mod_zoom/toggle_text", 'init');
 
 $zoomuserid = zoom_get_user_id(false);
 $alternativehosts = array();
@@ -69,9 +70,7 @@ try {
 } catch (moodle_exception $error) {
     $showrecreate = zoom_is_meeting_gone_error($error);
 }
-
-$response = $service->get_meeting_invitation($zoom->meeting_id);
-$meetinginvite = $response->invitation;
+$meetinginvite = $service->get_meeting_invitation($zoom->meeting_id);
 
 $stryes = get_string('yes');
 $strno = get_string('no');
@@ -95,9 +94,6 @@ $strauthenticatedusers = get_string('option_authenticated_users', 'mod_zoom');
 $strhost = get_string('host', 'mod_zoom');
 $strmeetinginvite = get_string('meeting_invite', 'mod_zoom');
 $strmeetinginviteshow = get_string('meeting_invite_show', 'mod_zoom');
-$strmeetinginvitehide = get_string('meeting_invite_hide', 'mod_zoom');
-
-$PAGE->requires->js_call_amd("mod_zoom/toggle_text", 'init', array($strmeetinginviteshow, $strmeetinginvitehide));
 
 // Output starts here.
 echo $OUTPUT->header();
