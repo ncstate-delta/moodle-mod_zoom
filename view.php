@@ -70,6 +70,9 @@ try {
     $showrecreate = zoom_is_meeting_gone_error($error);
 }
 
+$response = $service->get_meeting_invitation($zoom->meeting_id);
+$meetinginvite = $response->invitation;
+
 $stryes = get_string('yes');
 $strno = get_string('no');
 $strstart = get_string('start_meeting', 'mod_zoom');
@@ -90,6 +93,11 @@ $strwwaitingroom = get_string('waitingroom', 'mod_zoom');
 $strmuteuponentry = get_string('option_mute_upon_entry', 'mod_zoom');
 $strauthenticatedusers = get_string('option_authenticated_users', 'mod_zoom');
 $strhost = get_string('host', 'mod_zoom');
+$strmeetinginvite = get_string('meeting_invite', 'mod_zoom');
+$strmeetinginviteshow = get_string('meeting_invite_show', 'mod_zoom');
+$strmeetinginvitehide = get_string('meeting_invite_hide', 'mod_zoom');
+
+$PAGE->requires->js_call_amd("mod_zoom/toggle_text", 'init', array($strmeetinginviteshow, $strmeetinginvitehide));
 
 // Output starts here.
 echo $OUTPUT->header();
@@ -222,6 +230,15 @@ if (!$zoom->recurring) {
     }
 
     $table->data[] = array($strstatus, $status);
+}
+
+if (!empty($meetinginvite)) {
+    $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);
+    $showbutton = html_writer::tag('button', $strmeetinginviteshow,
+        array('id' => 'show-more-button', 'class' => 'btn btn-link'));
+    $meetinginvitebody = html_writer::div($meetinginvitetext, '',
+        array('id' => 'show-more-body', 'style' => 'display: none;'));
+    $table->data[] = array($strmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, ''));
 }
 
 $urlall = new moodle_url('/mod/zoom/index.php', array('id' => $course->id));
