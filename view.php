@@ -231,7 +231,7 @@ if (!$zoom->recurring) {
 if (!empty($meetinginvite)) {
     $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);
     $showbutton = html_writer::tag('button', $strmeetinginviteshow,
-        array('id' => 'show-more-button', 'class' => 'btn btn-link pl-0'));
+        array('id' => 'show-more-button', 'class' => 'btn btn-link pt-0 pl-0'));
     $meetinginvitebody = html_writer::div($meetinginvitetext, '',
         array('id' => 'show-more-body', 'style' => 'display: none;'));
     $table->data[] = array($strmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, ''));
