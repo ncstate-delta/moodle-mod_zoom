@@ -4,11 +4,6 @@
     border-radius: 0.25em;
 }
 
-#show-more-button {
-    padding-left: 0;
-    border-left: 0;
-}
-
 #page-mod-zoom-view a .btn-primary .icon {
     color: white;
 }
