@@ -131,6 +131,32 @@ class zoom_api_retry_failed_exception extends moodle_exception {
     }
 }
 
+/**
+ * Exceeded daily API limit.
+ *
+ * @copyright  2020 UC Regents
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class zoom_api_limit_exception extends moodle_exception {
+    /**
+     * Web service response.
+     * @var string
+     */
+    public $response = null;
+
+    /**
+     * Constructor
+     * @param string $response      Web service response
+     * @param int $errorcode     Web service response error code
+     */
+    public function __construct($response, $errorcode) {
+        $this->response = $response;
+        $this->zoomerrorcode = $errorcode;
+        $a = new stdClass();
+        $a->response = $response;
+        parent::__construct('zoomerr_apilimit', 'mod_zoom');
+    }
+}
 
 /**
  * Terminate the current script with a fatal error.

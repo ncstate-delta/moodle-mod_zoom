@@ -85,10 +85,16 @@ class webservice_test extends advanced_testcase {
             }
             public function get_info() {
                 $this->numgetinfocalls++;
-                if ($this->numgetinfocalls <= 6) {
-                    return array('http_code' => 429, 'Retry-After' => gmdate('Y-m-d\TH:i:s\Z', time() + 3));
+                if ($this->numgetinfocalls <= 3) {
+                    return array('http_code' => 429);
                 }
                 return array('http_code' => 200);
+            }
+            // Will get called when get_info() returns 429 http_code.
+            public function getResponse() {
+                // Set retry time to be 1 second. Format is 2020-05-31T00:00:00Z.
+                $retrytime = time() + 1;
+                return ['Retry-After' => gmdate('Y-m-d\TH:i:s\Z', $retrytime)];
             }
         };
 
@@ -103,10 +109,15 @@ class webservice_test extends advanced_testcase {
             }
             public function get_info() {
                 $this->numgetinfocalls++;
-                if ($this->numgetinfocalls <= 6) {
+                if ($this->numgetinfocalls <= 3) {
                     return array('http_code' => 429);
                 }
                 return array('http_code' => 200);
+            }
+            // Will get called when get_info() returns 429 http_code.
+            public function getResponse() {
+                // Don't return 'Retry-After'.
+                return [];
             }
         };
 
@@ -130,6 +141,11 @@ class webservice_test extends advanced_testcase {
                     return '{"code":-1, "message":"incorrect url"}';
                 }
                 return '{"code":-1, "message":"too many retries"}';
+            }
+            public function getResponse() {
+                // Set retry time after 1 second. Format is 2020-05-31T00:00:00Z.
+                $retrytime = time() + 1;
+                return ['Retry-After' => gmdate('Y-m-d\TH:i:s\Z', $retrytime)];
             }
         };
     }
@@ -246,15 +262,19 @@ class webservice_test extends advanced_testcase {
 
         $mockservice->expects($this->any())
             ->method('_make_curl_call')
-            ->willReturn('{"response":"success"}');
+            ->willReturn('{"response":"success", "message": "", "code": 200}');
 
+        // Class retrywithheadermockcurl will give 429 retry error 3 times
+        // before giving a 200.
         $mockservice->expects($this->any())
             ->method('_get_curl_object')
             ->willReturn($this->retrywithheadermockcurl);
 
         $result = $mockservice->get_user("1");
+        // Expect 3 debugging calls for each retry attempt.
         $this->assertDebuggingCalledCount($expectedcount = 3);
-        $this->assertEquals($this->retrywithheadermockcurl->numgetinfocalls, 7);
+        // Expect 3 calls to get_info() for the retries and 1 for success.
+        $this->assertEquals($this->retrywithheadermockcurl->numgetinfocalls, 4);
         $this->assertEquals($result->response, 'success');
     }
 
@@ -277,13 +297,12 @@ class webservice_test extends advanced_testcase {
 
         $result = $mockservice->get_user("1");
         $this->assertDebuggingCalledCount($expectedcount = 3);
-        $this->assertEquals($this->retrynoheadermockcurl->numgetinfocalls, 7);
+        $this->assertEquals($this->retrynoheadermockcurl->numgetinfocalls, 4);
         $this->assertEquals($result->response, 'success');
     }
 
     /**
-     * Tests whether the retry on a 429 response works when the Retry-After
-     * header is not sent in the curl response.
+     * Tests that we throw error if we tried more than max retries.
      */
     public function test_retry_exception() {
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
@@ -301,7 +320,8 @@ class webservice_test extends advanced_testcase {
             $foundexception = true;
             $this->assertEquals($error->response, 'too many retries');
         }
-        $this->assertDebuggingCalledCount($expectedcount = 20);
         $this->assertTrue($foundexception);
+        // Check that we retried MAX_RETRIES times.
+        $this->assertDebuggingCalledCount(mod_zoom_webservice::MAX_RETRIES);
     }
 }

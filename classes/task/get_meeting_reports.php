@@ -148,9 +148,13 @@ class get_meeting_reports extends \core\task\scheduled_task {
                     $this->debugmsg("Skipping $activehostsuuid because user does not exist on Zoom");
                     continue;
                 } catch (\zoom_api_retry_failed_exception $e) {
-                    // Hit API limit, so cannot continue.
-                    mtrace($ex->response . ': ' . $ex->zoomerrorcode);
+                    // Cannot complete API call.
+                    mtrace($e->response . ': ' . $e->zoomerrorcode);
                     return;
+                } catch (\zoom_api_limit_exception $e) {
+                    // Hit API limit, so cannot continue.
+                    mtrace($e->response . ': ' . $e->zoomerrorcode);
+                    return false;
                 }
             } else {
                 // Ignore hosts who hosted meetings outside of integration.
@@ -417,11 +421,14 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         try {
             $participants = $service->get_meeting_participants($meeting->uuid, $zoomrecord->webinar);
-        } catch (\zoom_not_found_exception $ex) {
+        } catch (\zoom_not_found_exception $e) {
             mtrace(sprintf('Warning: Cannot find meeting %s|%s; skipping', $meeting->meeting_id, $meeting->uuid));
             return true;    // Not really a show stopping error.
-        } catch (\zoom_api_retry_failed_exception $ex) {
-            mtrace($ex->response . ': ' . $ex->zoomerrorcode);
+        } catch (\zoom_api_retry_failed_exception $e) {
+            mtrace($e->response . ': ' . $e->zoomerrorcode);
+            return false;
+        } catch (\zoom_api_limit_exception $e) {
+            mtrace($e->response . ': ' . $e->zoomerrorcode);
             return false;
         }
 
