@@ -587,8 +587,9 @@ class mod_zoom_webservice {
             $response = $this->_make_call($url);
         } catch (moodle_exception $error) {
             debugging($error->getMessage());
+            return null;
         }
-        return $response;
+        return $response->invitation;
     }
 
     /**
