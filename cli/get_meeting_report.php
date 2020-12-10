@@ -79,3 +79,5 @@ set_debugging(DEBUG_DEVELOPER, true);
 
 $meetingtask = new mod_zoom\task\get_meeting_reports();
 $meetingtask->execute($options['start'], $options['end'], $hostuuids);
+
+cli_writeln('DONE!');

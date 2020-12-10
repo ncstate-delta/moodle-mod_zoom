@@ -33,7 +33,7 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
  * @copyright  2020 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class error_code_test extends basic_testcase {
+class error_handling_test extends basic_testcase {
 
     /**
      * Exception for when the meeting isn't found on Zoom.

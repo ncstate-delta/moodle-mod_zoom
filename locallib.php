@@ -74,7 +74,7 @@ class zoom_not_found_exception extends moodle_exception {
     public function __construct($response, $errorcode) {
         $this->response = $response;
         $this->zoomerrorcode = $errorcode;
-        parent::__construct('errorwebservice_notfound', 'mod_zoom');
+        parent::__construct('errorwebservice_notfound', 'zoom');
     }
 }
 
@@ -99,7 +99,7 @@ class zoom_bad_request_exception extends moodle_exception {
     public function __construct($response, $errorcode) {
         $this->response = $response;
         $this->zoomerrorcode = $errorcode;
-        parent::__construct('errorwebservice_badrequest', 'mod_zoom', '', $response);
+        parent::__construct('errorwebservice_badrequest', 'zoom', '', $response);
     }
 }
 
@@ -127,7 +127,7 @@ class zoom_api_retry_failed_exception extends moodle_exception {
         $a = new stdClass();
         $a->response = $response;
         $a->maxretries = mod_zoom_webservice::MAX_RETRIES;
-        parent::__construct('zoomerr_maxretries', 'mod_zoom', '', $a);
+        parent::__construct('zoomerr_maxretries', 'zoom', '', $a);
     }
 }
 
@@ -145,16 +145,25 @@ class zoom_api_limit_exception extends moodle_exception {
     public $response = null;
 
     /**
-     * Constructor
-     * @param string $response      Web service response
-     * @param int $errorcode     Web service response error code
+     * Unix timestamp of next time to API can be called.
+     * @var int
      */
-    public function __construct($response, $errorcode) {
+    public $retryafter = null;
+
+    /**
+     * Constructor
+     * @param string $response  Web service response
+     * @param int $errorcode    Web service response error code
+     * @param int $retryafter   Unix timestamp of next time to API can be called.
+     */
+    public function __construct($response, $errorcode, $retryafter) {
         $this->response = $response;
         $this->zoomerrorcode = $errorcode;
+        $this->retryafter = $retryafter;
         $a = new stdClass();
         $a->response = $response;
-        parent::__construct('zoomerr_apilimit', 'mod_zoom');
+        parent::__construct('zoomerr_apilimit', 'zoom', '',
+                userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig')));
     }
 }
 

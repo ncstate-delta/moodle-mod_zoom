@@ -15,7 +15,7 @@ cache:
 
 env:
   global:
-    - PHPDOC_IGNORE_PATHS=jwt,tests/webservice_tests.php
+    - PHPDOC_IGNORE_PATHS=jwt
     - MUSTACHE_IGNORE_PATHS=templates/mobile_view_page.mustache
 
 jobs:

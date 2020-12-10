@@ -61,13 +61,7 @@ class mod_zoom_webservice {
      * API calls: maximum number of retries.
      * @var int
      */
-    const MAX_RETRIES = 20;
-
-    /**
-     * API calls: maximum allowed retry wait time.
-     * @var int
-     */
-    const MAX_RETRY_WAIT = 60;
+    const MAX_RETRIES = 5;
 
     /**
      * API key
@@ -229,10 +223,29 @@ class mod_zoom_webservice {
                     $header = $curl->getResponse();
                     // Header can have mixed case, normalize it.
                     $header = array_change_key_case($header, CASE_LOWER);
-                    $timediff = array_key_exists('retry-after', $header) ? (strtotime($header['retry-after']) - time()) : 1;
-                    if ($timediff > self::MAX_RETRY_WAIT) {
-                        throw new zoom_api_limit_exception($response->message, $response->code);
+
+                    // Default to 1 second for max requests per second limit.
+                    $timediff = 1;
+
+                    // Check if we hit the max requests per minute (only for Dashboard API).
+                    if (array_key_exists('x-ratelimit-type', $header) && 
+                            $header['x-ratelimit-type'] == 'QPS' &&
+                            strpos($path, 'metrics') !== false) {
+                        $timediff = 60; // Try the next minute.
+                    } else if (array_key_exists('retry-after', $header)) {
+                        $retryafter = strtotime($header['retry-after']);
+                        $timediff = $retryafter - time();
+                        // If we have no API calls remaining, save retry-after.
+                        if ($header['x-ratelimit-remaining'] == 0 && !empty($retryafter)) {
+                            set_config('retry-after', $retryafter, 'mod_zoom');
+                            throw new zoom_api_limit_exception($response->message,
+                                    $response->code, $retryafter);
+                        } else if (!(defined('PHPUNIT_TEST') && PHPUNIT_TEST)) {
+                            // When running CLI we might want to know how many calls remaining.
+                            debugging('x-ratelimit-remaining = ' . $header['x-ratelimit-remaining']);
+                        }
                     }
+
                     debugging('Received 429 response, sleeping ' . strval($timediff) .
                             ' seconds until next retry. Current retry: ' . $this->makecallretries);
                     if ($timediff > 0 && !(defined('PHPUNIT_TEST') && PHPUNIT_TEST)) {
@@ -270,7 +283,6 @@ class mod_zoom_webservice {
         $aggregatedata = array();
         $data['page_size'] = ZOOM_MAX_RECORDS_PER_CALL;
         $reportcheck = explode('/', $url);
-        $isreportcall = in_array('report', $reportcheck);
         do {
             $callresult = null;
             $moredata = false;
@@ -623,31 +635,6 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Get attendees for a particular UUID ("session") of a webinar.
-     *
-     * @param string $uuid The UUID of the webinar session to retrieve.
-     * @return array The attendees.
-     * @link https://zoom.github.io/api/#list-a-webinars-registrants
-     */
-    public function list_webinar_attendees($uuid) {
-        $uuid = $this->encode_uuid($uuid);
-        $url = 'webinars/' . $uuid . '/registrants';
-        return $this->_make_paginated_call($url, null, 'registrants');
-    }
-
-    /**
-     * Get details about a particular webinar UUID/session.
-     *
-     * @param string $uuid The uuid of the webinar to retrieve.
-     * @return stdClass A JSON object with the webinar's details.
-     * @link https://zoom.github.io/api/#retrieve-a-webinar
-     */
-    public function get_metrics_webinar_detail($uuid) {
-        $uuid = $this->encode_uuid($uuid);
-        return $this->_make_call('webinars/' . $uuid);
-    }
-
-    /**
      * Get the participants who attended a meeting
      * @param string $meetinguuid The meeting or webinar's UUID.
      * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
@@ -657,15 +644,6 @@ class mod_zoom_webservice {
         $meetinguuid = $this->encode_uuid($meetinguuid);
         return $this->_make_paginated_call('report/' . ($webinar ? 'webinars' : 'meetings') . '/'
                                            . $meetinguuid . '/participants', null, 'participants');
-    }
-
-    /**
-     * Retrieves ended webinar details report.
-     *
-     * @param string|int $identifier The webinar ID or webinar UUID. If given webinar ID, Zoom will take the last webinar instance.
-     */
-    public function get_webinar_details_report($identifier) {
-        return $this->_make_call('report/webinars/' . $identifier);
     }
 
     /**
@@ -682,6 +660,44 @@ class mod_zoom_webservice {
             $uuids[] = $user->id;
         }
         return $uuids;
+    }
+
+    /**
+     * Retrieve past meetings that occurred in specified time period.
+     *
+     * Ignores meetings that were attended only by one user.
+     *
+     * See https://marketplace.zoom.us/docs/api-reference/zoom-api/dashboards/dashboardmeetings
+     *
+     * NOTE: Requires Business or a higher plan and have "Dashboard" feature
+     * enabled. This query is rated "Resource-intensive"
+     *
+     * @param int $from Start date in YYYY-MM-DD format.
+     * @param int $to End date in YYYY-MM-DD format.
+     * @return array An array of meeting objects.
+     */
+    public function get_meetings($from, $to) {
+        return $this->_make_paginated_call('metrics/meetings',
+                ['type' => 'past', 'from' => $from, 'to' => $to], 'meetings');
+    }
+
+    /**
+     * Retrieve past meetings that occurred in specified time period.
+     *
+     * Ignores meetings that were attended only by one user.
+     *
+     * See https://marketplace.zoom.us/docs/api-reference/zoom-api/dashboards/dashboardmeetings
+     *
+     * NOTE: Requires Business or a higher plan and have "Dashboard" feature
+     * enabled. This query is rated "Resource-intensive"
+     *
+     * @param int $from Start date in YYYY-MM-DD format.
+     * @param int $to End date in YYYY-MM-DD format.
+     * @return array An array of meeting objects.
+     */
+    public function get_webinars($from, $to) {
+        return $this->_make_paginated_call('metrics/webinars',
+                ['type' => 'past', 'from' => $from, 'to' => $to], 'webinars');
     }
 
     /**
