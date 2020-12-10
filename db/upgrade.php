@@ -432,5 +432,10 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2020052100, 'zoom');
     }
 
+    if ($oldversion < 2020120800) {
+        // Delete config no longer used.
+        set_config('calls_left', null, 'mod_zoom');
+    }
+
     return true;
 }

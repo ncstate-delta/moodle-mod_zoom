@@ -302,10 +302,12 @@ class get_meeting_reports_test extends advanced_testcase {
         // Now fake the meeting details.
         $meeting = new stdClass();
         $meeting->id = 12345;
+        $meeting->topic = 'Some meeting';
         $meeting->start_time = '2020-04-01T15:00:00Z';
         $meeting->end_time = '2020-04-01T16:00:00Z';
         $meeting->uuid = 'someuuid';
         $meeting->duration = 60;
+        $meeting->participants = 3;
 
         // Insert stub data for zoom table.
         $DB->insert_record('zoom', ['course' => $SITE->id,
@@ -313,7 +315,9 @@ class get_meeting_reports_test extends advanced_testcase {
                 'exists_on_zoom' => 1]);
 
         // Run task process_meeting_reports() and should insert participants.
-        $this->assertTrue($this->meetingtask->process_meeting_reports(clone $meeting, $mockwwebservice));
+        $this->meetingtask->service = $mockwwebservice;
+        $meeting = $this->meetingtask->normalize_meeting($meeting);
+        $this->assertTrue($this->meetingtask->process_meeting_reports($meeting));
 
         // Make sure that only one details is added and two participants.
         $this->assertEquals(1, $DB->count_records('zoom_meeting_details'));
@@ -330,8 +334,69 @@ class get_meeting_reports_test extends advanced_testcase {
         $participant3->leave_time = '2020-04-01T15:35:00Z';
         $participant3->duration = 30;
         $this->mockparticipantsdata['someuuid'][] = $participant3;
-        $this->assertTrue($this->meetingtask->process_meeting_reports(clone $meeting, $mockwwebservice));
+        $this->assertTrue($this->meetingtask->process_meeting_reports($meeting));
         $this->assertEquals(1, $DB->count_records('zoom_meeting_details'));
         $this->assertEquals(3, $DB->count_records('zoom_meeting_participants'));
+    }
+
+    /**
+     * Tests that normalize_meeting() can handle different meeting records from
+     * Dashboard API versus the Report API.
+     */
+    public function test_normalize_meeting() {
+        $dashboardmeeting = [
+            'uuid' => 'sfsdfsdfc6122222d',
+            'id' => 1000000,
+            'topic' => 'Awesome meeting',
+            'host' => 'John Doe',
+            'email' => 'test@email.com',
+            'user_type' => 2,
+            'start_time' => '2019-07-14T09:05:19.754Z',
+            'end_time' => '2019-08-14T09:05:19.754Z',
+            'duration' => 11,
+            'participants' => 4,
+            'has_pstn' => false,
+            'has_voip' => false,
+            'has_3rd_party_audio' => false,
+            'has_video' => false,
+            'has_screen_share' => false,
+            'has_recording' => false,
+            'has_sip' => false
+        ];
+        $meeting = $this->meetingtask->normalize_meeting((object) $dashboardmeeting);
+
+        $this->assertEquals($dashboardmeeting['uuid'], $meeting->uuid);
+        $this->assertFalse(isset($meeting->id));
+        $this->assertEquals($dashboardmeeting['id'], $meeting->meeting_id);
+        $this->assertEquals($dashboardmeeting['topic'], $meeting->topic);
+        $this->assertIsInt($meeting->start_time);
+        $this->assertIsInt($meeting->end_time);
+        $this->assertEquals($dashboardmeeting['participants'], $meeting->participants_count);
+        $this->assertNull($meeting->total_minutes);
+
+        $reportmeeting = [
+            'uuid' => 'sfsdfsdfc6122222d',
+            'id' => 1000000,
+            'type' => 2,
+            'topic' => 'Awesome meeting',
+            'user_name' => 'John Doe',
+            'user_email' => 'test@email.com',
+            'start_time' => '2019-07-14T09:05:19.754Z',
+            'end_time' => '2019-08-14T09:05:19.754Z',
+            'duration' => 11,
+            'total_minutes' => 11,
+            'participants_count' => 4
+        ];
+
+        $meeting = $this->meetingtask->normalize_meeting((object) $reportmeeting);
+
+        $this->assertEquals($reportmeeting['uuid'], $meeting->uuid);
+        $this->assertFalse(isset($meeting->id));
+        $this->assertEquals($reportmeeting['id'], $meeting->meeting_id);
+        $this->assertEquals($reportmeeting['topic'], $meeting->topic);
+        $this->assertIsInt($meeting->start_time);
+        $this->assertIsInt($meeting->end_time);
+        $this->assertEquals($reportmeeting['participants_count'], $meeting->participants_count);
+        $this->assertEquals($reportmeeting['total_minutes'], $meeting->total_minutes);
     }
 }

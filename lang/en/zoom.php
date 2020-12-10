@@ -168,6 +168,7 @@ $string['webinar_already_false'] = '<p><b>This module was already set as a meeti
 $string['zoom:addinstance'] = 'Add a new Zoom meeting';
 $string['zoomerr'] = 'An error occured with Zoom.'; // Generic error.
 $string['zoomerr_apikey_missing'] = 'Zoom API key not found';
+$string['zoomerr_apilimit'] = 'Reached the maximum daily rate limit for this API. Retry at {$a}';
 $string['zoomerr_apisecret_missing'] = 'Zoom API secret not found';
 $string['zoomerr_id_missing'] = 'You must specify a course_module ID or an instance ID';
 $string['zoomerr_licensesnumber_missing'] = 'Zoom utmost setting found but, licensesnumber setting not found';

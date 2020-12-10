@@ -42,14 +42,5 @@ $tasks = array(
         'day' => '*',
         'dayofweek' => '*',
         'month' => '*'
-    ),
-    array(
-        'classname' => 'mod_zoom\task\reset_api_calls',
-        'blocking' => 0,
-        'minute' => '59',
-        'hour' => '23',
-        'day' => '*',
-        'dayofweek' => '*',
-        'month' => '*'
     )
 );
