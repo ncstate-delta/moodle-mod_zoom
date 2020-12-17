@@ -34,7 +34,7 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
  * @copyright  2019 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class webservice_test extends advanced_testcase {
+class mod_zoom_webservice_test extends advanced_testcase {
 
     /**
      * Setup before every test.
