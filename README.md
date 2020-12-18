@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.com/ucla/moodle-mod_zoom.svg?branch=master)](https://travis-ci.com/github/ucla/moodle-mod_zoom/branches)
-
 # Intro
 
 Zoom is the web and app based video conferencing service (http://zoom.us). This
