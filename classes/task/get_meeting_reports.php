@@ -169,7 +169,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
             try {
                 if (!$this->process_meeting_reports($meeting)) {
-                    // If returned false, then ran out of API calls or got 
+                    // If returned false, then ran out of API calls or got
                     // unrecoverable error. Try to pick up where we left off.
                     if ($runningastask) {
                         // Only want to resume if we were processing all reports.

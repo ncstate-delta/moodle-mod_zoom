@@ -228,7 +228,7 @@ class mod_zoom_webservice {
                     $timediff = 1;
 
                     // Check if we hit the max requests per minute (only for Dashboard API).
-                    if (array_key_exists('x-ratelimit-type', $header) && 
+                    if (array_key_exists('x-ratelimit-type', $header) &&
                             $header['x-ratelimit-type'] == 'QPS' &&
                             strpos($path, 'metrics') !== false) {
                         $timediff = 60; // Try the next minute.
