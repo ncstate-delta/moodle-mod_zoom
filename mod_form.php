@@ -198,15 +198,31 @@ class mod_zoom_mod_form extends moodleform_mod {
             $this->current->meetingcode = $this->current->password;
             unset($this->current->password);
         }
-        // Add password.
-        $mform->addElement('text', 'meetingcode', get_string('password', 'zoom'), array('maxlength' => '10'));
-        $mform->setType('meetingcode', PARAM_TEXT);
-        // Check password uses valid characters.
-        $regex = '/^[a-zA-Z0-9@_*-]{1,10}$/';
-        $mform->addRule('meetingcode', get_string('err_invalid_password', 'mod_zoom'), 'regex', $regex, 'client');
-        $mform->setDefault('meetingcode', strval(rand(100000, 999999)));
+
+        // Set default passcode and desciption from Zoom security settings.
+        $securitysettings = $service->get_user_security_settings($zoomuser->id);
+        if (isset($securitysettings->meeting_password_requirement)) {
+            // Add password.
+            $mform->addElement('text', 'meetingcode', get_string('password', 'zoom'), array('maxlength' => '31'));
+            $mform->setType('meetingcode', PARAM_TEXT);
+            // Check password uses valid characters.
+            $regex = '/^[a-zA-Z0-9@_*-]{1,31}+$/';
+            $mform->addRule('meetingcode', get_string('err_invalid_password', 'mod_zoom'), 'regex', $regex, 'client');
+            $mform->setDefault('meetingcode', zoom_create_default_passcode($securitysettings->meeting_password_requirement));
+            $mform->addElement('static', 'passwordrequirements', '',
+                zoom_create_passcode_description($securitysettings->meeting_password_requirement));
+        } else {
+            // Add password.
+            $mform->addElement('text', 'meetingcode', get_string('password', 'zoom'), array('maxlength' => '10'));
+            $mform->setType('meetingcode', PARAM_TEXT);
+            // Check password uses valid characters.
+            $regex = '/^[a-zA-Z0-9@_*-]{1,10}$/';
+            $mform->addRule('meetingcode', get_string('err_invalid_password', 'mod_zoom'), 'regex', $regex, 'client');
+            $mform->setDefault('meetingcode', strval(rand(100000, 999999)));
+            $mform->addElement('static', 'passwordrequirements', '', get_string('err_password', 'mod_zoom'));
+        }
+
         $mform->disabledIf('meetingcode', 'requirepasscode', 'notchecked');
-        $mform->addElement('static', 'passwordrequirements', '', get_string('err_password', 'mod_zoom'));
 
         // Add password requirement prompt.
         $mform->addElement('advcheckbox', 'requirepasscode', get_string('requirepasscode', 'zoom'));

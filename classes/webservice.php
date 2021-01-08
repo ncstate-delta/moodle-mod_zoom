@@ -387,6 +387,24 @@ class mod_zoom_webservice {
     }
 
     /**
+     * Gets a user's meeting security settings, including password requirements.
+     *
+     * @param string $userid The user's ID.
+     * @return stdClass The call's result in JSON format.
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/users/usersettings.
+     */
+    public function get_user_security_settings($userid) {
+        $url = 'users/' . $userid . '/settings?option=meeting_security';
+        $response = null;
+        try {
+            $response = $this->_make_call($url);
+        } catch (moodle_exception $error) {
+            throw $error;
+        }
+        return $response->meeting_security;
+    }
+
+    /**
      * Gets a user.
      *
      * @param string|int $identifier The user's email or the user's ID per Zoom API.
