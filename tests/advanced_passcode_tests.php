@@ -176,7 +176,9 @@ class advanced_passcode_test extends basic_testcase {
         $this->zoomdata = (object) $data;
 
         $description = zoom_create_passcode_description($this->zoomdata);
-        $expected = 'Passcode must include both lower and uppercase characters. Passcode must contain at least 1 number. Passcode must have at least 1 special character (@-_*). Minimum of 10 characters. Maximum of 3 consecutive characters (abcd, 1111, 1234, etc.).';
+        $expected = 'Passcode must include both lower and uppercase characters. Passcode must contain at least 1 number. ' .
+         'Passcode must have at least 1 special character (@-_*). Minimum of 10 characters. Maximum of 3 consecutive ' .
+         'characters (abcd, 1111, 1234, etc.).';
         $this->assertEquals($description, $expected);
     }
 

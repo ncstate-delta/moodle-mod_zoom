@@ -410,20 +410,20 @@ function zoom_get_participants_report($detailsid) {
 function zoom_create_default_passcode($meetingpasswordrequirement) {
     $passcode = '';
     if ($meetingpasswordrequirement->have_letter || $meetingpasswordrequirement->have_upper_and_lower_characters) {
-        // Random letter from A-Z
-        $passcode .= chr(rand(65,90));
-        // Random letter from a-z
-        $passcode .= chr(rand(97,122));
+        // Random letter from A-Z.
+        $passcode .= chr(rand(65, 90));
+        // Random letter from a-z.
+        $passcode .= chr(rand(97, 122));
     }
     if ($meetingpasswordrequirement->have_special_character) {
-        $special_char = '@_*-';
-        $passcode .= substr(str_shuffle($special_char), 0, 1);
+        $specialchar = '@_*-';
+        $passcode .= substr(str_shuffle($specialchar), 0, 1);
     }
     // Fill in the rest of the passcode with numbers.
     if ($meetingpasswordrequirement->length) {
-        $rem_length = $meetingpasswordrequirement->length - strlen($passcode);
-        if ($rem_length > 0) {
-            for ($i = 0; $i < $rem_length; $i++) {
+        $remlength = $meetingpasswordrequirement->length - strlen($passcode);
+        if ($remlength > 0) {
+            for ($i = 0; $i < $remlength; $i++) {
                 $passcode .= strval(rand(0, 9));
             }
         }
