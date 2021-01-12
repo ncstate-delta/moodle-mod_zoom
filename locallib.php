@@ -438,7 +438,6 @@ function zoom_create_default_passcode($meetingpasswordrequirement) {
  * @return string description of password requirements
  */
 function zoom_create_passcode_description($meetingpasswordrequirement) {
-    //print_object($meetingpasswordrequirement);
     $description = '';
     if ($meetingpasswordrequirement->only_allow_numeric) {
         $description .= get_string('password_only_numeric', 'mod_zoom') . ' ';
