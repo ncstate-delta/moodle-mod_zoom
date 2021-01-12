@@ -408,28 +408,26 @@ function zoom_get_participants_report($detailsid) {
  * @return string passcode
  */
 function zoom_create_default_passcode($meetingpasswordrequirement) {
-    $passcode = '';
+    $length = max($meetingpasswordrequirement->length, 6);
+    $random = rand(0, pow(10, $length) - 1);
+    $passcode = str_pad(strval($random), $length, '0', STR_PAD_LEFT);
+
+    // Get a random set of indexes to replace with non-numberic values.
+    $indexes = range(0, $length - 1);
+    shuffle($indexes);
+
     if ($meetingpasswordrequirement->have_letter || $meetingpasswordrequirement->have_upper_and_lower_characters) {
         // Random letter from A-Z.
-        $passcode .= chr(rand(65, 90));
+        $passcode[$indexes[0]] = chr(rand(65, 90));
         // Random letter from a-z.
-        $passcode .= chr(rand(97, 122));
+        $passcode[$indexes[1]] = chr(rand(97, 122));
     }
+
     if ($meetingpasswordrequirement->have_special_character) {
         $specialchar = '@_*-';
-        $passcode .= substr(str_shuffle($specialchar), 0, 1);
+        $passcode[$indexes[2]] = substr(str_shuffle($specialchar), 0, 1);
     }
-    // Fill in the rest of the passcode with numbers.
-    if ($meetingpasswordrequirement->length) {
-        $remlength = $meetingpasswordrequirement->length - strlen($passcode);
-        if ($remlength > 0) {
-            for ($i = 0; $i < $remlength; $i++) {
-                $passcode .= strval(rand(0, 9));
-            }
-        }
-    } else {
-        $passcode .= strval(rand(100000, 999999));
-    }
+
     return $passcode;
 }
 
@@ -440,6 +438,7 @@ function zoom_create_default_passcode($meetingpasswordrequirement) {
  * @return string description of password requirements
  */
 function zoom_create_passcode_description($meetingpasswordrequirement) {
+    //print_object($meetingpasswordrequirement);
     $description = '';
     if ($meetingpasswordrequirement->only_allow_numeric) {
         $description .= get_string('password_only_numeric', 'mod_zoom') . ' ';
@@ -453,8 +452,11 @@ function zoom_create_passcode_description($meetingpasswordrequirement) {
         if ($meetingpasswordrequirement->have_number) {
             $description .= get_string('password_number', 'mod_zoom') . ' ';
         }
+
         if ($meetingpasswordrequirement->have_special_character) {
             $description .= get_string('password_special', 'mod_zoom') . ' ';
+        } else {
+            $description .= get_string('password_allowed_char', 'mod_zoom') . ' ';
         }
     }
 
@@ -468,5 +470,6 @@ function zoom_create_passcode_description($meetingpasswordrequirement) {
             $meetingpasswordrequirement->consecutive_characters_length - 1) . ' ';
     }
 
-    return substr($description, 0, -1);
+    $description .= get_string('password_max_length', 'mod_zoom');
+    return $description;
 }

@@ -44,14 +44,8 @@ class advanced_passcode_test extends basic_testcase {
     /**
      * Tests that a default password of 6 numbers is created when settings are null.
      */
-    public function test_settings_all_null() {
-        $data = array('length' => null,
-            'have_letter' => null,
-            'have_upper_and_lower_characters' => null,
-            'have_special_character' => null,
-            'only_allow_numeric' => null,
-        );
-        $this->zoomdata = (object) $data;
+    public function test_settings_default() {
+        $this->zoomdata = (object) mod_zoom_webservice::DEFAULT_MEETING_PASSWORD_REQUIREMENT;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
         $this->assertEquals(strlen($passcode), 6);
@@ -62,7 +56,7 @@ class advanced_passcode_test extends basic_testcase {
      * Tests that a password has the given minimum length.
      */
     public function test_settings_length() {
-        $data = array('length' => 10,
+        $data = array('length' => 8,
             'have_letter' => false,
             'have_upper_and_lower_characters' => false,
             'have_special_character' => false
@@ -70,7 +64,7 @@ class advanced_passcode_test extends basic_testcase {
         $this->zoomdata = (object) $data;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
-        $this->assertEquals(strlen($passcode), 10);
+        $this->assertEquals(strlen($passcode), 8);
         $this->assertTrue(ctype_digit($passcode));
     }
 
@@ -103,7 +97,7 @@ class advanced_passcode_test extends basic_testcase {
         $this->zoomdata = (object) $data;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
-        $this->assertEquals(strlen($passcode), 8);
+        $this->assertEquals(strlen($passcode), 6);
         $this->assertRegExp('/\d/', $passcode);
         $this->assertRegExp('/[a-zA-Z]/', $passcode);
     }
@@ -120,7 +114,7 @@ class advanced_passcode_test extends basic_testcase {
         $this->zoomdata = (object) $data;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
-        $this->assertEquals(strlen($passcode), 8);
+        $this->assertEquals(strlen($passcode), 6);
         $this->assertRegExp('/\d/', $passcode);
         $this->assertRegExp('/[A-Z]/', $passcode);
         $this->assertRegExp('/[a-z]/', $passcode);
@@ -138,7 +132,7 @@ class advanced_passcode_test extends basic_testcase {
         $this->zoomdata = (object) $data;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
-        $this->assertEquals(strlen($passcode), 7);
+        $this->assertEquals(strlen($passcode), 6);
         $this->assertRegExp('/\d/', $passcode);
         $this->assertRegExp('/[^a-zA-Z\d]/', $passcode);
     }
@@ -147,7 +141,7 @@ class advanced_passcode_test extends basic_testcase {
      * Tests that a password has correct length, a letter, and a special character when setting is specified.
      */
     public function test_settings_all() {
-        $data = array('length' => 10,
+        $data = array('length' => 7,
             'have_letter' => true,
             'have_upper_and_lower_characters' => true,
             'have_special_character' => true
@@ -155,7 +149,7 @@ class advanced_passcode_test extends basic_testcase {
         $this->zoomdata = (object) $data;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
-        $this->assertEquals(strlen($passcode), 10);
+        $this->assertEquals(strlen($passcode), 7);
         $this->assertRegExp('/\d/', $passcode);
         $this->assertRegExp('/[a-zA-Z]/', $passcode);
         $this->assertRegExp('/[^a-zA-Z\d]/', $passcode);
@@ -165,7 +159,7 @@ class advanced_passcode_test extends basic_testcase {
      * Tests that the password description is correct when all settings are present.
      */
     public function test_pasword_description_all() {
-        $data = array('length' => 10,
+        $data = array('length' => 9,
             'have_letter' => true,
             'have_number' => true,
             'have_upper_and_lower_characters' => true,
@@ -177,8 +171,8 @@ class advanced_passcode_test extends basic_testcase {
 
         $description = zoom_create_passcode_description($this->zoomdata);
         $expected = 'Passcode must include both lower and uppercase characters. Passcode must contain at least 1 number. ' .
-         'Passcode must have at least 1 special character (@-_*). Minimum of 10 characters. Maximum of 3 consecutive ' .
-         'characters (abcd, 1111, 1234, etc.).';
+         'Passcode must have at least 1 special character (@-_*). Minimum of 9 character(s). Maximum of 3 consecutive ' .
+         'characters (abcd, 1111, 1234, etc.). Maximum of 10 characters.';
         $this->assertEquals($description, $expected);
     }
 
@@ -186,7 +180,7 @@ class advanced_passcode_test extends basic_testcase {
      * Tests that the password description is correct when the only numeric option is present.
      */
     public function test_pasword_description_only_numeric() {
-        $data = array('length' => 10,
+        $data = array('length' => 8,
             'have_letter' => false,
             'have_number' => true,
             'have_upper_and_lower_characters' => false,
@@ -197,7 +191,19 @@ class advanced_passcode_test extends basic_testcase {
         $this->zoomdata = (object) $data;
 
         $description = zoom_create_passcode_description($this->zoomdata);
-        $expected = 'Passcode may only contain numbers and no other characters. Minimum of 10 characters.';
+        $expected = 'Passcode may only contain numbers and no other characters. Minimum of 8 character(s). ' .
+            'Maximum of 10 characters.';
+        $this->assertEquals($description, $expected);
+    }
+
+    /**
+     * Tests that the password description is correct when the default settings are present.
+     */
+    public function test_pasword_description_default() {
+        $this->zoomdata = (object) mod_zoom_webservice::DEFAULT_MEETING_PASSWORD_REQUIREMENT;
+
+        $description = zoom_create_passcode_description($this->zoomdata);
+        $expected = 'Passcode may only contain the following characters: [a-z A-Z 0-9 @ - _ *]. Maximum of 10 characters.';
         $this->assertEquals($description, $expected);
     }
 }
