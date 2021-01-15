@@ -372,6 +372,26 @@ function zoom_get_user_id($required = true) {
 }
 
 /**
+ * Get the Zoom meeting security settings, including meeting password requirements of the user's master account.
+ *
+ * @return stdClass
+ */
+function zoom_get_meeting_security_settings() {
+    $cache = cache::make('mod_zoom', 'zoommeetingsecurity');
+    if (!($zoommeetingsecurity = $cache->get('meetingsecurity'))) {
+        $service = new mod_zoom_webservice();
+        try {
+            $zoommeetingsecurity = $service->get_account_meeting_security_settings();
+        } catch (moodle_exception $error) {
+            throw $error;
+        }
+        $cache->set('meetingsecurity', $zoommeetingsecurity);
+    }
+
+    return $zoommeetingsecurity;
+}
+
+/**
  * Check if the error indicates that a meeting is gone.
  *
  * @param moodle_exception $error
@@ -434,4 +454,76 @@ function zoom_get_participants_report($detailsid) {
     ];
     $participants = $DB->get_records_sql($sql, $params);
     return $participants;
+}
+
+/**
+ * Creates a default passcode from the user's Zoom meeting security settings.
+ *
+ * @param stdClass $meetingpasswordrequirement
+ * @return string passcode
+ */
+function zoom_create_default_passcode($meetingpasswordrequirement) {
+    $length = max($meetingpasswordrequirement->length, 6);
+    $random = rand(0, pow(10, $length) - 1);
+    $passcode = str_pad(strval($random), $length, '0', STR_PAD_LEFT);
+
+    // Get a random set of indexes to replace with non-numberic values.
+    $indexes = range(0, $length - 1);
+    shuffle($indexes);
+
+    if ($meetingpasswordrequirement->have_letter || $meetingpasswordrequirement->have_upper_and_lower_characters) {
+        // Random letter from A-Z.
+        $passcode[$indexes[0]] = chr(rand(65, 90));
+        // Random letter from a-z.
+        $passcode[$indexes[1]] = chr(rand(97, 122));
+    }
+
+    if ($meetingpasswordrequirement->have_special_character) {
+        $specialchar = '@_*-';
+        $passcode[$indexes[2]] = substr(str_shuffle($specialchar), 0, 1);
+    }
+
+    return $passcode;
+}
+
+/**
+ * Creates a description string from the user's Zoom meeting security settings.
+ *
+ * @param stdClass $meetingpasswordrequirement
+ * @return string description of password requirements
+ */
+function zoom_create_passcode_description($meetingpasswordrequirement) {
+    $description = '';
+    if ($meetingpasswordrequirement->only_allow_numeric) {
+        $description .= get_string('password_only_numeric', 'mod_zoom') . ' ';
+    } else {
+        if ($meetingpasswordrequirement->have_letter && !$meetingpasswordrequirement->have_upper_and_lower_characters) {
+            $description .= get_string('password_letter', 'mod_zoom') . ' ';
+        } else if ($meetingpasswordrequirement->have_upper_and_lower_characters) {
+            $description .= get_string('password_lower_upper', 'mod_zoom') . ' ';
+        }
+
+        if ($meetingpasswordrequirement->have_number) {
+            $description .= get_string('password_number', 'mod_zoom') . ' ';
+        }
+
+        if ($meetingpasswordrequirement->have_special_character) {
+            $description .= get_string('password_special', 'mod_zoom') . ' ';
+        } else {
+            $description .= get_string('password_allowed_char', 'mod_zoom') . ' ';
+        }
+    }
+
+    if ($meetingpasswordrequirement->length) {
+        $description .= get_string('password_length', 'mod_zoom', $meetingpasswordrequirement->length) . ' ';
+    }
+
+    if ($meetingpasswordrequirement->consecutive_characters_length &&
+        $meetingpasswordrequirement->consecutive_characters_length > 0) {
+        $description .= get_string('password_consecutive', 'mod_zoom',
+            $meetingpasswordrequirement->consecutive_characters_length - 1) . ' ';
+    }
+
+    $description .= get_string('password_max_length', 'mod_zoom');
+    return $description;
 }

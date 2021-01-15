@@ -64,6 +64,21 @@ class mod_zoom_webservice {
     const MAX_RETRIES = 5;
 
     /**
+     * Default meeting_password_requirement object.
+     * @var array
+     */
+    const DEFAULT_MEETING_PASSWORD_REQUIREMENT = array(
+        'length' => 0,
+        'consecutive_characters_length' => 0,
+        'have_letter' => false,
+        'have_number' => false,
+        'have_upper_and_lower_characters' => false,
+        'have_special_character' => false,
+        'only_allow_numeric' => false,
+        'weak_enhance_detection' => false
+    );
+
+    /**
      * API key
      * @var string
      */
@@ -396,6 +411,27 @@ class mod_zoom_webservice {
      */
     public function _get_user_settings($userid) {
         return $this->_make_call('users/' . $userid . '/settings');
+    }
+
+    /**
+     * Gets the user's master account meeting security settings, including password requirements.
+     *
+     * @return stdClass The call's result in JSON format.
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/accounts/accountsettings.
+     */
+    public function get_account_meeting_security_settings() {
+        $url = 'accounts/me/settings?option=meeting_security';
+        $response = null;
+        try {
+            $response = $this->_make_call($url);
+            // Set a default meeting password requirment if it is not present.
+            if (!isset($response->meeting_security->meeting_password_requirement)) {
+                $response->meeting_security->meeting_password_requirement = (object) DEFAULT_MEETING_PASSWORD_REQUIREMENT;
+            }
+        } catch (moodle_exception $error) {
+            throw $error;
+        }
+        return $response->meeting_security;
     }
 
     /**
