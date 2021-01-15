@@ -346,7 +346,7 @@ function zoom_get_meeting_security_settings() {
     if (!($zoommeetingsecurity = $cache->get('meetingsecurity'))) {
         $service = new mod_zoom_webservice();
         try {
-            $zoommeetingsecurity = $service->get_user_meeting_security_settings();
+            $zoommeetingsecurity = $service->get_account_meeting_security_settings();
         } catch (moodle_exception $error) {
             throw $error;
         }
