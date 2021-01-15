@@ -402,14 +402,13 @@ class mod_zoom_webservice {
     }
 
     /**
-     * Gets a user's meeting security settings, including password requirements.
+     * Gets the user's master account meeting security settings, including password requirements.
      *
-     * @param string $userid The user's ID.
      * @return stdClass The call's result in JSON format.
-     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/users/usersettings.
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/accounts/accountsettings.
      */
-    public function get_user_meeting_security_settings($userid) {
-        $url = 'users/' . $userid . '/settings?option=meeting_security';
+    public function get_account_meeting_security_settings() {
+        $url = 'accounts/me/settings?option=meeting_security';
         $response = null;
         try {
             $response = $this->_make_call($url);
