@@ -41,6 +41,7 @@ $string['audio_telephony'] = 'Telephony only';
 $string['audio_voip'] = 'VoIP only';
 $string['cachedef_zoomid'] = 'The zoom user id of the user';
 $string['cachedef_sessions'] = 'Information from the zoom get user report request';
+$string['cachedef_zoommeetingsecurity'] = 'Zoom meeting security settings, including meeting password requirements of the account';
 $string['calendardescriptionURL'] = 'Meeting join URL: {$a}.';
 $string['calendardescriptionintro'] = "\nDescription:\n{\$a}";
 $string['calendariconalt'] = 'Calendar icon';
