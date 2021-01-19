@@ -114,20 +114,24 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $service = new mod_zoom_webservice();
 
     // The object received from mod_form.php returns instance instead of id for some reason.
-    $zoom->id = $zoom->instance;
+    if(isset($zoom->instance)) {
+        $zoom->id = $zoom->instance;
+    }
     $zoom->timemodified = time();
 
     // Deals with password manager issues.
-    $zoom->password = $zoom->meetingcode;
-    unset($zoom->meetingcode);
+    if (isset($zoom->meetingcode)) {
+        $zoom->password = $zoom->meetingcode;
+        unset($zoom->meetingcode);
+    }
 
-    if (empty($zoom->requirepasscode)) {
+    if (property_exists($zoom, 'requirepasscode') && empty($zoom->requirepasscode)) {
         $zoom->password = '';
     }
 
     $DB->update_record('zoom', $zoom);
 
-    $updatedzoomrecord = $DB->get_record('zoom', array('id' => $zoom->instance));
+    $updatedzoomrecord = $DB->get_record('zoom', array('id' => $zoom->id));
     $zoom->meeting_id = $updatedzoomrecord->meeting_id;
     $zoom->webinar = $updatedzoomrecord->webinar;
 
@@ -260,6 +264,20 @@ function zoom_delete_instance($id) {
     zoom_grade_item_delete($zoom);
 
     return true;
+}
+
+/**
+ * Callback function to update the Zoom event in the database and on Zoom servers.
+ *
+ * The function is triggered when the course module name is set via quick edit.
+ *
+ * @param int $courseid
+ * @param stdClass $zoom Zoom Module instance object.
+ * @param stdClass $cm Course Module object.
+ * @return bool
+ */
+function zoom_refresh_events($courseid, $zoom, $cm) {
+    return zoom_update_instance($zoom);
 }
 
 /**
