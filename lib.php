@@ -114,7 +114,7 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $service = new mod_zoom_webservice();
 
     // The object received from mod_form.php returns instance instead of id for some reason.
-    if(isset($zoom->instance)) {
+    if (isset($zoom->instance)) {
         $zoom->id = $zoom->instance;
     }
     $zoom->timemodified = time();
