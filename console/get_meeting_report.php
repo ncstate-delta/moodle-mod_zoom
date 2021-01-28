@@ -27,7 +27,7 @@ require_once(dirname(__FILE__).'/../../../lib/moodlelib.php');
 
 // Force debugging errors.
 error_reporting(E_ALL);
-ini_set( 'display_errors','1');
+ini_set('display_errors', '1');
 
 $courseid = required_param('courseid', PARAM_INT);
 $startdate = optional_param('start', date('Y-m-d', strtotime('-1 days')), PARAM_ALPHA);
