@@ -7,3 +7,7 @@
 #page-mod-zoom-view a .btn-primary .icon {
     color: white;
 }
+
+#mod-zoom-old-meetings-header {
+    float: left;
+}
