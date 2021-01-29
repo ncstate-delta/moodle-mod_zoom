@@ -30,8 +30,8 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
 $courseid = required_param('courseid', PARAM_INT);
-$startdate = optional_param('start', date('Y-m-d', strtotime('-1 days')), PARAM_ALPHA);
-$enddate = optional_param('end', date('Y-m-d'), PARAM_ALPHA);
+$startdate = optional_param('start', date('Y-m-d', strtotime('-3 days')), PARAM_ALPHANUMEXT);
+$enddate = optional_param('end', date('Y-m-d'), PARAM_ALPHANUMEXT);
 
 $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
 
@@ -39,25 +39,14 @@ require_course_login($course);
 
 $context = context_course::instance($course->id);
 require_capability('mod/zoom:view', $context);
-$iszoommanager = has_capability('mod/zoom:addinstance', $context);
+require_capability('mod/zoom:refreshsessions', $context);
 
 // Set up the moodle page.
 $PAGE->set_url('/mod/zoom/console/');
 
 echo html_writer::tag('h1', get_string('getmeetingreports', 'mod_zoom'));
 $output = null;
-
-if (!$iszoommanager) {
-    exit();
-}
-
-$hostuuids = $DB->get_fieldset_select('zoom', 'DISTINCT host_id', 'course=:courseid',
-    array('courseid' => $courseid));
-if (!empty($hostuuids)) {
-    exec("php $CFG->dirroot/mod/zoom/cli/get_meeting_report.php --start=$startdate --end=$enddate --courseid=$courseid", $output);
-    echo '<pre>';
-    echo implode("\n", $output);
-    echo '</pre>';
-} else {
-    echo get_string('nozoomsfound', 'mod_zoom');
-}
+exec("php $CFG->dirroot/mod/zoom/cli/get_meeting_report.php --start=$startdate --end=$enddate --courseid=$courseid", $output);
+echo '<pre>';
+echo implode("\n", $output);
+echo '</pre>';

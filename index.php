@@ -178,10 +178,12 @@ echo $OUTPUT->heading($strold, 4, null, 'mod-zoom-old-meetings-header');
 if ($iszoommanager) {
     $linkarguments = array(
         'courseid' => $id,
+        'start' => date('Y-m-d', strtotime('-3 days')),
+        'end' => date('Y-m-d'),
     );
     $url = new moodle_url($CFG->wwwroot. '/mod/zoom/console/get_meeting_report.php',
             $linkarguments);
-    echo html_writer::link($url, get_string('refreshreports', 'mod_zoom'), array('class' => 'pl-4'));
+    echo html_writer::link($url, get_string('refreshreports', 'mod_zoom'), array('target' => '_blank', 'class' => 'pl-4'));
 }
 echo html_writer::table($oldtable);
 
