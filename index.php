@@ -173,7 +173,18 @@ foreach ($zooms as $z) {
 
 echo $OUTPUT->heading($strnew, 4);
 echo html_writer::table($newtable);
-echo $OUTPUT->heading($strold, 4);
+echo $OUTPUT->heading($strold, 4, null, 'mod-zoom-old-meetings-header');
+// Show refresh meeting sessions link only if user can edit Zoom meetings.
+if ($iszoommanager) {
+    $linkarguments = array(
+        'courseid' => $id,
+        'start' => date('Y-m-d', strtotime('-3 days')),
+        'end' => date('Y-m-d'),
+    );
+    $url = new moodle_url($CFG->wwwroot. '/mod/zoom/console/get_meeting_report.php',
+            $linkarguments);
+    echo html_writer::link($url, get_string('refreshreports', 'mod_zoom'), array('target' => '_blank', 'class' => 'pl-4'));
+}
 echo html_writer::table($oldtable);
 
 echo $OUTPUT->footer();
