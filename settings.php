@@ -118,6 +118,21 @@ if ($ADMIN->fulltree) {
             get_string('maskparticipantdata_help', 'mod_zoom'), 0, 1);
     $settings->add($maskparticipantdata);
 
+    // Supplementary features settings.
+    $settings->add(new admin_setting_heading('mod_zoom/supplementaryfeaturessettings',
+            get_string('supplementaryfeaturessettings', 'mod_zoom'),
+            get_string('supplementaryfeaturessettings_desc', 'mod_zoom')));
+
+    $webinarchoices = array(ZOOM_WEBINAR_DISABLE => get_string('webinar_disable', 'mod_zoom'),
+            ZOOM_WEBINAR_SHOWONLYIFLICENSE => get_string('webinar_showonlyiflicense', 'mod_zoom'),
+            ZOOM_WEBINAR_ALWAYSSHOW => get_string('webinar_alwaysshow', 'mod_zoom'));
+    $offerwebinar = new admin_setting_configselect('mod_zoom/showwebinars',
+            get_string('webinar', 'mod_zoom'),
+            get_string('webinar_desc', 'mod_zoom'),
+            ZOOM_WEBINAR_ALWAYSSHOW,
+            $webinarchoices);
+    $settings->add($offerwebinar);
+
     // Default Zoom settings.
     $settings->add(new admin_setting_heading('mod_zoom/defaultsettings',
             get_string('defaultsettings', 'mod_zoom'),
