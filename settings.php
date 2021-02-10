@@ -51,6 +51,11 @@ if ($ADMIN->fulltree) {
         $settings->add($connectionstatus);
     }
 
+    // Connection settings.
+    $settings->add(new admin_setting_heading('mod_zoom/connectionsettings',
+            get_string('connectionsettings', 'mod_zoom'),
+            get_string('connectionsettings_desc', 'mod_zoom')));
+
     $apikey = new admin_setting_configtext('mod_zoom/apikey', get_string('apikey', 'mod_zoom'),
             get_string('apikey_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
     $settings->add($apikey);
@@ -63,15 +68,15 @@ if ($ADMIN->fulltree) {
             get_string('zoomurl_desc', 'mod_zoom'), '', PARAM_URL);
     $settings->add($zoomurl);
 
-    $jointimechoices = array(0, 5, 10, 15, 20, 30, 45, 60);
-    $jointimeselect = array();
-    foreach ($jointimechoices as $minutes) {
-        $jointimeselect[$minutes] = $minutes . ' ' . get_string('mins');
-    }
-    $firstabletojoin = new admin_setting_configselect('mod_zoom/firstabletojoin',
-            get_string('firstjoin', 'mod_zoom'), get_string('firstjoin_desc', 'mod_zoom'),
-            15, $jointimeselect);
-    $settings->add($firstabletojoin);
+    $proxyhost = new admin_setting_configtext('mod_zoom/proxyhost',
+            get_string('option_proxyhost', 'zoom'),
+            get_string('option_proxyhost_desc', 'mod_zoom'), '', '/^[a-zA-Z0-9.-]+:[0-9]+$|^$/');
+    $settings->add($proxyhost);
+
+    // License settings.
+    $settings->add(new admin_setting_heading('mod_zoom/licensesettings',
+            get_string('licensesettings', 'mod_zoom'),
+            get_string('licensesettings_desc', 'mod_zoom')));
 
     $licensescount = new admin_setting_configtext('mod_zoom/licensesnumber',
             get_string('licensesnumber', 'mod_zoom'),
@@ -87,6 +92,26 @@ if ($ADMIN->fulltree) {
             get_string('recycleonjoin', 'mod_zoom'),
             get_string('licenseonjoin', 'mod_zoom'), 0, 1);
     $settings->add($recycleonjoin);
+
+    // Global settings.
+    $settings->add(new admin_setting_heading('mod_zoom/globalsettings',
+            get_string('globalsettings', 'mod_zoom'),
+            get_string('globalsettings_desc', 'mod_zoom')));
+
+    $jointimechoices = array(0, 5, 10, 15, 20, 30, 45, 60);
+    $jointimeselect = array();
+    foreach ($jointimechoices as $minutes) {
+        $jointimeselect[$minutes] = $minutes . ' ' . get_string('mins');
+    }
+    $firstabletojoin = new admin_setting_configselect('mod_zoom/firstabletojoin',
+            get_string('firstjoin', 'mod_zoom'), get_string('firstjoin_desc', 'mod_zoom'),
+            15, $jointimeselect);
+    $settings->add($firstabletojoin);
+
+    $displaypassword = new admin_setting_configcheckbox('mod_zoom/displaypassword',
+            get_string('displaypassword', 'zoom'),
+            get_string('displaypassword_help', 'zoom'), 0, 1, 0);
+    $settings->add($displaypassword);
 
     $maskparticipantdata = new admin_setting_configcheckbox('mod_zoom/maskparticipantdata',
             get_string('maskparticipantdata', 'mod_zoom'),
@@ -132,11 +157,6 @@ if ($ADMIN->fulltree) {
             '', 0, 1, 0);
     $settings->add($defaultjoinbeforehost);
 
-    $proxyhost = new admin_setting_configtext('mod_zoom/proxyhost',
-            get_string('option_proxyhost', 'zoom'),
-            get_string('option_proxyhost_desc', 'mod_zoom'), '', '/^[a-zA-Z0-9.-]+:[0-9]+$|^$/');
-    $settings->add($proxyhost);
-
     $defaultwaitingroomoption = new admin_setting_configcheckbox('mod_zoom/defaultwaitingroomoption',
             get_string('option_waiting_room', 'mod_zoom'),
             '', 1, 1, 0);
@@ -151,9 +171,4 @@ if ($ADMIN->fulltree) {
             get_string('option_mute_upon_entry', 'mod_zoom'),
             '', 1, 1, 0);
     $settings->add($defaultmuteuponentryoption);
-
-    $displaypassword = new admin_setting_configcheckbox('mod_zoom/displaypassword',
-        get_string('displaypassword', 'zoom'),
-        get_string('displaypassword_help', 'zoom'), 0, 1, 0);
-    $settings->add($displaypassword);
 }
