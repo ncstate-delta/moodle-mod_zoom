@@ -197,12 +197,16 @@ if ($hostuser) {
 }
 
 if (!$zoom->webinar) {
-    $strjbh = ($zoom->option_jbh) ? $stryes : $strno;
-    $table->data[] = array($strjoinbeforehost, $strjbh);
-
     $strwr = ($zoom->option_waiting_room) ? $stryes : $strno;
     $table->data[] = array($strwwaitingroom, $strwr);
 
+    $strjbh = ($zoom->option_jbh) ? $stryes : $strno;
+    $table->data[] = array($strjoinbeforehost, $strjbh);
+}
+
+$table->data[] = array($strauthenticatedusers, ($zoom->option_authenticated_users) ? $stryes : $strno);
+
+if (!$zoom->webinar) {
     $strvideohost = ($zoom->option_host_video) ? $stryes : $strno;
     $table->data[] = array($strstartvideohost, $strvideohost);
 
@@ -211,8 +215,17 @@ if (!$zoom->webinar) {
 }
 
 $table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom'));
+
+if (!empty($meetinginvite)) {
+    $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);
+    $showbutton = html_writer::tag('button', $strmeetinginviteshow,
+            array('id' => 'show-more-button', 'class' => 'btn btn-link pt-0 pl-0'));
+    $meetinginvitebody = html_writer::div($meetinginvitetext, '',
+            array('id' => 'show-more-body', 'style' => 'display: none;'));
+    $table->data[] = array($strmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, ''));
+}
+
 $table->data[] = array($strmuteuponentry, ($zoom->option_mute_upon_entry) ? $stryes : $strno);
-$table->data[] = array($strauthenticatedusers, ($zoom->option_authenticated_users) ? $stryes : $strno);
 
 if (!$zoom->recurring) {
     if (!$zoom->exists_on_zoom) {
@@ -226,15 +239,6 @@ if (!$zoom->recurring) {
     }
 
     $table->data[] = array($strstatus, $status);
-}
-
-if (!empty($meetinginvite)) {
-    $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);
-    $showbutton = html_writer::tag('button', $strmeetinginviteshow,
-        array('id' => 'show-more-button', 'class' => 'btn btn-link pt-0 pl-0'));
-    $meetinginvitebody = html_writer::div($meetinginvitetext, '',
-        array('id' => 'show-more-body', 'style' => 'display: none;'));
-    $table->data[] = array($strmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, ''));
 }
 
 $urlall = new moodle_url('/mod/zoom/index.php', array('id' => $course->id));
