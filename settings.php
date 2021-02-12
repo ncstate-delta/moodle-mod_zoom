@@ -150,13 +150,34 @@ if ($ADMIN->fulltree) {
     $defaultrequirepasscode->set_locked_flag_options(admin_setting_flag::ENABLED, true);
     $settings->add($defaultrequirepasscode);
 
+    $defaultwaitingroomoption = new admin_setting_configcheckbox('mod_zoom/defaultwaitingroomoption',
+            get_string('option_waiting_room', 'mod_zoom'),
+            get_string('option_waiting_room_help', 'mod_zoom'),
+            1, 1, 0);
+    $settings->add($defaultwaitingroomoption);
+
+    $defaultjoinbeforehost = new admin_setting_configcheckbox('mod_zoom/defaultjoinbeforehost',
+            get_string('option_jbh', 'mod_zoom'),
+            get_string('option_jbh_help', 'mod_zoom'),
+            0, 1, 0);
+    $settings->add($defaultjoinbeforehost);
+
+    $defaultauthusersoption = new admin_setting_configcheckbox('mod_zoom/defaultauthusersoption',
+            get_string('option_authenticated_users', 'mod_zoom'),
+            get_string('option_authenticated_users_help', 'mod_zoom'),
+            0, 1, 0);
+    $settings->add($defaultauthusersoption);
+
     $defaulthostvideo = new admin_setting_configcheckbox('mod_zoom/defaulthostvideo',
             get_string('option_host_video', 'mod_zoom'),
-            '', 0, 1, 0);
+            get_string('option_host_video_help', 'mod_zoom'),
+            0, 1, 0);
     $settings->add($defaulthostvideo);
 
     $defaultparticipantsvideo = new admin_setting_configcheckbox('mod_zoom/defaultparticipantsvideo',
-            get_string('option_participants_video', 'mod_zoom'), '', 0, 1, 0);
+            get_string('option_participants_video', 'mod_zoom'),
+            get_string('option_participants_video_help', 'mod_zoom'),
+            0, 1, 0);
     $settings->add($defaultparticipantsvideo);
 
     $audiochoices = array(ZOOM_AUDIO_TELEPHONY => get_string('audio_telephony', 'mod_zoom'),
@@ -164,26 +185,13 @@ if ($ADMIN->fulltree) {
                           ZOOM_AUDIO_BOTH => get_string('audio_both', 'mod_zoom'));
     $defaultaudiooption = new admin_setting_configselect('mod_zoom/defaultaudiooption',
             get_string('option_audio', 'mod_zoom'),
-            '', ZOOM_AUDIO_BOTH, $audiochoices);
+            get_string('option_audio_help', 'mod_zoom'),
+            ZOOM_AUDIO_BOTH, $audiochoices);
     $settings->add($defaultaudiooption);
-
-    $defaultjoinbeforehost = new admin_setting_configcheckbox('mod_zoom/defaultjoinbeforehost',
-            get_string('option_jbh', 'mod_zoom'),
-            '', 0, 1, 0);
-    $settings->add($defaultjoinbeforehost);
-
-    $defaultwaitingroomoption = new admin_setting_configcheckbox('mod_zoom/defaultwaitingroomoption',
-            get_string('option_waiting_room', 'mod_zoom'),
-            '', 1, 1, 0);
-    $settings->add($defaultwaitingroomoption);
-
-    $defaultauthusersoption = new admin_setting_configcheckbox('mod_zoom/defaultauthusersoption',
-            get_string('option_authenticated_users', 'mod_zoom'),
-            '', 0, 1, 0);
-    $settings->add($defaultauthusersoption);
 
     $defaultmuteuponentryoption = new admin_setting_configcheckbox('mod_zoom/defaultmuteuponentryoption',
             get_string('option_mute_upon_entry', 'mod_zoom'),
-            '', 1, 1, 0);
+            get_string('option_mute_upon_entry_help', 'mod_zoom'),
+            1, 1, 0);
     $settings->add($defaultmuteuponentryoption);
 }
