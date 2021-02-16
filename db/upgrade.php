@@ -438,5 +438,20 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2020120800, 'zoom');
     }
 
+    if ($oldversion < 2021012902) {
+        // Define field option_encryption_type to be added to zoom.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_encryption_type', XMLDB_TYPE_CHAR, '20', null, null, null, 'enhanced_encryption',
+                'option_authenticated_users');
+
+        // Conditionally launch add field option_encryption_type.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2021012902, 'zoom');
+    }
+
     return true;
 }

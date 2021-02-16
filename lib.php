@@ -198,6 +198,9 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->password)) {
         $newzoom->password = $response->password;
     }
+    if (isset($response->settings->encryption_type)) {
+        $newzoom->option_encryption_type = $response->settings->encryption_type;
+    }
     if (isset($response->settings->join_before_host)) {
         $newzoom->option_jbh = $response->settings->join_before_host;
     }
