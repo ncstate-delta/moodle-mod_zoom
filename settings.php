@@ -133,6 +133,16 @@ if ($ADMIN->fulltree) {
             $webinarchoices);
     $settings->add($offerwebinar);
 
+    $encryptionchoices = array(ZOOM_ENCRYPTION_DISABLE => get_string('encryptiontype_disable', 'mod_zoom'),
+            ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE => get_string('encryptiontype_showonlyife2epossible', 'mod_zoom'),
+            ZOOM_ENCRYPTION_ALWAYSSHOW => get_string('encryptiontype_alwaysshow', 'mod_zoom'));
+    $offerencryption = new admin_setting_configselect('mod_zoom/showencryptiontype',
+            get_string('encryptiontype', 'mod_zoom'),
+            get_string('encryptiontype_desc', 'mod_zoom'),
+            ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE,
+            $encryptionchoices);
+    $settings->add($offerencryption);
+
     // Default Zoom settings.
     $settings->add(new admin_setting_heading('mod_zoom/defaultsettings',
             get_string('defaultsettings', 'mod_zoom'),
@@ -149,6 +159,14 @@ if ($ADMIN->fulltree) {
             1);
     $defaultrequirepasscode->set_locked_flag_options(admin_setting_flag::ENABLED, true);
     $settings->add($defaultrequirepasscode);
+
+    $encryptionchoices = array(ZOOM_ENCRYPTION_TYPE_ENHANCED => get_string('option_encryption_type_enhancedencryption', 'mod_zoom'),
+            ZOOM_ENCRYPTION_TYPE_E2EE => get_string('option_encryption_type_endtoendencryption', 'mod_zoom'));
+    $defaultencryptiontypeoption = new admin_setting_configselect('mod_zoom/defaultencryptiontypeoption',
+            get_string('option_encryption_type', 'mod_zoom'),
+            get_string('option_encryption_type_help', 'mod_zoom'),
+            ZOOM_ENCRYPTION_TYPE_ENHANCED, $encryptionchoices);
+    $settings->add($defaultencryptiontypeoption);
 
     $defaultwaitingroomoption = new admin_setting_configcheckbox('mod_zoom/defaultwaitingroomoption',
             get_string('option_waiting_room', 'mod_zoom'),

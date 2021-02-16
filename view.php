@@ -82,6 +82,9 @@ $strduration = get_string('duration', 'mod_zoom');
 $strpassprotect = get_string('passwordprotected', 'mod_zoom');
 $strpassword = get_string('password', 'mod_zoom');
 $strjoinlink = get_string('join_link', 'mod_zoom');
+$strencryption = get_string('option_encryption_type', 'mod_zoom');
+$strencryptionenhanced = get_string('option_encryption_type_enhancedencryption', 'mod_zoom');
+$strencryptionendtoend = get_string('option_encryption_type_endtoendencryption', 'mod_zoom');
 $strjoinbeforehost = get_string('joinbeforehost', 'mod_zoom');
 $strstartvideohost = get_string('starthostjoins', 'mod_zoom');
 $strstartvideopart = get_string('startpartjoins', 'mod_zoom');
@@ -199,6 +202,11 @@ if ($hostuser) {
 if (!$zoom->webinar) {
     $strwr = ($zoom->option_waiting_room) ? $stryes : $strno;
     $table->data[] = array($strwwaitingroom, $strwr);
+
+    if ($config->showencryptiontype != ZOOM_ENCRYPTION_DISABLE) {
+        $strenc = ($zoom->option_encryption_type === ZOOM_ENCRYPTION_TYPE_E2EE) ? $strencryptionendtoend : $strencryptionenhanced;
+        $table->data[] = array($strencryption, $strenc);
+    }
 
     $strjbh = ($zoom->option_jbh) ? $stryes : $strno;
     $table->data[] = array($strjoinbeforehost, $strjbh);

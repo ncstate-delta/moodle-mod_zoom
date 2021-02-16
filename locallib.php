@@ -56,6 +56,13 @@ define('ZOOM_INVALID_USER_ERROR_CODE', 1120);
 define('ZOOM_WEBINAR_DISABLE', 0);
 define('ZOOM_WEBINAR_SHOWONLYIFLICENSE', 1);
 define('ZOOM_WEBINAR_ALWAYSSHOW', 2);
+// Encryption type options.
+define('ZOOM_ENCRYPTION_DISABLE', 0);
+define('ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE', 1);
+define('ZOOM_ENCRYPTION_ALWAYSSHOW', 2);
+// Encryption types. String values for Zoom API.
+define('ZOOM_ENCRYPTION_TYPE_ENHANCED', 'enhanced_encryption');
+define('ZOOM_ENCRYPTION_TYPE_E2EE', 'e2ee');
 
 /**
  * Entry not found on Zoom.
