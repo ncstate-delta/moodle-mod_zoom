@@ -178,19 +178,32 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('recurring', $config->defaultrecurring);
         $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
 
-        if ($isnew) {
-            // Add webinar, disabled if the user cannot create webinars.
-            $webinarattr = null;
-            if (!$service->_get_user_settings($zoomuser->id)->feature->webinar) {
-                $webinarattr = array('disabled' => true, 'group' => null);
+        // Supplementary feature: Webinars.
+        // Only show if the admin did not disable this feature completely.
+        if ($config->showwebinars != ZOOM_WEBINAR_DISABLE) {
+            // If we are creating a new instance.
+            if ($isnew) {
+                // Check if the user has a webinar license.
+                $haswebinarlicense = $service->_get_user_settings($zoomuser->id)->feature->webinar;
+
+                // Only show if the admin always wants to show this widget or
+                // if the admin wants to show this widget conditionally and the user has a valid license.
+                if ($config->showwebinars == ZOOM_WEBINAR_ALWAYSSHOW ||
+                        ($config->showwebinars == ZOOM_WEBINAR_SHOWONLYIFLICENSE && $haswebinarlicense)) {
+                    // Add webinar option, disabled if the user cannot create webinars.
+                    $webinarattr = null;
+                    if (!$haswebinarlicense) {
+                        $webinarattr = array('disabled' => true, 'group' => null);
+                    }
+                    $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '', $webinarattr);
+                    $mform->setDefault('webinar', 0);
+                    $mform->addHelpButton('webinar', 'webinar', 'zoom');
+                }
+            } else if ($this->current->webinar) {
+                $mform->addElement('html', get_string('webinar_already_true', 'zoom'));
+            } else {
+                $mform->addElement('html', get_string('webinar_already_false', 'zoom'));
             }
-            $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '', $webinarattr);
-            $mform->setDefault('webinar', 0);
-            $mform->addHelpButton('webinar', 'webinar', 'zoom');
-        } else if ($this->current->webinar) {
-            $mform->addElement('html', get_string('webinar_already_true', 'zoom'));
-        } else {
-            $mform->addElement('html', get_string('webinar_already_false', 'zoom'));
         }
 
         // Deals with password manager issues.
