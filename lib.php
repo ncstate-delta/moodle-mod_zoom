@@ -69,6 +69,12 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
     $service = new mod_zoom_webservice();
 
+    if (defined('PHPUNIT_TEST') && PHPUNIT_TEST) {
+        $zoom->id = $DB->insert_record('zoom', $zoom);
+        zoom_grade_item_update($zoom);
+        return $zoom->id;
+    }
+
     // Deals with password manager issues.
     $zoom->password = $zoom->meetingcode;
     unset($zoom->meetingcode);
@@ -474,7 +480,13 @@ function zoom_grade_item_update(stdClass $zoom, $grades=null) {
         $item['gradetype'] = GRADE_TYPE_SCALE;
         $item['scaleid']   = -$zoom->grade;
     } else {
-        $item['gradetype'] = GRADE_TYPE_NONE;
+        $gradebook = grade_get_grades($zoom->course, 'mod', 'zoom', $zoom->id);
+        // Prevent the gradetype from switching to None if grades exist.
+        if (empty($gradebook->items[0]->grades)) {
+            $item['gradetype'] = GRADE_TYPE_NONE;
+        } else {
+            return;
+        }
     }
 
     if ($grades === 'reset') {
