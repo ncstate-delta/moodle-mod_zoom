@@ -31,7 +31,7 @@ class mod_zoom_generator extends testing_module_generator {
      * @param array $options
      * @return stdClass Zoom instance
      */
-    public function create_instance($record = null, array $options = NULL) {
+    public function create_instance($record = null, array $options = null) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
