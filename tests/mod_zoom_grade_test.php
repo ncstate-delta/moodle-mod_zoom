@@ -71,7 +71,6 @@ class mod_zoom_grade_update_test extends advanced_testcase {
         // Gradebook should contain a grade for student.
         $gradebook = grade_get_grades($this->course->id, 'mod', 'zoom', $instance->id, $this->student->id);
         $this->assertEquals(1, count($gradebook->items[0]->grades));
-        print_object($gradebook);
         $this->assertEquals(50, $gradebook->items[0]->grades[$this->student->id]->grade);
 
         // Update grade for student.
@@ -114,10 +113,10 @@ class mod_zoom_grade_update_test extends advanced_testcase {
         $this->assertEquals(100, $gradebook->items[0]->grademax);
     }
 
-	/**
-	 * Tests that the Zoom grades can be deleted.
-	 */
-	public function test_grade_delete() {
+    /**
+     * Tests that the Zoom grades can be deleted.
+     */
+    public function test_grade_delete() {
         $params['course'] = $this->course->id;
         $params['grade'] = 100;
 
@@ -141,5 +140,5 @@ class mod_zoom_grade_update_test extends advanced_testcase {
 
         // Verify gradebook is empty.
         $this->assertEmpty($gradebook->items);
-	}
+    }
 }
