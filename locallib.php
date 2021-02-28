@@ -249,8 +249,8 @@ function zoom_fatal_error($errorcode, $module='', $continuelink='', $a=null) {
 function zoom_get_instance_setup() {
     global $DB;
 
-    $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
-    $n  = optional_param('n', 0, PARAM_INT);  // ... zoom instance ID - it should be named as the first character of the module.
+    $id = optional_param('id', 0, PARAM_INT); // Course_module ID.
+    $n  = optional_param('n', 0, PARAM_INT);  // Zoom instance ID.
 
     if ($id) {
         $cm         = get_coursemodule_from_id('zoom', $id, 0, false, MUST_EXIST);

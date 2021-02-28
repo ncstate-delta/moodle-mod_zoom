@@ -158,7 +158,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 300), 'maxlength', 300, 'client');
 
-        // Add description ('intro' and 'introformat').
+        // Add description 'intro' and 'introformat'.
         $this->standard_intro_elements();
 
         // Adding the "schedule" fieldset, where all settings relating to date and time are shown.
@@ -263,7 +263,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                     ($config->showencryptiontype == ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE && $e2eispossible)) {
                 // Only show if the admin always wants to show this widget or
                 // if the admin wants to show this widget conditionally and the user can use e2e encryption.
-                
+
                 // Add encryption type option, disabled if the user can't use e2e encryption.
                 $encryptionattr = null;
                 $defaultencryptiontype = $config->defaultencryptiontypeoption;
