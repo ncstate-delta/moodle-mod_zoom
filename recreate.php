@@ -45,9 +45,9 @@ $service = new mod_zoom_webservice();
 
 // Set the current zoom table entry to use the new meeting (meeting_id/etc).
 $response = $service->create_meeting($zoom);
-$zoom->timemodified = time();
-$zoom->meeting_id = $response->id;
+$zoom = populate_zoom_from_response($zoom, $response);
 $DB->update_record('zoom', $zoom);
 
-// Return to course page.
-redirect(course_get_url($course->id));
+// Return to Zoom page.
+redirect(new moodle_url('/mod/zoom/view.php', ['id' => $cm->id]),
+        get_string('recreatesuccessful', 'mod_zoom'));
