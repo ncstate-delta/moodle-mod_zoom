@@ -63,15 +63,15 @@ class get_meeting_reports extends \core\task\scheduled_task {
     public $service = null;
 
     /**
-     * Compare function for usort.
+     * Sort meetings by end time.
      * @param array $a One meeting/webinar object array to compare.
      * @param array $b Another meeting/webinar object array to compare.
      */
     private function cmp($a, $b) {
-        if ($a->start_time == $b->start_time) {
+        if ($a->end_time == $b->end_time) {
             return 0;
         }
-        return ($a->start_time < $b->start_time) ? -1 : 1;
+        return ($a->end_time < $b->end_time) ? -1 : 1;
     }
 
     /**
@@ -154,7 +154,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
             $allmeetings = $this->get_meetings_via_reports($start, $end, $hostuuids);
         }
 
-        // Sort all meetings based on start_time so that we know where to pick
+        // Sort all meetings based on end_time so that we know where to pick
         // up again if we run out of API calls.
         $allmeetings = array_map([get_class(), 'normalize_meeting'], $allmeetings);
         usort($allmeetings, [get_class(), 'cmp']);
@@ -163,7 +163,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         foreach ($allmeetings as $meeting) {
             // Only process meetings if they happened after the time we left off.
-            $meetingtime = strtotime($meeting->start_time);
+            $meetingtime = strtotime($meeting->end_time);
             if ($runningastask && $meetingtime <= $starttime) {
                 continue;
             }
