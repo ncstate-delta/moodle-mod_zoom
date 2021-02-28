@@ -255,10 +255,15 @@ class mod_zoom_mod_form extends moodleform_mod {
             // Check if the user can use e2e encryption.
             $e2eispossible = $securitysettings->end_to_end_encrypted_meetings;
 
-            // Only show if the admin always wants to show this widget or
-            // if the admin wants to show this widget conditionally and the user can use e2e encryption.
-            if ($config->showencryptiontype == ZOOM_ENCRYPTION_ALWAYSSHOW ||
+            if ($config->showencryptiontype == ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE && !$e2eispossible) {
+                // If user cannot use e2e and option is not shown to user,
+                // default to enhanced encryption.
+                $mform->addElement('hidden', 'option_encryption_type', ZOOM_ENCRYPTION_TYPE_ENHANCED);
+            } else if ($config->showencryptiontype == ZOOM_ENCRYPTION_ALWAYSSHOW ||
                     ($config->showencryptiontype == ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE && $e2eispossible)) {
+                // Only show if the admin always wants to show this widget or
+                // if the admin wants to show this widget conditionally and the user can use e2e encryption.
+                
                 // Add encryption type option, disabled if the user can't use e2e encryption.
                 $encryptionattr = null;
                 $defaultencryptiontype = $config->defaultencryptiontypeoption;
@@ -278,6 +283,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $mform->addHelpButton('option_encryption_type_group', 'option_encryption_type', 'zoom');
                 $mform->disabledIf('option_encryption_type_group', 'webinar', 'checked');
             }
+            $mform->setType('option_encryption_type', PARAM_ALPHAEXT);
         }
 
         // Add waiting room widget.
