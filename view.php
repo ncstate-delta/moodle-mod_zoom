@@ -152,9 +152,47 @@ if ($iszoommanager) {
     $sessions->colspan = $numcolumns;
     $table->data[] = array($sessions);
 
-    // Display alternate hosts if they exist.
-    if (!empty($zoom->alternative_hosts)) {
-        $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts);
+    // Display alternative hosts if they exist and if the admin did not disable the feature.
+    if ($config->showalternativehosts != ZOOM_ALTERNATIVEHOSTS_DISABLE && !empty($zoom->alternative_hosts)) {
+        // If the admin did show the alternative hosts user picker, we try to show the real names of the users here.
+        if ($config->showalternativehosts == ZOOM_ALTERNATIVEHOSTS_PICKER) {
+            // Unfortunately, the host is not only able to add alternative hosts in Moodle with the user picker.
+            // He is also able to add any alternative host with an email address in Zoom directly.
+            // Thus, we get a) the array of existing Moodle user objects and b) the array of non-Moodle user mail addresses
+            // based on the given set of alternative host email addresses.
+            $alternativehostusers = zoom_get_users_from_alternativehosts($alternativehosts);
+            $alternativehostnonusers = zoom_get_nonusers_from_alternativehosts($alternativehosts);
+
+            // Create a comma-separated string of the existing Moodle users' fullnames.
+            $alternativehostusersstring = implode(', ', array_map('fullname', $alternativehostusers));
+
+            // Create a comma-separated string of the non-Moodle users' mail addresses.
+            foreach ($alternativehostnonusers as &$ah) {
+                $ah .= ' ('.get_string('externaluser', 'mod_zoom').')';
+            }
+            $alternativehostnonusersstring = implode(', ', $alternativehostnonusers);
+
+            // Concatenate both strings.
+            // If we have existing Moodle users and non-Moodle users.
+            if ($alternativehostusersstring != '' && $alternativehostnonusersstring != '') {
+                $alternativehoststring = $alternativehostusersstring.', '.$alternativehostnonusersstring;
+
+                // If we just have existing Moodle users.
+            } else if ($alternativehostusersstring != '') {
+                $alternativehoststring = $alternativehostusersstring;
+
+                // It seems as if we just have non-Moodle users.
+            } else {
+                $alternativehoststring = $alternativehostnonusersstring;
+            }
+
+            // Output the concatenated string of alternative hosts.
+            $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $alternativehoststring);
+
+            // Otherwise we stick with the plain list of email addresses as we got it from Zoom directly.
+        } else {
+            $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts);
+        }
     }
 }
 
