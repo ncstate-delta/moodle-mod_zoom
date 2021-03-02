@@ -453,5 +453,31 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2021012902, 'zoom');
     }
 
+    if ($oldversion < 2021012903) {
+        // Quite all settings in settings.php had the 'mod_zoom' prefix while it should have had a 'zoom' prefix.
+        // After the prefix has been modified in settings.php, the existing settings in DB have to be modified as well.
+
+        // Get the existing settings with the old prefix from the DB,
+        // but don't get the 'version' setting as this one has to have the 'mod_zoom' prefix.
+        $oldsettingsql = 'SELECT name
+                          FROM {config_plugins}
+                          WHERE plugin = :plugin AND name != :name';
+        $oldsettingparams = array('plugin' => 'mod_zoom', 'name' => 'version');
+        $oldsettingkeys = $DB->get_fieldset_sql($oldsettingsql, $oldsettingparams);
+
+        // Change the prefix of each setting.
+        foreach ($oldsettingkeys as $oldsettingkey) {
+            // Get the value of the existing setting with the old prefix.
+            $oldsettingvalue = get_config('mod_zoom', $oldsettingkey);
+            // Set the value of the setting with the new prefix.
+            set_config($oldsettingkey, $oldsettingvalue, 'zoom');
+            // Drop the setting with the old prefix.
+            set_config($oldsettingkey, null, 'mod_zoom');
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2021012903, 'zoom');
+    }
+
     return true;
 }

@@ -49,7 +49,7 @@ $PAGE->set_title("$course->shortname: $strname");
 $PAGE->set_heading($course->fullname);
 $PAGE->set_pagelayout('incourse');
 
-$maskparticipantdata = get_config('mod_zoom', 'maskparticipantdata');
+$maskparticipantdata = get_config('zoom', 'maskparticipantdata');
 // If participant data is masked then display a message stating as such and be done with it.
 if ($maskparticipantdata) {
     zoom_fatal_error(

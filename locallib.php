@@ -337,7 +337,7 @@ function zoom_get_sessions_for_display($meetingid) {
  * @return array Array of booleans: [in progress, available, finished].
  */
 function zoom_get_state($zoom) {
-    $config = get_config('mod_zoom');
+    $config = get_config('zoom');
     $now = time();
 
     $firstavailable = $zoom->start_time - ($config->firstabletojoin * 60);

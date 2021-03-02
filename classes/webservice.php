@@ -119,7 +119,7 @@ class mod_zoom_webservice {
      * @throws moodle_exception Moodle exception is thrown for missing config settings.
      */
     public function __construct() {
-        $config = get_config('mod_zoom');
+        $config = get_config('zoom');
         if (!empty($config->apikey)) {
             $this->apikey = $config->apikey;
         } else {
@@ -178,7 +178,7 @@ class mod_zoom_webservice {
         global $CFG;
         $url = self::API_URL . $path;
         $method = strtolower($method);
-        $proxyhost = get_config('mod_zoom', 'proxyhost');
+        $proxyhost = get_config('zoom', 'proxyhost');
         $cfg = new stdClass();
         if (!empty($proxyhost)) {
             $cfg->proxyhost = $CFG->proxyhost;
@@ -252,7 +252,7 @@ class mod_zoom_webservice {
                         $timediff = $retryafter - time();
                         // If we have no API calls remaining, save retry-after.
                         if ($header['x-ratelimit-remaining'] == 0 && !empty($retryafter)) {
-                            set_config('retry-after', $retryafter, 'mod_zoom');
+                            set_config('retry-after', $retryafter, 'zoom');
                             throw new zoom_api_limit_exception($response->message,
                                     $response->code, $retryafter);
                         } else if (!(defined('PHPUNIT_TEST') && PHPUNIT_TEST)) {

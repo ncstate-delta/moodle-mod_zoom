@@ -42,8 +42,8 @@ class mod_zoom_grade_update_test extends advanced_testcase {
     public function setUp(): void {
         $this->resetAfterTest();
         // Set fake values for the Zoom module settings.
-        set_config('apikey', 'test', 'mod_zoom');
-        set_config('apisecret', 'test', 'mod_zoom');
+        set_config('apikey', 'test', 'zoom');
+        set_config('apisecret', 'test', 'zoom');
 
         $this->course = $this->getDataGenerator()->create_course();
         $this->teacher = $this->getDataGenerator()->create_and_enrol($this->course, 'teacher');

@@ -31,7 +31,7 @@ require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
 require_once(dirname(__FILE__).'/../../lib/moodlelib.php');
 
-$config = get_config('mod_zoom');
+$config = get_config('zoom');
 
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 
@@ -180,7 +180,7 @@ $haspassword = (isset($zoom->password) && $zoom->password !== '');
 $strhaspass = ($haspassword) ? $stryes : $strno;
 $table->data[] = array($strpassprotect, $strhaspass);
 
-if ($userishost && $haspassword || get_config('mod_zoom', 'displaypassword')) {
+if ($userishost && $haspassword || get_config('zoom', 'displaypassword')) {
     $table->data[] = array($strpassword, $zoom->password);
 }
 

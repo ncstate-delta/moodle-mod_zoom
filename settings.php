@@ -47,54 +47,54 @@ if ($ADMIN->fulltree) {
         }
         $statusmessage = $OUTPUT->notification(get_string('connectionstatus', 'mod_zoom') .
                 ': ' . get_string($status, 'mod_zoom') . $errormessage, $notifyclass);
-        $connectionstatus = new admin_setting_heading('mod_zoom/connectionstatus', $statusmessage, '');
+        $connectionstatus = new admin_setting_heading('zoom/connectionstatus', $statusmessage, '');
         $settings->add($connectionstatus);
     }
 
     // Connection settings.
-    $settings->add(new admin_setting_heading('mod_zoom/connectionsettings',
+    $settings->add(new admin_setting_heading('zoom/connectionsettings',
             get_string('connectionsettings', 'mod_zoom'),
             get_string('connectionsettings_desc', 'mod_zoom')));
 
-    $apikey = new admin_setting_configtext('mod_zoom/apikey', get_string('apikey', 'mod_zoom'),
+    $apikey = new admin_setting_configtext('zoom/apikey', get_string('apikey', 'mod_zoom'),
             get_string('apikey_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
     $settings->add($apikey);
 
-    $apisecret = new admin_setting_configpasswordunmask('mod_zoom/apisecret', get_string('apisecret', 'mod_zoom'),
+    $apisecret = new admin_setting_configpasswordunmask('zoom/apisecret', get_string('apisecret', 'mod_zoom'),
             get_string('apisecret_desc', 'mod_zoom'), '');
     $settings->add($apisecret);
 
-    $zoomurl = new admin_setting_configtext('mod_zoom/zoomurl', get_string('zoomurl', 'mod_zoom'),
+    $zoomurl = new admin_setting_configtext('zoom/zoomurl', get_string('zoomurl', 'mod_zoom'),
             get_string('zoomurl_desc', 'mod_zoom'), '', PARAM_URL);
     $settings->add($zoomurl);
 
-    $proxyhost = new admin_setting_configtext('mod_zoom/proxyhost',
+    $proxyhost = new admin_setting_configtext('zoom/proxyhost',
             get_string('option_proxyhost', 'mod_zoom'),
             get_string('option_proxyhost_desc', 'mod_zoom'), '', '/^[a-zA-Z0-9.-]+:[0-9]+$|^$/');
     $settings->add($proxyhost);
 
     // License settings.
-    $settings->add(new admin_setting_heading('mod_zoom/licensesettings',
+    $settings->add(new admin_setting_heading('zoom/licensesettings',
             get_string('licensesettings', 'mod_zoom'),
             get_string('licensesettings_desc', 'mod_zoom')));
 
-    $licensescount = new admin_setting_configtext('mod_zoom/licensesnumber',
+    $licensescount = new admin_setting_configtext('zoom/licensesnumber',
             get_string('licensesnumber', 'mod_zoom'),
             null, 0, PARAM_INT);
     $settings->add($licensescount);
 
-    $utmost = new admin_setting_configcheckbox('mod_zoom/utmost',
+    $utmost = new admin_setting_configcheckbox('zoom/utmost',
             get_string('redefinelicenses', 'mod_zoom'),
             get_string('lowlicenses', 'mod_zoom'), 0, 1);
     $settings->add($utmost);
 
-    $recycleonjoin = new admin_setting_configcheckbox('mod_zoom/recycleonjoin',
+    $recycleonjoin = new admin_setting_configcheckbox('zoom/recycleonjoin',
             get_string('recycleonjoin', 'mod_zoom'),
             get_string('licenseonjoin', 'mod_zoom'), 0, 1);
     $settings->add($recycleonjoin);
 
     // Global settings.
-    $settings->add(new admin_setting_heading('mod_zoom/globalsettings',
+    $settings->add(new admin_setting_heading('zoom/globalsettings',
             get_string('globalsettings', 'mod_zoom'),
             get_string('globalsettings_desc', 'mod_zoom')));
 
@@ -103,30 +103,30 @@ if ($ADMIN->fulltree) {
     foreach ($jointimechoices as $minutes) {
         $jointimeselect[$minutes] = $minutes . ' ' . get_string('mins');
     }
-    $firstabletojoin = new admin_setting_configselect('mod_zoom/firstabletojoin',
+    $firstabletojoin = new admin_setting_configselect('zoom/firstabletojoin',
             get_string('firstjoin', 'mod_zoom'), get_string('firstjoin_desc', 'mod_zoom'),
             15, $jointimeselect);
     $settings->add($firstabletojoin);
 
-    $displaypassword = new admin_setting_configcheckbox('mod_zoom/displaypassword',
+    $displaypassword = new admin_setting_configcheckbox('zoom/displaypassword',
             get_string('displaypassword', 'mod_zoom'),
             get_string('displaypassword_help', 'mod_zoom'), 0, 1, 0);
     $settings->add($displaypassword);
 
-    $maskparticipantdata = new admin_setting_configcheckbox('mod_zoom/maskparticipantdata',
+    $maskparticipantdata = new admin_setting_configcheckbox('zoom/maskparticipantdata',
             get_string('maskparticipantdata', 'mod_zoom'),
             get_string('maskparticipantdata_help', 'mod_zoom'), 0, 1);
     $settings->add($maskparticipantdata);
 
     // Supplementary features settings.
-    $settings->add(new admin_setting_heading('mod_zoom/supplementaryfeaturessettings',
+    $settings->add(new admin_setting_heading('zoom/supplementaryfeaturessettings',
             get_string('supplementaryfeaturessettings', 'mod_zoom'),
             get_string('supplementaryfeaturessettings_desc', 'mod_zoom')));
 
     $webinarchoices = array(ZOOM_WEBINAR_DISABLE => get_string('webinar_disable', 'mod_zoom'),
             ZOOM_WEBINAR_SHOWONLYIFLICENSE => get_string('webinar_showonlyiflicense', 'mod_zoom'),
             ZOOM_WEBINAR_ALWAYSSHOW => get_string('webinar_alwaysshow', 'mod_zoom'));
-    $offerwebinar = new admin_setting_configselect('mod_zoom/showwebinars',
+    $offerwebinar = new admin_setting_configselect('zoom/showwebinars',
             get_string('webinar', 'mod_zoom'),
             get_string('webinar_desc', 'mod_zoom'),
             ZOOM_WEBINAR_ALWAYSSHOW,
@@ -136,7 +136,7 @@ if ($ADMIN->fulltree) {
     $encryptionchoices = array(ZOOM_ENCRYPTION_DISABLE => get_string('encryptiontype_disable', 'mod_zoom'),
             ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE => get_string('encryptiontype_showonlyife2epossible', 'mod_zoom'),
             ZOOM_ENCRYPTION_ALWAYSSHOW => get_string('encryptiontype_alwaysshow', 'mod_zoom'));
-    $offerencryption = new admin_setting_configselect('mod_zoom/showencryptiontype',
+    $offerencryption = new admin_setting_configselect('zoom/showencryptiontype',
             get_string('encryptiontype', 'mod_zoom'),
             get_string('encryptiontype_desc', 'mod_zoom'),
             ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE,
@@ -144,11 +144,11 @@ if ($ADMIN->fulltree) {
     $settings->add($offerencryption);
 
     // Default Zoom settings.
-    $settings->add(new admin_setting_heading('mod_zoom/defaultsettings',
+    $settings->add(new admin_setting_heading('zoom/defaultsettings',
             get_string('defaultsettings', 'mod_zoom'),
             get_string('defaultsettings_help', 'mod_zoom')));
 
-    $defaultrecurring = new admin_setting_configcheckbox('mod_zoom/defaultrecurring',
+    $defaultrecurring = new admin_setting_configcheckbox('zoom/defaultrecurring',
             get_string('recurringmeeting', 'mod_zoom'),
             get_string('recurringmeeting_help', 'mod_zoom'), 0, 1, 0);
     $settings->add($defaultrecurring);
@@ -162,37 +162,37 @@ if ($ADMIN->fulltree) {
 
     $encryptionchoices = array(ZOOM_ENCRYPTION_TYPE_ENHANCED => get_string('option_encryption_type_enhancedencryption', 'mod_zoom'),
             ZOOM_ENCRYPTION_TYPE_E2EE => get_string('option_encryption_type_endtoendencryption', 'mod_zoom'));
-    $defaultencryptiontypeoption = new admin_setting_configselect('mod_zoom/defaultencryptiontypeoption',
+    $defaultencryptiontypeoption = new admin_setting_configselect('zoom/defaultencryptiontypeoption',
             get_string('option_encryption_type', 'mod_zoom'),
             get_string('option_encryption_type_help', 'mod_zoom'),
             ZOOM_ENCRYPTION_TYPE_ENHANCED, $encryptionchoices);
     $settings->add($defaultencryptiontypeoption);
 
-    $defaultwaitingroomoption = new admin_setting_configcheckbox('mod_zoom/defaultwaitingroomoption',
+    $defaultwaitingroomoption = new admin_setting_configcheckbox('zoom/defaultwaitingroomoption',
             get_string('option_waiting_room', 'mod_zoom'),
             get_string('option_waiting_room_help', 'mod_zoom'),
             1, 1, 0);
     $settings->add($defaultwaitingroomoption);
 
-    $defaultjoinbeforehost = new admin_setting_configcheckbox('mod_zoom/defaultjoinbeforehost',
+    $defaultjoinbeforehost = new admin_setting_configcheckbox('zoom/defaultjoinbeforehost',
             get_string('option_jbh', 'mod_zoom'),
             get_string('option_jbh_help', 'mod_zoom'),
             0, 1, 0);
     $settings->add($defaultjoinbeforehost);
 
-    $defaultauthusersoption = new admin_setting_configcheckbox('mod_zoom/defaultauthusersoption',
+    $defaultauthusersoption = new admin_setting_configcheckbox('zoom/defaultauthusersoption',
             get_string('option_authenticated_users', 'mod_zoom'),
             get_string('option_authenticated_users_help', 'mod_zoom'),
             0, 1, 0);
     $settings->add($defaultauthusersoption);
 
-    $defaulthostvideo = new admin_setting_configcheckbox('mod_zoom/defaulthostvideo',
+    $defaulthostvideo = new admin_setting_configcheckbox('zoom/defaulthostvideo',
             get_string('option_host_video', 'mod_zoom'),
             get_string('option_host_video_help', 'mod_zoom'),
             0, 1, 0);
     $settings->add($defaulthostvideo);
 
-    $defaultparticipantsvideo = new admin_setting_configcheckbox('mod_zoom/defaultparticipantsvideo',
+    $defaultparticipantsvideo = new admin_setting_configcheckbox('zoom/defaultparticipantsvideo',
             get_string('option_participants_video', 'mod_zoom'),
             get_string('option_participants_video_help', 'mod_zoom'),
             0, 1, 0);
@@ -201,13 +201,13 @@ if ($ADMIN->fulltree) {
     $audiochoices = array(ZOOM_AUDIO_TELEPHONY => get_string('audio_telephony', 'mod_zoom'),
                           ZOOM_AUDIO_VOIP => get_string('audio_voip', 'mod_zoom'),
                           ZOOM_AUDIO_BOTH => get_string('audio_both', 'mod_zoom'));
-    $defaultaudiooption = new admin_setting_configselect('mod_zoom/defaultaudiooption',
+    $defaultaudiooption = new admin_setting_configselect('zoom/defaultaudiooption',
             get_string('option_audio', 'mod_zoom'),
             get_string('option_audio_help', 'mod_zoom'),
             ZOOM_AUDIO_BOTH, $audiochoices);
     $settings->add($defaultaudiooption);
 
-    $defaultmuteuponentryoption = new admin_setting_configcheckbox('mod_zoom/defaultmuteuponentryoption',
+    $defaultmuteuponentryoption = new admin_setting_configcheckbox('zoom/defaultmuteuponentryoption',
             get_string('option_mute_upon_entry', 'mod_zoom'),
             get_string('option_mute_upon_entry_help', 'mod_zoom'),
             1, 1, 0);
