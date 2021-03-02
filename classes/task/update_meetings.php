@@ -61,7 +61,7 @@ class update_meetings extends \core\task\scheduled_task {
      */
     public function execute() {
         global $CFG, $DB;
-        $config = get_config('mod_zoom');
+        $config = get_config('zoom');
         if (empty($config->apikey)) {
             mtrace('Skipping task - ', get_string('zoomerr_apikey_missing', 'zoom'));
             return;

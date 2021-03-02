@@ -45,7 +45,7 @@ class mod_zoom_mod_form extends moodleform_mod {
      */
     public function definition() {
         global $PAGE, $USER;
-        $config = get_config('mod_zoom');
+        $config = get_config('zoom');
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
 
         $isnew = empty($this->_cm);
@@ -399,7 +399,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         global $CFG, $USER;
         $errors = array();
 
-        $config = get_config('mod_zoom');
+        $config = get_config('zoom');
 
         // Only check for scheduled meetings.
         if (empty($data['recurring'])) {

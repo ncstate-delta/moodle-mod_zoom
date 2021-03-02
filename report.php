@@ -50,7 +50,7 @@ echo $OUTPUT->heading($strtitle, 4);
 
 $sessions = zoom_get_sessions_for_display($zoom->meeting_id);
 if (!empty($sessions)) {
-    $maskparticipantdata = get_config('mod_zoom', 'maskparticipantdata');
+    $maskparticipantdata = get_config('zoom', 'maskparticipantdata');
     $table = new html_table();
     $table->head = array(get_string('title', 'mod_zoom'),
                          get_string('starttime', 'mod_zoom'),

@@ -86,7 +86,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
     public function execute($paramstart = null, $paramend = null, $hostuuids = null) {
         global $CFG, $DB;
 
-        $config = get_config('mod_zoom');
+        $config = get_config('zoom');
         if (empty($config->apikey)) {
             mtrace('Skipping task - ', get_string('zoomerr_apikey_missing', 'zoom'));
             return;
@@ -96,7 +96,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
         }
 
         // See if we cannot make anymore API calls.
-        $retryafter = get_config('mod_zoom', 'retry-after');
+        $retryafter = get_config('zoom', 'retry-after');
         if (!empty($retryafter) && time() < $retryafter) {
             mtrace('Out of API calls, retry after ' . userdate($retryafter,
                     get_string('strftimedaydatetime', 'core_langconfig')));
@@ -109,7 +109,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         $this->debuggingenabled = debugging();
 
-        $starttime = get_config('mod_zoom', 'last_call_made_at');
+        $starttime = get_config('zoom', 'last_call_made_at');
         if (empty($starttime)) {
             // Zoom only provides data from 30 days ago.
             $starttime = strtotime('-30 days');
@@ -174,7 +174,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                     // unrecoverable error. Try to pick up where we left off.
                     if ($runningastask) {
                         // Only want to resume if we were processing all reports.
-                        set_config('last_call_made_at', $meetingtime - 1, 'mod_zoom');
+                        set_config('last_call_made_at', $meetingtime - 1, 'zoom');
                     }
 
                     $recordedallmeetings = false;
@@ -186,13 +186,13 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 // Some unknown error, need to handle it so we can record
                 // where we left off.
                 if ($runningastask) {
-                    set_config('last_call_made_at', $meetingtime - 1, 'mod_zoom');
+                    set_config('last_call_made_at', $meetingtime - 1, 'zoom');
                 }
             }
         }
         if ($recordedallmeetings && $runningastask) {
             // All finished, so save the time that we set end time for the initial query.
-            set_config('last_call_made_at', $endtime, 'mod_zoom');
+            set_config('last_call_made_at', $endtime, 'zoom');
         }
     }
 

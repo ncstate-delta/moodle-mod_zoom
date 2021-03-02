@@ -79,7 +79,7 @@ $completion->set_module_viewed($cm);
 
 // Upgrade host upon joining meeting, if host if not Licensed.
 if ($userishost) {
-    $config = get_config('mod_zoom');
+    $config = get_config('zoom');
     if (!empty($config->recycleonjoin)) {
         $service = new mod_zoom_webservice();
         $service->provide_license($zoom->host_id);
