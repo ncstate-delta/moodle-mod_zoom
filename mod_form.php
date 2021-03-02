@@ -363,8 +363,6 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Add alternative hosts.
         $mform->addElement('text', 'alternative_hosts', get_string('alternative_hosts', 'zoom'), array('size' => '64'));
         $mform->setType('alternative_hosts', PARAM_TEXT);
-        // Set the maximum field length to 255 because that's the limit on Zoom's end.
-        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->addHelpButton('alternative_hosts', 'alternative_hosts', 'zoom');
 
         // Add meeting id.
