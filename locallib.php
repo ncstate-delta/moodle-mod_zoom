@@ -67,6 +67,9 @@ define('ZOOM_ENCRYPTION_TYPE_E2EE', 'e2ee');
 define('ZOOM_ALTERNATIVEHOSTS_DISABLE', 0);
 define('ZOOM_ALTERNATIVEHOSTS_INPUTFIELD', 1);
 define('ZOOM_ALTERNATIVEHOSTS_PICKER', 2);
+// Scheduling privilege options.
+define('ZOOM_SCHEDULINGPRIVILEGE_DISABLE', 0);
+define('ZOOM_SCHEDULINGPRIVILEGE_ENABLE', 1);
 
 /**
  * Entry not found on Zoom.

@@ -344,26 +344,14 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addHelpButton('option_mute_upon_entry', 'option_mute_upon_entry', 'mod_zoom');
 
         // Check if there is any setting to be shown in the "host" fieldset.
-        $showschedulefor = count($scheduleusers) > 1 && $allowschedule; // Check if the size is greater than 1 because we add
-                                                                        // the editing/creating user by default.
+        $showschedulingprivilege = ($config->showschedulingprivilege != ZOOM_SCHEDULINGPRIVILEGE_DISABLE) &&
+                count($scheduleusers) > 1 && $allowschedule; // Check if the size is greater than 1 because
+                                                             // we add the editing/creating user by default.
         $showalternativehosts = ($config->showalternativehosts != ZOOM_ALTERNATIVEHOSTS_DISABLE);
-        if ($showschedulefor || $showalternativehosts) {
+        if ($showschedulingprivilege || $showalternativehosts) {
 
             // Adding the "host" fieldset, where all settings relating to defining the meeting host are shown.
             $mform->addElement('header', 'general', get_string('host', 'mod_zoom'));
-
-            // Add "Schedule for" if current user is able to.
-            if ($showschedulefor) {
-                $mform->addElement('select', 'schedule_for', get_string('schedulefor', 'zoom'), $scheduleusers);
-                $mform->setType('schedule_for', PARAM_EMAIL);
-                if (!$isnew) {
-                    $mform->disabledIf('schedule_for', 'change_schedule_for');
-                    $mform->addElement('checkbox', 'change_schedule_for', get_string('changehost', 'zoom'));
-                    $mform->setDefault('schedule_for', strtolower($service->get_user($this->current->host_id)->email));
-                } else {
-                    $mform->setDefault('schedule_for', strtolower($USER->email));
-                }
-            }
 
             // Supplementary feature: Alternative hosts.
             // Only show if the admin did not disable this feature completely.
@@ -393,6 +381,21 @@ class mod_zoom_mod_form extends moodleform_mod {
                     $mform->setType('alternative_hosts_picker', PARAM_EMAIL);
                     $mform->addHelpButton('alternative_hosts_picker', 'alternative_hosts_picker', 'zoom');
                 }
+            }
+
+            // Supplementary feature: Scheduling privilege.
+            // Only show if the admin did not disable this feature completely and if current user is able to use it.
+            if ($showschedulingprivilege) {
+                $mform->addElement('select', 'schedule_for', get_string('schedulefor', 'zoom'), $scheduleusers);
+                $mform->setType('schedule_for', PARAM_EMAIL);
+                if (!$isnew) {
+                    $mform->disabledIf('schedule_for', 'change_schedule_for');
+                    $mform->addElement('checkbox', 'change_schedule_for', get_string('changehost', 'zoom'));
+                    $mform->setDefault('schedule_for', strtolower($service->get_user($this->current->host_id)->email));
+                } else {
+                    $mform->setDefault('schedule_for', strtolower($USER->email));
+                }
+                $mform->addHelpButton('schedule_for', 'schedulefor', 'zoom');
             }
         }
 
