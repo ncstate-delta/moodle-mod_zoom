@@ -58,6 +58,7 @@ define('ZOOM_USER_TYPE_CORP', 3);
 define('ZOOM_MEETING_NOT_FOUND_ERROR_CODE', 3001);
 define('ZOOM_USER_NOT_FOUND_ERROR_CODE', 1001);
 define('ZOOM_INVALID_USER_ERROR_CODE', 1120);
+define('ZOOM_RECORDING_NOT_FOUND_ERROR_CODE', 3301);
 // Webinar options.
 define('ZOOM_WEBINAR_DISABLE', 0);
 define('ZOOM_WEBINAR_SHOWONLYIFLICENSE', 1);
@@ -532,6 +533,17 @@ function zoom_is_meeting_gone_error($error) {
  */
 function zoom_is_user_not_found_error($error) {
     return ($error->zoomerrorcode === ZOOM_USER_NOT_FOUND_ERROR_CODE) || ($error->zoomerrorcode === ZOOM_INVALID_USER_ERROR_CODE);
+}
+
+/**
+ * Check if the error indicates that a recording was unable to be found.
+ *
+ * @param moodle_exception $error
+ * @return bool
+ */
+function zoom_recording_not_found_error($error) {
+    return ($error->zoomerrorcode === ZOOM_RECORDING_NOT_FOUND_ERROR_CODE) ||
+           ($error->zoomerrorcode === ZOOM_USER_NOT_FOUND_ERROR_CODE);
 }
 
 /**

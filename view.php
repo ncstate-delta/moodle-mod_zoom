@@ -253,6 +253,18 @@ if ($isrecurringnotime) {
     $table->data[] = array($strduration, format_time($zoom->duration));
 }
 
+// Show recordings section if option enabled to view recordings.
+if ($config->viewrecordings) {
+    $recordinghtml = null;
+    $recordingaddurl = new moodle_url('/mod/zoom/recordings.php', array('id' => $cm->id));
+    $recordingaddbutton = html_writer::div(get_string('recordingview', 'mod_zoom'), 'btn btn-primary');
+    $recordingaddbuttonhtml = html_writer::link($recordingaddurl, $recordingaddbutton, array('target' => '_blank'));
+    $recordingaddhtml = html_writer::div($recordingaddbuttonhtml);
+    $recordinghtml .= $recordingaddhtml;
+
+    $table->data[] = array(get_string('recordings', 'mod_zoom'), $recordinghtml);
+}
+
 // Display add-to-calendar button if meeting was found and isn't recurring and if the admin did not disable the feature.
 if ($config->showdownloadical != ZOOM_DOWNLOADICAL_DISABLE && !$showrecreate && !$isrecurringnotime) {
     $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));

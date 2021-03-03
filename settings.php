@@ -151,6 +151,11 @@ if ($ADMIN->fulltree) {
             get_string('maskparticipantdata_help', 'mod_zoom'), 0, 1);
     $settings->add($maskparticipantdata);
 
+    $viewrecordings = new admin_setting_configcheckbox('zoom/viewrecordings',
+            get_string('option_view_recordings', 'mod_zoom'),
+            '', 1, 1, 0);
+    $settings->add($viewrecordings);
+
     // Supplementary features settings.
     $settings->add(new admin_setting_heading('zoom/supplementaryfeaturessettings',
             get_string('supplementaryfeaturessettings', 'mod_zoom'),
