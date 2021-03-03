@@ -143,6 +143,26 @@ if ($ADMIN->fulltree) {
             $encryptionchoices);
     $settings->add($offerencryption);
 
+    $schedulingprivilegechoices = array(ZOOM_SCHEDULINGPRIVILEGE_DISABLE => get_string('schedulingprivilege_disable', 'mod_zoom'),
+            ZOOM_SCHEDULINGPRIVILEGE_ENABLE => get_string('schedulingprivilege_enable', 'mod_zoom'));
+    $offerschedulingprivilege = new admin_setting_configselect('zoom/showschedulingprivilege',
+            get_string('schedulingprivilege', 'mod_zoom'),
+            get_string('schedulingprivilege_desc', 'mod_zoom'),
+            ZOOM_SCHEDULINGPRIVILEGE_ENABLE,
+            $schedulingprivilegechoices);
+    $settings->add($offerschedulingprivilege);
+
+    $alternativehostschoices = array(ZOOM_ALTERNATIVEHOSTS_DISABLE => get_string('alternative_hosts_disable', 'mod_zoom'),
+            ZOOM_ALTERNATIVEHOSTS_INPUTFIELD => get_string('alternative_hosts_inputfield', 'mod_zoom'),
+            ZOOM_ALTERNATIVEHOSTS_PICKER => get_string('alternative_hosts_picker', 'mod_zoom'));
+    $alternativehostsroles = zoom_get_selectable_alternative_hosts_rolestring(context_system::instance());
+    $offeralternativehosts = new admin_setting_configselect('zoom/showalternativehosts',
+            get_string('alternative_hosts', 'mod_zoom'),
+            get_string('alternative_hosts_desc', 'mod_zoom', array('roles' => $alternativehostsroles)),
+            ZOOM_ALTERNATIVEHOSTS_INPUTFIELD,
+            $alternativehostschoices);
+    $settings->add($offeralternativehosts);
+
     // Default Zoom settings.
     $settings->add(new admin_setting_heading('zoom/defaultsettings',
             get_string('defaultsettings', 'mod_zoom'),
