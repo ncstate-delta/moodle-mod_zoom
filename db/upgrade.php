@@ -479,5 +479,19 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2021012903, 'zoom');
     }
 
+    if ($oldversion < 2021030300) {
+        // Define index uuid (not unique) to be added to zoom_meeting_participants.
+        $table = new xmldb_table('zoom_meeting_participants');
+        $index = new xmldb_index('uuid', XMLDB_INDEX_NOTUNIQUE, ['uuid']);
+
+        // Conditionally launch add index uuid.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2021030300, 'zoom');
+    }
+
     return true;
 }
