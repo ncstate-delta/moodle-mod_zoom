@@ -108,6 +108,12 @@ if ($ADMIN->fulltree) {
             15, $jointimeselect);
     $settings->add($firstabletojoin);
 
+    $displayleadtime = new admin_setting_configcheckbox('zoom/displayleadtime',
+            get_string('displayleadtime', 'mod_zoom'),
+            get_string('displayleadtime_desc', 'mod_zoom'), 0, 1, 0);
+    $settings->add($displayleadtime);
+    $settings->hide_if('zoom/displayleadtime', 'zoom/firstabletojoin', 'eq', 0);
+
     $displaypassword = new admin_setting_configcheckbox('zoom/displaypassword',
             get_string('displaypassword', 'mod_zoom'),
             get_string('displaypassword_help', 'mod_zoom'), 0, 1, 0);
@@ -162,6 +168,15 @@ if ($ADMIN->fulltree) {
             ZOOM_ALTERNATIVEHOSTS_INPUTFIELD,
             $alternativehostschoices);
     $settings->add($offeralternativehosts);
+
+    $allmeetingschoices = array(ZOOM_ALLMEETINGS_DISABLE => get_string('allmeetings_disable', 'mod_zoom'),
+            ZOOM_ALLMEETINGS_ENABLE => get_string('allmeetings_enable', 'mod_zoom'));
+    $offerallmeetings = new admin_setting_configselect('zoom/showallmeetings',
+            get_string('allmeetings', 'mod_zoom'),
+            get_string('allmeetings_desc', 'mod_zoom'),
+            ZOOM_ALLMEETINGS_ENABLE,
+            $allmeetingschoices);
+    $settings->add($offerallmeetings);
 
     // Default Zoom settings.
     $settings->add(new admin_setting_heading('zoom/defaultsettings',
