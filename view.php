@@ -76,7 +76,6 @@ $stryes = get_string('yes');
 $strno = get_string('no');
 $strstart = get_string('start_meeting', 'mod_zoom');
 $strjoin = get_string('join_meeting', 'mod_zoom');
-$strunavailable = get_string('unavailable', 'mod_zoom');
 $strtime = get_string('meeting_time', 'mod_zoom');
 $strduration = get_string('duration', 'mod_zoom');
 $strpassprotect = get_string('passwordprotected', 'mod_zoom');
@@ -136,30 +135,8 @@ if ($available) {
     $buttonhtml .= html_writer::input_hidden_params($aurl);
     $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
 } else {
-    // Compose unavailability note.
-    // If this is a recurring meeting, just use the plain unavailable string.
-    if ($zoom->recurring == true) {
-        $unavailabilitynote = $strunavailable;
-
-        // Otherwise we add some more information to the unavailable string.
-    } else {
-        // If this meeting is still pending.
-        if ($finished != true) {
-            // If the admin wants to show the leadtime.
-            if ($config->displayleadtime == true && $config->firstabletojoin > 0) {
-                $unavailabilitynote = $strunavailable . '<br />' .
-                        get_string('unavailablefirstjoin', 'mod_zoom', array('mins' => ($config->firstabletojoin)));
-
-                // Otherwise.
-            } else {
-                $unavailabilitynote = $strunavailable . '<br />' . get_string('unavailablenotstartedyet', 'mod_zoom');
-            }
-
-            // Otherwise, the meeting has finished.
-        } else {
-            $unavailabilitynote = $strunavailable . '<br />' . get_string('unavailablefinished', 'mod_zoom');
-        }
-    }
+    // Get unavailability note.
+    $unavailabilitynote = zoom_get_unavailability_note($zoom, $finished);
 
     // Show unavailability note.
     // Ideally, this would use $OUTPUT->notification(), but this renderer adds a close icon to the notification which does not

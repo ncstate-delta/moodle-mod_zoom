@@ -656,3 +656,52 @@ function zoom_get_nonusers_from_alternativehosts(array $alternativehosts) {
         return array();
     }
 }
+
+/**
+ * Get the unavailability note based on the Zoom plugin configuration.
+ *
+ * @param object $zoom The Zoom meeting object.
+ * @param bool|null $finished The function needs to know if the meeting is already finished.
+ *                       You can provide this information, if already available, to the function.
+ *                       Otherwise it will determine it with a small overhead.
+ *
+ * @return string The unavailability note.
+ */
+function zoom_get_unavailability_note(object $zoom, $finished = null) {
+    // Get config.
+    $config = get_config('zoom');
+
+    // Get the plain unavailable string.
+    $strunavailable = get_string('unavailable', 'mod_zoom');
+
+    // If this is a recurring meeting, just use the plain unavailable string.
+    if ($zoom->recurring == true) {
+        $unavailabilitynote = $strunavailable;
+
+        // Otherwise we add some more information to the unavailable string.
+    } else {
+        // If we don't have the finished information yet, get it with a small overhead.
+        if ($finished == null) {
+            list($inprogress, $available, $finished) = zoom_get_state($zoom);
+        }
+
+        // If this meeting is still pending.
+        if ($finished != true) {
+            // If the admin wants to show the leadtime.
+            if ($config->displayleadtime == true && $config->firstabletojoin > 0) {
+                $unavailabilitynote = $strunavailable . '<br />' .
+                        get_string('unavailablefirstjoin', 'mod_zoom', array('mins' => ($config->firstabletojoin)));
+
+                // Otherwise.
+            } else {
+                $unavailabilitynote = $strunavailable . '<br />' . get_string('unavailablenotstartedyet', 'mod_zoom');
+            }
+
+            // Otherwise, the meeting has finished.
+        } else {
+            $unavailabilitynote = $strunavailable . '<br />' . get_string('unavailablefinished', 'mod_zoom');
+        }
+    }
+
+    return $unavailabilitynote;
+}
