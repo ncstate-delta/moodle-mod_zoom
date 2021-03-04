@@ -174,8 +174,8 @@ foreach ($zooms as $z) {
 echo $OUTPUT->heading($strnew, 4);
 echo html_writer::table($newtable);
 echo $OUTPUT->heading($strold, 4, null, 'mod-zoom-old-meetings-header');
-// Show refresh meeting sessions link only if user can edit Zoom meetings.
-if ($iszoommanager) {
+// Show refresh meeting sessions link only if user can run the 'refresh session reports' console command.
+if (has_capability('mod/zoom:refreshsessions', $context)) {
     $linkarguments = array(
         'courseid' => $id,
         'start' => date('Y-m-d', strtotime('-3 days')),
