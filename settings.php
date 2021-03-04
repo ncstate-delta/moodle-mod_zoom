@@ -178,6 +178,15 @@ if ($ADMIN->fulltree) {
             $allmeetingschoices);
     $settings->add($offerallmeetings);
 
+    $downloadicalchoices = array(ZOOM_DOWNLOADICAL_DISABLE => get_string('downloadical_disable', 'mod_zoom'),
+            ZOOM_DOWNLOADICAL_ENABLE => get_string('downloadical_enable', 'mod_zoom'));
+    $offerdownloadical = new admin_setting_configselect('zoom/showdownloadical',
+            get_string('downloadical', 'mod_zoom'),
+            get_string('downloadical_desc', 'mod_zoom'),
+            ZOOM_DOWNLOADICAL_ENABLE,
+            $downloadicalchoices);
+    $settings->add($offerdownloadical);
+
     // Default Zoom settings.
     $settings->add(new admin_setting_heading('zoom/defaultsettings',
             get_string('defaultsettings', 'mod_zoom'),

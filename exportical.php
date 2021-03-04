@@ -44,6 +44,15 @@ $PAGE->set_context($context);
 
 require_capability('mod/zoom:view', $context);
 
+// Get config.
+$config = get_config('zoom');
+
+// Check if the admin did not disable the feature.
+if ($config->showdownloadical == ZOOM_DOWNLOADICAL_DISABLE) {
+    $disabledredirecturl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
+    print_error('err_downloadicaldisabled', 'mod_zoom', $disabledredirecturl);
+}
+
 // Start ical file.
 $ical = new iCalendar;
 $ical->add_property('method', 'PUBLISH');
