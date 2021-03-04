@@ -169,6 +169,15 @@ if ($ADMIN->fulltree) {
             $alternativehostschoices);
     $settings->add($offeralternativehosts);
 
+    $capacitywarningchoices = array(ZOOM_CAPACITYWARNING_DISABLE => get_string('meetingcapacitywarning_disable', 'mod_zoom'),
+            ZOOM_CAPACITYWARNING_ENABLE => get_string('meetingcapacitywarning_enable', 'mod_zoom'));
+    $offercapacitywarning = new admin_setting_configselect('zoom/showcapacitywarning',
+            get_string('meetingcapacitywarning', 'mod_zoom'),
+            get_string('meetingcapacitywarning_desc', 'mod_zoom'),
+            ZOOM_CAPACITYWARNING_ENABLE,
+            $capacitywarningchoices);
+    $settings->add($offercapacitywarning);
+
     $allmeetingschoices = array(ZOOM_ALLMEETINGS_DISABLE => get_string('allmeetings_disable', 'mod_zoom'),
             ZOOM_ALLMEETINGS_ENABLE => get_string('allmeetings_enable', 'mod_zoom'));
     $offerallmeetings = new admin_setting_configselect('zoom/showallmeetings',
