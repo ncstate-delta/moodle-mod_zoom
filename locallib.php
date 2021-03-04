@@ -681,7 +681,7 @@ function zoom_get_unavailability_note(object $zoom, $finished = null) {
         // Otherwise we add some more information to the unavailable string.
     } else {
         // If we don't have the finished information yet, get it with a small overhead.
-        if ($finished == null) {
+        if ($finished === null) {
             list($inprogress, $available, $finished) = zoom_get_state($zoom);
         }
 
