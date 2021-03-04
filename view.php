@@ -136,10 +136,35 @@ if ($available) {
     $buttonhtml .= html_writer::input_hidden_params($aurl);
     $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
 } else {
+    // Compose unavailability note.
+    // If this is a recurring meeting, just use the plain unavailable string.
+    if ($zoom->recurring == true) {
+        $unavailabilitynote = $strunavailable;
+
+        // Otherwise we add some more information to the unavailable string.
+    } else {
+        // If this meeting is still pending.
+        if ($finished != true) {
+            // If the admin wants to show the leadtime.
+            if ($config->displayleadtime == true && $config->firstabletojoin > 0) {
+                $unavailabilitynote = $strunavailable . '<br />' .
+                        get_string('unavailablefirstjoin', 'mod_zoom', array('mins' => ($config->firstabletojoin)));
+
+                // Otherwise.
+            } else {
+                $unavailabilitynote = $strunavailable . '<br />' . get_string('unavailablenotstartedyet', 'mod_zoom');
+            }
+
+            // Otherwise, the meeting has finished.
+        } else {
+            $unavailabilitynote = $strunavailable . '<br />' . get_string('unavailablefinished', 'mod_zoom');
+        }
+    }
+
     // Show unavailability note.
     // Ideally, this would use $OUTPUT->notification(), but this renderer adds a close icon to the notification which does not
     // make sense here. So we build the notification manually.
-    $link = html_writer::tag('div', $strunavailable, array('class' => 'alert alert-primary'));
+    $link = html_writer::tag('div', $unavailabilitynote, array('class' => 'alert alert-primary'));
 }
 echo $OUTPUT->box_start('generalbox text-center');
 echo $link;
