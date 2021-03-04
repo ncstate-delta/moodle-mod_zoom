@@ -70,6 +70,9 @@ define('ZOOM_ALTERNATIVEHOSTS_PICKER', 2);
 // Scheduling privilege options.
 define('ZOOM_SCHEDULINGPRIVILEGE_DISABLE', 0);
 define('ZOOM_SCHEDULINGPRIVILEGE_ENABLE', 1);
+// All meetings options.
+define('ZOOM_ALLMEETINGS_DISABLE', 0);
+define('ZOOM_ALLMEETINGS_ENABLE', 1);
 
 /**
  * Entry not found on Zoom.

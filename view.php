@@ -347,12 +347,15 @@ if (!empty($meetinginvite)) {
 // Output table.
 echo html_writer::table($table);
 
-// Show link to all meetings.
-$urlall = new moodle_url('/mod/zoom/index.php', array('id' => $course->id));
-$linkall = html_writer::link($urlall, $strall);
-echo $OUTPUT->box_start('generalbox mt-4 pt-4 border-top text-center');
-echo $linkall;
-echo $OUTPUT->box_end();
+// Supplementary feature: All meetings link.
+// Only show if the admin did not disable this feature completely.
+if ($config->showallmeetings != ZOOM_ALLMEETINGS_DISABLE) {
+    $urlall = new moodle_url('/mod/zoom/index.php', array('id' => $course->id));
+    $linkall = html_writer::link($urlall, $strall);
+    echo $OUTPUT->box_start('generalbox mt-4 pt-4 border-top text-center');
+    echo $linkall;
+    echo $OUTPUT->box_end();
+}
 
 // Finish the page.
 echo $OUTPUT->footer();

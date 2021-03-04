@@ -163,6 +163,15 @@ if ($ADMIN->fulltree) {
             $alternativehostschoices);
     $settings->add($offeralternativehosts);
 
+    $allmeetingschoices = array(ZOOM_ALLMEETINGS_DISABLE => get_string('allmeetings_disable', 'mod_zoom'),
+            ZOOM_ALLMEETINGS_ENABLE => get_string('allmeetings_enable', 'mod_zoom'));
+    $offerallmeetings = new admin_setting_configselect('zoom/showallmeetings',
+            get_string('allmeetings', 'mod_zoom'),
+            get_string('allmeetings_desc', 'mod_zoom'),
+            ZOOM_ALLMEETINGS_ENABLE,
+            $allmeetingschoices);
+    $settings->add($offerallmeetings);
+
     // Default Zoom settings.
     $settings->add(new admin_setting_heading('zoom/defaultsettings',
             get_string('defaultsettings', 'mod_zoom'),
