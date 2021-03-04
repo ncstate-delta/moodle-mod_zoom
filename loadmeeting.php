@@ -52,7 +52,7 @@ require_capability('mod/zoom:view', $context);
 list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
 // If the meeting is not yet available, deny access.
-if ($available != true) {
+if ($available !== true) {
     // Get unavailability note.
     $unavailabilitynote = zoom_get_unavailability_note($zoom, $finished);
 
