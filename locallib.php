@@ -73,6 +73,9 @@ define('ZOOM_SCHEDULINGPRIVILEGE_ENABLE', 1);
 // All meetings options.
 define('ZOOM_ALLMEETINGS_DISABLE', 0);
 define('ZOOM_ALLMEETINGS_ENABLE', 1);
+// Download iCal options.
+define('ZOOM_DOWNLOADICAL_DISABLE', 0);
+define('ZOOM_DOWNLOADICAL_ENABLE', 1);
 
 /**
  * Entry not found on Zoom.
