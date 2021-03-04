@@ -53,15 +53,24 @@ $PAGE->set_title(format_string($zoom->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->requires->js_call_amd("mod_zoom/toggle_text", 'init');
 
+// Get Zoom user ID of current Moodle user.
 $zoomuserid = zoom_get_user_id(false);
+
+// Get the alternative hosts of the meeting.
 $alternativehosts = array();
 if (!is_null($zoom->alternative_hosts)) {
     $alternativehosts = explode(',', str_replace(';', ',', $zoom->alternative_hosts));
 }
 
-$userishost = ($zoomuserid === $zoom->host_id || in_array($USER->email, $alternativehosts));
+// Check if this user is the (real) host.
+$userisrealhost = ($zoomuserid === $zoom->host_id);
+// Check if this user is the host or an alternative host.
+$userishost = ($userisrealhost || in_array($USER->email, $alternativehosts));
 
+// Get Zoom webservice instance.
 $service = new mod_zoom_webservice();
+
+// Get host user from Zoom.
 $hostuser = false;
 try {
     $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
@@ -70,6 +79,16 @@ try {
 } catch (moodle_exception $error) {
     $showrecreate = zoom_is_meeting_gone_error($error);
 }
+
+// Compose Moodle user object for host.
+$hostmoodleuser = new stdClass();
+$hostmoodleuser->firstname = $hostuser->first_name;
+$hostmoodleuser->lastname = $hostuser->last_name;
+$hostmoodleuser->alternatename = '';
+$hostmoodleuser->firstnamephonetic = '';
+$hostmoodleuser->lastnamephonetic = '';
+$hostmoodleuser->middlename = '';
+
 $meetinginvite = $service->get_meeting_invitation($zoom->meeting_id);
 
 $stryes = get_string('yes');
@@ -118,6 +137,49 @@ if ($showrecreate) {
 // Show intro.
 if ($zoom->intro) {
     echo $OUTPUT->box(format_module_intro('zoom', $zoom, $cm->id), 'generalbox mod_introbox', 'intro');
+}
+
+// Supplementary feature: Meeting capacity warning.
+// Only show if the admin did not disable this feature completely.
+if ($config->showcapacitywarning == true) {
+    // Only show if the user viewing this is the host.
+    if ($userishost == true) {
+        // Get meeting capacity.
+        $meetingcapacity = zoom_get_meeting_capacity($zoom->host_id, $zoom->webinar);
+
+        // Get number of course participants who are eligible to join the meeting.
+        $eligiblemeetingparticipants = zoom_get_eligible_meeting_participants($context);
+
+        // If the number of eligible course participants exceeds the meeting capacity, output a warning.
+        if ($eligiblemeetingparticipants > $meetingcapacity) {
+            // Compose warning string.
+            $participantspageurl = new moodle_url('/user/index.php', array('id' => $course->id));
+            $meetingcapacityplaceholders = array('meetingcapacity' => $meetingcapacity,
+                    'eligiblemeetingparticipants' => $eligiblemeetingparticipants,
+                    'zoomprofileurl' => $config->zoomurl.'/profile',
+                    'courseparticipantsurl' => $participantspageurl->out(),
+                    'hostname' => fullname($hostmoodleuser));
+            $meetingcapacitywarning = get_string('meetingcapacitywarningheading', 'mod_zoom');
+            $meetingcapacitywarning .= html_writer::empty_tag('br');
+            if ($userisrealhost == true) {
+                $meetingcapacitywarning .= get_string('meetingcapacitywarningbodyrealhost', 'mod_zoom',
+                        $meetingcapacityplaceholders);
+            } else {
+                $meetingcapacitywarning .= get_string('meetingcapacitywarningbodyalthost', 'mod_zoom',
+                        $meetingcapacityplaceholders);
+            }
+            $meetingcapacitywarning .= html_writer::empty_tag('br');
+            if ($userisrealhost == true) {
+                $meetingcapacitywarning .= get_string('meetingcapacitywarningcontactrealhost', 'mod_zoom');
+            } else {
+                $meetingcapacitywarning .= get_string('meetingcapacitywarningcontactalthost', 'mod_zoom');
+            }
+
+            // Ideally, this would use $OUTPUT->notification(), but this renderer adds a close icon to the notification which
+            // does not make sense here. So we build the notification manually.
+            echo html_writer::tag('div', $meetingcapacitywarning, array('class' => 'alert alert-warning'));
+        }
+    }
 }
 
 // Get meeting state from Zoom.
@@ -190,13 +252,6 @@ if (!$zoom->recurring) {
 
 // Show host.
 if ($hostuser) {
-    $hostmoodleuser = new stdClass();
-    $hostmoodleuser->firstname = $hostuser->first_name;
-    $hostmoodleuser->lastname = $hostuser->last_name;
-    $hostmoodleuser->alternatename = '';
-    $hostmoodleuser->firstnamephonetic = '';
-    $hostmoodleuser->lastnamephonetic = '';
-    $hostmoodleuser->middlename = '';
     $table->data[] = array($strhost, fullname($hostmoodleuser));
 }
 
