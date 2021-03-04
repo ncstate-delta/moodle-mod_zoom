@@ -686,7 +686,7 @@ function zoom_get_unavailability_note(object $zoom, $finished = null) {
         }
 
         // If this meeting is still pending.
-        if ($finished != true) {
+        if ($finished !== true) {
             // If the admin wants to show the leadtime.
             if ($config->displayleadtime == true && $config->firstabletojoin > 0) {
                 $unavailabilitynote = $strunavailable . '<br />' .
