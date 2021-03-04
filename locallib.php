@@ -675,7 +675,7 @@ function zoom_get_unavailability_note(object $zoom, $finished = null) {
     $strunavailable = get_string('unavailable', 'mod_zoom');
 
     // If this is a recurring meeting, just use the plain unavailable string.
-    if ($zoom->recurring == true) {
+    if ($zoom->recurring === true) {
         $unavailabilitynote = $strunavailable;
 
         // Otherwise we add some more information to the unavailable string.
