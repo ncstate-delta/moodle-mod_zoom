@@ -20,6 +20,16 @@
         <FIELD NAME="start_time" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting start time (Unix timestamp, seconds). For scheduled meeting only."/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp when the instance was last modified."/>
         <FIELD NAME="recurring" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Is the meeting or webinar recurring?"/>
+        <FIELD NAME="recurrence_type" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Is the recurring meeting weekly, daily or monthly" />
+        <FIELD NAME="repeat_interval" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Specify the repeat interval of the meeting" />
+        <FIELD NAME="weekly_days" TYPE="char" LENGTH="14" NOTNULL="false" SEQUENCE="false" COMMENT="Specify the days for weekly recurring meetings" />
+        <FIELD NAME="monthly_day" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Specify the day for a recurring monthly meeting" />
+        <FIELD NAME="monthly_week" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Specify the week for a recurring monthly meeting" />
+        <FIELD NAME="monthly_week_day" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Specify a day of the week for a recurring monthly meeting" />
+        <FIELD NAME="monthly_repeat_option" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="For UI purposes. To determine which monthly repeat option is chosen" />
+        <FIELD NAME="end_times" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="The amount of times meeting should occur before its canceled" />
+        <FIELD NAME="end_date_time" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="The final date (Unix timestamp, seconds) of the meeting before its canceled" />
+        <FIELD NAME="end_date_option" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="For UI purposes. To determine which end date option is chosen" />
         <FIELD NAME="webinar" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Is this a webinar?"/>
         <FIELD NAME="duration" TYPE="int" LENGTH="6" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting duration (seconds). For scheduled meeting only."/>
         <FIELD NAME="timezone" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Timezone to format start_time, like &quot;America/Los_Angeles&quot;. For scheduled meeting only."/>

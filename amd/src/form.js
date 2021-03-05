@@ -38,6 +38,50 @@ define(['jquery'], function($) {
                     optionJoinBeforeHost.prop('checked', false);
                 }
             });
+
+            var repeat_select = $('select[name="recurrence_type"]');
+            var start_time = $('select[name*="start_time"]');
+            var duration = $('*[name*="duration"]');
+            var recurring = $('input[name="recurring"][type!="hidden"]');
+
+            if (recurring.prop('checked')) {
+                start_time.prop('disabled', (repeat_select.val() == 0));
+                duration.prop('disabled', (repeat_select.val() == 0));
+            }
+
+            recurring.change(function() {
+                var disabled = false;
+                if (recurring.prop('checked') && repeat_select.val() == 0) {
+                    disabled = true;
+                }
+                start_time.prop('disabled', disabled);
+                duration.prop('disabled', disabled);
+            });
+
+            $('.repeat_interval').hide();
+            if (repeat_select.val() > 0) {
+                start_time.prop('disabled', (repeat_select.val() == 0));
+                duration.prop('disabled', (repeat_select.val() == 0));
+                if (repeat_select.val() == 1) {
+                    $('#interval_daily').show();
+                } else if (repeat_select.val() == 2) {
+                    $('#interval_weekly').show();
+                } else if (repeat_select.val() == 3) {
+                    $('#interval_monthly').show();
+                }
+            }
+            repeat_select.change(function() {
+                start_time.prop('disabled', (this.value == 0));
+                duration.prop('disabled', (this.value == 0));
+                $('.repeat_interval').hide();
+                if (this.value == 1) {
+                    $('#interval_daily').show();
+                } else if (this.value == 2) {
+                    $('#interval_weekly').show();
+                } else if (this.value == 3) {
+                    $('#interval_monthly').show();
+                }
+            });
         }
     };
 });

@@ -166,21 +166,99 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add date/time. Validation in validation().
         $mform->addElement('date_time_selector', 'start_time', get_string('start_time', 'zoom'));
-        // Disable for recurring meetings.
-        $mform->disabledIf('start_time', 'recurring', 'checked');
 
         // Add duration.
         $mform->addElement('duration', 'duration', get_string('duration', 'zoom'), array('optional' => false));
         // Validation in validation(). Default to one hour.
         $mform->setDefault('duration', array('number' => 1, 'timeunit' => 3600));
-        // Disable for recurring meetings.
-        $mform->disabledIf('duration', 'recurring', 'checked');
+        // Start time and duration disable/enable controlled in javascript.
 
         // Add recurring widget.
         $mform->addElement('advcheckbox', 'recurring', get_string('recurringmeeting', 'zoom'),
                 get_string('recurringmeetingthisis', 'zoom'));
         $mform->setDefault('recurring', $config->defaultrecurring);
         $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
+
+        // Add options for recurring meeting.
+        $recurrencetype = [
+            0 => get_string('recurrence_option_no_time', 'zoom'),
+            1 => get_string('recurrence_option_daily', 'zoom'),
+            2 => get_string('recurrence_option_weekly', 'zoom'),
+            3 => get_string('recurrence_option_monthly', 'zoom'),
+        ];
+        $mform->addElement('select', 'recurrence_type', get_string('recurrencetype', 'zoom'), $recurrencetype);
+        $mform->hideif('recurrence_type', 'recurring', 'notchecked');
+        $mform->disabledif('recurrence_type', 'recurring', 'notchecked');
+
+        // Repeat Interval options.
+        $options = [];
+        for ($i = 1; $i <= 90; $i++) {
+            $options[$i] = $i;
+        }
+        $group = [];
+        $group[] = $mform->createElement('select', 'repeat_interval', '', $options);
+        $group[] = $mform->createElement('html', '<span class="repeat_interval" id="interval_daily">day(s)</span>');
+        $group[] = $mform->createElement('html', '<span class="repeat_interval" id="interval_weekly">week(s)</span>');
+        $group[] = $mform->createElement('html', '<span class="repeat_interval" id="interval_monthly">month(s)</span>');
+        $mform->addGroup($group, 'repeat_group', get_string('repeatinterval', 'zoom'), null, false);
+        $mform->hideif('repeat_group', 'recurrence_type', 'eq', '0');
+        $mform->hideif('repeat_group', 'recurring', 'notchecked');
+        $mform->disabledif('repeat_interval', 'recurrence_type', 'eq', '0');
+
+        // Weekly options.
+        $weekdayoptions = zoom_get_weekday_options();
+        $group = [];
+        foreach ($weekdayoptions as $key => $weekday) {
+            $weekdayid = 'weekly_days_' . $key;
+            $attributes = [];
+            $group[] = $mform->createElement('advcheckbox', $weekdayid, '',
+                $weekday, null, array(0, $key));
+        }
+        $mform->addGroup($group, 'weekly_days_group', get_string('occurson', 'zoom'), ' ', false);
+        $mform->hideif('weekly_days_group', 'recurrence_type', 'noteq', '2');
+        $mform->hideif('weekly_days_group', 'recurring', 'notchecked');
+        if (!empty($this->current->weekly_days)) {
+            $weekdayselected = explode(',', $this->current->weekly_days);
+            foreach ($weekdayselected as $selected) {
+                $weekdayid = 'weekly_days_' . $selected;
+                $mform->setDefault($weekdayid, $selected);
+            }
+        }
+
+        // Monthly options.
+        $monthoptions = [];
+        for ($i = 1; $i <= 31; $i++) {
+            $monthoptions[$i] = $i;
+        }
+        $monthlyweekoptions = zoom_get_monthweek_options();
+        
+        $group = [];
+        $group[] = $mform->createElement('radio', 'monthly_repeat_option', '', 'Day', 1);
+        $group[] = $mform->createElement('select', 'monthly_day', '', $monthoptions);
+        $group[] = $mform->createElement('static', 'month_day_text', '', 'of the month');
+        $group[] = $mform->createElement('radio', 'monthly_repeat_option', '', '', 2);
+        $group[] = $mform->createElement('select', 'monthly_week', '', $monthlyweekoptions);
+        $group[] = $mform->createElement('select', 'monthly_week_day', '', $weekdayoptions);
+        $group[] = $mform->createElement('static', 'month_week_day_text', '', 'of the month');
+        $mform->addGroup($group, 'monthly_day_group', get_string('occurson', 'zoom'), null, false);
+        $mform->hideif('monthly_day_group', 'recurrence_type', 'noteq', '3');
+        $mform->hideif('monthly_day_group', 'recurring', 'notchecked');
+        $mform->setDefault('monthly_repeat_option', 1);
+
+        // End date option.
+        $maxoptions = [];
+        for ($i = 1; $i <= 50; $i++) {
+            $maxoptions[$i] = $i;
+        }
+        $group = [];
+        $group[] = $mform->createElement('radio', 'end_date_option', '', 'By ', 1);
+        $group[] = $mform->createElement('date_selector', 'end_date_time', '');
+        $group[] = $mform->createElement('radio', 'end_date_option', '', 'After ', 2);
+        $group[] = $mform->createElement('select', 'end_times', '', $maxoptions);
+        $group[] = $mform->createElement('static', 'end_times_text', '', 'occurences');
+        $mform->addGroup($group, 'radioenddate', get_string('enddate', 'zoom'), null, false);
+        $mform->hideif('radioenddate', 'recurring', 'notchecked');
+        $mform->hideif('radioenddate', 'recurrence_type', 'eq', '0');
 
         // Supplementary feature: Webinars.
         // Only show if the admin did not disable this feature completely.
@@ -604,6 +682,37 @@ class mod_zoom_mod_form extends moodleform_mod {
                 // This will not happen unless the user tampered with the form.
                 // Because of this, we skip adding this string to the language pack.
                 $errors['option_encryption_type_group'] = 'The submitted encryption type is not valid.';
+            }
+        }
+
+        // Add validation for recurring meeting.
+        if ($data['recurring'] == 1) {
+            if ($data['recurrence_type'] == '2') {
+                $weekdayselected = [];
+                for ($i = 1; $i <= 7; $i++) {
+                    $key = 'weekly_days_' . $i;
+                    if (!empty($data[$key])) {
+                        $weekdayselected[] = $data[$key];
+                    }
+                }
+                if (empty($weekdayselected)) {
+                    $errors['weekly_days_group'] = get_string('err_weekly_days', 'zoom');
+                }
+                // For weekly, maximum is 12 weeks.
+                if ($data['repeat_interval'] > 12) {
+                    $errors['repeat_group'] = get_string('err_repeat_weekly_interval', 'zoom');
+                }
+            }
+
+            if ($data['recurrence_type'] == '3') {
+                // For monthly, max is 3 months.
+                if ($data['repeat_interval'] > 3) {
+                    $errors['repeat_group'] = get_string('err_repeat_monthly_interval', 'zoom');
+                }
+            }
+
+            if ($data['end_date_option'] == '1' && $data['end_date_time'] < strtotime('today')) {
+                $errors['radioenddate'] = get_string('err_end_date', 'zoom');
             }
         }
 

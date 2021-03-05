@@ -531,6 +531,9 @@ class mod_zoom_webservice {
             $data['type'] = $zoom->recurring ? ZOOM_RECURRING_WEBINAR : ZOOM_SCHEDULED_WEBINAR;
         } else {
             $data['type'] = $zoom->recurring ? ZOOM_RECURRING_MEETING : ZOOM_SCHEDULED_MEETING;
+            if ($zoom->recurrence_type > 0) {
+                $data['type'] = ZOOM_RECURRING_FIXED_MEETING;
+            }
             $data['settings']['participant_video'] = (bool) ($zoom->option_participants_video);
             $data['settings']['join_before_host'] = (bool) ($zoom->option_jbh);
             $data['settings']['encryption_type'] = (isset($zoom->option_encryption_type) &&
@@ -538,9 +541,33 @@ class mod_zoom_webservice {
                     ZOOM_ENCRYPTION_TYPE_E2EE : ZOOM_ENCRYPTION_TYPE_ENHANCED;
             $data['settings']['waiting_room'] = (bool) ($zoom->option_waiting_room);
             $data['settings']['mute_upon_entry'] = (bool) ($zoom->option_mute_upon_entry);
+
+            // Add recurrence object.
+            if ($zoom->recurring && $zoom->recurrence_type != 0) {
+                $data['recurrence']['type'] = (int) $zoom->recurrence_type;
+                $data['recurrence']['repeat_interval'] = (int) $zoom->repeat_interval;
+                if ($zoom->recurrence_type == 2) {
+                    $data['recurrence']['weekly_days'] = $zoom->weekly_days;
+                }
+                if ($zoom->recurrence_type == 3) {
+                    if ($zoom->monthly_repeat_option == 1){
+                        $data['recurrence']['monthly_day'] = (int) $zoom->monthly_day;
+                    } else {
+                        $data['recurrence']['monthly_week'] = (int) $zoom->monthly_week;
+                        $data['recurrence']['monthly_week_day'] = (int) $zoom->monthly_week_day;
+                    }
+                }
+                if ($zoom->end_date_option == 2) {
+                    $data['recurrence']['end_times'] = (int) $zoom->end_times;
+                } else {
+                    $data['recurrence']['end_date_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->end_date_time);
+                }
+            }
         }
 
-        if ($data['type'] == ZOOM_SCHEDULED_MEETING || $data['type'] == ZOOM_SCHEDULED_WEBINAR) {
+        if ($data['type'] == ZOOM_SCHEDULED_MEETING || 
+            $data['type'] == ZOOM_SCHEDULED_WEBINAR ||
+            $data['type'] == ZOOM_RECURRING_FIXED_MEETING) {
             // Convert timestamp to ISO-8601. The API seems to insist that it end with 'Z' to indicate UTC.
             $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->start_time);
             $data['duration'] = (int) ceil($zoom->duration / 60);

@@ -84,6 +84,18 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         $zoom->password = '';
     }
 
+    // Handle weekdays if weekly recurring meeting selected.
+    if ($zoom->recurring && $zoom->recurrence_type == 2) {
+        $weekdayselected = [];
+        for ($i = 1; $i <= 7; $i++) {
+            $key = 'weekly_days_' . $i;
+            if (!empty($zoom->$key)) {
+                $weekdayselected[] = $zoom->$key;
+            }
+        }
+        $zoom->weekly_days = implode(',', $weekdayselected);
+    }
+
     $zoom->course = (int) $zoom->course;
 
     $response = $service->create_meeting($zoom);
@@ -135,6 +147,18 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     if (property_exists($zoom, 'requirepasscode') && empty($zoom->requirepasscode)) {
         $zoom->password = '';
+    }
+
+    // Handle weekdays if weekly recurring meeting selected.
+    if ($zoom->recurring && $zoom->recurrence_type == 2) {
+        $weekdayselected = [];
+        for ($i = 1; $i <= 7; $i++) {
+            $key = 'weekly_days_' . $i;
+            if (!empty($zoom->$key)) {
+                $weekdayselected[] = $zoom->$key;
+            }
+        }
+        $zoom->weekly_days = implode(',', $weekdayselected);
     }
 
     $DB->update_record('zoom', $zoom);
@@ -359,8 +383,248 @@ function zoom_calendar_item_update(stdClass $zoom) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/calendar/lib.php');
 
+    if (!$zoom->recurring) {
+        $eventid = $DB->get_field('event', 'id', array(
+            'modulename' => 'zoom',
+            'instance' => $zoom->id
+        ));
+    
+        // Load existing event object, or create a new one.
+        if (!empty($eventid)) {
+            calendar_event::load($eventid)->update($event);
+        } else {
+            $event = zoom_populate_calender_item($zoom);
+            calendar_event::create($event);
+        }
+    } else {
+        // First remove existing events for recurring meeting.
+        zoom_calendar_item_delete($zoom);
+        // Create the event for the meeting.
+        $event = zoom_populate_calender_item($zoom);
+        calendar_event::create($event);
+
+        // Now create the recurring events.
+        if ($zoom->recurrence_type == '1') {
+            zoom_create_recurring_daily_events($zoom);
+        } else if ($zoom->recurrence_type == '2') {
+            zoom_create_recurring_weekly_events($zoom);
+        } else if ($zoom->recurrence_type == '3') {
+            zoom_create_recurring_monthly_events($zoom);
+        }
+    }
+}
+
+/**
+ * Create the recurring events for daily events.
+ * 
+ * @param stdClass $zoom The zoom instance.
+ */
+function zoom_create_recurring_daily_events(stdClass $zoom) {
+    // Daily event.
+    // Set the start_time for the next event.
+    $starttime = $zoom->start_time + (86400 * $zoom->repeat_interval);
+    if ($zoom->end_date_option == 1) {
+        // Set the endtime to the end of the day, not start of the day.
+        $endtime = ($zoom->end_date_time + 86400);
+        do {
+            $event = zoom_populate_calender_item($zoom);
+            $event->timestart = $starttime;
+            calendar_event::create($event);
+
+            // Set the start_time for the next event.
+            $starttime += 86400 * $zoom->repeat_interval;
+        } while ($starttime < $endtime);
+    } else if ($zoom->end_date_option == 2) {
+        for ($i = 1; $i < $zoom->end_times; $i++) {
+            $event = zoom_populate_calender_item($zoom);
+            $event->timestart = $starttime;
+            calendar_event::create($event);
+
+            // Set the start_time for the next event.
+            $starttime += 86400 * $zoom->repeat_interval;
+        }
+    }
+}
+
+/**
+ * Create the recurring events for weekly events.
+ * 
+ * @param stdClass $zoom The zoom instance.
+ */
+function zoom_create_recurring_weekly_events(stdClass $zoom) {
+    // Weekly event.
+    // Get the time for next week.
+    $format = '+' . $zoom->repeat_interval . ' week';
+    $starttime = strtotime($format, $zoom->start_time);
+    // Update the time so its at the start of the week.
+    $startweekformat = 'Monday this week ' . date('H:i', $starttime);
+    $starttime = strtotime($startweekformat, $starttime);
+
+    if ($zoom->end_date_option == 1) {
+        // Set the endtime to the end of the day, not start of the day.
+        $endtime = ($zoom->end_date_time + 86400);
+        do {
+            $weekdaystoadd = explode(',', $zoom->weekly_days);
+            foreach ($weekdaystoadd as $weekdaytoadd) {
+
+                $event = zoom_populate_calender_item($zoom);
+                $eventstart = zoom_get_weekly_timestamp($starttime, $weekdaytoadd);
+                if ($eventstart < $endtime) {
+                    $event->timestart = $eventstart;
+                    calendar_event::create($event);
+                }
+            }
+
+            // Set the start_time for the next event.
+            $starttime = strtotime($format, $starttime);
+        } while ($starttime < $endtime);
+    } else if ($zoom->end_date_option == 2) {
+        // The first one is already added, so start from 1.
+        $addedoccurences = 1;
+        do {
+            $weekdaystoadd = explode(',', $zoom->weekly_days);
+            foreach ($weekdaystoadd as $weekdaytoadd) {
+                if ($addedoccurences >= $zoom->end_times) {
+                    break;
+                }
+
+                $event = zoom_populate_calender_item($zoom);
+                $event->timestart = zoom_get_weekly_timestamp($starttime, $weekdaytoadd);
+                calendar_event::create($event);
+
+                $addedoccurences++;
+            }
+            // Set the start_time for the next event.
+            $starttime = strtotime($format, $starttime);
+        } while ($addedoccurences < $zoom->end_times);
+    }
+
+}
+
+/**
+ * Create the recurring events for monthly events.
+ * 
+ * @param stdClass $zoom The zoom instance.
+ */
+function zoom_create_recurring_monthly_events(stdClass $zoom) {
+    // Monthly event.
+    $format = '+' . $zoom->repeat_interval . ' month';
+    $starttime = strtotime($format, $zoom->start_time);
+    $starttime = zoom_get_monthly_timestamp($starttime, $zoom);
+    
+    if ($zoom->end_date_option == 1) {
+        // Set the endtime to the end of the day, not start of the day.
+        $endtime = ($zoom->end_date_time + 86400);
+        do {
+            $event = zoom_populate_calender_item($zoom);
+            $event->timestart = $starttime;
+            calendar_event::create($event);
+
+            // Set the start_time for the next event.
+            $starttime = strtotime($format, $starttime);
+            $starttime = zoom_get_monthly_timestamp($starttime, $zoom);
+        } while ($starttime < $endtime);
+    } else if ($zoom->end_date_option == 2) {
+        for ($i = 1; $i < $zoom->end_times; $i++) {
+            $event = zoom_populate_calender_item($zoom);
+            $event->timestart = $starttime;
+            calendar_event::create($event);
+
+            // Set the start_time for the next event.
+            $starttime = strtotime($format, $starttime);
+            $starttime = zoom_get_monthly_timestamp($starttime, $zoom);
+        }
+    }
+}
+
+/**
+ * Return an array with the days of the week.
+ * 
+ * @return array
+ */
+function zoom_get_weekday_options() {
+    return [
+        1 => 'Sunday',
+        2 => 'Monday',
+        3 => 'Tuesday',
+        4 => 'Wednesday',
+        5 => 'Thursday',
+        6 => 'Friday',
+        7 => 'Saturday'
+    ];
+}
+
+/**
+ * Return an array with the weeks of the month.
+ * 
+ * @return array
+ */
+function zoom_get_monthweek_options() {
+    return [
+        -1 => 'Last',
+        1 => 'First',
+        2 => 'Second',
+        3 => 'Third',
+        4 => 'Fourth'
+    ];
+}
+
+/**
+ * Return timestamp for a particular day of the week.
+ * 
+ * @param int $weektimestamp The base timestamp
+ * @param int $weekday The day of the week.
+ * 
+ * @return int The start time of the event.
+ */
+function zoom_get_weekly_timestamp(int $weektimestamp, int $weekday) {
+    $weekdayoptions = zoom_get_weekday_options();
+    $format = $weekdayoptions[$weekday] . ' this week ' . date('H:i', $weektimestamp);
+    return strtotime($format, $weektimestamp);
+}
+
+/**
+ * Return timestamp based on monthly options selected.
+ * 
+ * @param int $monthtimestamp The base timestamp.
+ * @param stdClass $zoom The zoom instance object.
+ * 
+ * @return int The start time of the event.
+ */
+function zoom_get_monthly_timestamp(int $monthtimestamp, stdClass $zoom) {
+    $monthlyweekoptions = zoom_get_monthweek_options();
+    $weekdayoptions = zoom_get_weekday_options();
+    
+    if ($zoom->monthly_repeat_option == 1) {
+        $format = date('Y', $monthtimestamp) . '-' . date('n', $monthtimestamp). '-' . $zoom->monthly_day;
+        $nexttime = strtotime($format);
+    } else {
+        // Example format: Last Sunday of March 2021.
+        $format = $monthlyweekoptions[$zoom->monthly_week] . ' ' .
+            $weekdayoptions[$zoom->monthly_week_day] . ' of '.
+            date('F', $monthtimestamp) . ' ' .
+            date('Y', $monthtimestamp);
+        $nexttime = strtotime($format, $monthtimestamp);
+    }
+
+    return $nexttime;
+}
+
+/**
+ * Populate the calendar event object, based on the zoom instance
+ * 
+ * @param stdClass $zoom The zoom instance.
+ * 
+ * @return stadClass The calendar event object.
+ */
+function zoom_populate_calender_item(stdClass $zoom) {
+
     $event = new stdClass();
     $event->type = CALENDAR_EVENT_TYPE_ACTION;
+    $event->modulename = 'zoom';
+    $event->eventtype = 'zoom';
+    $event->courseid = $zoom->course;
+    $event->instance = $zoom->id;
     $event->timesort = $zoom->start_time;
     $event->name = $zoom->name;
     if ($zoom->intro) {
@@ -369,23 +633,11 @@ function zoom_calendar_item_update(stdClass $zoom) {
     }
     $event->timestart = $zoom->start_time;
     $event->timeduration = $zoom->duration;
-    $event->visible = !$zoom->recurring;
-
-    $eventid = $DB->get_field('event', 'id', array(
-        'modulename' => 'zoom',
-        'instance' => $zoom->id
-    ));
-
-    // Load existing event object, or create a new one.
-    if (!empty($eventid)) {
-        calendar_event::load($eventid)->update($event);
-    } else {
-        $event->courseid = $zoom->course;
-        $event->modulename = 'zoom';
-        $event->instance = $zoom->id;
-        $event->eventtype = 'zoom';
-        calendar_event::create($event);
+    if ($zoom->recurring && $zoom->recurrence_type == 0) {
+        $event->visible = false;
     }
+
+    return $event;
 }
 
 /**
