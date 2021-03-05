@@ -72,6 +72,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     if (defined('PHPUNIT_TEST') && PHPUNIT_TEST) {
         $zoom->id = $DB->insert_record('zoom', $zoom);
         zoom_grade_item_update($zoom);
+        zoom_calendar_item_update($zoom);
         return $zoom->id;
     }
 
@@ -259,8 +260,6 @@ function zoom_delete_instance($id) {
         }
     }
 
-    $DB->delete_records('zoom', array('id' => $zoom->id));
-
     // If we delete a meeting instance, do we want to delete the participants?
     $meetinginstances = $DB->get_records('zoom_meeting_details', array('meeting_id' => $zoom->meeting_id));
     foreach ($meetinginstances as $meetinginstance) {
@@ -271,6 +270,8 @@ function zoom_delete_instance($id) {
     // Delete any dependent records here.
     zoom_calendar_item_delete($zoom);
     zoom_grade_item_delete($zoom);
+
+    $DB->delete_records('zoom', array('id' => $zoom->id));
 
     return true;
 }
@@ -388,7 +389,7 @@ function zoom_calendar_item_update(stdClass $zoom) {
 }
 
 /**
- * Delete Moodle calendar event of the Zoom instance.
+ * Delete Moodle calendar events of the Zoom instance.
  *
  * @param stdClass $zoom
  */
@@ -396,12 +397,12 @@ function zoom_calendar_item_delete(stdClass $zoom) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/calendar/lib.php');
 
-    $eventid = $DB->get_field('event', 'id', array(
+    $events = $DB->get_records('event', array(
         'modulename' => 'zoom',
         'instance' => $zoom->id
     ));
-    if (!empty($eventid)) {
-        calendar_event::load($eventid)->delete();
+    foreach ($events as $event) {
+        calendar_event::load($event)->delete();
     }
 }
 

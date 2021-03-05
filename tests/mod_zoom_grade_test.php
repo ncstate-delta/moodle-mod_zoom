@@ -34,16 +34,14 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
  * @copyright  2020 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_zoom_grade_update_test extends advanced_testcase {
+class mod_zoom_grade_test extends advanced_testcase {
 
     /**
      * Setup before every test.
      */
     public function setUp(): void {
         $this->resetAfterTest();
-        // Set fake values for the Zoom module settings.
-        set_config('apikey', 'test', 'zoom');
-        set_config('apisecret', 'test', 'zoom');
+        $this->setAdminUser();
 
         $this->course = $this->getDataGenerator()->create_course();
         $this->teacher = $this->getDataGenerator()->create_and_enrol($this->course, 'teacher');

@@ -35,6 +35,9 @@ class mod_zoom_generator extends testing_module_generator {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
+        set_config('apikey', 'test', 'zoom');
+        set_config('apisecret', 'test', 'zoom');
+
         // Mock Zoom data for testing.
         $defaultzoomsettings = array(
             'grade' => 0,
@@ -52,6 +55,7 @@ class mod_zoom_generator extends testing_module_generator {
             'option_mute_upon_entry' => 0,
             'start_time' => mktime(0, 0, 0, 2, 22, 2021),
             'duration' => 60,
+            'exists_on_zoom' => 0,
         );
 
         $record = (object) (array) $record;
