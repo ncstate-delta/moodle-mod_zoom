@@ -678,7 +678,7 @@ function zoom_get_unavailability_note(object $zoom, $finished = null) {
     $strunavailable = get_string('unavailable', 'mod_zoom');
 
     // If this is a recurring meeting, just use the plain unavailable string.
-    if ($zoom->recurring === true) {
+    if (!empty($zoom->recurring)) {
         $unavailabilitynote = $strunavailable;
 
         // Otherwise we add some more information to the unavailable string.
@@ -691,7 +691,7 @@ function zoom_get_unavailability_note(object $zoom, $finished = null) {
         // If this meeting is still pending.
         if ($finished !== true) {
             // If the admin wants to show the leadtime.
-            if ($config->displayleadtime == true && $config->firstabletojoin > 0) {
+            if (!empty($config->displayleadtime) && $config->firstabletojoin > 0) {
                 $unavailabilitynote = $strunavailable . '<br />' .
                         get_string('unavailablefirstjoin', 'mod_zoom', array('mins' => ($config->firstabletojoin)));
 
