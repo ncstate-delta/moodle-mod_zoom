@@ -562,16 +562,19 @@ class get_meeting_reports extends \core\task\scheduled_task {
         $normalizedmeeting->uuid = $meeting->uuid;
         $normalizedmeeting->topic = $meeting->topic;
 
-        // Dashboard API has duration as H:M:S while report has it in seconds.
-        if (strpos($meeting->duration, ':') !== false) {
-            // From https://stackoverflow.com/a/4834230/6001.
-            sscanf($meeting->duration, '%d:%d:%d', $hours, $minutes, $seconds);
-            // If $second is null, then there is no hour, so treat hour as
-            // minutes and minutes as seconds.
-            $normalizedmeeting->duration = isset($seconds) ? $hours * 3600 +
-                    $minutes * 60 + $seconds : $hours * 60 + $minutes;
-        } else {
+        // Dashboard API has duration as H:M:S while report has it in minutes.
+        $timeparts = explode(':', $meeting->duration);
+
+        // Convert duration into minutes.
+        if (count($timeparts) === 1) {
+            // Time is already in minutes.
             $normalizedmeeting->duration = intval($meeting->duration);
+        } else if (count($timeparts) === 2) {
+            // Time is in MM:SS format.
+            $normalizedmeeting->duration = $timeparts[0];
+        } else {
+            // Time is in HH:MM:SS format.
+            $normalizedmeeting->duration = 60 * $timeparts[0] + $timeparts[1];
         }
 
         // Copy values that are named differently.
