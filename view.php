@@ -59,7 +59,9 @@ $zoomuserid = zoom_get_user_id(false);
 // Get the alternative hosts of the meeting.
 $alternativehosts = array();
 if (!is_null($zoom->alternative_hosts)) {
-    $alternativehosts = explode(',', str_replace(';', ',', $zoom->alternative_hosts));
+    $explodedalthosts = explode(',', str_replace(';', ',', $zoom->alternative_hosts));
+    // Delete empty entries.
+    $alternativehosts = array_filter($explodedalthosts);
 }
 
 // Check if this user is the (real) host.

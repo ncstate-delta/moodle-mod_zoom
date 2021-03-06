@@ -100,7 +100,7 @@ $string['getmeetingreports'] = 'Get meeting report from Zoom';
 $string['globalsettings'] = 'Global settings';
 $string['globalsettings_desc'] = 'These settings apply to the Zoom plugin as a whole.';
 $string['host'] = 'Host';
-$string['hostintro'] = 'Alternative Hosts can start Zoom meetings when the host is not available.';
+$string['hostintro'] = '<a target="_blank" href="https://support.zoom.us/hc/en-us/articles/208220166">Alternative Hosts</a> can start Zoom meetings and manage the Waiting Room.';
 $string['indicator:cognitivedepth'] = 'Zoom cognitive';
 $string['indicator:cognitivedepth_help'] = 'This indicator is based on the cognitive depth reached by the student in a Zoom activity.';
 $string['indicator:socialbreadth'] = 'Zoom social';

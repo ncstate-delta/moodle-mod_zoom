@@ -641,6 +641,7 @@ function zoom_get_nonusers_from_alternativehosts(array $alternativehosts) {
     global $DB;
 
     // Get the non-Moodle user mail addresses by checking which one does not exist in the DB.
+    $alternativehostnonusers = array();
     list($insql, $inparams) = $DB->get_in_or_equal($alternativehosts);
     $sql = 'SELECT email
             FROM {user}
@@ -653,11 +654,7 @@ function zoom_get_nonusers_from_alternativehosts(array $alternativehosts) {
         }
     }
 
-    if (count ($alternativehostnonusers) > 0) {
-        return $alternativehostnonusers;
-    } else {
-        return array();
-    }
+    return $alternativehostnonusers;
 }
 
 /**
