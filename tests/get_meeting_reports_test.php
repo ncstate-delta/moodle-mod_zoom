@@ -371,14 +371,14 @@ class get_meeting_reports_test extends advanced_testcase {
         $this->assertEquals($dashboardmeeting['topic'], $meeting->topic);
         $this->assertIsInt($meeting->start_time);
         $this->assertIsInt($meeting->end_time);
-        $this->assertEquals($meeting->duration, 4878);
+        $this->assertEquals($meeting->duration, 81);
         $this->assertEquals($dashboardmeeting['participants'], $meeting->participants_count);
         $this->assertNull($meeting->total_minutes);
 
         // Try duration under an hour.
         $dashboardmeeting['duration'] = '10:01';
         $meeting = $this->meetingtask->normalize_meeting((object) $dashboardmeeting);
-        $this->assertEquals($meeting->duration, 601);
+        $this->assertEquals($meeting->duration, 10);
 
         $reportmeeting = [
             'uuid' => 'sfsdfsdfc6122222d',
