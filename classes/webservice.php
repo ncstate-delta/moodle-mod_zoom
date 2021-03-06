@@ -627,12 +627,16 @@ class mod_zoom_webservice {
     /**
      * Get the meeting invite note that was sent for a specific meeting from Zoom.
      *
-     * @param int $id The meeting_id of the meeting to retrieve.
-     * @return stdClass The meeting's invite note.
+     * @param stdClass $zoom The zoom meeting
+     * @return string The meeting's invite note.
      * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetinginvitation
      */
-    public function get_meeting_invitation($id) {
-        $url = 'meetings/' . $id . '/invitation';
+    public function get_meeting_invitation($zoom) {
+        // Webinar does not have meeting invite info.
+        if ($zoom->webinar) {
+            return null;
+        }
+        $url = 'meetings/' . $zoom->meeting_id . '/invitation';
         $response = null;
         try {
             $response = $this->_make_call($url);
