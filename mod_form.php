@@ -292,7 +292,6 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addHelpButton('option_waiting_room', 'option_waiting_room', 'zoom');
         $mform->setDefault('option_waiting_room', $config->defaultwaitingroomoption);
         $mform->disabledIf('option_waiting_room', 'webinar', 'checked');
-        $mform->disabledIf('option_waiting_room', 'option_jbh', 'checked');
 
         // Add join before host widget.
         $mform->addElement('advcheckbox', 'option_jbh', get_string('option_jbh', 'zoom'),
@@ -300,7 +299,6 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('option_jbh', $config->defaultjoinbeforehost);
         $mform->addHelpButton('option_jbh', 'option_jbh', 'zoom');
         $mform->disabledIf('option_jbh', 'webinar', 'checked');
-        $mform->disabledIf('option_jbh', 'option_waiting_room', 'checked');
 
         // Add authenticated users widget.
         $mform->addElement('advcheckbox', 'option_authenticated_users', get_string('authentication', 'zoom'),
