@@ -32,6 +32,18 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v3.5
+
+- Removed language translations. Please submit language translations to AMOS (https://lang.moodle.org/)
+- Fixed bug causing downloading of meeting participation reports to fail
+- Added new settings for E2EE, Webinars, Alternative hosts, Download iCal,
+  Meeting capacity warning, and Enable meeting links (Thanks abias)
+- Improved UI for admin and module settings (Thanks abias)
+- Support for admins to update Zoom meeting participation reports
+- Quick editing Zoom meeting name will now update calendar event
+- Support for more advanced passcode requirements
+- This will be the last supported release by UCLA. This plugin will now be maintained by jrchamp and NC State DELTA.
+
 v3.4
 
 - Used Dashboard API to improve get_meeting_reports task
@@ -51,7 +63,7 @@ v3.3
 
 - Fixed problems with error handling (Thanks kbowlerarden and jrchamp)
 - Added language translations for uk, pl, and ru (Thanks mkikets99)
-- Thanks to kubilayagi for all his work on the Zoom plugin these past 2.5 years and good luck on future endevors
+- Thanks to kubilayagi for all his work on the Zoom plugin these past 2.5 years and good luck on future endeavors
 
 v3.2
 
