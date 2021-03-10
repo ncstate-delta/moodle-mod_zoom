@@ -457,21 +457,25 @@ class mod_zoom_mod_form extends moodleform_mod {
             // of selected alternative hosts.
 
             // Get latest list of alternative hosts from the DB.
-            $result = $DB->get_field('zoom', 'alternative_hosts', array('meeting_id' => $data->meeting_id), MUST_EXIST);
-            $alternativehostsdb = explode(',', str_replace(';', ',', $result));
+            $result = $DB->get_field('zoom', 'alternative_hosts', array('meeting_id' => $data->meeting_id), IGNORE_MISSING);
 
-            // Get selectable alternative host users based on the capability.
-            $alternativehostschoices = zoom_get_selectable_alternative_hosts_list($this->context);
+            // Proceed only if there is a field of alternative hosts already.
+            if ($result !== false) {
+                $alternativehostsdb = explode(',', str_replace(';', ',', $result));
 
-            // Iterate over the latest list of alternative hosts from the DB.
-            foreach ($alternativehostsdb as $ah) {
-                // If the existing alternative host would not have been selectable.
-                if (!array_key_exists($ah, $alternativehostschoices)) {
-                    // Add the alternative host to the alternative_hosts field.
-                    if ($data->alternative_hosts == '') {
-                        $data->alternative_hosts = $ah;
-                    } else {
-                        $data->alternative_hosts .= ',' . $ah;
+                // Get selectable alternative host users based on the capability.
+                $alternativehostschoices = zoom_get_selectable_alternative_hosts_list($this->context);
+
+                // Iterate over the latest list of alternative hosts from the DB.
+                foreach ($alternativehostsdb as $ah) {
+                    // If the existing alternative host would not have been selectable.
+                    if (!array_key_exists($ah, $alternativehostschoices)) {
+                        // Add the alternative host to the alternative_hosts field.
+                        if ($data->alternative_hosts == '') {
+                            $data->alternative_hosts = $ah;
+                        } else {
+                            $data->alternative_hosts .= ',' . $ah;
+                        }
                     }
                 }
             }
