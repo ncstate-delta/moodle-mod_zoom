@@ -203,6 +203,11 @@ class mod_zoom_mod_form extends moodleform_mod {
                             get_string('webinarthisis', 'zoom'), $webinarattr);
                     $mform->setDefault('webinar', 0);
                     $mform->addHelpButton('webinar', 'webinar', 'zoom');
+
+                    // Otherwise add a hidden field to fill the webinar parameter in any case.
+                } else {
+                    $mform->addElement('hidden', 'webinar', 0);
+                    $mform->setType('webinar', PARAM_BOOL);
                 }
             } else if ($this->current->webinar) {
                 $mform->addElement('static', 'webinaralreadyset', get_string('webinar', 'zoom'),
@@ -211,6 +216,11 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $mform->addElement('static', 'webinaralreadyset', get_string('webinar', 'zoom'),
                         get_string('webinar_already_false', 'zoom'));
             }
+
+            // Otherwise add a hidden field to fill the webinar parameter in any case.
+        } else {
+            $mform->addElement('hidden', 'webinar', 0);
+            $mform->setType('webinar', PARAM_BOOL);
         }
 
         // Adding the "security" fieldset, where all settings relating to securing and protecting the meeting are shown.
