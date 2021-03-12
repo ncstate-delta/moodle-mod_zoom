@@ -108,11 +108,20 @@ if ($ADMIN->fulltree) {
             15, $jointimeselect);
     $settings->add($firstabletojoin);
 
-    $displayleadtime = new admin_setting_configcheckbox('zoom/displayleadtime',
-            get_string('displayleadtime', 'mod_zoom'),
-            get_string('displayleadtime_desc', 'mod_zoom'), 0, 1, 0);
-    $settings->add($displayleadtime);
-    $settings->hide_if('zoom/displayleadtime', 'zoom/firstabletojoin', 'eq', 0);
+    if ($CFG->branch >= 37) {
+        $displayleadtime = new admin_setting_configcheckbox('zoom/displayleadtime',
+                get_string('displayleadtime', 'mod_zoom'),
+                get_string('displayleadtime_desc', 'mod_zoom'), 0, 1, 0);
+        $settings->add($displayleadtime);
+        $settings->hide_if('zoom/displayleadtime', 'zoom/firstabletojoin', 'eq', 0);
+    } else {
+        $displayleadtime = new admin_setting_configcheckbox('zoom/displayleadtime',
+                get_string('displayleadtime', 'mod_zoom'),
+                get_string('displayleadtime_desc', 'mod_zoom').'<br />'.
+                        get_string('displayleadtime_nohideif', 'mod_zoom', get_string('firstjoin', 'mod_zoom')),
+                0, 1, 0);
+        $settings->add($displayleadtime);
+    }
 
     $displaypassword = new admin_setting_configcheckbox('zoom/displaypassword',
             get_string('displaypassword', 'mod_zoom'),
