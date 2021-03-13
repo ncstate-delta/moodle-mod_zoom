@@ -49,7 +49,7 @@ $addons = array(
             array('duration', 'zoom'),
             array('passwordprotected', 'zoom'),
             array('password', 'zoom'),
-            array('join_link', 'zoom'),
+            array('joinlink', 'zoom'),
             array('joinbeforehost', 'zoom'),
             array('starthostjoins', 'zoom'),
             array('startpartjoins', 'zoom'),
