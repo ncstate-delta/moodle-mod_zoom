@@ -108,7 +108,7 @@ if ($ADMIN->fulltree) {
             15, $jointimeselect);
     $settings->add($firstabletojoin);
 
-    if ($CFG->branch >= 37) {
+    if (version_compare(normalize_version($CFG->release), '3.7.0', '>=')) {
         $displayleadtime = new admin_setting_configcheckbox('zoom/displayleadtime',
                 get_string('displayleadtime', 'mod_zoom'),
                 get_string('displayleadtime_desc', 'mod_zoom'), 0, 1, 0);
