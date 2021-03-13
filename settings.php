@@ -117,7 +117,7 @@ if ($ADMIN->fulltree) {
     } else {
         $displayleadtime = new admin_setting_configcheckbox('zoom/displayleadtime',
                 get_string('displayleadtime', 'mod_zoom'),
-                get_string('displayleadtime_desc', 'mod_zoom').'<br />'.
+                get_string('displayleadtime_desc', 'mod_zoom') . '<br />'.
                         get_string('displayleadtime_nohideif', 'mod_zoom', get_string('firstjoin', 'mod_zoom')),
                 0, 1, 0);
         $settings->add($displayleadtime);
