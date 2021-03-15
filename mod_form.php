@@ -283,7 +283,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $mform->addHelpButton('option_encryption_type_group', 'option_encryption_type', 'zoom');
                 $mform->disabledIf('option_encryption_type_group', 'webinar', 'checked');
             }
-            $mform->setType('option_encryption_type', PARAM_ALPHAEXT);
+            $mform->setType('option_encryption_type', PARAM_ALPHANUMEXT);
         }
 
         // Add waiting room widget.
