@@ -528,7 +528,7 @@ class mod_zoom_webservice {
             $data['settings']['meeting_authentication'] = (bool) $zoom->option_authenticated_users;
         }
 
-        if ($zoom->webinar) {
+        if (!empty($zoom->webinar)) {
             $data['type'] = $zoom->recurring ? ZOOM_RECURRING_WEBINAR : ZOOM_SCHEDULED_WEBINAR;
         } else {
             $data['type'] = $zoom->recurring ? ZOOM_RECURRING_MEETING : ZOOM_SCHEDULED_MEETING;
@@ -579,7 +579,7 @@ class mod_zoom_webservice {
     public function create_meeting($zoom) {
         // Provide license if needed.
         $this->provide_license($zoom->host_id);
-        $url = "users/$zoom->host_id/" . ($zoom->webinar ? 'webinars' : 'meetings');
+        $url = "users/$zoom->host_id/" . (!empty($zoom->webinar) ? 'webinars' : 'meetings');
         return $this->_make_call($url, $this->_database_to_api($zoom), 'post');
     }
 
