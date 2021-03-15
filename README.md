@@ -32,6 +32,12 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v3.6
+
+- Fixed fatal regression on settings.php for Moodle < 3.7 (Thanks abias)
+- Fixed debugging messages that occur for users without webinar licenses
+- Various string improvements
+
 v3.5
 
 - Removed language translations. Please submit language translations to AMOS (https://lang.moodle.org/)
