@@ -275,4 +275,26 @@ if ($ADMIN->fulltree) {
             get_string('option_mute_upon_entry_help', 'mod_zoom'),
             1, 1, 0);
     $settings->add($defaultmuteuponentryoption);
+
+    $settings->add(new admin_setting_heading('zoom/invitationregex',
+            get_string('invitationregex', 'mod_zoom'),
+            get_string('invitationregex_help', 'mod_zoom')));
+
+    $settings->add(new admin_setting_configcheckbox('zoom/invitationregexenabled',
+            get_string('invitationregexenabled', 'mod_zoom'),
+            get_string('invitationregexenabled_help', 'mod_zoom'),
+            1, 1, 0));
+
+    $settings->add(new admin_setting_configcheckbox('zoom/invitationremoveinvite',
+            get_string('invitationremoveinvite', 'mod_zoom'),
+            get_string('invitationremoveinvite_help', 'mod_zoom'),
+            0, 1, 0));
+
+    // Allow admin to modify regex for invitation parts if zoom api changes.
+    foreach (\mod_zoom\invitation::get_default_invitation_regex() as $element => $pattern) {
+        $name = 'zoom/' . \mod_zoom\invitation::PREFIX . $element;
+        $visiblename = get_string(\mod_zoom\invitation::PREFIX . $element, 'mod_zoom');
+        $description = get_string(\mod_zoom\invitation::PREFIX . $element . '_help', 'mod_zoom');
+        $settings->add(new admin_setting_configtext($name, $visiblename, $description, $pattern));
+    }
 }
