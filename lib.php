@@ -85,15 +85,8 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     }
 
     // Handle weekdays if weekly recurring meeting selected.
-    if ($zoom->recurring && $zoom->recurrence_type == 2) {
-        $weekdayselected = [];
-        for ($i = 1; $i <= 7; $i++) {
-            $key = 'weekly_days_' . $i;
-            if (!empty($zoom->$key)) {
-                $weekdayselected[] = $zoom->$key;
-            }
-        }
-        $zoom->weekly_days = implode(',', $weekdayselected);
+    if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_WEEKLY) {
+        $zoom->weekly_days = $zoom->weekly_days = zoom_handle_weekly_days($zoom);
     }
 
     $zoom->course = (int) $zoom->course;
@@ -150,15 +143,8 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     }
 
     // Handle weekdays if weekly recurring meeting selected.
-    if ($zoom->recurring && $zoom->recurrence_type == 2) {
-        $weekdayselected = [];
-        for ($i = 1; $i <= 7; $i++) {
-            $key = 'weekly_days_' . $i;
-            if (!empty($zoom->$key)) {
-                $weekdayselected[] = $zoom->$key;
-            }
-        }
-        $zoom->weekly_days = implode(',', $weekdayselected);
+    if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_WEEKLY) {
+        $zoom->weekly_days = zoom_handle_weekly_days($zoom);
     }
 
     $DB->update_record('zoom', $zoom);
@@ -185,6 +171,25 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     zoom_grade_item_update($zoom);
 
     return true;
+}
+
+/**
+ * Function to handle selected weekdays, for recurring weekly meeting.
+ * 
+ * @param stdClass $zoom The zoom instance
+ * 
+ * @return string The comma seperated string for selected weekdays
+ */
+function zoom_handle_weekly_days($zoom) {
+
+    $weekdayselected = [];
+    for ($i = 1; $i <= 7; $i++) {
+        $key = 'weekly_days_' . $i;
+        if (!empty($zoom->$key)) {
+            $weekdayselected[] = $zoom->$key;
+        }
+    }
+    return implode(',', $weekdayselected);
 }
 
 /**
@@ -399,16 +404,16 @@ function zoom_calendar_item_update(stdClass $zoom) {
     } else {
         // First remove existing events for recurring meeting.
         zoom_calendar_item_delete($zoom);
-        // Create the event for the meeting.
+        // Create the event for the first iteration of the recurring meeting.
         $event = zoom_populate_calender_item($zoom);
         calendar_event::create($event);
 
         // Now create the recurring events.
-        if ($zoom->recurrence_type == '1') {
+        if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_DAILY) {
             zoom_create_recurring_daily_events($zoom);
-        } else if ($zoom->recurrence_type == '2') {
+        } else if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_WEEKLY) {
             zoom_create_recurring_weekly_events($zoom);
-        } else if ($zoom->recurrence_type == '3') {
+        } else if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_MONTHLY) {
             zoom_create_recurring_monthly_events($zoom);
         }
     }
@@ -466,9 +471,8 @@ function zoom_create_recurring_weekly_events(stdClass $zoom) {
         do {
             $weekdaystoadd = explode(',', $zoom->weekly_days);
             foreach ($weekdaystoadd as $weekdaytoadd) {
-
                 $event = zoom_populate_calender_item($zoom);
-                $eventstart = zoom_get_weekly_timestamp($starttime, $weekdaytoadd);
+                $eventstart = zoom_get_weekly_timestamp($starttime, (int) $weekdaytoadd);
                 if ($eventstart < $endtime) {
                     $event->timestart = $eventstart;
                     calendar_event::create($event);
@@ -489,7 +493,7 @@ function zoom_create_recurring_weekly_events(stdClass $zoom) {
                 }
 
                 $event = zoom_populate_calender_item($zoom);
-                $event->timestart = zoom_get_weekly_timestamp($starttime, $weekdaytoadd);
+                $event->timestart = zoom_get_weekly_timestamp($starttime, (int) $weekdaytoadd);
                 calendar_event::create($event);
 
                 $addedoccurences++;
@@ -544,13 +548,13 @@ function zoom_create_recurring_monthly_events(stdClass $zoom) {
  */
 function zoom_get_weekday_options() {
     return [
-        1 => 'Sunday',
-        2 => 'Monday',
-        3 => 'Tuesday',
-        4 => 'Wednesday',
-        5 => 'Thursday',
-        6 => 'Friday',
-        7 => 'Saturday'
+        1 => get_string('sunday', 'calendar'),
+        2 => get_string('monday', 'calendar'),
+        3 => get_string('tuesday', 'calendar'),
+        4 => get_string('wednesday', 'calendar'),
+        5 => get_string('thursday', 'calendar'),
+        6 => get_string('friday', 'calendar'),
+        7 => get_string('saturday', 'calendar'),
     ];
 }
 
@@ -561,11 +565,11 @@ function zoom_get_weekday_options() {
  */
 function zoom_get_monthweek_options() {
     return [
-        -1 => 'Last',
-        1 => 'First',
-        2 => 'Second',
-        3 => 'Third',
-        4 => 'Fourth'
+        1 => get_string('weekoption_first', 'zoom'),
+        2 => get_string('weekoption_second', 'zoom'),
+        3 => get_string('weekoption_third', 'zoom'),
+        4 => get_string('weekoption_fourth', 'zoom'),
+        -1 => get_string('weekoption_last', 'zoom'),
     ];
 }
 
@@ -633,7 +637,10 @@ function zoom_populate_calender_item(stdClass $zoom) {
     }
     $event->timestart = $zoom->start_time;
     $event->timeduration = $zoom->duration;
-    if ($zoom->recurring && $zoom->recurrence_type == 0) {
+    // Keeping the original functionality here.
+    // Recurring meetings/webinars with no fixed time are created as invisble events.
+    // For recurring meetings/webinars with a fixed time, we want to see the events on the calendar.
+    if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
         $event->visible = false;
     }
 

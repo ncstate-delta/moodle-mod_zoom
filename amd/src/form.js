@@ -24,6 +24,7 @@
  */
 
 define(['jquery'], function($) {
+<<<<<<< HEAD
     return {
         init: function() {
             var optionJoinBeforeHost = $('input[name="option_jbh"][type!="hidden"]');
@@ -38,50 +39,138 @@ define(['jquery'], function($) {
                     optionJoinBeforeHost.prop('checked', false);
                 }
             });
+=======
+>>>>>>> Further improvement around recurring meetings/webinars.
 
-            var repeat_select = $('select[name="recurrence_type"]');
-            var start_time = $('select[name*="start_time"]');
-            var duration = $('*[name*="duration"]');
-            var recurring = $('input[name="recurring"][type!="hidden"]');
+    /**
+     * CSS selectors used throughout the file.
+     *
+     * @type {object}
+     */
+    var SELECTORS = {
+        REPEAT_SELECT: 'select[name="recurrence_type"]',
+        REPEAT_INTERVAL: '.repeat_interval',
+        REPEAT_INTERVAL_DAILY: '#interval_daily',
+        REPEAT_INTERVAL_WEEKLY: '#interval_weekly',
+        REPEAT_INTERVAL_MONTHLY: '#interval_monthly',
+        REPEAT_INTERVAL_OPTIONS: 'select[name="repeat_interval"] option',
+        START_TIME: 'select[name*="start_time"]',
+        DURATION: '*[name*="duration"]',
+        RECURRING: 'input[name="recurring"][type!="hidden"]',
+        OPTION_JBH: 'input[name="option_jbh"][type!="hidden"]',
+        OPTION_WAITING_ROOM: 'input[name="option_waiting_room"][type!="hidden"]'
+    };
 
-            if (recurring.prop('checked')) {
-                start_time.prop('disabled', (repeat_select.val() == 0));
-                duration.prop('disabled', (repeat_select.val() == 0));
+    /**
+     * Repeat interval options.
+     *
+     * @type {object}
+     */
+    var REPEAT_OPTIONS = {
+        REPEAT_OPTION_NONE: 0,
+        REPEAT_OPTION_DAILY: 1,
+        REPEAT_OPTION_WEEKLY: 2,
+        REPEAT_OPTION_MONTHLY: 3
+    };
+
+    /**
+     * The max values for each repeat option.
+     *
+     * @type {object}
+     */
+    var REPEAT_MAX_OPTIONS = {
+        REPEAT_OPTION_DAILY: 90,
+        REPEAT_OPTION_WEEKLY: 12,
+        REPEAT_OPTION_MONTHLY: 3
+    };
+
+    /**
+     * The init function.
+     */
+    var init = function() {
+        var option_jbh = $(SELECTORS.OPTION_JBH);
+        var option_waiting_room = $(SELECTORS.OPTION_WAITING_ROOM);
+        option_jbh.change(function() {
+            if (option_jbh.is(':checked') == true) {
+                option_waiting_room.prop('checked', false);
             }
-
-            recurring.change(function() {
-                var disabled = false;
-                if (recurring.prop('checked') && repeat_select.val() == 0) {
-                    disabled = true;
-                }
-                start_time.prop('disabled', disabled);
-                duration.prop('disabled', disabled);
-            });
-
-            $('.repeat_interval').hide();
-            if (repeat_select.val() > 0) {
-                start_time.prop('disabled', (repeat_select.val() == 0));
-                duration.prop('disabled', (repeat_select.val() == 0));
-                if (repeat_select.val() == 1) {
-                    $('#interval_daily').show();
-                } else if (repeat_select.val() == 2) {
-                    $('#interval_weekly').show();
-                } else if (repeat_select.val() == 3) {
-                    $('#interval_monthly').show();
-                }
+        });
+        option_waiting_room.change(function() {
+            if (option_waiting_room.is(':checked') == true) {
+                option_jbh.prop('checked', false);
             }
-            repeat_select.change(function() {
-                start_time.prop('disabled', (this.value == 0));
-                duration.prop('disabled', (this.value == 0));
-                $('.repeat_interval').hide();
-                if (this.value == 1) {
-                    $('#interval_daily').show();
-                } else if (this.value == 2) {
-                    $('#interval_weekly').show();
-                } else if (this.value == 3) {
-                    $('#interval_monthly').show();
-                }
-            });
+        });
+
+        // First toggle the values based on initial selections.
+        toggle_start_time_duration();
+        toggle_repeat_interval_text();
+        limit_repeat_values();
+        // Add listerner to "Repeat Every" drop-down.
+        $(SELECTORS.REPEAT_SELECT).change(function() {
+            toggle_start_time_duration();
+            toggle_repeat_interval_text();
+            limit_repeat_values();
+        });
+        // Add listener for the "Recurring" checkbox
+        $(SELECTORS.RECURRING).change(function() {
+            toggle_start_time_duration();
+        });
+    };
+
+    /**
+     * Toggle start time and duration elements.
+     */
+    var toggle_start_time_duration = function () {
+        // Disable start time and duration if "No Fixed Time" recurring meeting/webinar selected.
+        var disabled = false;
+        if ($(SELECTORS.RECURRING).prop('checked') && $(SELECTORS.REPEAT_SELECT).val() == REPEAT_OPTIONS.REPEAT_OPTION_NONE) {
+            disabled = true;
         }
+        $(SELECTORS.START_TIME).prop('disabled', disabled);
+        $(SELECTORS.DURATION).prop('disabled', disabled);
+    };
+
+    /**
+     * Toggle the text based on repeat type.
+     * To show either Days, Weeks or Months
+     */
+    var toggle_repeat_interval_text = function () {
+        $(SELECTORS.REPEAT_INTERVAL).hide();
+        var repeat_select = $(SELECTORS.REPEAT_SELECT);
+        if (repeat_select.val() == REPEAT_OPTIONS.REPEAT_OPTION_DAILY) {
+            $(SELECTORS.REPEAT_INTERVAL_DAILY).show();
+        } else if (repeat_select.val() == REPEAT_OPTIONS.REPEAT_OPTION_WEEKLY) {
+            $(SELECTORS.REPEAT_INTERVAL_WEEKLY).show();
+        } else if (repeat_select.val() == REPEAT_OPTIONS.REPEAT_OPTION_MONTHLY) {
+            $(SELECTORS.REPEAT_INTERVAL_MONTHLY).show();
+        }
+    };
+
+    /**
+     * Limit the options shown in the drop-down based on repeat type selected.
+     * Max value for daily meeting is 90.
+     * Max value for weekly meeting is 12.
+     * Max value for monthly meeting is 3.
+     */
+    var limit_repeat_values = function () {
+        var selectedvalue = $(SELECTORS.REPEAT_SELECT).val();
+        // Restrict options if weekly or monthly option selected.
+        $(SELECTORS.REPEAT_INTERVAL_OPTIONS).each(function() {
+            if (selectedvalue == REPEAT_OPTIONS.REPEAT_OPTION_WEEKLY) {
+                if (this.value > REPEAT_MAX_OPTIONS.REPEAT_OPTION_WEEKLY) {
+                    $(this).hide();
+                }
+            } else if (selectedvalue == REPEAT_OPTIONS.REPEAT_OPTION_MONTHLY) {
+                if (this.value > REPEAT_MAX_OPTIONS.REPEAT_OPTION_MONTHLY) {
+                    $(this).hide();
+                }
+            } else {
+                $(this).show();
+            }
+        });
+    };
+
+    return {
+        init: init
     };
 });

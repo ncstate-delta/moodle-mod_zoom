@@ -42,6 +42,8 @@ define('ZOOM_SCHEDULED_MEETING', 2);
 define('ZOOM_RECURRING_MEETING', 3);
 define('ZOOM_SCHEDULED_WEBINAR', 5);
 define('ZOOM_RECURRING_WEBINAR', 6);
+define('ZOOM_RECURRING_FIXED_MEETING', 8);
+define('ZOOM_RECURRING_FIXED_WEBINAR', 9);
 // Meeting status.
 define('ZOOM_MEETING_EXPIRED', 0);
 define('ZOOM_MEETING_EXISTS', 1);
@@ -83,6 +85,11 @@ define('ZOOM_DOWNLOADICAL_ENABLE', 1);
 // Capacity warning options.
 define('ZOOM_CAPACITYWARNING_DISABLE', 0);
 define('ZOOM_CAPACITYWARNING_ENABLE', 1);
+// Recurrence type options
+define('ZOOM_RECURRINGTYPE_NOTIME', 0);
+define('ZOOM_RECURRINGTYPE_DAILY', 1);
+define('ZOOM_RECURRINGTYPE_WEEKLY', 2);
+define('ZOOM_RECURRINGTYPE_MONTHLY', 3);
 
 /**
  * Entry not found on Zoom.
