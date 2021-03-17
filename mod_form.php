@@ -267,11 +267,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Set default end_date_time to be 1 week in the future.
         $mform->setDefault('end_date_time', strtotime('+1 week'));
 
-        // Supplementary feature: Webinars.
         // Only show if the admin did not disable this feature completely.
-        if ($config->showwebinars != ZOOM_WEBINAR_DISABLE) {
-            // If we are creating a new instance.
-            if ($isnew) {
                 // Check if the user has a webinar license.
                 $haswebinarlicense = $service->_get_user_settings($zoomuser->id)->feature->webinar;
 

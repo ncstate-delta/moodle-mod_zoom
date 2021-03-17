@@ -558,27 +558,27 @@ class mod_zoom_webservice {
                     ZOOM_ENCRYPTION_TYPE_E2EE : ZOOM_ENCRYPTION_TYPE_ENHANCED;
             $data['settings']['waiting_room'] = (bool) ($zoom->option_waiting_room);
             $data['settings']['mute_upon_entry'] = (bool) ($zoom->option_mute_upon_entry);
+        }
 
-            // Add recurrence object.
-            if ($zoom->recurring && $zoom->recurrence_type != 0) {
-                $data['recurrence']['type'] = (int) $zoom->recurrence_type;
-                $data['recurrence']['repeat_interval'] = (int) $zoom->repeat_interval;
-                if ($zoom->recurrence_type == 2) {
-                    $data['recurrence']['weekly_days'] = $zoom->weekly_days;
-                }
-                if ($zoom->recurrence_type == 3) {
-                    if ($zoom->monthly_repeat_option == 1){
-                        $data['recurrence']['monthly_day'] = (int) $zoom->monthly_day;
-                    } else {
-                        $data['recurrence']['monthly_week'] = (int) $zoom->monthly_week;
-                        $data['recurrence']['monthly_week_day'] = (int) $zoom->monthly_week_day;
-                    }
-                }
-                if ($zoom->end_date_option == 2) {
-                    $data['recurrence']['end_times'] = (int) $zoom->end_times;
+        // Add recurrence object.
+        if ($zoom->recurring && $zoom->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
+            $data['recurrence']['type'] = (int) $zoom->recurrence_type;
+            $data['recurrence']['repeat_interval'] = (int) $zoom->repeat_interval;
+            if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_WEEKLY) {
+                $data['recurrence']['weekly_days'] = $zoom->weekly_days;
+            }
+            if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_MONTHLY) {
+                if ($zoom->monthly_repeat_option == 1){
+                    $data['recurrence']['monthly_day'] = (int) $zoom->monthly_day;
                 } else {
-                    $data['recurrence']['end_date_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->end_date_time);
+                    $data['recurrence']['monthly_week'] = (int) $zoom->monthly_week;
+                    $data['recurrence']['monthly_week_day'] = (int) $zoom->monthly_week_day;
                 }
+            }
+            if ($zoom->end_date_option == 2) {
+                $data['recurrence']['end_times'] = (int) $zoom->end_times;
+            } else {
+                $data['recurrence']['end_date_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->end_date_time);
             }
         }
 
