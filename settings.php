@@ -196,6 +196,15 @@ if ($ADMIN->fulltree) {
             $downloadicalchoices);
     $settings->add($offerdownloadical);
 
+    $invitationtextchoices = array(ZOOM_INVITATIONTEXT_DISABLE => get_string('invitationtext_disable', 'mod_zoom'),
+            ZOOM_INVITATIONTEXT_ENABLE => get_string('invitationtext_enable', 'mod_zoom'));
+    $offerinvitationtext = new admin_setting_configselect('zoom/showinvitationtext',
+            get_string('invitationtext', 'mod_zoom'),
+            get_string('invitationtext_desc', 'mod_zoom'),
+            ZOOM_INVITATIONTEXT_ENABLE,
+            $invitationtextchoices);
+    $settings->add($offerinvitationtext);
+
     // Default Zoom settings.
     $settings->add(new admin_setting_heading('zoom/defaultsettings',
             get_string('defaultsettings', 'mod_zoom'),

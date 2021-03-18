@@ -79,6 +79,9 @@ define('ZOOM_DOWNLOADICAL_ENABLE', 1);
 // Capacity warning options.
 define('ZOOM_CAPACITYWARNING_DISABLE', 0);
 define('ZOOM_CAPACITYWARNING_ENABLE', 1);
+// Invitation text display options.
+define('ZOOM_INVITATIONTEXT_DISABLE', 0);
+define('ZOOM_INVITATIONTEXT_ENABLE', 1);
 
 /**
  * Entry not found on Zoom.
