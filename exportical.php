@@ -79,7 +79,7 @@ $descriptiontext = get_string('calendardescriptionURL', 'mod_zoom', $CFG->wwwroo
 if (!empty($convertedtext)) {
     $descriptiontext .= get_string('calendardescriptionintro', 'mod_zoom', $convertedtext);
 }
-if (!empty($meetinginvite)) {
+if ($config->showinvitationtext != ZOOM_INVITATIONTEXT_DISABLE && !empty($meetinginvite)) {
     $descriptiontext .= "\n\n" . $meetinginvite;
 }
 $event->add_property('description', $descriptiontext);
