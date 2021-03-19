@@ -85,11 +85,17 @@ define('ZOOM_DOWNLOADICAL_ENABLE', 1);
 // Capacity warning options.
 define('ZOOM_CAPACITYWARNING_DISABLE', 0);
 define('ZOOM_CAPACITYWARNING_ENABLE', 1);
-// Recurrence type options
+// Recurrence type options.
 define('ZOOM_RECURRINGTYPE_NOTIME', 0);
 define('ZOOM_RECURRINGTYPE_DAILY', 1);
 define('ZOOM_RECURRINGTYPE_WEEKLY', 2);
 define('ZOOM_RECURRINGTYPE_MONTHLY', 3);
+// Recurring monthly repeat options.
+define('ZOOM_MONTHLY_REPEAT_OPTION_DAY', 1);
+define('ZOOM_MONTHLY_REPEAT_OPTION_WEEK', 2);
+// Recurring end date options.
+define('ZOOM_END_DATE_OPTION_BY', 1);
+define('ZOOM_END_DATE_OPTION_AFTER', 2);
 
 /**
  * Entry not found on Zoom.

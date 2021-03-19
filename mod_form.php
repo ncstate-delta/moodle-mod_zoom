@@ -236,17 +236,17 @@ class mod_zoom_mod_form extends moodleform_mod {
         $monthlyweekoptions = zoom_get_monthweek_options();
         
         $group = [];
-        $group[] = $mform->createElement('radio', 'monthly_repeat_option', '', get_string('day', 'calendar'), 1);
+        $group[] = $mform->createElement('radio', 'monthly_repeat_option', '', get_string('day', 'calendar'), ZOOM_MONTHLY_REPEAT_OPTION_DAY);
         $group[] = $mform->createElement('select', 'monthly_day', '', $monthoptions);
         $group[] = $mform->createElement('static', 'month_day_text', '', get_string('month_day_text', 'zoom'));
-        $group[] = $mform->createElement('radio', 'monthly_repeat_option', '', '', 2);
+        $group[] = $mform->createElement('radio', 'monthly_repeat_option', '', '', ZOOM_MONTHLY_REPEAT_OPTION_WEEK);
         $group[] = $mform->createElement('select', 'monthly_week', '', $monthlyweekoptions);
         $group[] = $mform->createElement('select', 'monthly_week_day', '', $weekdayoptions);
         $group[] = $mform->createElement('static', 'month_week_day_text', '', get_string('month_day_text', 'zoom'));
         $mform->addGroup($group, 'monthly_day_group', get_string('occurson', 'zoom'), null, false);
         $mform->hideif('monthly_day_group', 'recurrence_type', 'noteq', ZOOM_RECURRINGTYPE_MONTHLY);
         $mform->hideif('monthly_day_group', 'recurring', 'notchecked');
-        $mform->setDefault('monthly_repeat_option', 1);
+        $mform->setDefault('monthly_repeat_option', ZOOM_MONTHLY_REPEAT_OPTION_DAY);
 
         // End date option.
         $maxoptions = [];
@@ -254,16 +254,16 @@ class mod_zoom_mod_form extends moodleform_mod {
             $maxoptions[$i] = $i;
         }
         $group = [];
-        $group[] = $mform->createElement('radio', 'end_date_option', '', get_string('end_date_option_by', 'zoom'), 1);
+        $group[] = $mform->createElement('radio', 'end_date_option', '', get_string('end_date_option_by', 'zoom'), ZOOM_END_DATE_OPTION_BY);
         $group[] = $mform->createElement('date_selector', 'end_date_time', '');
-        $group[] = $mform->createElement('radio', 'end_date_option', '', get_string('end_date_option_after', 'zoom'), 2);
+        $group[] = $mform->createElement('radio', 'end_date_option', '', get_string('end_date_option_after', 'zoom'), ZOOM_END_DATE_OPTION_AFTER);
         $group[] = $mform->createElement('select', 'end_times', '', $maxoptions);
         $group[] = $mform->createElement('static', 'end_times_text', '', get_string('end_date_option_occurances', 'zoom'));
         $mform->addGroup($group, 'radioenddate', get_string('enddate', 'zoom'), null, false);
         $mform->hideif('radioenddate', 'recurring', 'notchecked');
         $mform->hideif('radioenddate', 'recurrence_type', 'eq', ZOOM_RECURRINGTYPE_NOTIME);
         // Set default option for end date to be "By".
-        $mform->setDefault('end_date_option', 1);
+        $mform->setDefault('end_date_option', ZOOM_END_DATE_OPTION_BY);
         // Set default end_date_time to be 1 week in the future.
         $mform->setDefault('end_date_time', strtotime('+1 week'));
 
@@ -563,6 +563,35 @@ class mod_zoom_mod_form extends moodleform_mod {
                 }
             }
         }
+
+        // Add some postprocessing around the recurrence settings.
+        if ($data->recurring) {
+            // If "No fixed time" meeting selected, dont need repeat_interval and other options.
+            if ($data->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
+                unset($data->repeat_interval);
+                // Unset the weekly fields.
+                $data = zoom_remove_weekly_options($data);
+                // Unset the monthly fields.
+                $data = zoom_remove_monthly_options($data);
+            }
+            // If daily recurring selected, unset weekly and monthly options.
+            if ($data->recurrence_type == ZOOM_RECURRINGTYPE_DAILY) {
+                // Unset the weekly fields.
+                $data = zoom_remove_weekly_options($data);
+                // Unset the monthly fields.
+                $data = zoom_remove_monthly_options($data);
+            }
+            // If weekly recurring selected, unset monthly options.
+            if ($data->recurrence_type == ZOOM_RECURRINGTYPE_WEEKLY) {
+                // Unset the monthly fields.
+                $data = zoom_remove_monthly_options($data);
+            }
+            // If daily recurring selected, unset weekly and monthly options.
+            if ($data->recurrence_type == ZOOM_RECURRINGTYPE_MONTHLY) {
+                // Unset the weekly fields.
+                $data = zoom_remove_weekly_options($data);
+            }
+        }
     }
 
     /**
@@ -718,7 +747,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                 }
             }
 
-            if ($data['end_date_option'] == '1') {
+            if ($data['recuurence_type'] != ZOOM_RECURRINGTYPE_NOTIME && $data['end_date_option'] == ZOOM_END_DATE_OPTION_BY) {
                 if ($data['end_date_time'] < strtotime('today')) {
                     $errors['radioenddate'] = get_string('err_end_date', 'zoom');
                 }

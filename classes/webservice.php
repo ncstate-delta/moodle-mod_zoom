@@ -547,6 +547,10 @@ class mod_zoom_webservice {
             } else {
                 $data['type'] = ZOOM_SCHEDULED_MEETING;
             }
+        }
+
+        // Add fields which are effective for meetings only, but not for webinars.
+        if (empty($zoom->webinar)) {
             $data['settings']['participant_video'] = (bool) ($zoom->option_participants_video);
             $data['settings']['join_before_host'] = (bool) ($zoom->option_jbh);
             $data['settings']['encryption_type'] = (isset($zoom->option_encryption_type) &&
@@ -564,14 +568,14 @@ class mod_zoom_webservice {
                 $data['recurrence']['weekly_days'] = $zoom->weekly_days;
             }
             if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_MONTHLY) {
-                if ($zoom->monthly_repeat_option == 1){
+                if ($zoom->monthly_repeat_option == ZOOM_MONTHLY_REPEAT_OPTION_DAY){
                     $data['recurrence']['monthly_day'] = (int) $zoom->monthly_day;
                 } else {
                     $data['recurrence']['monthly_week'] = (int) $zoom->monthly_week;
                     $data['recurrence']['monthly_week_day'] = (int) $zoom->monthly_week_day;
                 }
             }
-            if ($zoom->end_date_option == 2) {
+            if ($zoom->end_date_option == ZOOM_END_DATE_OPTION_AFTER) {
                 $data['recurrence']['end_times'] = (int) $zoom->end_times;
             } else {
                 $data['recurrence']['end_date_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->end_date_time);
