@@ -196,8 +196,8 @@ if ($ADMIN->fulltree) {
             $downloadicalchoices);
     $settings->add($offerdownloadical);
 
-    $invitationtextchoices = array(ZOOM_INVITATIONTEXT_DISABLE => get_string('invitationtext_disable', 'mod_zoom'),
-            ZOOM_INVITATIONTEXT_ENABLE => get_string('invitationtext_enable', 'mod_zoom'));
+    $invitationtextchoices = array(ZOOM_INVITATIONTEXT_DISABLE => get_string('invitationtextdisable', 'mod_zoom'),
+            ZOOM_INVITATIONTEXT_ENABLE => get_string('invitationtextenable', 'mod_zoom'));
     $offerinvitationtext = new admin_setting_configselect('zoom/showinvitationtext',
             get_string('invitationtext', 'mod_zoom'),
             get_string('invitationtext_desc', 'mod_zoom'),
