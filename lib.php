@@ -257,7 +257,13 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->start_time)) {
         $newzoom->start_time = strtotime($response->start_time);
     }
-    $newzoom->recurring = $response->type == ZOOM_RECURRING_MEETING || $response->type == ZOOM_RECURRING_WEBINAR;
+    $recurringtypes = [
+        ZOOM_RECURRING_MEETING,
+        ZOOM_RECURRING_FIXED_MEETING,
+        ZOOM_RECURRING_WEBINAR,
+        ZOOM_RECURRING_FIXED_WEBINAR
+    ];
+    $newzoom->recurring = in_array($response->type, $recurringtypes);
     if (isset($response->password)) {
         $newzoom->password = $response->password;
     }

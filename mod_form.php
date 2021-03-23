@@ -573,6 +573,10 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $data = zoom_remove_weekly_options($data);
                 // Unset the monthly fields.
                 $data = zoom_remove_monthly_options($data);
+                // Unset end_times and end_date.
+                unset($data->end_date_option);
+                unset($data->end_times);
+                unset($data->end_date_time);
             }
             // If daily recurring selected, unset weekly and monthly options.
             if ($data->recurrence_type == ZOOM_RECURRINGTYPE_DAILY) {
@@ -747,7 +751,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                 }
             }
 
-            if ($data['recuurence_type'] != ZOOM_RECURRINGTYPE_NOTIME && $data['end_date_option'] == ZOOM_END_DATE_OPTION_BY) {
+            if ($data['recurrence_type'] != ZOOM_RECURRINGTYPE_NOTIME && $data['end_date_option'] == ZOOM_END_DATE_OPTION_BY) {
                 if ($data['end_date_time'] < strtotime('today')) {
                     $errors['radioenddate'] = get_string('err_end_date', 'zoom');
                 }
