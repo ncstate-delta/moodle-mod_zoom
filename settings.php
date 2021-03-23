@@ -276,9 +276,13 @@ if ($ADMIN->fulltree) {
             1, 1, 0);
     $settings->add($defaultmuteuponentryoption);
 
+    $invitationregexhelp = get_string('invitationregex_help', 'mod_zoom');
+    if (version_compare(normalize_version($CFG->release), '3.7.0', '<')) {
+        $invitationregexhelp .= "\n\n" . get_string('invitationregex_nohideif', 'mod_zoom',
+                                                        get_string('invitationregexenabled', 'mod_zoom'));
+    }
     $settings->add(new admin_setting_heading('zoom/invitationregex',
-            get_string('invitationregex', 'mod_zoom'),
-            get_string('invitationregex_help', 'mod_zoom')));
+            get_string('invitationregex', 'mod_zoom'), $invitationregexhelp));
 
     $settings->add(new admin_setting_configcheckbox('zoom/invitationregexenabled',
             get_string('invitationregexenabled', 'mod_zoom'),
@@ -289,6 +293,9 @@ if ($ADMIN->fulltree) {
             get_string('invitationremoveinvite', 'mod_zoom'),
             get_string('invitationremoveinvite_help', 'mod_zoom'),
             0, 1, 0));
+    if (version_compare(normalize_version($CFG->release), '3.7.0', '>=')) {
+        $settings->hide_if('zoom/invitationremoveinvite', 'zoom/invitationregexenabled', 'eq', 0);
+    }
 
     // Allow admin to modify regex for invitation parts if zoom api changes.
     foreach (\mod_zoom\invitation::get_default_invitation_regex() as $element => $pattern) {
@@ -296,5 +303,14 @@ if ($ADMIN->fulltree) {
         $visiblename = get_string(\mod_zoom\invitation::PREFIX . $element, 'mod_zoom');
         $description = get_string(\mod_zoom\invitation::PREFIX . $element . '_help', 'mod_zoom');
         $settings->add(new admin_setting_configtext($name, $visiblename, $description, $pattern));
+        if (version_compare(normalize_version($CFG->release), '3.7.0', '>=')) {
+            $settings->hide_if('zoom/' . \mod_zoom\invitation::PREFIX . $element,
+                    'zoom/invitationregexenabled', 'eq', 0);
+        }
+    }
+
+    // Extra hideif for invite element.
+    if (version_compare(normalize_version($CFG->release), '3.7.0', '>=')) {
+        $settings->hide_if('zoom/invitation_invite', 'zoom/invitationremoveinvite', 'eq', 0);
     }
 }

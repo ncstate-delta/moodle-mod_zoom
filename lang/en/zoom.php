@@ -112,6 +112,7 @@ $string['invitationmatchnotfound'] = 'No match found in zoom invitation for elem
 $string['invitationmodificationfailed'] = 'Error in regex for zoom invitation element: "{$a->element}" with pattern: "{$a->pattern}".';
 $string['invitationregex'] = 'Zoom invitation regex and capabilities';
 $string['invitationregex_help'] = 'Define the regex patterns to isolate each part of a zoom invitation so the information can be controlled by capabilities.';
+$string['invitationregex_nohideif'] = 'Please note: The regex patterns will only be used if the \'{$a}\' setting is enabled.';
 $string['invitationregexenabled'] = 'Enable zoom invitation regex and capabilities.';
 $string['invitationregexenabled_help'] = 'When enabled, the zoom invitation shown in the activity will be broken up into elements using the following regex and capabilities will be used to decide which parts to display to each user. See zoom/viewjoinurl and zoom/viewdialin capabilities.';
 $string['invitationremoveinvite'] = 'Remove zoom invitation invite message';
