@@ -223,6 +223,23 @@ class mod_zoom_invitation_testcase extends advanced_testcase {
     }
 
     /**
+     * Test display message is returned in full regardless of capabilities if regex patterns are disabled.
+     */
+    public function test_display_message_when_user_has_no_capabilities_with_regex_disabled() {
+        set_config('invitationregexenabled', 0, 'zoom');
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $role = $this->getDataGenerator()->create_role();
+        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        role_assign($role, $user->id, context_course::instance($course->id));
+        $message = (new \mod_zoom\invitation($this->get_mock_invitation_message()))->get_display_string($zoom->cmid, $user->id);
+        $expectedmessage = $this->get_mock_invitation_message();
+        $this->assertEquals($expectedmessage, $message);
+    }
+
+    /**
      * Get a mock zoom invitation email message.
      *
      * @return string

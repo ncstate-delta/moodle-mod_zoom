@@ -58,6 +58,10 @@ class invitation {
         if (empty($this->invitation)) {
             return null;
         }
+        // If regex patterns are disabled, return the raw zoom meeting invitation.
+        if (!get_config('zoom', 'invitationregexenabled')) {
+            return $this->invitation;
+        }
         $displaystring = $this->invitation;
         try {
             // If setting enabled, strip the invite message.
