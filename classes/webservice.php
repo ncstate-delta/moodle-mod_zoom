@@ -634,15 +634,14 @@ class mod_zoom_webservice {
     public function get_meeting_invitation($zoom) {
         // Webinar does not have meeting invite info.
         if ($zoom->webinar) {
-            return null;
+            return new \mod_zoom\invitation(null);
         }
         $url = 'meetings/' . $zoom->meeting_id . '/invitation';
-        $response = null;
         try {
             $response = $this->_make_call($url);
         } catch (moodle_exception $error) {
             debugging($error->getMessage());
-            return null;
+            return new \mod_zoom\invitation(null);
         }
         return new \mod_zoom\invitation($response->invitation);
     }

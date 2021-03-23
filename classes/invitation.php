@@ -31,7 +31,7 @@ class invitation {
 
     const PREFIX = 'invitation_';
 
-    /** @var string $invitation The unaltered zoom invitation text. */
+    /** @var string|null $invitation The unaltered zoom invitation text. */
     private $invitation;
 
     /** @var array $configregex Array of regex patterns defined in plugin settings. */
@@ -40,21 +40,24 @@ class invitation {
     /**
      * invitation constructor.
      *
-     * @param string $invitation Zoom invitation returned from
+     * @param string|null $invitation Zoom invitation returned from
      * https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetinginvitation.
      */
-    public function __construct(string $invitation) {
+    public function __construct(?string $invitation) {
         $this->invitation = $invitation;
     }
 
     /**
      * Get the display string to show on the module page.
      *
-     * @param int $courseid Course where the user will view the invitation.
+     * @param int $coursemoduleid Course module where the user will view the invitation.
      * @param int|null $userid Optionally supply the intended user to view the string. Defaults to global $USER.
-     * @return string
+     * @return string|null
      */
-    public function get_display_string(int $courseid, int $userid = null): string {
+    public function get_display_string(int $coursemoduleid, int $userid = null): ?string {
+        if (empty($this->invitation)) {
+            return null;
+        }
         $displaystring = $this->invitation;
         try {
             // If setting enabled, strip the invite message.
@@ -62,10 +65,10 @@ class invitation {
                 $displaystring = $this->remove_element($displaystring, 'invite');
             }
             // Check user capabilities, and remove parts of the invitation they don't have permission to view.
-            if (!has_capability('mod/zoom:viewjoinurl', \context_course::instance($courseid), $userid)) {
+            if (!has_capability('mod/zoom:viewjoinurl', \context_module::instance($coursemoduleid), $userid)) {
                 $displaystring = $this->remove_element($displaystring, 'joinurl');
             }
-            if (!has_capability('mod/zoom:viewdialin', \context_course::instance($courseid), $userid)) {
+            if (!has_capability('mod/zoom:viewdialin', \context_module::instance($coursemoduleid), $userid)) {
                 $displaystring = $this->remove_element($displaystring, 'onetapmobile');
                 $displaystring = $this->remove_element($displaystring, 'dialin');
             }

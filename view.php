@@ -91,7 +91,7 @@ $hostmoodleuser->firstnamephonetic = '';
 $hostmoodleuser->lastnamephonetic = '';
 $hostmoodleuser->middlename = '';
 
-$meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($course->id);
+$meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($cm->id);
 
 $stryes = get_string('yes');
 $strno = get_string('no');
