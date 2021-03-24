@@ -210,6 +210,10 @@ class mod_zoom_external extends external_api {
             zoom_grade_item_update($zoom, $grades);
         }
 
+        // Track completion viewed.
+        $completion = new completion_info($course);
+        $completion->set_module_viewed($cm);
+
         // Pass url to join zoom meeting in order to redirect user.
         $joinurl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
 
