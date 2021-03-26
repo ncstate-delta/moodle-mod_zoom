@@ -163,7 +163,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         foreach ($allmeetings as $meeting) {
             // Only process meetings if they happened after the time we left off.
-           $meetingtime = ($meeting->end_time == intval($meeting->end_time)) ? $meeting->end_time : strtotime($meeting->end_time);
+            $meetingtime = ($meeting->end_time == intval($meeting->end_time)) ? $meeting->end_time : strtotime($meeting->end_time);
             if ($runningastask && $meetingtime <= $starttime) {
                 continue;
             }
