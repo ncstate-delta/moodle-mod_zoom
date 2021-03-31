@@ -43,7 +43,7 @@ class invitation {
      * @param string|null $invitation Zoom invitation returned from
      * https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetinginvitation.
      */
-    public function __construct(?string $invitation) {
+    public function __construct($invitation) {
         $this->invitation = $invitation;
     }
 
@@ -54,7 +54,7 @@ class invitation {
      * @param int|null $userid Optionally supply the intended user to view the string. Defaults to global $USER.
      * @return string|null
      */
-    public function get_display_string(int $coursemoduleid, int $userid = null): ?string {
+    public function get_display_string(int $coursemoduleid, int $userid = null) {
         if (empty($this->invitation)) {
             return null;
         }
