@@ -75,6 +75,11 @@ class invitation {
             if (!has_capability('mod/zoom:viewdialin', \context_module::instance($coursemoduleid), $userid)) {
                 $displaystring = $this->remove_element($displaystring, 'onetapmobile');
                 $displaystring = $this->remove_element($displaystring, 'dialin');
+                $displaystring = $this->remove_element($displaystring, 'sip');
+                $displaystring = $this->remove_element($displaystring, 'h323');
+            } else {
+                // Fix the formatting of the onetapmobile section if it exists.
+                $displaystring = $this->add_paragraph_break_above_element($displaystring, 'onetapmobile');
             }
         } catch (\moodle_exception $e) {
             // If the regex parsing fails, log a debugging message and return the whole invitation.
@@ -120,6 +125,40 @@ class invitation {
     }
 
     /**
+     * Add a paragraph break above an element defined by a regex pattern in a zoom invitation.
+     *
+     * @param string $invitation
+     * @param string $element
+     * @return string
+     *
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    private function add_paragraph_break_above_element(string $invitation, string $element): string {
+        $matches = [];
+        $configregex = $this->get_config_invitation_regex();
+        // If no pattern found for element, return the invitation string unaltered.
+        if (empty($configregex[$element])) {
+            return $invitation;
+        }
+        $result = preg_match($configregex[$element], $invitation, $matches, PREG_OFFSET_CAPTURE);
+        // If error occurred in preg_match, show debugging message to help site administrator.
+        if ($result === false) {
+            debugging(get_string('invitationmodificationfailed', 'mod_zoom',
+                    ['element' => $element, 'pattern' => $configregex[$element]]),
+                    DEBUG_DEVELOPER);
+        }
+        // No match found, so return invitation string unaltered.
+        if (empty($matches)) {
+            return $invitation;
+        }
+        // Get the position of the element in the full invitation string.
+        $pos = $matches[0][1];
+        // Inject a paragraph break above element. Use $this->clean_paragraphs() to fix uneven breaks between paragraphs.
+        return substr_replace($invitation, "\r\n\r\n", $pos, 0);
+    }
+
+    /**
      * Ensure that paragraphs in string have correct spacing.
      *
      * @param string $invitation
@@ -161,9 +200,11 @@ class invitation {
     public static function get_default_invitation_regex(): array {
         return [
             'invite' => '/^.+is inviting you to a scheduled zoom meeting.+$/mi',
-            'joinurl' => '/(^join zoom meeting.*|^join directly.*)(\n.*)+?(\nmeeting id.+\npasscode.+)$/mi',
-            'onetapmobile' => '/(^join through dial\-in.*|(?<!join through dial\-in))\none tap mobile.*(\n\s*\+.+)+$/mi',
+            'joinurl' => '/^join zoom meeting.*(\n.*)+?(\nmeeting id.+\npasscode.+)$/mi',
+            'onetapmobile' => '/^one tap mobile.*(\n\s*\+.+)+$/mi',
             'dialin' => '/^dial by your location.*(\n\s*\+.+)+(\n.*)+find your local number.+$/mi',
+            'sip' => '/^join by sip.*\n.+$/mi',
+            'h323' => '/^join by h\.323.*(\n.*)+?(\nmeeting id.+\npasscode.+)$/mi'
         ];
     }
 }

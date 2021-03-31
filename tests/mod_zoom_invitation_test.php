@@ -40,7 +40,18 @@ class mod_zoom_invitation_testcase extends advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
         $message = (new \mod_zoom\invitation($this->get_mock_invitation_message()))->get_display_string($zoom->cmid);
-        $expectedmessage = trim($this->get_mock_invitation_message());
+        $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n\r\nTopic: Zoom Meeting\r\nTime: Mar 15, 2021 06:08 AM London\r\n"
+            . "Join Zoom Meeting\r\nhttps://us02web.zoom.us/j/12341234123?pwd=THBLWExVS0QyYnV1Z1nZTDJGYVI2QT09\r\n\r\n"
+            . "Meeting ID: 123 1234 1234\r\nPasscode: 123123\r\n\r\nOne tap mobile\r\n+61323452345,,12341234123#,,,,*123456# Australia\r\n"
+            . "+61312341234,,12341234123#,,,,*123456# Australia\r\n\r\nDial by your location\r\n        +61 3 5678 5678 Australia\r\n"
+            . "        +61 3 4567 4567 Australia\r\n        +61 3 3456 3456 Australia\r\n        +61 3 2345 2345 Australia\r\n"
+            . "        +61 3 1234 1234 Australia\r\nMeeting ID: 123 1234 1234\r\nPasscode: 123456\r\n"
+            . "Find your local number: https://us02web.zoom.us/u/abcde12345\r\n\r\nJoin by SIP\r\n1231231231234@zoomabc.com\r\n\r\n"
+            . "Join by H.323\r\n162.255.37.11 (US West)\r\n162.255.36.11 (US East)\r\n115.114.131.7 (India Mumbai)\r\n"
+            . "115.114.115.7 (India Hyderabad)\r\n213.19.144.110 (Amsterdam Netherlands)\r\n213.244.140.110 (Germany)\r\n"
+            . "103.122.166.55 (Australia Sydney)\r\n103.122.167.55 (Australia Melbourne)\r\n149.137.40.110 (Singapore)\r\n"
+            . "64.211.144.160 (Brazil)\r\n69.174.57.160 (Canada Toronto)\r\n65.39.152.160 (Canada Vancouver)\r\n207.226.132.110 (Japan Tokyo)\r\n"
+            . "149.137.24.110 (Japan Osaka)\r\nMeeting ID: 966 7989 3993\r\nPasscode: 44730043";
         $this->assertEquals($expectedmessage, $message);
     }
 
@@ -64,25 +75,6 @@ class mod_zoom_invitation_testcase extends advanced_testcase {
     }
 
     /**
-     * Test zoom invitation display message for user with only the mod/zoom:viewjoinurl capability.
-     */
-    public function test_display_message_when_user_has_viewjoinurl_capability_with_alt_invitation() {
-        $this->resetAfterTest();
-        $this->setAdminUser();
-        $user = $this->getDataGenerator()->create_user();
-        $course = $this->getDataGenerator()->create_course();
-        $role = $this->getDataGenerator()->create_role();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
-        assign_capability('mod/zoom:viewjoinurl', CAP_ALLOW, $role, context_system::instance()->id);
-        role_assign($role, $user->id, context_course::instance($course->id));
-        $message = (new \mod_zoom\invitation($this->get_alt_mock_invitation_message()))->get_display_string($zoom->cmid, $user->id);
-        $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n\r\nTopic: Zoom Meeting\r\n"
-                . "Time: Mar 15, 2021 06:08 AM London\r\nJoin directly:\r\nhttps://us02web.zoom.us/j/12341234123?pwd=THBLWExVS0QyYnV1Z1nZTDJGYVI2QT09\r\n\r\n"
-                . "Join from the Zoom client:\r\nMeeting ID: 123 1234 1234\r\nPasscode: 123123";
-        $this->assertEquals($expectedmessage, $message);
-    }
-
-    /**
      * Test zoom invitation display message for user with only the mod/zoom:viewdialin capability.
      */
     public function test_display_message_when_user_has_viewdialin_capability() {
@@ -100,29 +92,12 @@ class mod_zoom_invitation_testcase extends advanced_testcase {
                 . "+61312341234,,12341234123#,,,,*123456# Australia\r\n\r\nDial by your location\r\n        +61 3 5678 5678 Australia\r\n"
                 . "        +61 3 4567 4567 Australia\r\n        +61 3 3456 3456 Australia\r\n        +61 3 2345 2345 Australia\r\n"
                 . "        +61 3 1234 1234 Australia\r\nMeeting ID: 123 1234 1234\r\nPasscode: 123456\r\n"
-                . "Find your local number: https://us02web.zoom.us/u/abcde12345";
-        $this->assertEquals($expectedmessage, $message);
-    }
-
-    /**
-     * Test zoom invitation display message for user with only the mod/zoom:viewdialin capability.
-     */
-    public function test_display_message_when_user_has_viewdialin_capability_with_alt_invitation() {
-        $this->resetAfterTest();
-        $this->setAdminUser();
-        $user = $this->getDataGenerator()->create_user();
-        $course = $this->getDataGenerator()->create_course();
-        $role = $this->getDataGenerator()->create_role();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
-        assign_capability('mod/zoom:viewdialin', CAP_ALLOW, $role, context_system::instance());
-        role_assign($role, $user->id, context_course::instance($course->id));
-        $message = (new \mod_zoom\invitation($this->get_alt_mock_invitation_message()))->get_display_string($zoom->cmid, $user->id);
-        $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n\r\nTopic: Zoom Meeting\r\n"
-                . "Time: Mar 15, 2021 06:08 AM London\r\n\r\nJoin through dial-in:\r\nOne tap mobile\r\n"
-            . "+61323452345,,12341234123#,,,,*123456# Australia\r\n+61312341234,,12341234123#,,,,*123456# Australia\r\n\r\n"
-            . "Dial by your location\r\n        +61 3 5678 5678 Australia\r\n        +61 3 4567 4567 Australia\r\n"
-            . "        +61 3 3456 3456 Australia\r\n        +61 3 2345 2345 Australia\r\n        +61 3 1234 1234 Australia\r\n"
-            . "Meeting ID: 123 1234 1234\r\nPasscode: 123456\r\nFind your local number: https://us02web.zoom.us/u/abcde12345";
+                . "Find your local number: https://us02web.zoom.us/u/abcde12345\r\n\r\nJoin by SIP\r\n1231231231234@zoomabc.com\r\n\r\n"
+                . "Join by H.323\r\n162.255.37.11 (US West)\r\n162.255.36.11 (US East)\r\n115.114.131.7 (India Mumbai)\r\n"
+                . "115.114.115.7 (India Hyderabad)\r\n213.19.144.110 (Amsterdam Netherlands)\r\n213.244.140.110 (Germany)\r\n"
+                . "103.122.166.55 (Australia Sydney)\r\n103.122.167.55 (Australia Melbourne)\r\n149.137.40.110 (Singapore)\r\n"
+                . "64.211.144.160 (Brazil)\r\n69.174.57.160 (Canada Toronto)\r\n65.39.152.160 (Canada Vancouver)\r\n207.226.132.110 (Japan Tokyo)\r\n"
+                . "149.137.24.110 (Japan Osaka)\r\nMeeting ID: 966 7989 3993\r\nPasscode: 44730043";
         $this->assertEquals($expectedmessage, $message);
     }
 
@@ -189,10 +164,16 @@ class mod_zoom_invitation_testcase extends advanced_testcase {
         $message = (new \mod_zoom\invitation($this->get_mock_invitation_message()))->get_display_string($zoom->cmid);
         $expectedmessage = "Topic: Zoom Meeting\r\nTime: Mar 15, 2021 06:08 AM London\r\n"
             . "Join Zoom Meeting\r\nhttps://us02web.zoom.us/j/12341234123?pwd=THBLWExVS0QyYnV1Z1nZTDJGYVI2QT09\r\n\r\n"
-            . "Meeting ID: 123 1234 1234\r\nPasscode: 123123\r\nOne tap mobile\r\n+61323452345,,12341234123#,,,,*123456# Australia\r\n"
+            . "Meeting ID: 123 1234 1234\r\nPasscode: 123123\r\n\r\nOne tap mobile\r\n+61323452345,,12341234123#,,,,*123456# Australia\r\n"
             . "+61312341234,,12341234123#,,,,*123456# Australia\r\n\r\nDial by your location\r\n        +61 3 5678 5678 Australia\r\n"
             . "        +61 3 4567 4567 Australia\r\n        +61 3 3456 3456 Australia\r\n        +61 3 2345 2345 Australia\r\n"
-            . "        +61 3 1234 1234 Australia\r\nMeeting ID: 123 1234 1234\r\nPasscode: 123456\r\nFind your local number: https://us02web.zoom.us/u/abcde12345";
+            . "        +61 3 1234 1234 Australia\r\nMeeting ID: 123 1234 1234\r\nPasscode: 123456\r\n"
+            . "Find your local number: https://us02web.zoom.us/u/abcde12345\r\n\r\nJoin by SIP\r\n1231231231234@zoomabc.com\r\n\r\n"
+            . "Join by H.323\r\n162.255.37.11 (US West)\r\n162.255.36.11 (US East)\r\n115.114.131.7 (India Mumbai)\r\n"
+            . "115.114.115.7 (India Hyderabad)\r\n213.19.144.110 (Amsterdam Netherlands)\r\n213.244.140.110 (Germany)\r\n"
+            . "103.122.166.55 (Australia Sydney)\r\n103.122.167.55 (Australia Melbourne)\r\n149.137.40.110 (Singapore)\r\n"
+            . "64.211.144.160 (Brazil)\r\n69.174.57.160 (Canada Toronto)\r\n65.39.152.160 (Canada Vancouver)\r\n207.226.132.110 (Japan Tokyo)\r\n"
+            . "149.137.24.110 (Japan Osaka)\r\nMeeting ID: 966 7989 3993\r\nPasscode: 44730043";
         $this->assertEquals($expectedmessage, $message);
     }
 
@@ -206,7 +187,18 @@ class mod_zoom_invitation_testcase extends advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
         $message = (new \mod_zoom\invitation($this->get_mock_invitation_message()))->get_display_string($zoom->cmid);
-        $expectedmessage = trim($this->get_mock_invitation_message());
+        $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n\r\nTopic: Zoom Meeting\r\nTime: Mar 15, 2021 06:08 AM London\r\n"
+            . "Join Zoom Meeting\r\nhttps://us02web.zoom.us/j/12341234123?pwd=THBLWExVS0QyYnV1Z1nZTDJGYVI2QT09\r\n\r\n"
+            . "Meeting ID: 123 1234 1234\r\nPasscode: 123123\r\n\r\nOne tap mobile\r\n+61323452345,,12341234123#,,,,*123456# Australia\r\n"
+            . "+61312341234,,12341234123#,,,,*123456# Australia\r\n\r\nDial by your location\r\n        +61 3 5678 5678 Australia\r\n"
+            . "        +61 3 4567 4567 Australia\r\n        +61 3 3456 3456 Australia\r\n        +61 3 2345 2345 Australia\r\n"
+            . "        +61 3 1234 1234 Australia\r\nMeeting ID: 123 1234 1234\r\nPasscode: 123456\r\n"
+            . "Find your local number: https://us02web.zoom.us/u/abcde12345\r\n\r\nJoin by SIP\r\n1231231231234@zoomabc.com\r\n\r\n"
+            . "Join by H.323\r\n162.255.37.11 (US West)\r\n162.255.36.11 (US East)\r\n115.114.131.7 (India Mumbai)\r\n"
+            . "115.114.115.7 (India Hyderabad)\r\n213.19.144.110 (Amsterdam Netherlands)\r\n213.244.140.110 (Germany)\r\n"
+            . "103.122.166.55 (Australia Sydney)\r\n103.122.167.55 (Australia Melbourne)\r\n149.137.40.110 (Singapore)\r\n"
+            . "64.211.144.160 (Brazil)\r\n69.174.57.160 (Canada Toronto)\r\n65.39.152.160 (Canada Vancouver)\r\n207.226.132.110 (Japan Tokyo)\r\n"
+            . "149.137.24.110 (Japan Osaka)\r\nMeeting ID: 966 7989 3993\r\nPasscode: 44730043";
         $this->assertEquals($expectedmessage, $message);
     }
 
@@ -250,21 +242,12 @@ class mod_zoom_invitation_testcase extends advanced_testcase {
                 . "Meeting ID: 123 1234 1234\r\nPasscode: 123123\r\nOne tap mobile\r\n+61323452345,,12341234123#,,,,*123456# Australia\r\n"
                 . "+61312341234,,12341234123#,,,,*123456# Australia\r\n\r\nDial by your location\r\n        +61 3 5678 5678 Australia\r\n"
                 . "        +61 3 4567 4567 Australia\r\n        +61 3 3456 3456 Australia\r\n        +61 3 2345 2345 Australia\r\n"
-                . "        +61 3 1234 1234 Australia\r\nMeeting ID: 123 1234 1234\r\nPasscode: 123456\r\nFind your local number: https://us02web.zoom.us/u/abcde12345\r";
-    }
-
-    /**
-     * Get an alternative mock zoom invitation email message.
-     *
-     * @return string
-     */
-    private function get_alt_mock_invitation_message(): string {
-        return "Organization is inviting you to a scheduled Zoom meeting.\r\n\r\nTopic: Zoom Meeting\r\nTime: Mar 15, 2021 06:08 AM London\r\n"
-                . "Join directly:\r\nhttps://us02web.zoom.us/j/12341234123?pwd=THBLWExVS0QyYnV1Z1nZTDJGYVI2QT09\r\n\r\n"
-                . "Join from the Zoom client:\r\nMeeting ID: 123 1234 1234\r\nPasscode: 123123\r\n\r\nJoin through dial-in:\r\n"
-                . "One tap mobile\r\n+61323452345,,12341234123#,,,,*123456# Australia\r\n+61312341234,,12341234123#,,,,*123456# Australia\r\n\r\n"
-                . "Dial by your location\r\n        +61 3 5678 5678 Australia\r\n        +61 3 4567 4567 Australia\r\n        +61 3 3456 3456 Australia\r\n"
-                . "        +61 3 2345 2345 Australia\r\n        +61 3 1234 1234 Australia\r\nMeeting ID: 123 1234 1234\r\nPasscode: 123456\r\n"
-                . "Find your local number: https://us02web.zoom.us/u/abcde12345\r";
+                . "        +61 3 1234 1234 Australia\r\nMeeting ID: 123 1234 1234\r\nPasscode: 123456\r\n"
+                . "Find your local number: https://us02web.zoom.us/u/abcde12345\r\n\r\nJoin by SIP\r\n1231231231234@zoomabc.com\r\n\r\n"
+                . "Join by H.323\r\n162.255.37.11 (US West)\r\n162.255.36.11 (US East)\r\n115.114.131.7 (India Mumbai)\r\n"
+                . "115.114.115.7 (India Hyderabad)\r\n213.19.144.110 (Amsterdam Netherlands)\r\n213.244.140.110 (Germany)\r\n"
+                . "103.122.166.55 (Australia Sydney)\r\n103.122.167.55 (Australia Melbourne)\r\n149.137.40.110 (Singapore)\r\n"
+                . "64.211.144.160 (Brazil)\r\n69.174.57.160 (Canada Toronto)\r\n65.39.152.160 (Canada Vancouver)\r\n207.226.132.110 (Japan Tokyo)\r\n"
+                . "149.137.24.110 (Japan Osaka)\r\nMeeting ID: 966 7989 3993\r\nPasscode: 44730043\r";
     }
 }
