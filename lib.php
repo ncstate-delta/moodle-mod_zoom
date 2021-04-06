@@ -433,18 +433,20 @@ function zoom_calendar_item_update(stdClass $zoom) {
         ));
     
         // Load existing event object, or create a new one.
+        $event = zoom_populate_calender_item($zoom);
         if (!empty($eventid)) {
             calendar_event::load($eventid)->update($event);
         } else {
-            $event = zoom_populate_calender_item($zoom);
             calendar_event::create($event);
         }
     } else {
         // First remove existing events for recurring meeting.
         zoom_calendar_item_delete($zoom);
-        // Create the event for the first iteration of the recurring meeting.
-        $event = zoom_populate_calender_item($zoom);
-        calendar_event::create($event);
+        // Create the event for the first iteration of the recurring meeting if its a daily meeting.
+        if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_DAILY) {
+            $event = zoom_populate_calender_item($zoom);
+            calendar_event::create($event);
+        }
 
         // Now create the recurring events.
         if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_DAILY) {
@@ -470,10 +472,12 @@ function zoom_create_recurring_daily_events(stdClass $zoom) {
         // Set the endtime to the end of the day, not start of the day.
         $endtime = ($zoom->end_date_time + 86400);
         do {
-            $event = zoom_populate_calender_item($zoom);
-            $event->timestart = $starttime;
-            calendar_event::create($event);
-
+            // Only add the event if starttime before the endtime.
+            if ($starttime < $endtime) {
+                $event = zoom_populate_calender_item($zoom);
+                $event->timestart = $starttime;
+                calendar_event::create($event);
+            }
             // Set the start_time for the next event.
             $starttime += 86400 * $zoom->repeat_interval;
         } while ($starttime < $endtime);
@@ -496,12 +500,11 @@ function zoom_create_recurring_daily_events(stdClass $zoom) {
  */
 function zoom_create_recurring_weekly_events(stdClass $zoom) {
     // Weekly event.
-    // Get the time for next week.
+    // Format to get the next start time.
     $format = '+' . $zoom->repeat_interval . ' week';
-    $starttime = strtotime($format, $zoom->start_time);
     // Update the time so its at the start of the week.
-    $startweekformat = 'Monday this week ' . date('H:i', $starttime);
-    $starttime = strtotime($startweekformat, $starttime);
+    $startweekformat = 'Monday this week ' . date('H:i', $zoom->start_time);
+    $starttime = strtotime($startweekformat, $zoom->start_time);
 
     if ($zoom->end_date_option == ZOOM_END_DATE_OPTION_BY) {
         // Set the endtime to the end of the day, not start of the day.
@@ -511,7 +514,7 @@ function zoom_create_recurring_weekly_events(stdClass $zoom) {
             foreach ($weekdaystoadd as $weekdaytoadd) {
                 $event = zoom_populate_calender_item($zoom);
                 $eventstart = zoom_get_weekly_timestamp($starttime, (int) $weekdaytoadd);
-                if ($eventstart < $endtime) {
+                if ($eventstart < $endtime && $eventstart > $zoom->start_time) {
                     $event->timestart = $eventstart;
                     calendar_event::create($event);
                 }
@@ -521,8 +524,7 @@ function zoom_create_recurring_weekly_events(stdClass $zoom) {
             $starttime = strtotime($format, $starttime);
         } while ($starttime < $endtime);
     } else if ($zoom->end_date_option == ZOOM_END_DATE_OPTION_AFTER) {
-        // The first one is already added, so start from 1.
-        $addedoccurences = 1;
+        $addedoccurences = 0;
         do {
             $weekdaystoadd = explode(',', $zoom->weekly_days);
             foreach ($weekdaystoadd as $weekdaytoadd) {
@@ -551,16 +553,17 @@ function zoom_create_recurring_weekly_events(stdClass $zoom) {
 function zoom_create_recurring_monthly_events(stdClass $zoom) {
     // Monthly event.
     $format = '+' . $zoom->repeat_interval . ' month';
-    $starttime = strtotime($format, $zoom->start_time);
-    $starttime = zoom_get_monthly_timestamp($starttime, $zoom);
+    $starttime = zoom_get_monthly_timestamp($zoom->start_time, $zoom);
     
     if ($zoom->end_date_option == ZOOM_END_DATE_OPTION_BY) {
         // Set the endtime to the end of the day, not start of the day.
         $endtime = ($zoom->end_date_time + 86400);
         do {
-            $event = zoom_populate_calender_item($zoom);
-            $event->timestart = $starttime;
-            calendar_event::create($event);
+            if ($starttime < $endtime) {
+                $event = zoom_populate_calender_item($zoom);
+                $event->timestart = $starttime;
+                calendar_event::create($event);
+            }
 
             // Set the start_time for the next event.
             $starttime = strtotime($format, $starttime);

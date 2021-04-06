@@ -258,7 +258,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $group[] = $mform->createElement('date_selector', 'end_date_time', '');
         $group[] = $mform->createElement('radio', 'end_date_option', '', get_string('end_date_option_after', 'zoom'), ZOOM_END_DATE_OPTION_AFTER);
         $group[] = $mform->createElement('select', 'end_times', '', $maxoptions);
-        $group[] = $mform->createElement('static', 'end_times_text', '', get_string('end_date_option_occurances', 'zoom'));
+        $group[] = $mform->createElement('static', 'end_times_text', '', get_string('end_date_option_occurrences', 'zoom'));
         $mform->addGroup($group, 'radioenddate', get_string('enddate', 'zoom'), null, false);
         $mform->hideif('radioenddate', 'recurring', 'notchecked');
         $mform->hideif('radioenddate', 'recurrence_type', 'eq', ZOOM_RECURRINGTYPE_NOTIME);
