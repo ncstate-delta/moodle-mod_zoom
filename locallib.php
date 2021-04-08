@@ -667,7 +667,7 @@ function zoom_get_nonusers_from_alternativehosts(array $alternativehosts) {
  *
  * @return string The unavailability note.
  */
-function zoom_get_unavailability_note(object $zoom, $finished = null) {
+function zoom_get_unavailability_note($zoom, $finished = null) {
     // Get config.
     $config = get_config('zoom');
 
