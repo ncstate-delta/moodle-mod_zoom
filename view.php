@@ -83,15 +83,15 @@ try {
 }
 
 // Compose Moodle user object for host.
-$hostmoodleuser = new stdClass();
-$hostmoodleuser->firstname = $hostuser->first_name;
-$hostmoodleuser->lastname = $hostuser->last_name;
-$hostmoodleuser->alternatename = '';
-$hostmoodleuser->firstnamephonetic = '';
-$hostmoodleuser->lastnamephonetic = '';
-$hostmoodleuser->middlename = '';
-
-$meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($cm->id);
+if ($hostuser) {
+    $hostmoodleuser = new stdClass();
+    $hostmoodleuser->firstname = $hostuser->first_name;
+    $hostmoodleuser->lastname = $hostuser->last_name;
+    $hostmoodleuser->alternatename = '';
+    $hostmoodleuser->firstnamephonetic = '';
+    $hostmoodleuser->lastnamephonetic = '';
+    $hostmoodleuser->middlename = '';
+}
 
 $stryes = get_string('yes');
 $strno = get_string('no');
@@ -128,10 +128,10 @@ if ($showrecreate) {
     // Only show recreate/delete links in the message for users that can edit.
     if ($iszoommanager) {
         $message = get_string('zoomerr_meetingnotfound', 'mod_zoom', zoom_meetingnotfound_param($cm->id));
-        $style = 'notifywarning';
+        $style = \core\output\notification::NOTIFY_ERROR;
     } else {
         $message = get_string('zoomerr_meetingnotfound_info', 'mod_zoom');
-        $style = 'notifymessage';
+        $style = \core\output\notification::NOTIFY_WARNING;
     }
     echo $OUTPUT->notification($message, $style);
 }
@@ -143,7 +143,7 @@ if ($zoom->intro) {
 
 // Supplementary feature: Meeting capacity warning.
 // Only show if the admin did not disable this feature completely.
-if ($config->showcapacitywarning == true) {
+if (!$showrecreate && $config->showcapacitywarning == true) {
     // Only show if the user viewing this is the host.
     if ($userishost == true) {
         // Get meeting capacity.
@@ -188,28 +188,30 @@ if ($config->showcapacitywarning == true) {
 list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
 // Show join meeting button or unavailability note.
-if ($available) {
-    // Show join meeting button.
-    if ($userishost) {
-        $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
+if (!$showrecreate) {
+    if ($available) {
+        // Show join meeting button.
+        if ($userishost) {
+            $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
+        } else {
+            $buttonhtml = html_writer::tag('button', $strjoin, array('type' => 'submit', 'class' => 'btn btn-primary'));
+        }
+        $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
+        $buttonhtml .= html_writer::input_hidden_params($aurl);
+        $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
     } else {
-        $buttonhtml = html_writer::tag('button', $strjoin, array('type' => 'submit', 'class' => 'btn btn-primary'));
-    }
-    $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
-    $buttonhtml .= html_writer::input_hidden_params($aurl);
-    $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
-} else {
-    // Get unavailability note.
-    $unavailabilitynote = zoom_get_unavailability_note($zoom, $finished);
+        // Get unavailability note.
+        $unavailabilitynote = zoom_get_unavailability_note($zoom, $finished);
 
-    // Show unavailability note.
-    // Ideally, this would use $OUTPUT->notification(), but this renderer adds a close icon to the notification which does not
-    // make sense here. So we build the notification manually.
-    $link = html_writer::tag('div', $unavailabilitynote, array('class' => 'alert alert-primary'));
+        // Show unavailability note.
+        // Ideally, this would use $OUTPUT->notification(), but this renderer adds a close icon to the notification which does not
+        // make sense here. So we build the notification manually.
+        $link = html_writer::tag('div', $unavailabilitynote, array('class' => 'alert alert-primary'));
+    }
+    echo $OUTPUT->box_start('generalbox text-center');
+    echo $link;
+    echo $OUTPUT->box_end();
 }
-echo $OUTPUT->box_start('generalbox text-center');
-echo $link;
-echo $OUTPUT->box_end();
 
 // Output "Schedule" heading.
 echo $OUTPUT->heading(get_string('schedule', 'mod_zoom'), 3);
@@ -394,15 +396,20 @@ $table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 
 $table->data[] = array($strmuteuponentry, ($zoom->option_mute_upon_entry) ? $stryes : $strno);
 
 // Show dial-in information.
-if (!empty($meetinginvite)
+if (!$showrecreate
         && ($zoom->option_audio === ZOOM_AUDIO_BOTH || $zoom->option_audio === ZOOM_AUDIO_TELEPHONY)
         && ($userishost || has_capability('mod/zoom:viewdialin', $context))) {
-    $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);
-    $showbutton = html_writer::tag('button', $strmeetinginviteshow,
-            array('id' => 'show-more-button', 'class' => 'btn btn-link pt-0 pl-0'));
-    $meetinginvitebody = html_writer::div($meetinginvitetext, '',
-            array('id' => 'show-more-body', 'style' => 'display: none;'));
-    $table->data[] = array($strmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, ''));
+    // Get meeting invitation from Zoom.
+    $meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($cm->id);
+    // Show meeting invitation if there is any.
+    if (!empty($meetinginvite)) {
+        $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);
+        $showbutton = html_writer::tag('button', $strmeetinginviteshow,
+                array('id' => 'show-more-button', 'class' => 'btn btn-link pt-0 pl-0'));
+        $meetinginvitebody = html_writer::div($meetinginvitetext, '',
+                array('id' => 'show-more-body', 'style' => 'display: none;'));
+        $table->data[] = array($strmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, ''));
+    }
 }
 
 // Output table.
