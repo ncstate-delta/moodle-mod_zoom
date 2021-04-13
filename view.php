@@ -330,12 +330,12 @@ $strhaspass = ($haspassword) ? $stryes : $strno;
 $table->data[] = array($strpassprotect, $strhaspass);
 
 // Show passcode.
-if ($userishost && $haspassword || get_config('zoom', 'displaypassword')) {
+if ($userishost && $haspassword || get_config('zoom', 'displaypassword') || has_capability('mod/zoom:viewjoinurl', $context)) {
     $table->data[] = array($strpassword, $zoom->password);
 }
 
 // Show join link.
-if ($userishost) {
+if ($userishost || has_capability('mod/zoom:viewjoinurl', $context)) {
     $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, array('target' => '_blank')));
 }
 
@@ -394,7 +394,9 @@ $table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 
 $table->data[] = array($strmuteuponentry, ($zoom->option_mute_upon_entry) ? $stryes : $strno);
 
 // Show dial-in information.
-if (!empty($meetinginvite)) {
+if (!empty($meetinginvite)
+        && ($zoom->option_audio == ZOOM_AUDIO_BOTH || $zoom->option_audio == ZOOM_AUDIO_TELEPHONY)
+        && ($userishost || has_capability('mod/zoom:viewdialin', $context))) {
     $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);
     $showbutton = html_writer::tag('button', $strmeetinginviteshow,
             array('id' => 'show-more-button', 'class' => 'btn btn-link pt-0 pl-0'));
