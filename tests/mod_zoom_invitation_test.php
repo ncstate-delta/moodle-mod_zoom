@@ -32,6 +32,13 @@ require_once($CFG->libdir . '/accesslib.php');
 class mod_zoom_invitation_testcase extends advanced_testcase {
 
     /**
+     * Run before every test.
+     */
+    protected function setUp(): void {
+        set_config('invitationregexenabled', 1, 'zoom');
+    }
+
+    /**
      * Test zoom invitation display message for user with all capabilities.
      */
     public function test_display_message_when_user_has_all_capabilities() {

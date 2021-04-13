@@ -287,7 +287,7 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('zoom/invitationregexenabled',
             get_string('invitationregexenabled', 'mod_zoom'),
             get_string('invitationregexenabled_help', 'mod_zoom'),
-            1, 1, 0));
+            0, 1, 0));
 
     $settings->add(new admin_setting_configcheckbox('zoom/invitationremoveinvite',
             get_string('invitationremoveinvite', 'mod_zoom'),
