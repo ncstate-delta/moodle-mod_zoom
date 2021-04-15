@@ -104,7 +104,7 @@ class invitation {
     private function remove_element(string $invitation, string $element): string {
         global $PAGE;
         $configregex = $this->get_config_invitation_regex();
-        if (!in_array($element, array_keys($configregex))) {
+        if (!array_key_exists($element, $configregex)) {
             throw new \coding_exception('Cannot remove element: ' . $element
                     . '. See mod/zoom/classes/invitation.php:get_default_invitation_regex for valid elements.');
         }
