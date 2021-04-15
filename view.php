@@ -395,7 +395,7 @@ $table->data[] = array($strmuteuponentry, ($zoom->option_mute_upon_entry) ? $str
 
 // Show dial-in information.
 if (!empty($meetinginvite)
-        && ($zoom->option_audio == ZOOM_AUDIO_BOTH || $zoom->option_audio == ZOOM_AUDIO_TELEPHONY)
+        && ($zoom->option_audio === ZOOM_AUDIO_BOTH || $zoom->option_audio === ZOOM_AUDIO_TELEPHONY)
         && ($userishost || has_capability('mod/zoom:viewdialin', $context))) {
     $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);
     $showbutton = html_writer::tag('button', $strmeetinginviteshow,
