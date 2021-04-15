@@ -628,23 +628,22 @@ class mod_zoom_webservice {
      * Get the meeting invite note that was sent for a specific meeting from Zoom.
      *
      * @param stdClass $zoom The zoom meeting
-     * @return string The meeting's invite note.
+     * @return \mod_zoom\invitation The meeting's invitation.
      * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetinginvitation
      */
     public function get_meeting_invitation($zoom) {
         // Webinar does not have meeting invite info.
         if ($zoom->webinar) {
-            return null;
+            return new \mod_zoom\invitation(null);
         }
         $url = 'meetings/' . $zoom->meeting_id . '/invitation';
-        $response = null;
         try {
             $response = $this->_make_call($url);
         } catch (moodle_exception $error) {
             debugging($error->getMessage());
-            return null;
+            return new \mod_zoom\invitation(null);
         }
-        return $response->invitation;
+        return new \mod_zoom\invitation($response->invitation);
     }
 
     /**

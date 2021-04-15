@@ -31,6 +31,8 @@ if ($ADMIN->fulltree) {
     require_once($CFG->dirroot.'/mod/zoom/locallib.php');
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
+    $moodlehashideif = version_compare(normalize_version($CFG->release), '3.7.0', '>=');
+
     $settings = new admin_settingpage('modsettingzoom', get_string('pluginname', 'mod_zoom'));
 
     // Test whether connection works and display result to user.
@@ -109,7 +111,7 @@ if ($ADMIN->fulltree) {
             15, $jointimeselect);
     $settings->add($firstabletojoin);
 
-    if (version_compare(normalize_version($CFG->release), '3.7.0', '>=')) {
+    if ($moodlehashideif) {
         $displayleadtime = new admin_setting_configcheckbox('zoom/displayleadtime',
                 get_string('displayleadtime', 'mod_zoom'),
                 get_string('displayleadtime_desc', 'mod_zoom'), 0, 1, 0);
@@ -275,4 +277,42 @@ if ($ADMIN->fulltree) {
             get_string('option_mute_upon_entry_help', 'mod_zoom'),
             1, 1, 0);
     $settings->add($defaultmuteuponentryoption);
+
+    $invitationregexhelp = get_string('invitationregex_help', 'mod_zoom');
+    if (!$moodlehashideif) {
+        $invitationregexhelp .= "\n\n" . get_string('invitationregex_nohideif', 'mod_zoom',
+                                                        get_string('invitationregexenabled', 'mod_zoom'));
+    }
+    $settings->add(new admin_setting_heading('zoom/invitationregex',
+            get_string('invitationregex', 'mod_zoom'), $invitationregexhelp));
+
+    $settings->add(new admin_setting_configcheckbox('zoom/invitationregexenabled',
+            get_string('invitationregexenabled', 'mod_zoom'),
+            get_string('invitationregexenabled_help', 'mod_zoom'),
+            0, 1, 0));
+
+    $settings->add(new admin_setting_configcheckbox('zoom/invitationremoveinvite',
+            get_string('invitationremoveinvite', 'mod_zoom'),
+            get_string('invitationremoveinvite_help', 'mod_zoom'),
+            0, 1, 0));
+    if ($moodlehashideif) {
+        $settings->hide_if('zoom/invitationremoveinvite', 'zoom/invitationregexenabled', 'eq', 0);
+    }
+
+    // Allow admin to modify regex for invitation parts if zoom api changes.
+    foreach (\mod_zoom\invitation::get_default_invitation_regex() as $element => $pattern) {
+        $name = 'zoom/' . \mod_zoom\invitation::PREFIX . $element;
+        $visiblename = get_string(\mod_zoom\invitation::PREFIX . $element, 'mod_zoom');
+        $description = get_string(\mod_zoom\invitation::PREFIX . $element . '_help', 'mod_zoom');
+        $settings->add(new admin_setting_configtext($name, $visiblename, $description, $pattern));
+        if ($moodlehashideif) {
+            $settings->hide_if('zoom/' . \mod_zoom\invitation::PREFIX . $element,
+                    'zoom/invitationregexenabled', 'eq', 0);
+        }
+    }
+
+    // Extra hideif for invite element.
+    if ($moodlehashideif) {
+        $settings->hide_if('zoom/invitation_invite', 'zoom/invitationremoveinvite', 'eq', 0);
+    }
 }
