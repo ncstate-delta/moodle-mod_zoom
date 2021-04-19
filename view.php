@@ -240,7 +240,7 @@ if ($config->showdownloadical != ZOOM_DOWNLOADICAL_DISABLE && (!($showrecreate |
 
 // Show meeting status.
 if (!$zoom->recurring) {
-    if (!$zoom->exists_on_zoom) {
+    if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
         $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
     } else if ($finished) {
         $status = get_string('meeting_finished', 'mod_zoom');

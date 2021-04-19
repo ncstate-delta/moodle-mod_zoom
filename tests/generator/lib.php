@@ -55,7 +55,7 @@ class mod_zoom_generator extends testing_module_generator {
             'option_mute_upon_entry' => 0,
             'start_time' => mktime(0, 0, 0, 2, 22, 2021),
             'duration' => 60,
-            'exists_on_zoom' => 0,
+            'exists_on_zoom' => ZOOM_MEETING_EXPIRED,
         );
 
         $record = (object) (array) $record;

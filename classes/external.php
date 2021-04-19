@@ -104,7 +104,7 @@ class mod_zoom_external extends external_api {
         $result['audioopt'] = $zoom->option_audio;
 
         if (!$zoom->recurring) {
-            if (!$zoom->exists_on_zoom) {
+            if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
                 $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
             } else if ($finished) {
                 $status = get_string('meeting_finished', 'mod_zoom');
