@@ -713,7 +713,7 @@ function zoom_get_unavailability_note($zoom, $finished = null) {
  * @param string $zoomhostid The Zoom ID of the host.
  * @param boolean $iswebinar The meeting is a webinar.
  *
- * @return int|false The meeting capacity of the Zoom user or false if the user does not have any meeting capacity at all.
+ * @return int|boolean The meeting capacity of the Zoom user or false if the user does not have any meeting capacity at all.
  */
 function zoom_get_meeting_capacity(string $zoomhostid, bool $iswebinar = false) {
     // Get Zoom API service instance.
@@ -742,7 +742,7 @@ function zoom_get_meeting_capacity(string $zoomhostid, bool $iswebinar = false) 
             return false;
         }
 
-        // Check if the user has a 'large_meeting' license and, if yes, if this is bigger than the given 'meeting_capacity' value;
+        // Check if the user has a 'large_meeting' license and, if yes, if this is bigger than the given 'meeting_capacity' value.
         if ($userfeatures->large_meeting === true &&
                 isset($userfeatures->large_meeting_capacity) &&
                 is_int($userfeatures->large_meeting_capacity) != false &&

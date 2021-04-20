@@ -297,7 +297,6 @@ class mod_zoom_webservice {
     protected function _make_paginated_call($url, $data = array(), $datatoget) {
         $aggregatedata = array();
         $data['page_size'] = ZOOM_MAX_RECORDS_PER_CALL;
-        $reportcheck = explode('/', $url);
         do {
             $callresult = null;
             $moredata = false;
