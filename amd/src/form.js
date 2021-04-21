@@ -26,16 +26,16 @@
 define(['jquery'], function($) {
     return {
         init: function() {
-            var option_jbh = $('input[name="option_jbh"][type!="hidden"]');
-            var option_waiting_room = $('input[name="option_waiting_room"][type!="hidden"]');
-            option_jbh.change(function() {
-                if (option_jbh.is(':checked') == true) {
-                    option_waiting_room.prop('checked', false);
+            var optionJoinBeforeHost = $('input[name="option_jbh"][type!="hidden"]');
+            var optionWaitingRoom = $('input[name="option_waiting_room"][type!="hidden"]');
+            optionJoinBeforeHost.change(function() {
+                if (optionJoinBeforeHost.is(':checked') === true) {
+                    optionWaitingRoom.prop('checked', false);
                 }
             });
-            option_waiting_room.change(function() {
-                if (option_waiting_room.is(':checked') == true) {
-                    option_jbh.prop('checked', false);
+            optionWaitingRoom.change(function() {
+                if (optionWaitingRoom.is(':checked') === true) {
+                    optionJoinBeforeHost.prop('checked', false);
                 }
             });
         }
