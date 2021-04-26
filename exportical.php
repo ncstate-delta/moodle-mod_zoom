@@ -53,21 +53,16 @@ if ($config->showdownloadical == ZOOM_DOWNLOADICAL_DISABLE) {
     print_error('err_downloadicaldisabled', 'mod_zoom', $disabledredirecturl);
 }
 
+// Check if we are dealing with a recurring meeting with no fixed time.
+if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
+    $errorredirecturl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
+    print_error('err_downloadicalrecurringnofixed', 'mod_zoom', $errorredirecturl);
+}
+
 // Start ical file.
 $ical = new iCalendar;
 $ical->add_property('method', 'PUBLISH');
 $ical->add_property('prodid', '-//Moodle Pty Ltd//NONSGML Moodle Version ' . $CFG->version . '//EN');
-
-// Create event and populate properties.
-$event = new iCalendar_event;
-$hostaddress = str_replace('http://', '', $CFG->wwwroot);
-$hostaddress = str_replace('https://', '', $hostaddress);
-$event->add_property('uid', $zoom->meeting_id . '@' . $hostaddress); // A unique identifier.
-$event->add_property('summary', $zoom->name); // Title.
-$event->add_property('dtstamp', Bennu::timestamp_to_datetime()); // Time of creation.
-$event->add_property('last-modified', Bennu::timestamp_to_datetime($zoom->timemodified));
-$event->add_property('dtstart', Bennu::timestamp_to_datetime($zoom->start_time)); // Start time.
-$event->add_property('dtend', Bennu::timestamp_to_datetime($zoom->start_time + $zoom->duration)); // End time.
 
 // Get the meeting invite note to add to the description property.
 $service = new mod_zoom_webservice();
@@ -82,10 +77,60 @@ if (!empty($convertedtext)) {
 if (!empty($meetinginvite)) {
     $descriptiontext .= "\n\n" . $meetinginvite;
 }
-$event->add_property('description', $descriptiontext);
 
-// Start formatting ical.
-$ical->add_component($event);
+// Compose host address to be used later in the iCal events.
+$hostaddress = str_replace('http://', '', $CFG->wwwroot);
+$hostaddress = str_replace('https://', '', $hostaddress);
+
+// If we have a recurring meeting (with fixed time as the option with no fixed time resulted in an error already).
+if ($zoom->recurring) {
+    // Get all occurrences of the meeting from the DB.
+    $params = array('modulename' => 'zoom', 'instance' => $zoom->id);
+    $occurrences = $DB->get_records('event', $params, 'timestart ASC', 'timestart');
+
+    // If we haven't got at least a single occurrence.
+    if ($occurrences == false) {
+        // We could handle this case in a nicer way ans return an empty iCal file without events,
+        // but as this case should not happen in real life anyway, return a fatal error to make clear that something is wrong.
+        $errorredirecturl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
+        print_error('err_downloadicalrecurringempty', 'mod_zoom', $errorredirecturl);
+    }
+
+    // Iterate over all occurrences.
+    // We will add each occurrence as individual iCal event and won't use any iCal repeating rules.
+    // This is done as we have all occurrences at hand, but we don't have the repeating rule which the Zoom recurrence is based on.
+    foreach ($occurrences as $o) {
+        // Create event and populate properties.
+        $event = new iCalendar_event;
+        $event->add_property('uid', $zoom->meeting_id . ':' . $o->timestart . '@' . $hostaddress); // A unique identifier.
+        $event->add_property('summary', $zoom->name); // Title.
+        $event->add_property('dtstamp', Bennu::timestamp_to_datetime()); // Time of creation.
+        $event->add_property('last-modified', Bennu::timestamp_to_datetime($zoom->timemodified));
+        $event->add_property('dtstart', Bennu::timestamp_to_datetime($o->timestart)); // Start time.
+        $event->add_property('dtend', Bennu::timestamp_to_datetime($o->timestart + $zoom->duration)); // End time.
+        $event->add_property('description', $descriptiontext);
+
+        // Add the event to the iCal file.
+        $ical->add_component($event);
+    }
+
+    // Otherwise, if this isn't a recurring meeting.
+} else {
+    // Create event and populate properties.
+    $event = new iCalendar_event;
+    $event->add_property('uid', $zoom->meeting_id . '@' . $hostaddress); // A unique identifier.
+    $event->add_property('summary', $zoom->name); // Title.
+    $event->add_property('dtstamp', Bennu::timestamp_to_datetime()); // Time of creation.
+    $event->add_property('last-modified', Bennu::timestamp_to_datetime($zoom->timemodified));
+    $event->add_property('dtstart', Bennu::timestamp_to_datetime($zoom->start_time)); // Start time.
+    $event->add_property('dtend', Bennu::timestamp_to_datetime($zoom->start_time + $zoom->duration)); // End time.
+    $event->add_property('description', $descriptiontext);
+
+    // Add the event to the iCal file.
+    $ical->add_component($event);
+}
+
+// Start output of iCal file.
 $serialized = $ical->serialize();
 $filename = 'icalexport.ics';
 

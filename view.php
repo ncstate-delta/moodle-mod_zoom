@@ -250,7 +250,8 @@ if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
 }
 
 // Display add-to-calendar button if meeting was found and isn't recurring and if the admin did not disable the feature.
-if ($config->showdownloadical != ZOOM_DOWNLOADICAL_DISABLE && (!($showrecreate || $zoom->recurring))) {
+if ($config->showdownloadical != ZOOM_DOWNLOADICAL_DISABLE && !$showrecreate &&
+        !($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME)) {
     $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
     $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'));
     $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
