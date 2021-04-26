@@ -233,9 +233,17 @@ $table->align = array('center', 'left');
 $table->size = array('35%', '65%');
 $numcolumns = 2;
 
-// Show start/end date or recurring flag.
-if ($zoom->recurring) {
+// Show start/end date or recurring meeting information.
+if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
     $table->data[] = array(get_string('recurringmeeting', 'mod_zoom'), get_string('recurringmeetingexplanation', 'mod_zoom'));
+} else if ($zoom->recurring && $zoom->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
+    $table->data[] = array(get_string('recurringmeeting', 'mod_zoom'), get_string('recurringmeetingthisis', 'mod_zoom'));
+    if (($nextoccurrence = zoom_get_next_occurrence($zoom)) > 0) {
+        $table->data[] = array(get_string('nextoccurrence', 'mod_zoom'), userdate($nextoccurrence));
+    } else {
+        $table->data[] = array(get_string('nextoccurrence', 'mod_zoom'), get_string('nooccurrenceleft', 'mod_zoom'));
+    }
+    $table->data[] = array($strduration, format_time($zoom->duration));
 } else {
     $table->data[] = array($strtime, userdate($zoom->start_time));
     $table->data[] = array($strduration, format_time($zoom->duration));
@@ -251,10 +259,10 @@ if ($config->showdownloadical != ZOOM_DOWNLOADICAL_DISABLE && (!($showrecreate |
 }
 
 // Show meeting status.
-if (!$zoom->recurring) {
-    if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
-        $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
-    } else if ($finished) {
+if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
+    $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
+} else if (!($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME)) {
+    if ($finished) {
         $status = get_string('meeting_finished', 'mod_zoom');
     } else if ($inprogress) {
         $status = get_string('meeting_started', 'mod_zoom');

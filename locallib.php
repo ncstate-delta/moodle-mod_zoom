@@ -364,23 +364,111 @@ function zoom_get_sessions_for_display($meetingid) {
 }
 
 /**
+ * Get the next occurrence of a meeting.
+ *
+ * @param stdClass $zoom
+ * @return int The timestamp of the next occurrence of a recurring meeting or
+ *             0 if this is a recurring meeting without fixed time or
+ *             the timestamp of the meeting start date if this isn't a recurring meeting.
+ */
+function zoom_get_next_occurrence($zoom) {
+    global $DB;
+
+    // Prepare an ad-hoc request cache as this function could be called multiple times throughout a request
+    // and we want to avoid to make duplicate DB calls.
+    $cacheoptions = array(
+            'simplekeys' => true,
+            'simpledata' => true
+    );
+    $cache = cache::make_from_params(cache_store::MODE_REQUEST, 'zoom', 'nextoccurrence', array(), $cacheoptions);
+
+    // If the next occurrence wasn't already cached, fill the cache.
+    if (($cachednextoccurrence = $cache->get($zoom->id)) === false) {
+        // If this isn't a recurring meeting.
+        if (!$zoom->recurring) {
+            // Use the meeting start time.
+            $cachednextoccurrence = $zoom->start_time;
+
+            // Or if this is a recurring meeting without fixed time.
+        } else if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME){
+            // Use 0 as there isn't anything better to return.
+            $cachednextoccurrence = 0;
+
+            // Otherwise we have a recurring meeting with a recurrence schedule.
+        } else {
+            // Get the calendar event of the next occurrence.
+            $selectclause = "modulename = :modulename AND instance = :instance AND (timestart + timeduration) >= :now";
+            $selectparams = array('modulename' => 'zoom', 'instance' => $zoom->id, 'now' => time());
+            $nextoccurence = $DB->get_records_select('event', $selectclause, $selectparams, 'timestart ASC', 'timestart', 0, 1);
+
+            // If we haven't got a single event.
+            if (count($nextoccurence) != 1) {
+                // Use 0 as there isn't anything better to return.
+                $cachednextoccurrence = 0;
+            }
+
+            // Use the timestamp of the event.
+            $nextoccurenceobject = reset($nextoccurence);
+            $cachednextoccurrence = $nextoccurenceobject->timestart;
+        }
+
+        // Store the next occurrence into the cache.
+        $cache->set($zoom->id, $cachednextoccurrence);
+    }
+
+    // Return the next occurrence.
+    return $cachednextoccurrence;
+}
+
+/**
  * Determine if a zoom meeting is in progress, is available, and/or is finished.
  *
  * @param stdClass $zoom
  * @return array Array of booleans: [in progress, available, finished].
  */
 function zoom_get_state($zoom) {
+    // Get plugin config.
     $config = get_config('zoom');
+
+    // Get the current time as calculation basis.
     $now = time();
 
-    $firstavailable = $zoom->start_time - ($config->firstabletojoin * 60);
-    $lastavailable = $zoom->start_time + $zoom->duration;
+    // If this is a recurring meeting with a recurrence schedule.
+    if ($zoom->recurring && $zoom->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
+        // Get the next occurrence time.
+        $nextoccurrence = zoom_get_next_occurrence($zoom);
+
+        // Calculate the time when the recurring meeting becomes available next,
+        // based on the next occurrence start time and the general meeting lead time.
+        $firstavailable = $nextoccurrence - ($config->firstabletojoin * 60);
+
+        // Calculate the time when the meeting ends to be available,
+        // based on the next occurrence start time and the meeting duration.
+        $lastavailable = $nextoccurrence + $zoom->duration;
+
+        // Otherwise.
+    } else {
+        // Calculate the time when the meeting becomes available at first,
+        // based on the meeting start time and the general meeting lead time.
+        $firstavailable = $zoom->start_time - ($config->firstabletojoin * 60);
+
+        // Calculate the time when the meeting ends to be available,
+        // based on the meeting start time and the meeting duration.
+        $lastavailable = $zoom->start_time + $zoom->duration;
+    }
+
+    // Determine if the meeting is in progress.
     $inprogress = ($firstavailable <= $now && $now <= $lastavailable);
 
-    $available = $zoom->recurring || $inprogress;
+    // Determine if the meeting is available,
+    // based on the fact if it is recurring or in progress.
+    $available = ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) || $inprogress;
 
-    $finished = !$zoom->recurring && $now > $lastavailable;
+    // Determine if the meeting is finished,
+    // based on the fact if it is recurring or the meeting end time is still in the future.
+    $finished = !($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) && $now > $lastavailable;
 
+    // Return the requested information.
     return array($inprogress, $available, $finished);
 }
 
@@ -693,8 +781,8 @@ function zoom_get_unavailability_note($zoom, $finished = null) {
     // Get the plain unavailable string.
     $strunavailable = get_string('unavailable', 'mod_zoom');
 
-    // If this is a recurring meeting, just use the plain unavailable string.
-    if (!empty($zoom->recurring)) {
+    // If this is a recurring meeting without fixed time, just use the plain unavailable string.
+    if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
         $unavailabilitynote = $strunavailable;
 
         // Otherwise we add some more information to the unavailable string.
