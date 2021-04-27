@@ -486,7 +486,7 @@ class mod_zoom_mod_form extends moodleform_mod {
      *
      * Only available on moodleform_mod.
      *
-     * @param array $default_values passed by reference
+     * @param array $defaultvalues passed by reference
      */
     public function data_preprocessing(&$defaultvalues) {
         parent::data_preprocessing($defaultvalues);

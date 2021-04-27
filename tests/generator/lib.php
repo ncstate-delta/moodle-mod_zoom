@@ -32,7 +32,7 @@ class mod_zoom_generator extends testing_module_generator {
      * @return stdClass Zoom instance
      */
     public function create_instance($record = null, array $options = null) {
-        global $CFG, $DB;
+        global $CFG;
         require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
         set_config('apikey', 'test', 'zoom');
