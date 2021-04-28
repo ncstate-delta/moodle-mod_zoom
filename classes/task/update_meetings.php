@@ -74,35 +74,71 @@ class update_meetings extends \core\task\scheduled_task {
         require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
         $service = new \mod_zoom_webservice();
 
+        // Show trace message.
+        mtrace('Starting to process existing Zoom meeting activities ...');
+
         // Check all meetings, in case they were deleted/changed on Zoom.
         $zoomstoupdate = $DB->get_records('zoom', array('exists_on_zoom' => ZOOM_MEETING_EXISTS));
         $courseidstoupdate = array();
         $calendarfields = array('intro', 'introformat', 'start_time', 'duration', 'recurring');
 
         foreach ($zoomstoupdate as $zoom) {
+            // Get course module.
+            $cm = get_coursemodule_from_instance('zoom', $zoom->id, $zoom->course, false, MUST_EXIST);
+
+            // Show trace message.
+            $zoomactivityurl = new \moodle_url('/mod/zoom/view.php', array('n' => $zoom->id));
+            mtrace('Processing next Zoom meeting activity ...');
+            mtrace('  Zoom meeting ID: ' . $zoom->meeting_id);
+            mtrace('  Zoom meeting activity URL: '. $zoomactivityurl->out());
+            mtrace('  Zoom meeting title: '. $zoom->name);
+            mtrace('  Moodle course ID: '. $zoom->course);
+
             $gotinfo = false;
             try {
                 $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
                 $gotinfo = true;
+            } catch (\zoom_not_found_exception $error) {
+                $zoom->exists_on_zoom = false;
+                $DB->update_record('zoom', $zoom);
+
+                // Show trace message.
+                mtrace('  => Marked Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id .
+                        ' as not existing anymore on Zoom');
             } catch (\moodle_exception $error) {
                 // Outputs error and then goes to next meeting.
                 $zoom->exists_on_zoom = ZOOM_MEETING_EXPIRED;
                 $DB->update_record('zoom', $zoom);
-                mtrace('Error updating Zoom meeting with meeting_id ' . $zoom->meeting_id . ': ' . $error);
+
+                // Show trace message.
+                mtrace('  !! Error updating Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id . ': ' . $error);
             }
             if ($gotinfo) {
                 $changed = false;
                 $newzoom = populate_zoom_from_response($zoom, $response);
                 foreach ((array) $zoom as $field => $value) {
                     // The start_url has a parameter that always changes, so it doesn't really count as a change.
-                    if ($field != 'start_url' && $newzoom->$field != $value) {
+                    // Similarly, the timemodified parameter does not count as change if nothing else has changed.
+                    if ($field != 'start_url' && $field != 'timemodified' && $newzoom->$field != $value) {
+                        // Show trace message, handling booleans from the response specially as a 'false' is not shown directly.
+                        if (is_bool($newzoom->$field)) {
+                            $newfieldvalue = $newzoom->$field ? '1' : '0';
+                            mtrace('  => Field "' . $field . '" has changed from "' . $value . '" to "' . $newfieldvalue . '"');
+                        } else {
+                            mtrace('  => Field "' . $field . '" has changed from "' . $value . '" to "' . $newzoom->$field . '"');
+                        }
+
+
+                        // Remember this meeting as changed.
                         $changed = true;
-                        break;
                     }
                 }
 
                 if ($changed) {
                     $DB->update_record('zoom', $newzoom);
+
+                    // Show trace message.
+                    mtrace('  => Updated Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id);
 
                     // If the topic/title was changed, mark this course for cache clearing.
                     if ($zoom->name != $newzoom->name) {
@@ -113,17 +149,33 @@ class update_meetings extends \core\task\scheduled_task {
                     foreach ($calendarfields as $field) {
                         if ($zoom->$field != $newzoom->$field) {
                             zoom_calendar_item_update($newzoom);
+
+                            // Show trace message.
+                            mtrace('  => Updated calendar item for Zoom meeting ID ' . $zoom->meeting_id);
+
                             break;
                         }
                     }
+                } else {
+                    // Show trace message.
+                    mtrace('  => Skipped Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id . ' as unchanged');
                 }
             }
         }
+
+        // Show trace message.
+        mtrace('Finished to process existing Zoom meetings');
+
+        // Show trace message.
+        mtrace('Starting to rebuild course caches ...');
 
         // Clear caches for meetings whose topic/title changed (and rebuild as needed).
         foreach ($courseidstoupdate as $courseid) {
             rebuild_course_cache($courseid, true);
         }
+
+        // Show trace message.
+        mtrace('Finished to rebuild course caches');
 
         return true;
     }
