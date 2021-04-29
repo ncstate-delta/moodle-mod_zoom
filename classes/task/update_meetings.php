@@ -83,15 +83,12 @@ class update_meetings extends \core\task\scheduled_task {
         $calendarfields = array('intro', 'introformat', 'start_time', 'duration', 'recurring');
 
         foreach ($zoomstoupdate as $zoom) {
-            // Get course module.
-            $cm = get_coursemodule_from_instance('zoom', $zoom->id, $zoom->course, false, MUST_EXIST);
-
             // Show trace message.
-            $zoomactivityurl = new \moodle_url('/mod/zoom/view.php', array('n' => $zoom->id));
             mtrace('Processing next Zoom meeting activity ...');
             mtrace('  Zoom meeting ID: ' . $zoom->meeting_id);
-            mtrace('  Zoom meeting activity URL: '. $zoomactivityurl->out());
             mtrace('  Zoom meeting title: '. $zoom->name);
+            $zoomactivityurl = new \moodle_url('/mod/zoom/view.php', array('n' => $zoom->id));
+            mtrace('  Zoom meeting activity URL: '. $zoomactivityurl->out());
             mtrace('  Moodle course ID: '. $zoom->course);
 
             $gotinfo = false;
@@ -99,35 +96,39 @@ class update_meetings extends \core\task\scheduled_task {
                 $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
                 $gotinfo = true;
             } catch (\zoom_not_found_exception $error) {
-                $zoom->exists_on_zoom = false;
+                $zoom->exists_on_zoom = ZOOM_MEETING_EXPIRED;
                 $DB->update_record('zoom', $zoom);
 
                 // Show trace message.
                 mtrace('  => Marked Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id .
                         ' as not existing anymore on Zoom');
             } catch (\moodle_exception $error) {
-                // Outputs error and then goes to next meeting.
-                $zoom->exists_on_zoom = ZOOM_MEETING_EXPIRED;
-                $DB->update_record('zoom', $zoom);
-
                 // Show trace message.
                 mtrace('  !! Error updating Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id . ': ' . $error);
             }
             if ($gotinfo) {
                 $changed = false;
                 $newzoom = populate_zoom_from_response($zoom, $response);
+
+                // Iterate over all Zoom meeting fields.
                 foreach ((array) $zoom as $field => $value) {
                     // The start_url has a parameter that always changes, so it doesn't really count as a change.
                     // Similarly, the timemodified parameter does not count as change if nothing else has changed.
-                    if ($field != 'start_url' && $field != 'timemodified' && $newzoom->$field != $value) {
-                        // Show trace message, handling booleans from the response specially as a 'false' is not shown directly.
-                        if (is_bool($newzoom->$field)) {
-                            $newfieldvalue = $newzoom->$field ? '1' : '0';
-                            mtrace('  => Field "' . $field . '" has changed from "' . $value . '" to "' . $newfieldvalue . '"');
-                        } else {
-                            mtrace('  => Field "' . $field . '" has changed from "' . $value . '" to "' . $newzoom->$field . '"');
-                        }
+                    if ($field === 'start_url' || $field === 'timemodified') {
+                        continue;
+                    }
 
+                    // For doing a better comparison and for easing mtrace() output, convert booleans from the Zoom response
+                    // to strings like they are stored in the Moodle database for the existing activity.
+                    $newfieldvalue = $newzoom->$field;
+                    if (is_bool($newfieldvalue)) {
+                        $newfieldvalue = $newfieldvalue ? '1' : '0';
+                    }
+
+                    // If the field value has changed.
+                    if ($newfieldvalue != $value) {
+                        // Show trace message.
+                        mtrace('  => Field "' . $field . '" has changed from "' . $value . '" to "' . $newfieldvalue . '"');
 
                         // Remember this meeting as changed.
                         $changed = true;
