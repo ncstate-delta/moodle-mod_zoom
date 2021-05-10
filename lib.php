@@ -103,6 +103,24 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         $zoom->host_id = $correcthostzoomuser->id;
     }
 
+    if (isset($zoom->recurring) && isset($response->occurrences) && count($response->occurrences) == 0) {
+        // Recurring meetings did not create any occurrencces.
+        // This means invalid options selected.
+        // Need to rollback created meeting.
+        $service->delete_meeting($zoom->meeting_id, $zoom->webinar);
+
+        // Undo everything we can. This is not necessary for databases which
+        // support transactions, but improves consistency for other databases.
+        // Code taken from course/modlib.php (lines: 133-136)
+        context_helper::delete_instance(CONTEXT_MODULE, $zoom->coursemodule);
+        $DB->delete_records('course_modules', array('id'=>$zoom->coursemodule));
+
+        // Trigger a notification, mentioning the error.
+        \core\notification::error(get_string('erroraddinstance', 'zoom'));
+        // Redirect out to course page, without adding the zoom module.
+        redirect(new moodle_url('/course/view.php', ['id' => $zoom->course]));
+    }
+
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
     zoom_calendar_item_update($zoom);

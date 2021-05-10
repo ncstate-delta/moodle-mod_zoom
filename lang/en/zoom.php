@@ -100,6 +100,7 @@ $string['err_repeat_weekly_interval'] = 'Max interval for weekly meeting is 12 w
 $string['err_repeat_monthly_interval'] = 'Max interval for monthly meeting is 3 months';
 $string['err_start_time_past'] = 'The start date cannot be in the past.';
 $string['err_weekly_days'] = 'Select day(s) for the recurring weekly meeting';
+$string['erroraddinstance'] = 'Could not create new zoom meeting. Invalid options selected for a recurring meeting.';
 $string['errorwebservice_badrequest'] = 'Zoom received a bad request: {$a}';
 $string['errorwebservice_notfound'] = 'The resource does not exists';
 $string['errorwebservice'] = 'Zoom webservice error: {$a}.';
