@@ -221,10 +221,10 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->hideif('weekly_days_group', 'recurrence_type', 'noteq', ZOOM_RECURRINGTYPE_WEEKLY);
         $mform->hideif('weekly_days_group', 'recurring', 'notchecked');
         if (!empty($this->current->weekly_days)) {
-            $weekdayselected = explode(',', $this->current->weekly_days);
-            foreach ($weekdayselected as $selected) {
-                $weekdayid = 'weekly_days_' . $selected;
-                $mform->setDefault($weekdayid, $selected);
+            $weekdaynumbers = explode(',', $this->current->weekly_days);
+            foreach ($weekdaynumbers as $daynumber) {
+                $weekdayid = 'weekly_days_' . $daynumber;
+                $mform->setDefault($weekdayid, $daynumber);
             }
         }
 
@@ -234,7 +234,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             $monthoptions[$i] = $i;
         }
         $monthlyweekoptions = zoom_get_monthweek_options();
-        
+
         $group = [];
         $group[] = $mform->createElement('radio', 'monthly_repeat_option', '', get_string('day', 'calendar'), ZOOM_MONTHLY_REPEAT_OPTION_DAY);
         $group[] = $mform->createElement('select', 'monthly_day', '', $monthoptions);
@@ -724,14 +724,14 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Add validation for recurring meeting.
         if ($data['recurring'] == 1) {
             if ($data['recurrence_type'] == ZOOM_RECURRINGTYPE_WEEKLY) {
-                $weekdayselected = [];
+                $weekdaynumbers = [];
                 for ($i = 1; $i <= 7; $i++) {
                     $key = 'weekly_days_' . $i;
                     if (!empty($data[$key])) {
-                        $weekdayselected[] = $i;
+                        $weekdaynumbers[] = $i;
                     }
                 }
-                if (empty($weekdayselected)) {
+                if (empty($weekdaynumbers)) {
                     $errors['weekly_days_group'] = get_string('err_weekly_days', 'zoom');
                 }
                 // For weekly, maximum is 12 weeks.

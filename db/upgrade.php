@@ -495,7 +495,7 @@ function xmldb_zoom_upgrade($oldversion) {
 
     if ($oldversion < 2021041301) {
         $table = new xmldb_table('zoom');
-        
+
         // Define and conditionally add field recurrence_type.
         $field = new xmldb_field('recurrence_type', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'recurring');
         if (!$dbman->field_exists($table, $field)) {

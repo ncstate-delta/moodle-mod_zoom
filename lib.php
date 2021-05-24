@@ -109,16 +109,8 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         // Need to rollback created meeting.
         $service->delete_meeting($zoom->meeting_id, $zoom->webinar);
 
-        // Undo everything we can. This is not necessary for databases which
-        // support transactions, but improves consistency for other databases.
-        // Code taken from course/modlib.php (lines: 133-136)
-        context_helper::delete_instance(CONTEXT_MODULE, $zoom->coursemodule);
-        $DB->delete_records('course_modules', array('id'=>$zoom->coursemodule));
-
-        // Trigger a notification, mentioning the error.
-        \core\notification::error(get_string('erroraddinstance', 'zoom'));
-        // Redirect out to course page, without adding the zoom module.
-        redirect(new moodle_url('/course/view.php', ['id' => $zoom->course]));
+        $redirecturl = new moodle_url('/course/view.php', ['id' => $zoom->course]);
+        throw new moodle_exception('erroraddinstance', 'zoom', $redirecturl->out());
     }
 
     $zoom->id = $DB->insert_record('zoom', $zoom);
@@ -197,24 +189,24 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
 /**
  * Function to handle selected weekdays, for recurring weekly meeting.
- * 
+ *
  * @param stdClass $zoom The zoom instance
- * @return string The comma seprated string for selected weekdays
+ * @return string The comma separated string for selected weekdays
  */
 function zoom_handle_weekly_days($zoom) {
-    $weekdayselected = [];
+    $weekdaynumbers = [];
     for ($i = 1; $i <= 7; $i++) {
         $key = 'weekly_days_' . $i;
         if (!empty($zoom->$key)) {
-            $weekdayselected[] = $zoom->$key;
+            $weekdaynumbers[] = $i;
         }
     }
-    return implode(',', $weekdayselected);
+    return implode(',', $weekdaynumbers);
 }
 
 /**
  * Function to unset the weekly options in postprocessing.
- * 
+ *
  * @param stdClass $data The form data object
  * @return stdClass $data The form data object minus weekly options.
  */
@@ -229,7 +221,7 @@ function zoom_remove_weekly_options($data) {
 
 /**
  * Function to unset the monthly options in postprocessing.
- * 
+ *
  * @param stdClass $data The form data object
  * @return stdClass $data The form data object minus monthly options.
  */
@@ -279,7 +271,7 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
         ZOOM_RECURRING_MEETING,
         ZOOM_RECURRING_FIXED_MEETING,
         ZOOM_RECURRING_WEBINAR,
-        ZOOM_RECURRING_FIXED_WEBINAR
+        ZOOM_RECURRING_FIXED_WEBINAR,
     ];
     $newzoom->recurring = in_array($response->type, $recurringtypes);
     if (!empty($response->occurrences)) {
@@ -458,7 +450,7 @@ function zoom_calendar_item_update(stdClass $zoom) {
             'modulename' => 'zoom',
             'instance' => $zoom->id,
         ));
-    
+
         // Load existing event object, or create a new one.
         $event = zoom_populate_calender_item($zoom);
         if (!empty($eventid)) {
@@ -471,8 +463,8 @@ function zoom_calendar_item_update(stdClass $zoom) {
         zoom_calendar_item_delete($zoom);
         // Based on data passed back from zoom, create the calendar events.
         if (!empty($zoom->occurrences)) {
-            foreach ($zoom->occurrences as $occurence) {
-                $event = zoom_populate_calender_item($zoom, $occurence);
+            foreach ($zoom->occurrences as $occurrence) {
+                $event = zoom_populate_calender_item($zoom, $occurrence);
                 calendar_event::create($event);
             }
         }
@@ -481,7 +473,7 @@ function zoom_calendar_item_update(stdClass $zoom) {
 
 /**
  * Return an array with the days of the week.
- * 
+ *
  * @return array
  */
 function zoom_get_weekday_options() {
@@ -498,7 +490,7 @@ function zoom_get_weekday_options() {
 
 /**
  * Return an array with the weeks of the month.
- * 
+ *
  * @return array
  */
 function zoom_get_monthweek_options() {
@@ -513,7 +505,7 @@ function zoom_get_monthweek_options() {
 
 /**
  * Populate the calendar event object, based on the zoom instance
- * 
+ *
  * @param stdClass $zoom The zoom instance.
  * @param stdClass $occurrence The occurrence object passed from the zoom api.
  * @return stdClass The calendar event object.
@@ -529,7 +521,7 @@ function zoom_populate_calender_item(stdClass $zoom, stdClass $occurrence = null
     if (!$occurrence) {
         $event->timesort = $zoom->start_time;
     } else {
-        $event->timesort = strtotime($occurrence->start_time);
+        $event->timesort = $occurrence->start_time;
     }
     $event->name = $zoom->name;
     if ($zoom->intro) {

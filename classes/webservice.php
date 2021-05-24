@@ -582,10 +582,10 @@ class mod_zoom_webservice {
             }
         }
 
-        if ($data['type'] == ZOOM_SCHEDULED_MEETING || 
-            $data['type'] == ZOOM_RECURRING_FIXED_MEETING ||
-            $data['type'] == ZOOM_SCHEDULED_WEBINAR ||
-            $data['type'] == ZOOM_RECURRING_FIXED_WEBINAR) {
+        if ($data['type'] === ZOOM_SCHEDULED_MEETING ||
+            $data['type'] === ZOOM_RECURRING_FIXED_MEETING ||
+            $data['type'] === ZOOM_SCHEDULED_WEBINAR ||
+            $data['type'] === ZOOM_RECURRING_FIXED_WEBINAR) {
             // Convert timestamp to ISO-8601. The API seems to insist that it end with 'Z' to indicate UTC.
             $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->start_time);
             $data['duration'] = (int) ceil($zoom->duration / 60);

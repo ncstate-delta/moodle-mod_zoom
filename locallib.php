@@ -390,7 +390,7 @@ function zoom_get_next_occurrence($zoom) {
             $cachednextoccurrence = $zoom->start_time;
 
             // Or if this is a recurring meeting without fixed time.
-        } else if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME){
+        } else if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
             // Use 0 as there isn't anything better to return.
             $cachednextoccurrence = 0;
 
@@ -399,16 +399,16 @@ function zoom_get_next_occurrence($zoom) {
             // Get the calendar event of the next occurrence.
             $selectclause = "modulename = :modulename AND instance = :instance AND (timestart + timeduration) >= :now";
             $selectparams = array('modulename' => 'zoom', 'instance' => $zoom->id, 'now' => time());
-            $nextoccurence = $DB->get_records_select('event', $selectclause, $selectparams, 'timestart ASC', 'timestart', 0, 1);
+            $nextoccurrence = $DB->get_records_select('event', $selectclause, $selectparams, 'timestart ASC', 'timestart', 0, 1);
 
             // If we haven't got a single event.
-            if (count($nextoccurence) != 1) {
+            if (count($nextoccurrence) != 1) {
                 // Use 0 as there isn't anything better to return.
                 $cachednextoccurrence = 0;
             }
 
             // Use the timestamp of the event.
-            $nextoccurenceobject = reset($nextoccurence);
+            $nextoccurenceobject = reset($nextoccurrence);
             $cachednextoccurrence = $nextoccurenceobject->timestart;
         }
 

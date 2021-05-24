@@ -106,7 +106,7 @@ define(['jquery'], function($) {
     var toggle_start_time_duration = function () {
         // Disable start time and duration if "No Fixed Time" recurring meeting/webinar selected.
         var disabled = false;
-        var repeatVal = parseInt($(SELECTORS.REPEAT_SELECT).val());
+        var repeatVal = parseInt($(SELECTORS.REPEAT_SELECT).val(), 10);
         if ($(SELECTORS.RECURRING).prop('checked') && repeatVal === REPEAT_OPTIONS.REPEAT_OPTION_NONE) {
             disabled = true;
         }
@@ -120,7 +120,7 @@ define(['jquery'], function($) {
      */
     var toggle_repeat_interval_text = function () {
         $(SELECTORS.REPEAT_INTERVAL).hide();
-        var repeatSelectVal = parseInt($(SELECTORS.REPEAT_SELECT).val());
+        var repeatSelectVal = parseInt($(SELECTORS.REPEAT_SELECT).val(), 10);
         if (repeatSelectVal === REPEAT_OPTIONS.REPEAT_OPTION_DAILY) {
             $(SELECTORS.REPEAT_INTERVAL_DAILY).show();
         } else if (repeatSelectVal === REPEAT_OPTIONS.REPEAT_OPTION_WEEKLY) {
@@ -137,7 +137,7 @@ define(['jquery'], function($) {
      * Max value for monthly meeting is 3.
      */
     var limit_repeat_values = function () {
-        var selectedValue = parseInt($(SELECTORS.REPEAT_SELECT).val());
+        var selectedValue = parseInt($(SELECTORS.REPEAT_SELECT).val(), 10);
         // Restrict options if weekly or monthly option selected.
         $(SELECTORS.REPEAT_INTERVAL_OPTIONS).each(function() {
             if (selectedValue === REPEAT_OPTIONS.REPEAT_OPTION_WEEKLY) {
