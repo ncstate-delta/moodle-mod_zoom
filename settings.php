@@ -299,14 +299,6 @@ if ($ADMIN->fulltree) {
         $settings->hide_if('zoom/invitationremoveinvite', 'zoom/invitationregexenabled', 'eq', 0);
     }
 
-    $settings->add(new admin_setting_configcheckbox('zoom/invitationremoveicallink',
-            get_string('invitationremoveicallink', 'mod_zoom'),
-            get_string('invitationremoveicallink_help', 'mod_zoom'),
-            0, 1, 0));
-    if ($moodlehashideif) {
-        $settings->hide_if('zoom/invitationremoveicallink', 'zoom/invitationregexenabled', 'eq', 0);
-    }
-
     // Allow admin to modify regex for invitation parts if zoom api changes.
     foreach (\mod_zoom\invitation::get_default_invitation_regex() as $element => $pattern) {
         $name = 'zoom/' . \mod_zoom\invitation::PREFIX . $element;
@@ -319,9 +311,8 @@ if ($ADMIN->fulltree) {
         }
     }
 
-    // Extra hideif for elements which can be enabled / disabled individually.
+    // Extra hideif for invite element.
     if ($moodlehashideif) {
         $settings->hide_if('zoom/invitation_invite', 'zoom/invitationremoveinvite', 'eq', 0);
-        $settings->hide_if('zoom/invitation_icallink', 'zoom/invitationremoveicallink', 'eq', 0);
     }
 }

@@ -68,10 +68,6 @@ class invitation {
             if (get_config('zoom', 'invitationremoveinvite')) {
                 $displaystring = $this->remove_element($displaystring, 'invite');
             }
-            // If setting enabled, strip the iCal link.
-            if (get_config('zoom', 'invitationremoveicallink')) {
-                $displaystring = $this->remove_element($displaystring, 'icallink');
-            }
             // Check user capabilities, and remove parts of the invitation they don't have permission to view.
             if (!has_capability('mod/zoom:viewjoinurl', \context_module::instance($coursemoduleid), $userid)) {
                 $displaystring = $this->remove_element($displaystring, 'joinurl');
@@ -208,8 +204,7 @@ class invitation {
             'onetapmobile' => '/^one tap mobile.*(\n\s*\+.+)+$/mi',
             'dialin' => '/^dial by your location.*(\n\s*\+.+)+(\n.*)+find your local number.+$/mi',
             'sip' => '/^join by sip.*\n.+$/mi',
-            'h323' => '/^join by h\.323.*(\n.*)+?(\nmeeting id.+\npasscode.+)$/mi',
-            'icallink' => '/^.+download and import the following iCalendar.+$\n.+$/mi',
+            'h323' => '/^join by h\.323.*(\n.*)+?(\nmeeting id.+\npasscode.+)$/mi'
         ];
     }
 }
