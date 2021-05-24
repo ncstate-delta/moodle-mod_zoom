@@ -728,7 +728,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                 for ($i = 1; $i <= 7; $i++) {
                     $key = 'weekly_days_' . $i;
                     if (!empty($data[$key])) {
-                        $weekdayselected[] = $data[$key];
+                        $weekdayselected[] = $i;
                     }
                 }
                 if (empty($weekdayselected)) {

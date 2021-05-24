@@ -493,7 +493,7 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2021030300, 'zoom');
     }
 
-    if ($oldversion < 2021031600) {
+    if ($oldversion < 2021041301) {
         $table = new xmldb_table('zoom');
         
         // Define and conditionally add field recurrence_type.
@@ -557,7 +557,7 @@ function xmldb_zoom_upgrade($oldversion) {
         }
 
         // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2021031600, 'zoom');
+        upgrade_mod_savepoint(true, 2021041301, 'zoom');
 
     }
 

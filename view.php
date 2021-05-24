@@ -103,6 +103,9 @@ if ($hostuser) {
     $hostmoodleuser->middlename = '';
 }
 
+$meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($cm->id);
+$isrecurringnotime = ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME);
+
 $stryes = get_string('yes');
 $strno = get_string('no');
 $strstart = get_string('start_meeting', 'mod_zoom');
@@ -234,11 +237,12 @@ $table->size = array('35%', '65%');
 $numcolumns = 2;
 
 // Show start/end date or recurring meeting information.
-if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
+if ($isrecurringnotime) {
     $table->data[] = array(get_string('recurringmeeting', 'mod_zoom'), get_string('recurringmeetingexplanation', 'mod_zoom'));
 } else if ($zoom->recurring && $zoom->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
     $table->data[] = array(get_string('recurringmeeting', 'mod_zoom'), get_string('recurringmeetingthisis', 'mod_zoom'));
-    if (($nextoccurrence = zoom_get_next_occurrence($zoom)) > 0) {
+    $nextoccurrence = zoom_get_next_occurrence($zoom);
+    if ($nextoccurrence > 0) {
         $table->data[] = array(get_string('nextoccurrence', 'mod_zoom'), userdate($nextoccurrence));
     } else {
         $table->data[] = array(get_string('nextoccurrence', 'mod_zoom'), get_string('nooccurrenceleft', 'mod_zoom'));
@@ -251,7 +255,7 @@ if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
 
 // Display add-to-calendar button if meeting was found and isn't recurring and if the admin did not disable the feature.
 if ($config->showdownloadical != ZOOM_DOWNLOADICAL_DISABLE && !$showrecreate &&
-        !($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME)) {
+        !($isrecurringnotime)) {
     $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
     $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'));
     $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
@@ -262,7 +266,7 @@ if ($config->showdownloadical != ZOOM_DOWNLOADICAL_DISABLE && !$showrecreate &&
 // Show meeting status.
 if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
     $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
-} else if (!($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME)) {
+} else if (!($isrecurringnotime)) {
     if ($finished) {
         $status = get_string('meeting_finished', 'mod_zoom');
     } else if ($inprogress) {

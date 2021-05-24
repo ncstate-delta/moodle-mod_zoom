@@ -106,7 +106,8 @@ define(['jquery'], function($) {
     var toggle_start_time_duration = function () {
         // Disable start time and duration if "No Fixed Time" recurring meeting/webinar selected.
         var disabled = false;
-        if ($(SELECTORS.RECURRING).prop('checked') && $(SELECTORS.REPEAT_SELECT).val() == REPEAT_OPTIONS.REPEAT_OPTION_NONE) {
+        var repeatVal = parseInt($(SELECTORS.REPEAT_SELECT).val());
+        if ($(SELECTORS.RECURRING).prop('checked') && repeatVal === REPEAT_OPTIONS.REPEAT_OPTION_NONE) {
             disabled = true;
         }
         $(SELECTORS.START_TIME).prop('disabled', disabled);
@@ -119,12 +120,12 @@ define(['jquery'], function($) {
      */
     var toggle_repeat_interval_text = function () {
         $(SELECTORS.REPEAT_INTERVAL).hide();
-        var repeat_select = $(SELECTORS.REPEAT_SELECT);
-        if (repeat_select.val() == REPEAT_OPTIONS.REPEAT_OPTION_DAILY) {
+        var repeatSelectVal = parseInt($(SELECTORS.REPEAT_SELECT).val());
+        if (repeatSelectVal === REPEAT_OPTIONS.REPEAT_OPTION_DAILY) {
             $(SELECTORS.REPEAT_INTERVAL_DAILY).show();
-        } else if (repeat_select.val() == REPEAT_OPTIONS.REPEAT_OPTION_WEEKLY) {
+        } else if (repeatSelectVal === REPEAT_OPTIONS.REPEAT_OPTION_WEEKLY) {
             $(SELECTORS.REPEAT_INTERVAL_WEEKLY).show();
-        } else if (repeat_select.val() == REPEAT_OPTIONS.REPEAT_OPTION_MONTHLY) {
+        } else if (repeatSelectVal === REPEAT_OPTIONS.REPEAT_OPTION_MONTHLY) {
             $(SELECTORS.REPEAT_INTERVAL_MONTHLY).show();
         }
     };
@@ -136,14 +137,14 @@ define(['jquery'], function($) {
      * Max value for monthly meeting is 3.
      */
     var limit_repeat_values = function () {
-        var selectedvalue = $(SELECTORS.REPEAT_SELECT).val();
+        var selectedValue = parseInt($(SELECTORS.REPEAT_SELECT).val());
         // Restrict options if weekly or monthly option selected.
         $(SELECTORS.REPEAT_INTERVAL_OPTIONS).each(function() {
-            if (selectedvalue == REPEAT_OPTIONS.REPEAT_OPTION_WEEKLY) {
+            if (selectedValue === REPEAT_OPTIONS.REPEAT_OPTION_WEEKLY) {
                 if (this.value > REPEAT_MAX_OPTIONS.REPEAT_OPTION_WEEKLY) {
                     $(this).hide();
                 }
-            } else if (selectedvalue == REPEAT_OPTIONS.REPEAT_OPTION_MONTHLY) {
+            } else if (selectedValue === REPEAT_OPTIONS.REPEAT_OPTION_MONTHLY) {
                 if (this.value > REPEAT_MAX_OPTIONS.REPEAT_OPTION_MONTHLY) {
                     $(this).hide();
                 }

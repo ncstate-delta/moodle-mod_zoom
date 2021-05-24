@@ -103,7 +103,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         $zoom->host_id = $correcthostzoomuser->id;
     }
 
-    if (isset($zoom->recurring) && isset($response->occurrences) && count($response->occurrences) == 0) {
+    if (isset($zoom->recurring) && isset($response->occurrences) && empty($response->occurrences)) {
         // Recurring meetings did not create any occurrencces.
         // This means invalid options selected.
         // Need to rollback created meeting.
@@ -199,11 +199,9 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
  * Function to handle selected weekdays, for recurring weekly meeting.
  * 
  * @param stdClass $zoom The zoom instance
- * 
- * @return string The comma seperated string for selected weekdays
+ * @return string The comma seprated string for selected weekdays
  */
 function zoom_handle_weekly_days($zoom) {
-
     $weekdayselected = [];
     for ($i = 1; $i <= 7; $i++) {
         $key = 'weekly_days_' . $i;
@@ -218,7 +216,6 @@ function zoom_handle_weekly_days($zoom) {
  * Function to unset the weekly options in postprocessing.
  * 
  * @param stdClass $data The form data object
- * 
  * @return stdClass $data The form data object minus weekly options.
  */
 function zoom_remove_weekly_options($data) {
@@ -234,7 +231,6 @@ function zoom_remove_weekly_options($data) {
  * Function to unset the monthly options in postprocessing.
  * 
  * @param stdClass $data The form data object
- * 
  * @return stdClass $data The form data object minus monthly options.
  */
 function zoom_remove_monthly_options($data) {
@@ -287,7 +283,13 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     ];
     $newzoom->recurring = in_array($response->type, $recurringtypes);
     if (!empty($response->occurrences)) {
-        $newzoom->occurrences = $response->occurrences;
+        $newzoom->occurrences = [];
+        // Normalise the occurrence times.
+        foreach ($response->occurrences as $occurrence) {
+            $occurrence->start_time = strtotime($occurrence->start_time);
+            $occurrence->duration = $occurrence->duration * 60;
+            $newzoom->occurrences[] = $occurrence;
+        }
     }
     if (isset($response->password)) {
         $newzoom->password = $response->password;
@@ -454,7 +456,7 @@ function zoom_calendar_item_update(stdClass $zoom) {
     if (!$zoom->recurring) {
         $eventid = $DB->get_field('event', 'id', array(
             'modulename' => 'zoom',
-            'instance' => $zoom->id
+            'instance' => $zoom->id,
         ));
     
         // Load existing event object, or create a new one.
@@ -514,17 +516,16 @@ function zoom_get_monthweek_options() {
  * 
  * @param stdClass $zoom The zoom instance.
  * @param stdClass $occurrence The occurrence object passed from the zoom api.
- * 
  * @return stdClass The calendar event object.
  */
 function zoom_populate_calender_item(stdClass $zoom, stdClass $occurrence = null) {
-
     $event = new stdClass();
     $event->type = CALENDAR_EVENT_TYPE_ACTION;
     $event->modulename = 'zoom';
     $event->eventtype = 'zoom';
     $event->courseid = $zoom->course;
     $event->instance = $zoom->id;
+    $event->visible = true;
     if (!$occurrence) {
         $event->timesort = $zoom->start_time;
     } else {
@@ -539,8 +540,8 @@ function zoom_populate_calender_item(stdClass $zoom, stdClass $occurrence = null
         $event->timestart = $zoom->start_time;
         $event->timeduration = $zoom->duration;
     } else {
-        $event->timestart = strtotime($occurrence->start_time);
-        $event->timeduration = $occurrence->duration * 60;
+        $event->timestart = $occurrence->start_time;
+        $event->timeduration = $occurrence->duration;
     }
 
     // Recurring meetings/webinars with no fixed time are created as invisible events.

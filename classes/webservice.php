@@ -568,7 +568,7 @@ class mod_zoom_webservice {
                 $data['recurrence']['weekly_days'] = $zoom->weekly_days;
             }
             if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_MONTHLY) {
-                if ($zoom->monthly_repeat_option == ZOOM_MONTHLY_REPEAT_OPTION_DAY){
+                if ($zoom->monthly_repeat_option == ZOOM_MONTHLY_REPEAT_OPTION_DAY) {
                     $data['recurrence']['monthly_day'] = (int) $zoom->monthly_day;
                 } else {
                     $data['recurrence']['monthly_week'] = (int) $zoom->monthly_week;
