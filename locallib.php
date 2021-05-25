@@ -383,7 +383,8 @@ function zoom_get_next_occurrence($zoom) {
     $cache = cache::make_from_params(cache_store::MODE_REQUEST, 'zoom', 'nextoccurrence', array(), $cacheoptions);
 
     // If the next occurrence wasn't already cached, fill the cache.
-    if (($cachednextoccurrence = $cache->get($zoom->id)) === false) {
+    $cachednextoccurrence = $cache->get($zoom->id);
+    if ($cachednextoccurrence === false) {
         // If this isn't a recurring meeting.
         if (!$zoom->recurring) {
             // Use the meeting start time.
@@ -402,14 +403,14 @@ function zoom_get_next_occurrence($zoom) {
             $nextoccurrence = $DB->get_records_select('event', $selectclause, $selectparams, 'timestart ASC', 'timestart', 0, 1);
 
             // If we haven't got a single event.
-            if (count($nextoccurrence) != 1) {
+            if (empty($nextoccurrence)) {
                 // Use 0 as there isn't anything better to return.
                 $cachednextoccurrence = 0;
+            } else {
+                // Use the timestamp of the event.
+                $nextoccurenceobject = reset($nextoccurrence);
+                $cachednextoccurrence = $nextoccurenceobject->timestart;
             }
-
-            // Use the timestamp of the event.
-            $nextoccurenceobject = reset($nextoccurrence);
-            $cachednextoccurrence = $nextoccurenceobject->timestart;
         }
 
         // Store the next occurrence into the cache.

@@ -209,7 +209,7 @@ class invitation {
             'dialin' => '/^dial by your location.*(\n\s*\+.+)+(\n.*)+find your local number.+$/mi',
             'sip' => '/^join by sip.*\n.+$/mi',
             'h323' => '/^join by h\.323.*(\n.*)+?(\nmeeting id.+\npasscode.+)$/mi',
-            'icallink' => '/^.+download and import the following iCalendar.+$\n.+$/mi'
+            'icallink' => '/^.+download and import the following iCalendar.+$\n.+$/mi',
         ];
     }
 }

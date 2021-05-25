@@ -214,7 +214,7 @@ function zoom_remove_weekly_options($data) {
     // Unset the weekly_days options.
     for ($i = 1; $i <= 7; $i++) {
         $key = 'weekly_days_' . $i;
-        unset($data->key);
+        unset($data->$key);
     }
     return $data;
 }
@@ -518,20 +518,17 @@ function zoom_populate_calender_item(stdClass $zoom, stdClass $occurrence = null
     $event->courseid = $zoom->course;
     $event->instance = $zoom->id;
     $event->visible = true;
-    if (!$occurrence) {
-        $event->timesort = $zoom->start_time;
-    } else {
-        $event->timesort = $occurrence->start_time;
-    }
     $event->name = $zoom->name;
     if ($zoom->intro) {
         $event->description = $zoom->intro;
         $event->format = $zoom->introformat;
     }
     if (!$occurrence) {
+        $event->timesort = $zoom->start_time;
         $event->timestart = $zoom->start_time;
         $event->timeduration = $zoom->duration;
     } else {
+        $event->timesort = $occurrence->start_time;
         $event->timestart = $occurrence->start_time;
         $event->timeduration = $occurrence->duration;
     }
