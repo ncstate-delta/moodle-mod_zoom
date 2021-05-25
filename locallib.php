@@ -461,13 +461,16 @@ function zoom_get_state($zoom) {
     // Determine if the meeting is in progress.
     $inprogress = ($firstavailable <= $now && $now <= $lastavailable);
 
+    // Determine if its a recurring meeting with no fixed time.
+    $isrecurringnotime = $zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME;
+
     // Determine if the meeting is available,
     // based on the fact if it is recurring or in progress.
-    $available = ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) || $inprogress;
+    $available = $isrecurringnotime || $inprogress;
 
     // Determine if the meeting is finished,
     // based on the fact if it is recurring or the meeting end time is still in the future.
-    $finished = !($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) && $now > $lastavailable;
+    $finished = !$isrecurringnotime && $now > $lastavailable;
 
     // Return the requested information.
     return array($inprogress, $available, $finished);

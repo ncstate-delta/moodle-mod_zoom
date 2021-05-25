@@ -565,31 +565,20 @@ class mod_zoom_mod_form extends moodleform_mod {
             // If "No fixed time" meeting selected, dont need repeat_interval and other options.
             if ($data->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
                 unset($data->repeat_interval);
-                // Unset the weekly fields.
-                $data = zoom_remove_weekly_options($data);
-                // Unset the monthly fields.
-                $data = zoom_remove_monthly_options($data);
                 // Unset end_times and end_date.
                 unset($data->end_date_option);
                 unset($data->end_times);
                 unset($data->end_date_time);
             }
-            // If daily recurring selected, unset weekly and monthly options.
-            if ($data->recurrence_type == ZOOM_RECURRINGTYPE_DAILY) {
+            // If weekly recurring is not selected, unset weekly options.
+            if ($data->recurrence_type != ZOOM_RECURRINGTYPE_WEEKLY) {
                 // Unset the weekly fields.
                 $data = zoom_remove_weekly_options($data);
-                // Unset the monthly fields.
-                $data = zoom_remove_monthly_options($data);
             }
-            // If weekly recurring selected, unset monthly options.
-            if ($data->recurrence_type == ZOOM_RECURRINGTYPE_WEEKLY) {
-                // Unset the monthly fields.
-                $data = zoom_remove_monthly_options($data);
-            }
-            // If daily recurring selected, unset weekly and monthly options.
-            if ($data->recurrence_type == ZOOM_RECURRINGTYPE_MONTHLY) {
+            // If monthly recurring is not selected, unset monthly options.
+            if ($data->recurrence_type != ZOOM_RECURRINGTYPE_MONTHLY) {
                 // Unset the weekly fields.
-                $data = zoom_remove_weekly_options($data);
+                $data = zoom_remove_monthly_options($data);
             }
         }
     }
