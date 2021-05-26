@@ -70,7 +70,7 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
         $updateddata = $service->create_meeting($data);
         if (!$updateddata) {
             $updateddata = new stdClass;
-            $updateddata->status = ZOOM_MEETING_EXPIRED;
+            $updateddata->exists_on_zoom = ZOOM_MEETING_EXPIRED;
         }
 
         $data->start_url = $updateddata->start_url;

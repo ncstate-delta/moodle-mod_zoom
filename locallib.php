@@ -42,6 +42,10 @@ define('ZOOM_SCHEDULED_MEETING', 2);
 define('ZOOM_RECURRING_MEETING', 3);
 define('ZOOM_SCHEDULED_WEBINAR', 5);
 define('ZOOM_RECURRING_WEBINAR', 6);
+// Meeting status.
+define('ZOOM_MEETING_EXPIRED', 0);
+define('ZOOM_MEETING_EXISTS', 1);
+
 // Number of meetings per page from zoom's get user report.
 define('ZOOM_DEFAULT_RECORDS_PER_CALL', 30);
 define('ZOOM_MAX_RECORDS_PER_CALL', 300);

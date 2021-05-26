@@ -247,7 +247,7 @@ function zoom_delete_instance($id) {
     require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
     // If the meeting is missing from zoom, don't bother with the webservice.
-    if ($zoom->exists_on_zoom) {
+    if ($zoom->exists_on_zoom == ZOOM_MEETING_EXISTS) {
         $service = new mod_zoom_webservice();
         try {
             $service->delete_meeting($zoom->meeting_id, $zoom->webinar);
