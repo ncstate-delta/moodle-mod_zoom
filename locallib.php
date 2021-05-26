@@ -586,8 +586,10 @@ function zoom_get_selectable_alternative_hosts_list(context $context) {
         // At least, Zoom does not care if the user who is the host adds himself as alternative host as well.
 
         // Verify that the user really has a Zoom account.
+        // Furthermore, verify that the user's status is active. Adding a pending or inactive user as alternative host will result
+        // in a Zoom API error otherwise.
         $zoomuser = $service->get_user($u->email);
-        if ($zoomuser !== false) {
+        if ($zoomuser !== false && $zoomuser->status === 'active') {
             // Add user to array of users.
             $selectablealternativehosts[$u->email] = fullname($u);
         }
