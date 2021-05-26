@@ -32,6 +32,18 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v3.7
+
+- Allow administrators to selectively remove Meeting Invitation details #235 (thanks @andrewmadden)
+  - New capabilities `mod/zoom:viewjoinurl` and `mod/zoom:viewdialin`
+- Track completion for mobile users #238 (thanks @nstefanski, @tzerafnx)
+- Fix backup and restore of several zoom activity-level fields #247 (thanks @abias)
+- Fix meeting reports task for some already-numeric end times #236 (thanks @lcollong)
+- Fix list of alternative hosts to only include active users #252 (thanks @abias)
+- Fix PHP 7.1 compatibility issue #243
+- Fix encryption type validation #232 (thanks @abias)
+- Clean up error messages / efficiency on the view page #245 (thanks @abias)
+
 v3.6
 
 - Fixed fatal regression on settings.php for Moodle < 3.7 (Thanks abias)
