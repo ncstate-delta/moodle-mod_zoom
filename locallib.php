@@ -377,8 +377,8 @@ function zoom_get_next_occurrence($zoom) {
     // Prepare an ad-hoc request cache as this function could be called multiple times throughout a request
     // and we want to avoid to make duplicate DB calls.
     $cacheoptions = array(
-            'simplekeys' => true,
-            'simpledata' => true
+        'simplekeys' => true,
+        'simpledata' => true,
     );
     $cache = cache::make_from_params(cache_store::MODE_REQUEST, 'zoom', 'nextoccurrence', array(), $cacheoptions);
 

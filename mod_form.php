@@ -737,7 +737,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
 
             if ($data['recurrence_type'] != ZOOM_RECURRINGTYPE_NOTIME && $data['end_date_option'] == ZOOM_END_DATE_OPTION_BY) {
-                if ($data['end_date_time'] < strtotime('today')) {
+                if ($data['end_date_time'] < time()) {
                     $errors['radioenddate'] = get_string('err_end_date', 'zoom');
                 }
                 if ($data['end_date_time'] < $data['start_time']) {
