@@ -397,8 +397,7 @@ $table->data[] = array($strmuteuponentry, ($zoom->option_mute_upon_entry) ? $str
 
 // Show dial-in information.
 if (!$showrecreate
-        && ($zoom->option_audio === ZOOM_AUDIO_BOTH || $zoom->option_audio === ZOOM_AUDIO_TELEPHONY)
-        && ($userishost || has_capability('mod/zoom:viewdialin', $context))) {
+        && ($zoom->option_audio === ZOOM_AUDIO_BOTH || $zoom->option_audio === ZOOM_AUDIO_TELEPHONY) ) {
     // Get meeting invitation from Zoom.
     $meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($cm->id);
     // Show meeting invitation if there is any.
