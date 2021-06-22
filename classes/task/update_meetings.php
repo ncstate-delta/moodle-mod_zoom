@@ -80,6 +80,7 @@ class update_meetings extends \core\task\scheduled_task {
         // Check all meetings, in case they were deleted/changed on Zoom.
         $zoomstoupdate = $DB->get_records('zoom', array('exists_on_zoom' => ZOOM_MEETING_EXISTS));
         $courseidstoupdate = array();
+        $calendarfields = array('intro', 'introformat', 'start_time', 'duration', 'recurring');
 
         foreach ($zoomstoupdate as $zoom) {
             // Show trace message.
@@ -151,7 +152,23 @@ class update_meetings extends \core\task\scheduled_task {
                 }
 
                 // Update the calendar events.
-                zoom_calendar_item_update($newzoom);
+                if (!$zoom->recurring && $changed) {
+                    // Check if calendar needs updating.
+                    foreach ($calendarfields as $field) {
+                        if ($zoom->$field != $newzoom->$field) {
+                            zoom_calendar_item_update($newzoom);
+
+                            // Show trace message.
+                            mtrace('  => Updated calendar item for Zoom meeting ID ' . $zoom->meeting_id);
+
+                            break;
+                        }
+                    }
+                } else if ($zoom->recurring) {
+                    // Show trace message.
+                    mtrace('  => Updated calendar items for recurring Zoom meeting ID ' . $zoom->meeting_id);
+                    zoom_calendar_item_update($newzoom);
+                }
             }
         }
 
