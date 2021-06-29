@@ -49,6 +49,7 @@ class mobile {
         global $OUTPUT, $DB;
 
         $args = (object) $args;
+        $versionname = $args->appversioncode >= 3950 ? 'latest' : 'ionic3';
         $cm = get_coursemodule_from_id('zoom', $args->cmid);
 
         // Capabilities check.
@@ -90,7 +91,7 @@ class mobile {
             'templates' => array(
                 array(
                     'id' => 'main',
-                    'html' => $OUTPUT->render_from_template('mod_zoom/mobile_view_page', $data),
+                    'html' => $OUTPUT->render_from_template("mod_zoom/mobile_view_page_$versionname", $data),
                 ),
             ),
             'javascript' => "this.loadMeeting = function(result) { window.open(result.joinurl, '_system'); };",
