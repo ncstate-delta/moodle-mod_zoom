@@ -74,12 +74,26 @@ $service = new mod_zoom_webservice();
 
 // Get host user from Zoom.
 $hostuser = false;
-try {
-    $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
-    $showrecreate = false;
-    $hostuser = $service->get_user($zoom->host_id);
-} catch (moodle_exception $error) {
-    $showrecreate = zoom_is_meeting_gone_error($error);
+$showrecreate = false;
+if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
+    $showrecreate = true;
+} else {
+    try {
+        $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
+        $hostuser = $service->get_user($zoom->host_id);
+    } catch (moodle_exception $error) {
+        $showrecreate = zoom_is_meeting_gone_error($error);
+
+        if ($showrecreate) {
+            // Mark meeting as expired.
+            $updatedata = new stdClass();
+            $updatedata->id = $zoom->id;
+            $updatedata->exists_on_zoom = ZOOM_MEETING_EXPIRED;
+            $DB->update_record('zoom', $updatedata);
+
+            $zoom->exists_on_zoom = ZOOM_MEETING_EXPIRED;
+        }
+    }
 }
 
 // Compose Moodle user object for host.
