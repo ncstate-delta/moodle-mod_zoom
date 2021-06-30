@@ -782,3 +782,20 @@ function zoom_get_eligible_meeting_participants(context $context) {
 
     return $eligibleparticipantcount;
 }
+
+/**
+ * Get array of alternative hosts from a string.
+ *
+ * @param string $alternativehoststring Comma (or semicolon) separated list of alternative hosts.
+ * @return string[] $alternativehostarray Array of alternative hosts.
+ */
+function zoom_get_alternative_host_array_from_string($alternativehoststring) {
+    if (empty($alternativehoststring)) {
+        return array();
+    }
+
+    // The Zoom API has historically returned either semicolons or commas, so we need to support both.
+    $alternativehoststring = str_replace(';', ',', $alternativehoststring);
+    $alternativehostarray = array_filter(explode(',', $alternativehoststring));
+    return $alternativehostarray;
+}
