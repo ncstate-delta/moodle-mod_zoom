@@ -1,3 +1,51 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_zoom/mobile_view_page_latest
+
+    Page to view a zoom meeting
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Example context (json):
+    {
+        "zoom": {
+            "intro": "Introduction String",
+            "password": "9836451",
+            "recurring": 1,
+            "webinar": 1,
+            "option_host_video": 1,
+            "option_jbh": 1,
+            "option_participants_video": 1,
+        },
+        "available": true,
+        "status": "Finished"
+        "start_time": "Tuesday, June 29, 2021, 1:30 PM"
+        "duration": "1 hour",
+        "option_audio": "Computer audio and Telephone",
+        "cmid": 3,
+        "courseid": 3,
+    }
+}}
+
 {{=<% %>=}}
 <div>
     <core-course-module-description description="<% zoom.intro %>" component="mod_zoom" componentId="<% cmid %>"></core-course-module-description>
