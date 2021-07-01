@@ -56,18 +56,14 @@ $PAGE->requires->js_call_amd("mod_zoom/toggle_text", 'init');
 // Get Zoom user ID of current Moodle user.
 $zoomuserid = zoom_get_user_id(false);
 
-// Get the alternative hosts of the meeting.
-$alternativehosts = array();
-if (!is_null($zoom->alternative_hosts)) {
-    $explodedalthosts = explode(',', str_replace(';', ',', $zoom->alternative_hosts));
-    // Delete empty entries.
-    $alternativehosts = array_filter($explodedalthosts);
-}
-
 // Check if this user is the (real) host.
 $userisrealhost = ($zoomuserid === $zoom->host_id);
+
+// Get the alternative hosts of the meeting.
+$alternativehosts = zoom_get_alternative_host_array_from_string($zoom->alternative_hosts);
+
 // Check if this user is the host or an alternative host.
-$userishost = ($userisrealhost || in_array($USER->email, $alternativehosts));
+$userishost = ($userisrealhost || in_array($USER->email, $alternativehosts, true));
 
 // Get Zoom webservice instance.
 $service = new mod_zoom_webservice();
