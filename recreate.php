@@ -46,6 +46,8 @@ $service = new mod_zoom_webservice();
 // Set the current zoom table entry to use the new meeting (meeting_id/etc).
 $response = $service->create_meeting($zoom);
 $zoom = populate_zoom_from_response($zoom, $response);
+$zoom->exists_on_zoom = ZOOM_MEETING_EXISTS;
+$zoom->timemodified = time();
 $DB->update_record('zoom', $zoom);
 
 // Return to Zoom page.
