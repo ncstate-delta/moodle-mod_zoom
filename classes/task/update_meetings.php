@@ -136,6 +136,7 @@ class update_meetings extends \core\task\scheduled_task {
                 }
 
                 if ($changed) {
+                    $newzoom->timemodified = time();
                     $DB->update_record('zoom', $newzoom);
 
                     // Show trace message.
