@@ -436,27 +436,20 @@ function zoom_get_state($zoom) {
 
     // If this is a recurring meeting with a recurrence schedule.
     if ($zoom->recurring && $zoom->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
-        // Get the next occurrence time.
-        $nextoccurrence = zoom_get_next_occurrence($zoom);
-
-        // Calculate the time when the recurring meeting becomes available next,
-        // based on the next occurrence start time and the general meeting lead time.
-        $firstavailable = $nextoccurrence - ($config->firstabletojoin * 60);
-
-        // Calculate the time when the meeting ends to be available,
-        // based on the next occurrence start time and the meeting duration.
-        $lastavailable = $nextoccurrence + $zoom->duration;
-
-        // Otherwise.
+        // Get the next occurrence start time.
+        $starttime = zoom_get_next_occurrence($zoom);
     } else {
-        // Calculate the time when the meeting becomes available at first,
-        // based on the meeting start time and the general meeting lead time.
-        $firstavailable = $zoom->start_time - ($config->firstabletojoin * 60);
-
-        // Calculate the time when the meeting ends to be available,
-        // based on the meeting start time and the meeting duration.
-        $lastavailable = $zoom->start_time + $zoom->duration;
+        // Get the meeting start time.
+        $starttime = $zoom->start_time;
     }
+
+    // Calculate the time when the recurring meeting becomes available next,
+    // based on the next occurrence start time and the general meeting lead time.
+    $firstavailable = $starttime - ($config->firstabletojoin * 60);
+
+    // Calculate the time when the meeting ends to be available,
+    // based on the next occurrence start time and the meeting duration.
+    $lastavailable = $starttime + $zoom->duration;
 
     // Determine if the meeting is in progress.
     $inprogress = ($firstavailable <= $now && $now <= $lastavailable);
@@ -903,4 +896,32 @@ function zoom_get_alternative_host_array_from_string($alternativehoststring) {
     $alternativehoststring = str_replace(';', ',', $alternativehoststring);
     $alternativehostarray = array_filter(explode(',', $alternativehoststring));
     return $alternativehostarray;
+}
+
+/**
+ * Creates an iCalendar_event for a Zoom meeting.
+ *
+ * @param stdClass $zoom The meeting object.
+ * @param string $description The event description.
+ * @param ?stdClass $occurrence Optionally, the next occurrence of a recurring event.
+ * @return iCalendar_event
+ */
+function zoom_helper_icalendar_event($zoom, $description, $occurrence = null) {
+    if (isset($occurrence)) {
+        $starttime = $occurrence->timestart;
+        $uid = $occurrence->uuid;
+    } else {
+        $starttime = $zoom->start_time;
+        $uid = $zoom->meeting_id;
+    }
+
+    $event = new iCalendar_event;
+    $event->add_property('uid', 'zoom://' . $uid . '/' . $starttime); // A unique identifier.
+    $event->add_property('summary', $zoom->name); // Title.
+    $event->add_property('dtstamp', Bennu::timestamp_to_datetime()); // Time of creation.
+    $event->add_property('last-modified', Bennu::timestamp_to_datetime($zoom->timemodified));
+    $event->add_property('dtstart', Bennu::timestamp_to_datetime($starttime)); // Start time.
+    $event->add_property('dtend', Bennu::timestamp_to_datetime($starttime + $zoom->duration)); // End time.
+    $event->add_property('description', $description);
+    return $event;
 }
