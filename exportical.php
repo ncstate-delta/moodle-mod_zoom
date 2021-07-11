@@ -78,37 +78,24 @@ if (!empty($meetinginvite)) {
     $descriptiontext .= "\n\n" . $meetinginvite;
 }
 
-// Compose host address to be used later in the iCal events.
-$hostaddress = str_replace('http://', '', $CFG->wwwroot);
-$hostaddress = str_replace('https://', '', $hostaddress);
+// Get all occurrences of the meeting from the DB.
+$params = array('modulename' => 'zoom', 'instance' => $zoom->id);
+$events = $DB->get_records('event', $params, 'timestart ASC');
 
-// If we have a recurring meeting (with fixed time as the option with no fixed time resulted in an error already).
-if ($zoom->recurring) {
-    // Get all occurrences of the meeting from the DB.
-    $params = array('modulename' => 'zoom', 'instance' => $zoom->id);
-    $occurrences = $DB->get_records('event', $params, 'timestart ASC', 'timestart, uuid');
+// If we haven't got at least a single occurrence.
+if (empty($events)) {
+    // We could handle this case in a nicer way ans return an empty iCal file without events,
+    // but as this case should not happen in real life anyway, return a fatal error to make clear that something is wrong.
+    $errorredirecturl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
+    print_error('err_downloadicalrecurringempty', 'mod_zoom', $errorredirecturl);
+}
 
-    // If we haven't got at least a single occurrence.
-    if ($occurrences == false) {
-        // We could handle this case in a nicer way ans return an empty iCal file without events,
-        // but as this case should not happen in real life anyway, return a fatal error to make clear that something is wrong.
-        $errorredirecturl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
-        print_error('err_downloadicalrecurringempty', 'mod_zoom', $errorredirecturl);
-    }
-
-    // Iterate over all occurrences.
-    // We will add each occurrence as individual iCal event and won't use any iCal repeating rules.
-    // This is done as we have all occurrences at hand, but we don't have the repeating rule which the Zoom recurrence is based on.
-    foreach ($occurrences as $o) {
-        $event = zoom_helper_icalendar_event($zoom, $descriptiontext, $o);
-        // Add the event to the iCal file.
-        $ical->add_component($event);
-    }
-} else {
-    // Otherwise, this event isn't for a recurring meeting.
-    $event = zoom_helper_icalendar_event($zoom, $descriptiontext);
+// Iterate over all events.
+// We will add each event as an individual iCal event.
+foreach ($events as $event) {
+    $icalevent = zoom_helper_icalendar_event($event, $descriptiontext);
     // Add the event to the iCal file.
-    $ical->add_component($event);
+    $ical->add_component($icalevent);
 }
 
 // Start output of iCal file.

@@ -901,27 +901,26 @@ function zoom_get_alternative_host_array_from_string($alternativehoststring) {
 /**
  * Creates an iCalendar_event for a Zoom meeting.
  *
- * @param stdClass $zoom The meeting object.
+ * @param stdClass $event The meeting object.
  * @param string $description The event description.
- * @param ?stdClass $occurrence Optionally, the next occurrence of a recurring event.
+ *
  * @return iCalendar_event
  */
-function zoom_helper_icalendar_event($zoom, $description, $occurrence = null) {
-    if (isset($occurrence)) {
-        $starttime = $occurrence->timestart;
-        $uid = $occurrence->uuid;
-    } else {
-        $starttime = $zoom->start_time;
-        $uid = $zoom->meeting_id;
-    }
+function zoom_helper_icalendar_event($event, $description) {
+    global $CFG;
 
-    $event = new iCalendar_event;
-    $event->add_property('uid', 'zoom://' . $uid . '/' . $starttime); // A unique identifier.
-    $event->add_property('summary', $zoom->name); // Title.
-    $event->add_property('dtstamp', Bennu::timestamp_to_datetime()); // Time of creation.
-    $event->add_property('last-modified', Bennu::timestamp_to_datetime($zoom->timemodified));
-    $event->add_property('dtstart', Bennu::timestamp_to_datetime($starttime)); // Start time.
-    $event->add_property('dtend', Bennu::timestamp_to_datetime($starttime + $zoom->duration)); // End time.
-    $event->add_property('description', $description);
-    return $event;
+    // Match Moodle's uid format for iCal events.
+    $hostaddress = str_replace('http://', '', $CFG->wwwroot);
+    $hostaddress = str_replace('https://', '', $hostaddress);
+    $uid = $event->id . '@' .$hostaddress;
+
+    $icalevent = new iCalendar_event;
+    $icalevent->add_property('uid', $uid); // A unique identifier.
+    $icalevent->add_property('summary', $event->name); // Title.
+    $icalevent->add_property('dtstamp', Bennu::timestamp_to_datetime()); // Time of creation.
+    $icalevent->add_property('last-modified', Bennu::timestamp_to_datetime($event->timemodified));
+    $icalevent->add_property('dtstart', Bennu::timestamp_to_datetime($event->timestart)); // Start time.
+    $icalevent->add_property('dtend', Bennu::timestamp_to_datetime($event->timestart + $event->timeduration)); // End time.
+    $icalevent->add_property('description', $description);
+    return $icalevent;
 }
