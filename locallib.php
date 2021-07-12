@@ -840,25 +840,32 @@ function zoom_get_api_identifier_fields() {
 /**
  * Get the zoom api identifier
  *
+ * @param object $user The user object
+ *
  * @return string the value of the identifier
  */
-function zoom_get_api_identifier() {
+function zoom_get_api_identifier($user = null) {
     global $USER;
+
+    $userobject = $USER;
+    if ($user !== null) {
+        $userobject = $user;
+    }
 
     // Get the value from the config first.
     $field = get_config('zoom', 'apiidentifier');
 
     $identifier = '';
-    if (isset($USER->$field)) {
+    if (isset($userobject->$field)) {
         // If one of the standard user fields.
-        $identifier = $USER->$field;
-    } else if (isset($USER->profile[$field])) {
+        $identifier = $userobject->$field;
+    } else if (isset($userobject->profile[$field])) {
         // If one of the custom user fields.
-        $identifier = $USER->profile[$field];
+        $identifier = $userobject->profile[$field];
     }
     if (empty($identifier)) {
         // Fallback to email if the field is not set.
-        $identifier = $USER->email;
+        $identifier = $userobject->email;
     }
 
     return $identifier;
