@@ -139,7 +139,7 @@ class mod_zoom_invitation_testcase extends advanced_testcase {
         role_assign($role, $user->id, context_course::instance($course->id));
         // Set mock zoom activity URL for page as exception messages expect it.
         $PAGE->set_url(new moodle_url('/mod/zoom/view.php?id=123'));
-        $message = (new \mod_zoom\invitation($this->get_mock_invitation_message()))->get_display_string($zoom->cmid, $user->id);
+        $message = (new \mod_zoom\invitation($this->get_mock_invitation_message_scheduledmeeting()))->get_display_string($zoom->cmid, $user->id);
         $this->assertDebuggingNotCalled();
     }
 
