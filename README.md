@@ -32,6 +32,16 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v3.8
+
+- Add support for Ionic 5 #269 (thanks @dpalou)
+- Improve update_meetings scheduled task #263 (thanks @abias)
+- Re-enable mustache continuous integration #276
+- Treat alternative hosts as a possible host #275
+- Update `exists_on_zoom` consistently #273 (thanks @abias for reporting)
+- Update `timemodified` only when needed #279 (thanks @abias for reporting)
+- Fix meeting invitation issues #267, #274 (thanks @abias, @nstefanski, @andrewmadden for feedback)
+
 v3.7
 
 - Allow administrators to selectively remove Meeting Invitation details #235 (thanks @andrewmadden)
