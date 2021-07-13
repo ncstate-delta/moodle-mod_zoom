@@ -125,9 +125,9 @@ class mod_zoom_invitation_testcase extends advanced_testcase {
     }
 
     /**
-     * Test debug message if regex pattern is not valid for an element.
+     * Test message if regex pattern is intentionally set to empty for an element.
      */
-    public function test_display_message_when_a_regex_pattern_is_invalid() {
+    public function test_display_message_when_a_regex_pattern_is_empty() {
         global $PAGE;
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -139,8 +139,27 @@ class mod_zoom_invitation_testcase extends advanced_testcase {
         role_assign($role, $user->id, context_course::instance($course->id));
         // Set mock zoom activity URL for page as exception messages expect it.
         $PAGE->set_url(new moodle_url('/mod/zoom/view.php?id=123'));
+        $message = (new \mod_zoom\invitation($this->get_mock_invitation_message()))->get_display_string($zoom->cmid, $user->id);
+        $this->assertDebuggingNotCalled();
+    }
+
+    /**
+     * Test debug message if regex pattern is not valid for an element.
+     */
+    public function test_display_message_when_a_regex_pattern_is_invalid() {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        set_config('invitation_joinurl', '~', 'zoom');
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $role = $this->getDataGenerator()->create_role();
+        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        role_assign($role, $user->id, context_course::instance($course->id));
+        // Set mock zoom activity URL for page as exception messages expect it.
+        $PAGE->set_url(new moodle_url('/mod/zoom/view.php?id=123'));
         $message = (new \mod_zoom\invitation($this->get_mock_invitation_message_scheduledmeeting()))->get_display_string($zoom->cmid, $user->id);
-        $this->assertDebuggingCalled('Error in regex for zoom invitation element: "joinurl" with pattern: "".');
+        $this->assertDebuggingCalled('Error in regex for zoom invitation element: "joinurl" with pattern: "~".');
     }
 
     /**

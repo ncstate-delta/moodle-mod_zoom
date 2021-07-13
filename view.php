@@ -158,7 +158,7 @@ if ($zoom->intro) {
 // Only show if the admin did not disable this feature completely.
 if (!$showrecreate && $config->showcapacitywarning == true) {
     // Only show if the user viewing this is the host.
-    if ($userishost == true) {
+    if ($userishost) {
         // Get meeting capacity.
         $meetingcapacity = zoom_get_meeting_capacity($zoom->host_id, $zoom->webinar);
 
@@ -349,17 +349,18 @@ $numcolumns = 2;
 // Get passcode information.
 $haspassword = (isset($zoom->password) && $zoom->password !== '');
 $strhaspass = ($haspassword) ? $stryes : $strno;
+$canviewjoinurl = ($userishost || has_capability('mod/zoom:viewjoinurl', $context));
 
 // Show passcode status.
 $table->data[] = array($strpassprotect, $strhaspass);
 
 // Show passcode.
-if ($userishost && $haspassword || get_config('zoom', 'displaypassword') || has_capability('mod/zoom:viewjoinurl', $context)) {
+if ($haspassword && ($canviewjoinurl || get_config('zoom', 'displaypassword'))) {
     $table->data[] = array($strpassword, $zoom->password);
 }
 
 // Show join link.
-if ($userishost || has_capability('mod/zoom:viewjoinurl', $context)) {
+if ($canviewjoinurl) {
     $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, array('target' => '_blank')));
 }
 
@@ -419,7 +420,8 @@ $table->data[] = array($strmuteuponentry, ($zoom->option_mute_upon_entry) ? $str
 
 // Show dial-in information.
 if (!$showrecreate
-        && ($zoom->option_audio === ZOOM_AUDIO_BOTH || $zoom->option_audio === ZOOM_AUDIO_TELEPHONY)) {
+        && ($zoom->option_audio === ZOOM_AUDIO_BOTH || $zoom->option_audio === ZOOM_AUDIO_TELEPHONY)
+        && ($userishost || has_capability('mod/zoom:viewdialin', $context))) {
     // Get meeting invitation from Zoom.
     $meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($cm->id);
     // Show meeting invitation if there is any.
