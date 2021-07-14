@@ -385,7 +385,7 @@ function zoom_get_user_id($required = true) {
         $zoomuserid = false;
         $service = new mod_zoom_webservice();
         try {
-            $zoomuser = $service->get_user(zoom_get_api_identifier());
+            $zoomuser = $service->get_user(zoom_get_api_identifier($USER));
             if ($zoomuser !== false) {
                 $zoomuserid = $zoomuser->id;
             }
@@ -831,7 +831,7 @@ function zoom_get_api_identifier_fields() {
 
     $userfields = zoom_get_user_profile_fields();
     if (!empty($userfields)) {
-        $options = array_merge($options, $userfields);
+        $options += $userfields;
     }
 
     return $options;
@@ -844,28 +844,21 @@ function zoom_get_api_identifier_fields() {
  *
  * @return string the value of the identifier
  */
-function zoom_get_api_identifier($user = null) {
-    global $USER;
-
-    $userobject = $USER;
-    if ($user !== null) {
-        $userobject = $user;
-    }
-
+function zoom_get_api_identifier($user) {
     // Get the value from the config first.
     $field = get_config('zoom', 'apiidentifier');
 
     $identifier = '';
-    if (isset($userobject->$field)) {
+    if (isset($user->$field)) {
         // If one of the standard user fields.
-        $identifier = $userobject->$field;
-    } else if (isset($userobject->profile[$field])) {
+        $identifier = $user->$field;
+    } else if (isset($user->profile[$field])) {
         // If one of the custom user fields.
-        $identifier = $userobject->profile[$field];
+        $identifier = $user->profile[$field];
     }
     if (empty($identifier)) {
         // Fallback to email if the field is not set.
-        $identifier = $userobject->email;
+        $identifier = $user->email;
     }
 
     return $identifier;

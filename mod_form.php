@@ -47,7 +47,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         global $PAGE, $USER;
         $config = get_config('zoom');
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
-        $zoomapiidentifier = zoom_get_api_identifier();
+        $zoomapiidentifier = zoom_get_api_identifier($USER);
 
         $isnew = empty($this->_cm);
 

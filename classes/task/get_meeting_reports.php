@@ -34,7 +34,7 @@ namespace mod_zoom\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
 /**
  * Scheduled task to get the meeting participants for each .

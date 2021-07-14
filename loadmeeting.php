@@ -41,7 +41,7 @@ if ($id) {
 }
 $userisrealhost = (zoom_get_user_id(false) == $zoom->host_id);
 $alternativehosts = zoom_get_alternative_host_array_from_string($zoom->alternative_hosts);
-$userishost = ($userisrealhost || in_array(zoom_get_api_identifier(), $alternativehosts, true));
+$userishost = ($userisrealhost || in_array(zoom_get_api_identifier($USER), $alternativehosts, true));
 
 require_login($course, true, $cm);
 
