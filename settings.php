@@ -42,7 +42,7 @@ if ($ADMIN->fulltree) {
         $errormessage = '';
         try {
             $service = new mod_zoom_webservice();
-            $service->get_user(zoom_get_api_identifier());
+            $service->get_user(zoom_get_api_identifier($USER));
         } catch (moodle_exception $error) {
             $notifyclass = 'notifyproblem';
             $status = 'connectionfailed';
