@@ -32,6 +32,10 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v3.8.1
+
+- Only allow real host to use start_url #285 (thanks @abias for reporting)
+
 v3.8
 
 - Add support for Ionic 5 #269 (thanks @dpalou)
