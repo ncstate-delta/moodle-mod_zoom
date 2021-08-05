@@ -507,7 +507,7 @@ class mod_zoom_webservice {
             )
         );
         if (isset($zoom->intro)) {
-            $data['agenda'] = $zoom->intro;
+            $data['agenda'] = content_to_text($zoom->intro, FORMAT_MOODLE);
         }
         if (isset($CFG->timezone) && !empty($CFG->timezone)) {
             $data['timezone'] = $CFG->timezone;
