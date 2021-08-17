@@ -96,6 +96,11 @@ define('ZOOM_MONTHLY_REPEAT_OPTION_WEEK', 2);
 // Recurring end date options.
 define('ZOOM_END_DATE_OPTION_BY', 1);
 define('ZOOM_END_DATE_OPTION_AFTER', 2);
+// API endpoint options.
+define('ZOOM_API_ENDPOINT_EU', 'eu');
+define('ZOOM_API_ENDPOINT_GLOBAL', 'global');
+define('ZOOM_API_URL_EU', 'https://eu01api-www4local.zoom.us/v2/');
+define('ZOOM_API_URL_GLOBAL', 'https://api.zoom.us/v2/');
 
 /**
  * Entry not found on Zoom.
@@ -923,4 +928,29 @@ function zoom_helper_icalendar_event($event, $description) {
     $icalevent->add_property('dtend', Bennu::timestamp_to_datetime($event->timestart + $event->timeduration)); // End time.
     $icalevent->add_property('description', $description);
     return $icalevent;
+}
+
+/**
+ * Get the configured Zoom API URL.
+ *
+ * @return string The API URL.
+ */
+function zoom_get_api_url() {
+    // Get the API endpoint setting.
+    $apiendpoint = get_config('zoom', 'apiendpoint');
+
+    // Pick the corresponding API URL.
+    switch ($apiendpoint) {
+        case ZOOM_API_ENDPOINT_EU:
+            $apiurl = ZOOM_API_URL_EU;
+            break;
+
+        case ZOOM_API_ENDPOINT_GLOBAL:
+        default:
+            $apiurl = ZOOM_API_URL_GLOBAL;
+            break;
+    }
+
+    // Return API URL.
+    return $apiurl;
 }
