@@ -616,6 +616,40 @@ function mod_zoom_core_calendar_provide_event_action(calendar_event $event,
     );
 }
 
+function mod_zoom_update_tracking_fields() {
+    global $DB;
+    
+    $config = get_config('zoom');
+    $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
+    $zoomtrackingfields = zoom_list_tracking_fields();
+    
+    // Zoom only allows 10 tracking fields, so it is simpler
+    // to delete existing DB records and insert records for
+    // changes to settings.
+    $DB->delete_records('zoom_tracking_fields');
+    
+    foreach ($defaulttrackingfields as $defaulttrackingfield) {
+        foreach ($zoomtrackingfields as $zoomtrackingfield) {
+            $defaulttrackingfield = trim($defaulttrackingfield);
+            $key = array_search($defaulttrackingfield, $zoomtrackingfield);
+            if ($key) {
+                $trackingfield = new stdClass;
+                $trackingfield->zoomid = $zoomtrackingfield['id'];
+                $trackingfield->field = $zoomtrackingfield['field'];
+                $trackingfield->required = $zoomtrackingfield['required'];
+                $trackingfield->visible = $zoomtrackingfield['visible'];
+                $trackingfield->recommended_values = '';
+                foreach ($zoomtrackingfield['recommended_values'] as $rv) {
+                    $trackingfield->recommended_values .= $rv . ', ';
+                }
+                $trackingfield->recommended_values = rtrim($trackingfield->recommended_values, ', ');
+                $DB->insert_record('zoom_tracking_fields', $trackingfield);
+                break;
+            }
+        }
+    }
+}
+
 /* Gradebook API */
 
 /**

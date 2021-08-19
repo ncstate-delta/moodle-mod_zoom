@@ -518,6 +518,31 @@ function xmldb_zoom_upgrade($oldversion) {
         // Zoom savepoint reached.
         upgrade_mod_savepoint(true, 2021030300, 'zoom');
     }
+    
+    // Update to current!
+    if ($oldversion < 2021082001) {
+        // Define table zoom_tracking_fields to be created.
+        $table = new xmldb_table('zoom_tracking_fields');
+        
+        // Adding fields to table zoom_meeting_details.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('zoomid', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('field', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('required', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('visible', XMLDB_TYPE_INTEGER, '1', null, null, null, null);
+        $table->add_field('recommended_values', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        
+        // Adding keys to table zoom_tracking_fields.
+        $table->add_key('id_primary', XMLDB_KEY_PRIMARY, array('id'));
+        
+        // Adding indexes to table zoom_tracking_fields.
+        $table->add_index('field', XMLDB_INDEX_UNIQUE, array('field'));
+        
+        // Conditionally launch create table for zoom_tracking_fields.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+    }
 
     if ($oldversion < 2021081900) {
         $table = new xmldb_table('zoom');

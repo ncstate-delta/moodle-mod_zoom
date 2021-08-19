@@ -496,6 +496,12 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $mform->addHelpButton('schedule_for', 'schedulefor', 'zoom');
             }
         }
+        
+        // Add tracking fields, if configured.
+        $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
+        foreach ($defaulttrackingfields as $defaulttrackingfield) {
+            $trackingfield = zoom_get_tracking_field($defaulttrackingfield);
+        }
 
         // Add meeting id.
         $mform->addElement('hidden', 'meeting_id', -1);

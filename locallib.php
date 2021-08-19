@@ -892,6 +892,7 @@ function zoom_get_alternative_host_array_from_string($alternativehoststring) {
 }
 
 /**
+<<<<<<< HEAD
  * Get all custom user profile fields of type text
  *
  * @return array list of user profile fields
@@ -1005,6 +1006,52 @@ function zoom_get_api_url() {
 
     // Return API URL.
     return $apiurl;
+    
+}
+
+/*
+ * Get array of tracking fields, with field name and recommended values.
+ * 
+ * @throws moodle_exception
+ * @return array Tracking fields
+ */
+function zoom_list_tracking_fields() {
+    // Get Zoom API service instance.
+    $service = new mod_zoom_webservice();
+
+    try {
+        // Get the tracking fields configured on the account.
+        $response = $service->list_tracking_fields();
+        $trackingfields = array();
+        foreach ($response->tracking_fields as $trackingfield) {
+            $trackingfields[] = array(
+                'id' => $trackingfield->id,
+                'field' => $trackingfield->field,
+                'required' => $trackingfield->required,
+                'visible' => $trackingfield->visible,
+                'recommended_values' => $trackingfield->recommended_values
+            );
+        }
+    } catch (moodle_exception $error) {
+        throw $error;
+    }
+
+    return $trackingfields;
+}
+
+function zoom_get_tracking_field($fieldid) {
+    // Get Zoom API service instance.
+    $service = new mod_zoom_webservice();
+    
+    try {
+        // Get the tracking fields configured on the account.
+        $response = $service->get_tracking_field($fieldid);
+        
+    } catch (moodle_exception $error) {
+        throw $error;
+    }
+    
+    return $trackingfield;
 }
 
 /**

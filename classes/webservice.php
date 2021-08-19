@@ -793,6 +793,38 @@ class mod_zoom_webservice {
     }
 
     /**
+     * Lists tracking fields configured on the account.
+     *
+     * @return stdClass The call's result in JSON format.
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/trackingfield/trackingfieldlist
+     */
+    public function list_tracking_fields() {
+        $response = null;
+        try {
+            $response = $this->_make_call('tracking_fields');
+        } catch (moodle_exception $error) {
+            throw $error;
+        }
+        return $response;
+    }
+    
+    /**
+     * Gets a tracking field.
+     *
+     * @return stdClass The call's result in JSON format.
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/trackingfield/trackingfieldget
+     */
+    public function get_tracking_field($fieldid) {
+        $response = null;
+        try {
+            $response = $this->_make_call("tracking_fields/$fieldid");
+        } catch (moodle_exception $error) {
+            throw $error;
+        }
+        return $response;
+    }
+
+    /**
      * If the UUID begins with a ‘/’ or contains ‘//’ in it we need to double encode it when using it for API calls.
      *
      * See https://devforum.zoom.us/t/cant-retrieve-data-when-meeting-uuid-contains-double-slash/2776
