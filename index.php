@@ -124,8 +124,22 @@ foreach ($zooms as $z) {
     if ($z->webinar) {
         $row[1] .= " ($strwebinar)";
     }
-    // Recurring meetings have no start time or duration.
-    $displaytime = $z->recurring ? get_string('recurringmeetinglong', 'mod_zoom') : userdate($z->start_time);
+    // Get start time column information.
+    if ($z->recurring && $z->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
+        $displaytime = get_string('recurringmeeting', 'mod_zoom');
+        $displaytime .= html_writer::empty_tag('br');
+        $displaytime .= get_string('recurringmeetingexplanation', 'mod_zoom');
+    } else if ($z->recurring && $z->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
+        $displaytime = get_string('recurringmeeting', 'mod_zoom');
+        $displaytime .= html_writer::empty_tag('br');
+        if (($nextoccurrence = zoom_get_next_occurrence($z)) > 0) {
+            $displaytime .= get_string('nextoccurrence', 'mod_zoom').': '.userdate($nextoccurrence);
+        } else {
+            $displaytime .= get_string('nooccurrenceleft', 'mod_zoom');
+        }
+    } else {
+        $displaytime = userdate($z->start_time);
+    }
 
     $report = new moodle_url('report.php', array('id' => $cm->id));
     $sessions = html_writer::link($report, $strsessions);
@@ -145,7 +159,7 @@ foreach ($zooms as $z) {
             $row[2] = $displaytime;
         }
 
-        $row[3] = $z->recurring ? '--' : format_time($z->duration);
+        $row[3] = ($z->recurring && $z->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) ? '--' : format_time($z->duration);
 
         if ($available) {
             if ($zoomuserid === false || $zoomuserid != $z->host_id) {
