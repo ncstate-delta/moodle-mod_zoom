@@ -40,7 +40,7 @@ class mod_zoom_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
-        global $PAGE, $USER;
+        global $PAGE, $USER, $DB;
         $config = get_config('zoom');
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
         $zoomapiidentifier = zoom_get_api_identifier($USER);
@@ -312,6 +312,19 @@ class mod_zoom_mod_form extends moodleform_mod {
                         get_string('webinar_already_false', 'zoom'));
             }
         }
+        
+        // Add tracking fields, if configured.
+        $trackingfields = $DB->get_records('zoom_tracking_fields');
+        foreach ($trackingfields as $trackingfield) {
+            $mform->addElement('text', strtolower($trackingfield->field), $trackingfield->field);
+            $mform->setType(strtolower($trackingfield->field), PARAM_TEXT);
+            if ($trackingfield->recommended_values != '') {
+                $mform->addElement('static', strtolower($trackingfield->field) . 'rec', null, 'Recommended values: ' . $trackingfield->recommended_values);
+            }
+            if ($trackingfield->required) {
+                $mform->addRule(strtolower($trackingfield->field), null, 'required', null, 'client');
+            }
+        }
 
         // Adding the "security" fieldset, where all settings relating to securing and protecting the meeting are shown.
         $mform->addElement('header', 'general', get_string('security', 'mod_zoom'));
@@ -497,12 +510,6 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
         }
         
-        // Add tracking fields, if configured.
-        $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
-        foreach ($defaulttrackingfields as $defaulttrackingfield) {
-            $trackingfield = zoom_get_tracking_field($defaulttrackingfield);
-        }
-
         // Add meeting id.
         $mform->addElement('hidden', 'meeting_id', -1);
         $mform->setType('meeting_id', PARAM_ALPHANUMEXT);
