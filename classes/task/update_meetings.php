@@ -146,7 +146,13 @@ class update_meetings extends \core\task\scheduled_task {
                     if ($zoom->name != $newzoom->name) {
                         $courseidstoupdate[] = $newzoom->course;
                     }
+                } else {
+                    // Show trace message.
+                    mtrace('  => Skipped Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id . ' as unchanged');
+                }
 
+                // Update the calendar events.
+                if (!$zoom->recurring && $changed) {
                     // Check if calendar needs updating.
                     foreach ($calendarfields as $field) {
                         if ($zoom->$field != $newzoom->$field) {
@@ -158,9 +164,10 @@ class update_meetings extends \core\task\scheduled_task {
                             break;
                         }
                     }
-                } else {
+                } else if ($zoom->recurring) {
                     // Show trace message.
-                    mtrace('  => Skipped Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id . ' as unchanged');
+                    mtrace('  => Updated calendar items for recurring Zoom meeting ID ' . $zoom->meeting_id);
+                    zoom_calendar_item_update($newzoom);
                 }
             }
         }
