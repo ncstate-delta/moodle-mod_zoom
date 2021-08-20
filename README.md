@@ -32,6 +32,13 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.0
+
+- Fully support recurring meetings #258 (thanks @abias, @jwalits, ETH Zürich)
+  - New setting `zoom/invitationremoveicallink`
+  - Backward incompatible change: exported iCal events now match Moodle's uid format
+- Retroactively fix database schema defaults #291 (thanks @foxlapinou for reporting)
+
 v3.8.1
 
 - Only allow real host to use start_url #285 (thanks @abias for reporting)
