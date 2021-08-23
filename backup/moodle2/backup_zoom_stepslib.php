@@ -43,10 +43,11 @@ class backup_zoom_activity_structure_step extends backup_activity_structure_step
         // Define the root element describing the zoom instance.
         $zoom = new backup_nested_element('zoom', array('id'), array(
                 'intro', 'introformat', 'grade', 'meeting_id', 'start_url', 'join_url', 'created_at', 'host_id', 'name',
-                'start_time', 'timemodified', 'recurring', 'webinar', 'duration', 'timezone', 'password', 'option_jbh',
-                'option_start_type', 'option_host_video', 'option_participants_video', 'option_audio', 'option_mute_upon_entry',
-                'option_waiting_room', 'option_authenticated_users', 'option_encryption_type', 'exists_on_zoom',
-                'alternative_hosts')
+                'start_time', 'timemodified', 'recurring', 'recurrence_type', 'repeat_interval', 'weekly_days', 'monthly_day',
+                'monthly_week', 'monthly_week_day', 'monthly_repeat_option', 'end_times', 'end_date_time', 'end_date_option',
+                'webinar', 'duration', 'timezone', 'password', 'option_jbh', 'option_start_type', 'option_host_video',
+                'option_participants_video', 'option_audio', 'option_mute_upon_entry', 'option_waiting_room', 'option_authenticated_users',
+                'option_encryption_type', 'exists_on_zoom', 'alternative_hosts')
         );
 
         // If we had more elements, we would build the tree here.

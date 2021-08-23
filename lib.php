@@ -84,6 +84,11 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         $zoom->password = '';
     }
 
+    // Handle weekdays if weekly recurring meeting selected.
+    if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_WEEKLY) {
+        $zoom->weekly_days = zoom_handle_weekly_days($zoom);
+    }
+
     $zoom->course = (int) $zoom->course;
 
     $response = $service->create_meeting($zoom);
@@ -96,6 +101,16 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         // that it was scheduled for.
         $correcthostzoomuser = $service->get_user($zoom->schedule_for);
         $zoom->host_id = $correcthostzoomuser->id;
+    }
+
+    if (isset($zoom->recurring) && isset($response->occurrences) && empty($response->occurrences)) {
+        // Recurring meetings did not create any occurrencces.
+        // This means invalid options selected.
+        // Need to rollback created meeting.
+        $service->delete_meeting($zoom->meeting_id, $zoom->webinar);
+
+        $redirecturl = new moodle_url('/course/view.php', ['id' => $zoom->course]);
+        throw new moodle_exception('erroraddinstance', 'zoom', $redirecturl->out());
     }
 
     $zoom->id = $DB->insert_record('zoom', $zoom);
@@ -137,6 +152,11 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         $zoom->password = '';
     }
 
+    // Handle weekdays if weekly recurring meeting selected.
+    if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_WEEKLY) {
+        $zoom->weekly_days = zoom_handle_weekly_days($zoom);
+    }
+
     $DB->update_record('zoom', $zoom);
 
     $updatedzoomrecord = $DB->get_record('zoom', array('id' => $zoom->id));
@@ -157,10 +177,61 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         return false;
     }
 
+    // Get the updated meeting info from zoom, before updating calendar events.
+    $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
+    $zoom = populate_zoom_from_response($zoom, $response);
+
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
 
     return true;
+}
+
+/**
+ * Function to handle selected weekdays, for recurring weekly meeting.
+ *
+ * @param stdClass $zoom The zoom instance
+ * @return string The comma separated string for selected weekdays
+ */
+function zoom_handle_weekly_days($zoom) {
+    $weekdaynumbers = [];
+    for ($i = 1; $i <= 7; $i++) {
+        $key = 'weekly_days_' . $i;
+        if (!empty($zoom->$key)) {
+            $weekdaynumbers[] = $i;
+        }
+    }
+    return implode(',', $weekdaynumbers);
+}
+
+/**
+ * Function to unset the weekly options in postprocessing.
+ *
+ * @param stdClass $data The form data object
+ * @return stdClass $data The form data object minus weekly options.
+ */
+function zoom_remove_weekly_options($data) {
+    // Unset the weekly_days options.
+    for ($i = 1; $i <= 7; $i++) {
+        $key = 'weekly_days_' . $i;
+        unset($data->$key);
+    }
+    return $data;
+}
+
+/**
+ * Function to unset the monthly options in postprocessing.
+ *
+ * @param stdClass $data The form data object
+ * @return stdClass $data The form data object minus monthly options.
+ */
+function zoom_remove_monthly_options($data) {
+    // Unset the monthly options.
+    unset($data->monthly_repeat_option);
+    unset($data->monthly_day);
+    unset($data->monthly_week);
+    unset($data->monthly_week_day);
+    return $data;
 }
 
 /**
@@ -196,7 +267,22 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->start_time)) {
         $newzoom->start_time = strtotime($response->start_time);
     }
-    $newzoom->recurring = $response->type == ZOOM_RECURRING_MEETING || $response->type == ZOOM_RECURRING_WEBINAR;
+    $recurringtypes = [
+        ZOOM_RECURRING_MEETING,
+        ZOOM_RECURRING_FIXED_MEETING,
+        ZOOM_RECURRING_WEBINAR,
+        ZOOM_RECURRING_FIXED_WEBINAR,
+    ];
+    $newzoom->recurring = in_array($response->type, $recurringtypes);
+    if (!empty($response->occurrences)) {
+        $newzoom->occurrences = [];
+        // Normalise the occurrence times.
+        foreach ($response->occurrences as $occurrence) {
+            $occurrence->start_time = strtotime($occurrence->start_time);
+            $occurrence->duration = $occurrence->duration * 60;
+            $newzoom->occurrences[] = $occurrence;
+        }
+    }
     if (isset($response->password)) {
         $newzoom->password = $response->password;
     }
@@ -359,33 +445,134 @@ function zoom_calendar_item_update(stdClass $zoom) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/calendar/lib.php');
 
+    if (!$zoom->recurring) {
+        $eventid = $DB->get_field('event', 'id', array(
+            'modulename' => 'zoom',
+            'instance' => $zoom->id,
+        ));
+
+        // Load existing event object, or create a new one.
+        $event = zoom_populate_calender_item($zoom);
+        if (!empty($eventid)) {
+            calendar_event::load($eventid)->update($event);
+        } else {
+            calendar_event::create($event);
+        }
+    } else {
+        // Based on data passed back from zoom, create/update/detele events based on data.
+        if (!empty($zoom->occurrences)) {
+            $newevents = array();
+            foreach ($zoom->occurrences as $occurrence) {
+                $uuid = $occurrence->occurrence_id;
+                $newevents[$uuid] = zoom_populate_calender_item($zoom, $occurrence);
+            }
+
+            // Fetch all the events related to this zoom instance.
+            $conditions = array('modulename' => 'zoom', 'instance' => $zoom->id);
+            $events = $DB->get_records('event', $conditions);
+            $eventfields = array('name', 'timestart', 'timeduration');
+            foreach ($events as $event) {
+                $uuid = $event->uuid;
+                if (isset($newevents[$uuid])) {
+                    // This event already exists in Moodle.
+                    $changed = false;
+                    $newevent = $newevents[$uuid];
+                    // Check if the important fields have actually changed.
+                    foreach ($eventfields as $field) {
+                        if ($newevent->$field !== $event->$field) {
+                            $changed = true;
+                        }
+                    }
+                    if ($changed) {
+                        calendar_event::load($event)->update($newevent);
+                    }
+
+                    // Event has been updated, remove from the list.
+                    unset($newevents[$uuid]);
+                } else {
+                    // Event does not exist in Zoom, so delete from Moodle.
+                    calendar_event::load($event)->delete();
+                }
+            }
+
+            // Any remaining events in the array, dont exist on Moodle, so create a new event.
+            foreach ($newevents as $uuid => $newevent) {
+                calendar_event::create($newevent);
+            }
+        }
+    }
+}
+
+/**
+ * Return an array with the days of the week.
+ *
+ * @return array
+ */
+function zoom_get_weekday_options() {
+    return [
+        1 => get_string('sunday', 'calendar'),
+        2 => get_string('monday', 'calendar'),
+        3 => get_string('tuesday', 'calendar'),
+        4 => get_string('wednesday', 'calendar'),
+        5 => get_string('thursday', 'calendar'),
+        6 => get_string('friday', 'calendar'),
+        7 => get_string('saturday', 'calendar'),
+    ];
+}
+
+/**
+ * Return an array with the weeks of the month.
+ *
+ * @return array
+ */
+function zoom_get_monthweek_options() {
+    return [
+        1 => get_string('weekoption_first', 'zoom'),
+        2 => get_string('weekoption_second', 'zoom'),
+        3 => get_string('weekoption_third', 'zoom'),
+        4 => get_string('weekoption_fourth', 'zoom'),
+        -1 => get_string('weekoption_last', 'zoom'),
+    ];
+}
+
+/**
+ * Populate the calendar event object, based on the zoom instance
+ *
+ * @param stdClass $zoom The zoom instance.
+ * @param stdClass $occurrence The occurrence object passed from the zoom api.
+ * @return stdClass The calendar event object.
+ */
+function zoom_populate_calender_item(stdClass $zoom, stdClass $occurrence = null) {
     $event = new stdClass();
     $event->type = CALENDAR_EVENT_TYPE_ACTION;
-    $event->timesort = $zoom->start_time;
+    $event->modulename = 'zoom';
+    $event->eventtype = 'zoom';
+    $event->courseid = $zoom->course;
+    $event->instance = $zoom->id;
+    $event->visible = true;
     $event->name = $zoom->name;
     if ($zoom->intro) {
         $event->description = $zoom->intro;
         $event->format = $zoom->introformat;
     }
-    $event->timestart = $zoom->start_time;
-    $event->timeduration = $zoom->duration;
-    $event->visible = !$zoom->recurring;
-
-    $eventid = $DB->get_field('event', 'id', array(
-        'modulename' => 'zoom',
-        'instance' => $zoom->id
-    ));
-
-    // Load existing event object, or create a new one.
-    if (!empty($eventid)) {
-        calendar_event::load($eventid)->update($event);
+    if (!$occurrence) {
+        $event->timesort = $zoom->start_time;
+        $event->timestart = $zoom->start_time;
+        $event->timeduration = $zoom->duration;
     } else {
-        $event->courseid = $zoom->course;
-        $event->modulename = 'zoom';
-        $event->instance = $zoom->id;
-        $event->eventtype = 'zoom';
-        calendar_event::create($event);
+        $event->timesort = $occurrence->start_time;
+        $event->timestart = $occurrence->start_time;
+        $event->timeduration = $occurrence->duration;
+        $event->uuid = $occurrence->occurrence_id;
     }
+
+    // Recurring meetings/webinars with no fixed time are created as invisible events.
+    // For recurring meetings/webinars with a fixed time, we want to see the events on the calendar.
+    if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
+        $event->visible = false;
+    }
+
+    return $event;
 }
 
 /**

@@ -432,6 +432,32 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2020052100, 'zoom');
     }
 
+    if ($oldversion < 2020100800) {
+        // Changing the default of field option_host_video on table zoom to 0.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_host_video', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'option_start_type');
+
+        // Launch change of default for field option_host_video.
+        $dbman->change_field_default($table, $field);
+
+        // Changing the default of field option_participants_video on table zoom to 0.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_participants_video', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'option_host_video');
+
+        // Launch change of default for field option_participants_video.
+        $dbman->change_field_default($table, $field);
+
+        // Changing the default of field option_mute_upon_entry on table zoom to 1.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_mute_upon_entry', XMLDB_TYPE_INTEGER, '1', null, null, null, '1', 'option_audio');
+
+        // Launch change of default for field option_participants_video.
+        $dbman->change_field_default($table, $field);
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2020100800, 'zoom');
+    }
+
     if ($oldversion < 2020120800) {
         // Delete config no longer used.
         set_config('calls_left', null, 'mod_zoom');
@@ -491,6 +517,96 @@ function xmldb_zoom_upgrade($oldversion) {
 
         // Zoom savepoint reached.
         upgrade_mod_savepoint(true, 2021030300, 'zoom');
+    }
+
+    if ($oldversion < 2021081900) {
+        $table = new xmldb_table('zoom');
+
+        // Define and conditionally add field recurrence_type.
+        $field = new xmldb_field('recurrence_type', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'recurring');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define and conditionally add field repeat_interval.
+        $field = new xmldb_field('repeat_interval', XMLDB_TYPE_INTEGER, '2', null, null, null, null, 'recurrence_type');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define and conditionally add field weekly_days.
+        $field = new xmldb_field('weekly_days', XMLDB_TYPE_CHAR, '14', null, null, null, null, 'repeat_interval');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define and conditionally add field monthly_day.
+        $field = new xmldb_field('monthly_day', XMLDB_TYPE_INTEGER, '2', null, null, null, null, 'weekly_days');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define and conditionally add field monthly_week.
+        $field = new xmldb_field('monthly_week', XMLDB_TYPE_INTEGER, '2', null, null, null, null, 'monthly_day');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define and conditionally add field monthly_week_day.
+        $field = new xmldb_field('monthly_week_day', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'monthly_week');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define and conditionally add field monthly_repeat_option.
+        $field = new xmldb_field('monthly_repeat_option', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'monthly_week_day');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define and conditionally add field end_times.
+        $field = new xmldb_field('end_times', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'monthly_week_day');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define and conditionally add field end_date_time.
+        $field = new xmldb_field('end_date_time', XMLDB_TYPE_INTEGER, '12', null, null, null, null, 'end_times');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define and conditionally add field end_date_option.
+        $field = new xmldb_field('end_date_option', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'end_date_time');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // For a time these defaults were not being updated but needed to be. This should catch them up.
+
+        // Changing the default of field option_host_video on table zoom to 0.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_host_video', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'option_start_type');
+
+        // Launch change of default for field option_host_video.
+        $dbman->change_field_default($table, $field);
+
+        // Changing the default of field option_participants_video on table zoom to 0.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_participants_video', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'option_host_video');
+
+        // Launch change of default for field option_participants_video.
+        $dbman->change_field_default($table, $field);
+
+        // Changing the default of field option_mute_upon_entry on table zoom to 1.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_mute_upon_entry', XMLDB_TYPE_INTEGER, '1', null, null, null, '1', 'option_audio');
+
+        // Launch change of default for field option_participants_video.
+        $dbman->change_field_default($table, $field);
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2021081900, 'zoom');
     }
 
     return true;
