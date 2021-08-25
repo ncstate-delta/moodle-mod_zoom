@@ -660,7 +660,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         if (!empty($data['requirepasscode']) && empty($data['meetingcode'])) {
             $errors['meetingcode'] = get_string('err_password_required', 'mod_zoom');
         }
-        if (isset($data['schedule_for']) &&  $data['schedule_for'] !== $USER->email) {
+        if (isset($data['schedule_for']) && strtolower($data['schedule_for']) !== strtolower($USER->email)) {
             $scheduleusers = $service->get_schedule_for_users($USER->email);
             $scheduleok = false;
             foreach ($scheduleusers as $zuser) {
