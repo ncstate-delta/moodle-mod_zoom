@@ -34,6 +34,8 @@ namespace mod_zoom\task;
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+
 /**
  * Scheduled task to get the meeting participants for each .
  *
@@ -293,7 +295,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
         foreach ($enrolled as $user) {
             $name = strtoupper(fullname($user));
             $names[$user->id] = $name;
-            $emails[$user->id] = strtoupper($user->email);
+            $emails[$user->id] = strtoupper(zoom_get_api_identifier($user));
         }
         return array($names, $emails);
     }

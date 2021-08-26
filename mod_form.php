@@ -47,11 +47,12 @@ class mod_zoom_mod_form extends moodleform_mod {
         global $PAGE, $USER;
         $config = get_config('zoom');
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
+        $zoomapiidentifier = zoom_get_api_identifier($USER);
 
         $isnew = empty($this->_cm);
 
         $service = new mod_zoom_webservice();
-        $zoomuser = $service->get_user($USER->email);
+        $zoomuser = $service->get_user($zoomapiidentifier);
 
         // If creating a new instance, but the Zoom user does not exist.
         if ($isnew && $zoomuser === false) {
@@ -69,7 +70,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $canschedule = false;
         if ($zoomuser !== false) {
             // Get the array of users they can schedule.
-            $canschedule = $service->get_schedule_for_users($USER->email);
+            $canschedule = $service->get_schedule_for_users($zoomapiidentifier);
         }
 
         if (!empty($canschedule)) {
@@ -476,7 +477,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                     $mform->addElement('checkbox', 'change_schedule_for', get_string('changehost', 'zoom'));
                     $mform->setDefault('schedule_for', strtolower($service->get_user($this->current->host_id)->email));
                 } else {
-                    $mform->setDefault('schedule_for', strtolower($USER->email));
+                    $mform->setDefault('schedule_for', strtolower($zoomapiidentifier));
                 }
                 $mform->addHelpButton('schedule_for', 'schedulefor', 'zoom');
             }
@@ -660,8 +661,8 @@ class mod_zoom_mod_form extends moodleform_mod {
         if (!empty($data['requirepasscode']) && empty($data['meetingcode'])) {
             $errors['meetingcode'] = get_string('err_password_required', 'mod_zoom');
         }
-        if (isset($data['schedule_for']) &&  $data['schedule_for'] !== $USER->email) {
-            $scheduleusers = $service->get_schedule_for_users($USER->email);
+        if (isset($data['schedule_for']) &&  $data['schedule_for'] !== $zoomapiidentifier) {
+            $scheduleusers = $service->get_schedule_for_users($zoomapiidentifier);
             $scheduleok = false;
             foreach ($scheduleusers as $zuser) {
                 if (strtolower($zuser->email) === strtolower($data['schedule_for'])) {

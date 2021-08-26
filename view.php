@@ -63,7 +63,7 @@ $userisrealhost = ($zoomuserid === $zoom->host_id);
 $alternativehosts = zoom_get_alternative_host_array_from_string($zoom->alternative_hosts);
 
 // Check if this user is the host or an alternative host.
-$userishost = ($userisrealhost || in_array($USER->email, $alternativehosts, true));
+$userishost = ($userisrealhost || in_array(zoom_get_api_identifier($USER), $alternativehosts, true));
 
 // Get Zoom webservice instance.
 $service = new mod_zoom_webservice();
