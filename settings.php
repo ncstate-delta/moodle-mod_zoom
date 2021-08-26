@@ -42,7 +42,7 @@ if ($ADMIN->fulltree) {
         $errormessage = '';
         try {
             $service = new mod_zoom_webservice();
-            $service->get_user($USER->email);
+            $service->get_user(zoom_get_api_identifier($USER));
         } catch (moodle_exception $error) {
             $notifyclass = 'notifyproblem';
             $status = 'connectionfailed';
@@ -75,6 +75,11 @@ if ($ADMIN->fulltree) {
             get_string('option_proxyhost', 'mod_zoom'),
             get_string('option_proxyhost_desc', 'mod_zoom'), '', '/^[a-zA-Z0-9.-]+:[0-9]+$|^$/');
     $settings->add($proxyhost);
+
+    $apiidentifier = new admin_setting_configselect('zoom/apiidentifier',
+        get_string('apiidentifier', 'mod_zoom'), get_string('apiidentifier_desc', 'mod_zoom'),
+        'email', zoom_get_api_identifier_fields());
+    $settings->add($apiidentifier);
 
     // License settings.
     $settings->add(new admin_setting_heading('zoom/licensesettings',

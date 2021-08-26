@@ -483,7 +483,7 @@ function zoom_get_user_id($required = true) {
         $zoomuserid = false;
         $service = new mod_zoom_webservice();
         try {
-            $zoomuser = $service->get_user($USER->email);
+            $zoomuser = $service->get_user(zoom_get_api_identifier($USER));
             if ($zoomuser !== false) {
                 $zoomuserid = $zoomuser->id;
             }
@@ -896,6 +896,70 @@ function zoom_get_alternative_host_array_from_string($alternativehoststring) {
     $alternativehoststring = str_replace(';', ',', $alternativehoststring);
     $alternativehostarray = array_filter(explode(',', $alternativehoststring));
     return $alternativehostarray;
+}
+
+/**
+ * Get all custom user profile fields of type text
+ *
+ * @return array list of user profile fields
+ */
+function zoom_get_user_profile_fields() {
+    global $DB;
+
+    $userfields = [];
+    $records = $DB->get_records('user_info_field', ['datatype' => 'text']);
+    foreach ($records as $record) {
+        $userfields[$record->shortname] = $record->name;
+    }
+
+    return $userfields;
+}
+
+/**
+ * Get all valid options for API Identifier field
+ *
+ * @return array list of all valid options
+ */
+function zoom_get_api_identifier_fields() {
+    $options = [
+        'email' => get_string('email'),
+        'username' => get_string('username'),
+        'idnumber' => get_string('idnumber'),
+    ];
+
+    $userfields = zoom_get_user_profile_fields();
+    if (!empty($userfields)) {
+        $options += $userfields;
+    }
+
+    return $options;
+}
+
+/**
+ * Get the zoom api identifier
+ *
+ * @param object $user The user object
+ *
+ * @return string the value of the identifier
+ */
+function zoom_get_api_identifier($user) {
+    // Get the value from the config first.
+    $field = get_config('zoom', 'apiidentifier');
+
+    $identifier = '';
+    if (isset($user->$field)) {
+        // If one of the standard user fields.
+        $identifier = $user->$field;
+    } else if (isset($user->profile[$field])) {
+        // If one of the custom user fields.
+        $identifier = $user->profile[$field];
+    }
+    if (empty($identifier)) {
+        // Fallback to email if the field is not set.
+        $identifier = $user->email;
+    }
+
+    return $identifier;
 }
 
 /**

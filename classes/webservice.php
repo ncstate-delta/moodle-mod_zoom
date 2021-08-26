@@ -328,7 +328,7 @@ class mod_zoom_webservice {
         $url = 'users';
         $data = array('action' => 'autocreate');
         $data['user_info'] = array(
-            'email' => $user->email,
+            'email' => zoom_get_api_identifier($user),
             'type' => ZOOM_USER_TYPE_PRO,
             'first_name' => $user->firstname,
             'last_name' => $user->lastname,
