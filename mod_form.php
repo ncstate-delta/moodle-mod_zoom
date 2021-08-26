@@ -661,7 +661,9 @@ class mod_zoom_mod_form extends moodleform_mod {
         if (!empty($data['requirepasscode']) && empty($data['meetingcode'])) {
             $errors['meetingcode'] = get_string('err_password_required', 'mod_zoom');
         }
-        if (isset($data['schedule_for']) &&  $data['schedule_for'] !== $zoomapiidentifier) {
+
+        $zoomapiidentifier = zoom_get_api_identifier($USER);
+        if (isset($data['schedule_for']) && strtolower($data['schedule_for']) !== strtolower($zoomapiidentifier)) {
             $scheduleusers = $service->get_schedule_for_users($zoomapiidentifier);
             $scheduleok = false;
             foreach ($scheduleusers as $zuser) {
