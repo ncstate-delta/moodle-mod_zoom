@@ -110,5 +110,19 @@
         <INDEX NAME="field" UNIQUE="true" FIELDS="field"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="zoom_meeting_tracking_fields" COMMENT="A list of tracking fields values for meetings in Zoom.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The id of the meeting from the DB table."/>
+        <FIELD NAME="tracking_field_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The id of the tracking field from the DB table."/>
+        <FIELD NAME="value" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Configured value for tracking field."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="meeting_id" UNIQUE="true" FIELDS="meeting_id"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>
