@@ -52,12 +52,6 @@ if (!class_exists('Firebase\JWT\JWT')) {
 class mod_zoom_webservice {
 
     /**
-     * API base URL.
-     * @var string
-     */
-    const API_URL = 'https://api.zoom.us/v2/';
-
-    /**
      * API calls: maximum number of retries.
      * @var int
      */
@@ -91,6 +85,12 @@ class mod_zoom_webservice {
     protected $apisecret;
 
     /**
+     * API base URL.
+     * @var string
+     */
+    protected $apiurl;
+
+    /**
      * Whether to recycle licenses.
      * @var bool
      */
@@ -120,16 +120,25 @@ class mod_zoom_webservice {
      */
     public function __construct() {
         $config = get_config('zoom');
+
+        // Get and remember the API key.
         if (!empty($config->apikey)) {
             $this->apikey = $config->apikey;
         } else {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apikey_missing', 'zoom'));
         }
+
+        // Get and remember the API secret.
         if (!empty($config->apisecret)) {
             $this->apisecret = $config->apisecret;
         } else {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apisecret_missing', 'zoom'));
         }
+
+        // Get and remember the API URL.
+        $this->apiurl = zoom_get_api_url();
+
+        // Get and remember the plugin settings to recycle licenses.
         if (!empty($config->utmost)) {
             $this->recyclelicenses = $config->utmost;
         }
@@ -176,7 +185,7 @@ class mod_zoom_webservice {
      */
     protected function _make_call($path, $data = array(), $method = 'get') {
         global $CFG;
-        $url = self::API_URL . $path;
+        $url = $this->apiurl . $path;
         $method = strtolower($method);
         $proxyhost = get_config('zoom', 'proxyhost');
         $cfg = new stdClass();

@@ -71,6 +71,15 @@ if ($ADMIN->fulltree) {
             get_string('zoomurl_desc', 'mod_zoom'), '', PARAM_URL);
     $settings->add($zoomurl);
 
+    $apiendpointchoices = array(ZOOM_API_ENDPOINT_GLOBAL => get_string('apiendpoint_global', 'mod_zoom'),
+            ZOOM_API_ENDPOINT_EU => get_string('apiendpoint_eu', 'mod_zoom'));
+    $apiendpoint = new admin_setting_configselect('zoom/apiendpoint',
+            get_string('apiendpoint', 'mod_zoom'),
+            get_string('apiendpoint_desc', 'mod_zoom'),
+            ZOOM_API_ENDPOINT_GLOBAL,
+            $apiendpointchoices);
+    $settings->add($apiendpoint);
+
     $proxyhost = new admin_setting_configtext('zoom/proxyhost',
             get_string('option_proxyhost', 'mod_zoom'),
             get_string('option_proxyhost_desc', 'mod_zoom'), '', '/^[a-zA-Z0-9.-]+:[0-9]+$|^$/');
