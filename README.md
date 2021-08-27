@@ -32,6 +32,14 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.1
+
+- Allow configuration of Zoom identifier #280 (thanks @jwalits, @abias, @jonlan)
+  - New setting `zoom/apiidentifier`
+- Allow configuration of Zoom API endpoint #293 (thanks @abias, @didier63)
+  - New setting `zoom/apiendpoint`
+- Use case-insensitive email comparison for schedule_for #295 (thanks @stopfstedt, @briannwar)
+
 v4.0
 
 - Fully support recurring meetings #258 (thanks @abias, @jwalits, ETH Zürich)
