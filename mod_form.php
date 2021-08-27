@@ -624,6 +624,8 @@ class mod_zoom_mod_form extends moodleform_mod {
      * @param array $defaultvalues passed by reference
      */
     public function data_preprocessing(&$defaultvalues) {
+        global $DB;
+        
         parent::data_preprocessing($defaultvalues);
 
         // Get config.
@@ -648,6 +650,19 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $defaultvalues['alternative_hosts_picker'] = zoom_get_alternative_host_array_from_string(
                     $defaultvalues['alternative_hosts']
                 );
+            }
+        }
+        
+        if ($config->defaulttrackingfields != '') {
+            // Populate modedit form fields with previously saved values.
+            $trackingfields = explode(',', $config->defaulttrackingfields);
+            foreach ($trackingfields as $trackingfield) {
+                $trackingfield = trim($trackingfield);
+                $tfid = $DB->get_field('zoom_tracking_fields', 'id', array('field' => $trackingfield));
+                $tfvalue = $DB->get_field('zoom_meeting_tracking_fields', 'value', array('meeting_id' => $defaultvalues['id'], 'tracking_field_id' => $tfid));
+                if ($tfvalue != false) {
+                    $defaultvalues[strtolower($trackingfield)] = $tfvalue;
+                }
             }
         }
     }

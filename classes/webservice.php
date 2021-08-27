@@ -593,6 +593,20 @@ class mod_zoom_webservice {
             $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->start_time);
             $data['duration'] = (int) ceil($zoom->duration / 60);
         }
+        
+        // Add tracking field to data.
+        $trackingfields = $DB->get_records('zoom_tracking_fields');
+        $tfarray = array();
+        foreach ($trackingfields as $trackingfield) {
+            $fieldname = strtolower($trackingfield->field);
+            if (isset($zoom->$fieldname)) {
+                $tf = new stdClass();
+                $tf->field = $trackingfield->field;
+                $tf->value = $zoom->$fieldname;
+                $tfarray[] = $tf;
+            }
+        }
+        $data['tracking_fields'] = $tfarray;
 
         return $data;
     }

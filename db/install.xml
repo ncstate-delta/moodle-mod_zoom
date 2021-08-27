@@ -121,7 +121,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="meeting_id" UNIQUE="true" FIELDS="meeting_id"/>
+        <INDEX NAME="meeting_id" UNIQUE="false" FIELDS="meeting_id"/>
       </INDEXES>
     </TABLE>
   </TABLES>

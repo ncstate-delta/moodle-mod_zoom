@@ -114,6 +114,17 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     }
 
     $zoom->id = $DB->insert_record('zoom', $zoom);
+    
+    // Store tracking field data for meeting.
+    foreach ($response->tracking_fields as $trackingfield) {
+        $tfid = $DB->get_field('zoom_tracking_fields', 'id', array('field' => $trackingfield->field));
+        $tfobject = new stdClass();
+        $tfobject->meeting_id = $zoom->id;
+        $tfobject->tracking_field_id = $tfid;
+        $fieldname = strtolower($trackingfield->field);
+        $tfobject->value = $zoom->$fieldname;
+        $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
+    }
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
@@ -175,6 +186,15 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         }
     } catch (moodle_exception $error) {
         return false;
+    }
+    
+    // Update tracking field data for meeting.
+    $trackingfields = $DB->get_records('zoom_tracking_fields');
+    foreach ($trackingfields as $trackingfield) {
+        $tfobject = $DB->get_record('zoom_meeting_tracking_fields', array('meeting_id' => $updatedzoomrecord->id, 'tracking_field_id' => $trackingfield->id));
+        $fieldname = strtolower($trackingfield->field);
+        $tfobject->value = $zoom->$fieldname;
+        $DB->update_record('zoom_meeting_tracking_fields', $tfobject);
     }
 
     // Get the updated meeting info from zoom, before updating calendar events.
@@ -352,6 +372,9 @@ function zoom_delete_instance($id) {
         $DB->delete_records('zoom_meeting_participants', array('uuid' => $meetinginstance->uuid));
     }
     $DB->delete_records('zoom_meeting_details', array('meeting_id' => $zoom->meeting_id));
+    
+    // Delete tracking field data for deleted meetings.
+    $DB->delete_records('zoom_meeting_tracking_fields', array('meeting_id' => $zoom->id));
 
     // Delete any dependent records here.
     zoom_calendar_item_delete($zoom);

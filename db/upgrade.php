@@ -520,7 +520,7 @@ function xmldb_zoom_upgrade($oldversion) {
     }
     
     // Update to current!
-    if ($oldversion < 2021082601) {
+    if ($oldversion < 2021082602) {
         // Define table zoom_tracking_fields to be created.
         $table = new xmldb_table('zoom_tracking_fields');
         
@@ -556,7 +556,7 @@ function xmldb_zoom_upgrade($oldversion) {
         $table->add_key('id_primary', XMLDB_KEY_PRIMARY, array('id'));
         
         // Adding indexes to table zoom_meeting_tracking_fields.
-        $table->add_index('meeting_id', XMLDB_INDEX_UNIQUE, array('meeting_id'));
+        $table->add_index('meeting_id', XMLDB_INDEX_NOTUNIQUE, array('meeting_id'));
         
         // Conditionally launch create table for zoom_meeting_tracking_fields.
         if (!$dbman->table_exists($table)) {
