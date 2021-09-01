@@ -30,6 +30,7 @@ require_once($CFG->libdir . '/environmentlib.php');
 if ($ADMIN->fulltree) {
     require_once($CFG->dirroot.'/mod/zoom/locallib.php');
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+    require_once($CFG->dirroot . '/mod/zoom/classes/invitation.php');
 
     $moodlehashideif = version_compare(normalize_version($CFG->release), '3.7.0', '>=');
 

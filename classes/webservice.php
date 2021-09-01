@@ -685,6 +685,9 @@ class mod_zoom_webservice {
      * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetinginvitation
      */
     public function get_meeting_invitation($zoom) {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/zoom/classes/invitation.php');
+
         // Webinar does not have meeting invite info.
         if ($zoom->webinar) {
             return new \mod_zoom\invitation(null);
