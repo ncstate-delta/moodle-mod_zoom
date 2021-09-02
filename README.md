@@ -32,6 +32,10 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.1.1
+
+- Fix invitation class not found exception #296 (thanks @byvamo for reporting)
+
 v4.1
 
 - Allow configuration of Zoom identifier #280 (thanks @jwalits, @abias, @jonlan)
