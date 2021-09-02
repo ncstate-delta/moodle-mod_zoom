@@ -1,4 +1,6 @@
 <?php
+use Symfony\Component\Config\Resource\ReflectionClassResource;
+
 // This file is part of the Zoom plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -116,14 +118,21 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom->id = $DB->insert_record('zoom', $zoom);
     
     // Store tracking field data for meeting.
-    foreach ($response->tracking_fields as $trackingfield) {
-        $tfid = $DB->get_field('zoom_tracking_fields', 'id', array('field' => $trackingfield->field));
-        $tfobject = new stdClass();
-        $tfobject->meeting_id = $zoom->id;
-        $tfobject->tracking_field_id = $tfid;
-        $fieldname = strtolower($trackingfield->field);
-        $tfobject->value = $zoom->$fieldname;
-        $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
+    $config = get_config('zoom');
+    $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
+    
+    foreach ($defaulttrackingfields as $trackingfield) {
+        $trackingfield = trim($trackingfield);
+        foreach ($response->tracking_fields as $rtf) {
+            if ($rtf->field == $trackingfield) {
+                $tfobject = new stdClass();
+                $tfobject->meeting_id = $zoom->id;
+                $fieldname = strtolower($trackingfield);
+                $tfobject->tracking_field = $fieldname;
+                $tfobject->value = $zoom->$fieldname;
+                $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
+            }
+        }
     }
 
     zoom_calendar_item_update($zoom);
@@ -189,10 +198,13 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     }
     
     // Update tracking field data for meeting.
-    $trackingfields = $DB->get_records('zoom_tracking_fields');
-    foreach ($trackingfields as $trackingfield) {
-        $tfobject = $DB->get_record('zoom_meeting_tracking_fields', array('meeting_id' => $updatedzoomrecord->id, 'tracking_field_id' => $trackingfield->id));
-        $fieldname = strtolower($trackingfield->field);
+    $config = get_config('zoom');
+    $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
+    
+    foreach ($defaulttrackingfields as $trackingfield) {
+        $trackingfield = trim($trackingfield);
+        $fieldname = strtolower($trackingfield);
+        $tfobject = $DB->get_record('zoom_meeting_tracking_fields', array('meeting_id' => $updatedzoomrecord->id, 'tracking_field' => $fieldname));
         $tfobject->value = $zoom->$fieldname;
         $DB->update_record('zoom_meeting_tracking_fields', $tfobject);
     }
@@ -640,35 +652,43 @@ function mod_zoom_core_calendar_provide_event_action(calendar_event $event,
 }
 
 function mod_zoom_update_tracking_fields() {
-    global $DB;
-    
     $config = get_config('zoom');
     $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
     $zoomtrackingfields = zoom_list_tracking_fields();
-    
-    // Zoom only allows 10 tracking fields, so it is simpler
-    // to delete existing DB records and insert records for
-    // changes to settings.
-    $DB->delete_records('zoom_tracking_fields');
+    $configtypes = array('id', 'field', 'required', 'visible', 'recommended_values');
+    $configvalue = '';
+    $confignames = array();
     
     foreach ($defaulttrackingfields as $defaulttrackingfield) {
+        $defaulttrackingfield = trim($defaulttrackingfield);
         foreach ($zoomtrackingfields as $zoomtrackingfield) {
-            $defaulttrackingfield = trim($defaulttrackingfield);
             $key = array_search($defaulttrackingfield, $zoomtrackingfield);
             if ($key) {
-                $trackingfield = new stdClass;
-                $trackingfield->zoomid = $zoomtrackingfield['id'];
-                $trackingfield->field = $zoomtrackingfield['field'];
-                $trackingfield->required = $zoomtrackingfield['required'];
-                $trackingfield->visible = $zoomtrackingfield['visible'];
-                $trackingfield->recommended_values = '';
-                foreach ($zoomtrackingfield['recommended_values'] as $rv) {
-                    $trackingfield->recommended_values .= $rv . ', ';
+                foreach ($configtypes as $configtype) {
+                    $configname = 'tf_' . strtolower($defaulttrackingfield) . '_' . $configtype;
+                    $confignames[] = $configname;
+                    if ($configtype == 'recommended_values') {
+                        foreach ($zoomtrackingfield[$configtype] as $rv) {
+                            $configvalue .= $rv . ', ';
+                        }
+                        $configvalue = rtrim($configvalue, ', ');
+                    } else {
+                        $configvalue = $zoomtrackingfield[$configtype];
+                    }
+                    set_config($configname, $configvalue, 'zoom');
                 }
-                $trackingfield->recommended_values = rtrim($trackingfield->recommended_values, ', ');
-                $DB->insert_record('zoom_tracking_fields', $trackingfield);
                 break;
             }
+        }
+    }
+    
+    $proparray = get_object_vars($config);
+    $properties = array_keys($proparray);
+    $oldconfigs = array_diff($properties, $confignames);
+    $pattern = '/^tf_/';
+    foreach ($oldconfigs as $oldconfig) {
+        if (preg_match($pattern, $oldconfig)) {
+            set_config($oldconfig, null, 'zoom');
         }
     }
 }

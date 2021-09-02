@@ -297,7 +297,7 @@ if ($ADMIN->fulltree) {
         get_string('trackingfields', 'mod_zoom'),
         get_string('trackingfields_help', 'mod_zoom'), '');
     $defaulttrackingfields->set_updatedcallback('mod_zoom_update_tracking_fields');
-    $settings->add($defaulttrackingfields);   
+    $settings->add($defaulttrackingfields);
 
     $invitationregexhelp = get_string('invitationregex_help', 'mod_zoom');
     if (!$moodlehashideif) {

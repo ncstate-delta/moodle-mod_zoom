@@ -595,13 +595,15 @@ class mod_zoom_webservice {
         }
         
         // Add tracking field to data.
-        $trackingfields = $DB->get_records('zoom_tracking_fields');
+        $config = get_config('zoom');
+        $trackingfields = explode(",", $config->defaulttrackingfields);
         $tfarray = array();
         foreach ($trackingfields as $trackingfield) {
-            $fieldname = strtolower($trackingfield->field);
+            $trackingfield = trim($trackingfield);
+            $fieldname = strtolower($trackingfield);
             if (isset($zoom->$fieldname)) {
                 $tf = new stdClass();
-                $tf->field = $trackingfield->field;
+                $tf->field = $trackingfield;
                 $tf->value = $zoom->$fieldname;
                 $tfarray[] = $tf;
             }
@@ -816,22 +818,6 @@ class mod_zoom_webservice {
         $response = null;
         try {
             $response = $this->_make_call('tracking_fields');
-        } catch (moodle_exception $error) {
-            throw $error;
-        }
-        return $response;
-    }
-    
-    /**
-     * Gets a tracking field.
-     *
-     * @return stdClass The call's result in JSON format.
-     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/trackingfield/trackingfieldget
-     */
-    public function get_tracking_field($fieldid) {
-        $response = null;
-        try {
-            $response = $this->_make_call("tracking_fields/$fieldid");
         } catch (moodle_exception $error) {
             throw $error;
         }

@@ -314,15 +314,21 @@ class mod_zoom_mod_form extends moodleform_mod {
         }
         
         // Add tracking fields, if configured.
-        $trackingfields = $DB->get_records('zoom_tracking_fields');
+        $config = get_config('zoom');
+        $trackingfields = explode(",", $config->defaulttrackingfields);
         foreach ($trackingfields as $trackingfield) {
-            $mform->addElement('text', strtolower($trackingfield->field), $trackingfield->field);
-            $mform->setType(strtolower($trackingfield->field), PARAM_TEXT);
-            if ($trackingfield->recommended_values != '') {
-                $mform->addElement('static', strtolower($trackingfield->field) . 'rec', null, 'Recommended values: ' . $trackingfield->recommended_values);
+            $trackingfield = trim($trackingfield);
+            $mform->addElement('text', strtolower($trackingfield), $trackingfield);
+            $mform->setType(strtolower($trackingfield), PARAM_TEXT);
+            $rvprop = 'tf_' . strtolower($trackingfield) . '_recommended_values';
+            $rvs = $config->$rvprop;
+            if ($rvs) {
+                $mform->addElement('static', strtolower($trackingfield) . 'rec', null, 'Recommended values: ' . $rvs);
             }
-            if ($trackingfield->required) {
-                $mform->addRule(strtolower($trackingfield->field), null, 'required', null, 'client');
+            $reqprop = 'tf_' . strtolower($trackingfield) . '_required';
+            $required = $config->$reqprop;
+            if ($required) {
+                $mform->addRule(strtolower($trackingfield), null, 'required', null, 'client');
             }
         }
 
@@ -658,15 +664,13 @@ class mod_zoom_mod_form extends moodleform_mod {
             $trackingfields = explode(',', $config->defaulttrackingfields);
             foreach ($trackingfields as $trackingfield) {
                 $trackingfield = trim($trackingfield);
-                $tfid = $DB->get_field('zoom_tracking_fields', 'id', array('field' => $trackingfield));
-                $tfvalue = $DB->get_field('zoom_meeting_tracking_fields', 'value', array('meeting_id' => $defaultvalues['id'], 'tracking_field_id' => $tfid));
+                $tfvalue = $DB->get_field('zoom_meeting_tracking_fields', 'value', array('meeting_id' => $defaultvalues['id'], 'tracking_field' => strtolower($trackingfield)));
                 if ($tfvalue != false) {
                     $defaultvalues[strtolower($trackingfield)] = $tfvalue;
                 }
             }
         }
     }
-
 
     /**
      * More validation on form data.

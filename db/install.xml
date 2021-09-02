@@ -94,27 +94,11 @@
         <INDEX NAME="uuid" UNIQUE="false" FIELDS="uuid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="zoom_tracking_fields" COMMENT="A list of tracking fields configured in Zoom.">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="zoomid" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The Zoom id of the tracking field"/>
-        <FIELD NAME="field" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The label/name for the tracking field"/>
-        <FIELD NAME="required" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Is the tracking field required from Zoom?"/>
-        <FIELD NAME="visible" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Is the tracking field visible in Zoom?"/>
-        <FIELD NAME="recommended_values" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Recommended values from Zoom"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="field" UNIQUE="true" FIELDS="field"/>
-      </INDEXES>
-    </TABLE>
-    <TABLE NAME="zoom_meeting_tracking_fields" COMMENT="A list of tracking fields values for meetings in Zoom.">
+    <TABLE NAME="zoom_meeting_tracking_fields" COMMENT="A list of tracking field values for meetings in Zoom.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The id of the meeting from the DB table."/>
-        <FIELD NAME="tracking_field_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The id of the tracking field from the DB table."/>
+        <FIELD NAME="tracking_field" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The label/name for the tracking field."/>
         <FIELD NAME="value" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Configured value for tracking field."/>
       </FIELDS>
       <KEYS>
@@ -122,6 +106,7 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="meeting_id" UNIQUE="false" FIELDS="meeting_id"/>
+        <INDEX NAME="tracking_field" UNIQUE="false" FIELDS="tracking_field"/>
       </INDEXES>
     </TABLE>
   </TABLES>
