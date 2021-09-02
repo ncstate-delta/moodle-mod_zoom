@@ -101,8 +101,16 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
         
         $data->meeting_id = $this->get_new_parentid('zoom');
         
-        $newitemid = $DB->insert_record('zoom_meeting_tracking_fields', $data);
-        $this->set_mapping('zoom_tracking_field', $oldid, $newitemid);
+        $config = get_config('zoom');
+        $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
+        
+        foreach ($defaulttrackingfields as $key => $trackingfield) {
+            $defaulttrackingfields[$key] = strtolower(trim($trackingfield));
+        }
+        if (in_array($data->tracking_field, $defaulttrackingfields)) {
+            $newitemid = $DB->insert_record('zoom_meeting_tracking_fields', $data);
+            $this->set_mapping('zoom_tracking_field', $oldid, $newitemid);
+        }
     }
 
     /**

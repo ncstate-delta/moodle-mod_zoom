@@ -652,6 +652,8 @@ function mod_zoom_core_calendar_provide_event_action(calendar_event $event,
 }
 
 function mod_zoom_update_tracking_fields() {
+    global $DB;
+    
     $config = get_config('zoom');
     $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
     $zoomtrackingfields = zoom_list_tracking_fields();
@@ -685,10 +687,11 @@ function mod_zoom_update_tracking_fields() {
     $proparray = get_object_vars($config);
     $properties = array_keys($proparray);
     $oldconfigs = array_diff($properties, $confignames);
-    $pattern = '/^tf_/';
+    $pattern = '/^tf_([^_]*)_.*/';
     foreach ($oldconfigs as $oldconfig) {
-        if (preg_match($pattern, $oldconfig)) {
+        if (preg_match($pattern, $oldconfig, $oldfield)) {
             set_config($oldconfig, null, 'zoom');
+            $DB->delete_records('zoom_meeting_tracking_fields', array('tracking_field' => $oldfield[1]));
         }
     }
 }
