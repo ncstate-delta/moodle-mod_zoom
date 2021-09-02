@@ -42,6 +42,7 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
 
         $paths = array();
         $paths[] = new restore_path_element('zoom', '/activity/zoom');
+        $paths[] = new restore_path_element('zoom_tracking_field', '/activity/zoom/trackingfields/trackingfield');
 
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
@@ -90,6 +91,18 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
         $data->id = $newitemid;
         $zoom = populate_zoom_from_response($data, $updateddata);
         zoom_calendar_item_update($zoom);
+    }
+    
+    protected function process_zoom_tracking_field($data) {
+        global $DB;
+        
+        $data = (object)$data;
+        $oldid = $data->id;
+        
+        $data->meeting_id = $this->get_new_parentid('zoom');
+        
+        $newitemid = $DB->insert_record('zoom_meeting_tracking_fields', $data);
+        $this->set_mapping('zoom_tracking_field', $oldid, $newitemid);
     }
 
     /**
