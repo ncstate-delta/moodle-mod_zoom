@@ -175,6 +175,7 @@ class mod_zoom_external extends external_api {
     public static function grade_item_update($zoomid) {
         global $DB, $CFG, $USER;
         require_once($CFG->dirroot . "/mod/zoom/lib.php");
+        require_once($CFG->dirroot . "/mod/zoom/locallib.php");
         require_once($CFG->libdir . '/gradelib.php');
 
         $params = self::validate_parameters(self::get_state_parameters(),
@@ -193,30 +194,41 @@ class mod_zoom_external extends external_api {
 
         require_capability('mod/zoom:view', $context);
 
-        // Check whether user had a grade. If no, then assign full credits to him or her.
-        $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
+        $userishost = (zoom_get_user_id(false) == $zoom->host_id);
 
-        // Assign full credits for user who has no grade yet, if this meeting is gradable
-        // (i.e. the grade type is not "None").
-        if (!empty($gradelist->items) && empty($gradelist->items[0]->grades[$USER->id]->grade)) {
-            $grademax = $gradelist->items[0]->grademax;
-            $grades = array('rawgrade' => $grademax,
-                            'userid' => $USER->id,
-                            'usermodified' => $USER->id,
-                            'dategraded' => '',
-                            'feedbackformat' => '',
-                            'feedback' => '');
-            // Call the zoom/lib API.
-            zoom_grade_item_update($zoom, $grades);
+        if ($userishost) {
+            $joinurl = new moodle_url($zoom->start_url, array('uname' => fullname($USER)));
+        } else {
+            // Check whether user had a grade. If no, then assign full credits to him or her.
+            $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
+
+            // Assign full credits for user who has no grade yet, if this meeting is gradable
+            // (i.e. the grade type is not "None").
+            if (!empty($gradelist->items) && empty($gradelist->items[0]->grades[$USER->id]->grade)) {
+                $grademax = $gradelist->items[0]->grademax;
+                $grades = array('rawgrade' => $grademax,
+                                'userid' => $USER->id,
+                                'usermodified' => $USER->id,
+                                'dategraded' => '',
+                                'feedbackformat' => '',
+                                'feedback' => '');
+                // Call the zoom/lib API.
+                zoom_grade_item_update($zoom, $grades);
+            }
+
+            $joinurl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
         }
 
         // Track completion viewed.
         $completion = new completion_info($course);
         $completion->set_module_viewed($cm);
 
-        // Pass url to join zoom meeting in order to redirect user.
-        $joinurl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
+        // Record user's clicking join.
+        \mod_zoom\event\join_meeting_button_clicked::create(array('context' => $context, 'objectid' => $zoom->id, 'other' =>
+            array('cmid' => (int) $cm->id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
 
+
+        // Pass url to join zoom meeting in order to redirect user.
         $result = array();
         $result['status'] = true;
         $result['joinurl'] = $joinurl->__toString();
