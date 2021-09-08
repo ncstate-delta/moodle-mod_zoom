@@ -228,7 +228,6 @@ class mod_zoom_external extends external_api {
         \mod_zoom\event\join_meeting_button_clicked::create(array('context' => $context, 'objectid' => $zoom->id, 'other' =>
             array('cmid' => (int) $cm->id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
 
-
         // Pass url to join zoom meeting in order to redirect user.
         $result = array();
         $result['status'] = true;
