@@ -197,7 +197,8 @@ class mod_zoom_external extends external_api {
         $userishost = (zoom_get_user_id(false) == $zoom->host_id);
 
         if ($userishost) {
-            $joinurl = new moodle_url($zoom->start_url, array('uname' => fullname($USER)));
+            // Start URL will not launch Zoom app, so using join url instead.
+            $joinurl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
         } else {
             // Check whether user had a grade. If no, then assign full credits to him or her.
             $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
