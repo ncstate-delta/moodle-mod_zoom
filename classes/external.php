@@ -173,9 +173,8 @@ class mod_zoom_external extends external_api {
      * @throws moodle_exception
      */
     public static function grade_item_update($zoomid) {
-        global $DB, $CFG, $USER;
-        require_once($CFG->dirroot . "/mod/zoom/lib.php");
-        require_once($CFG->libdir . '/gradelib.php');
+        global $CFG;
+        require_once($CFG->dirroot . "/mod/zoom/locallib.php");
 
         $params = self::validate_parameters(self::get_state_parameters(),
                                             array(
@@ -183,43 +182,21 @@ class mod_zoom_external extends external_api {
                                             ));
         $warnings = array();
 
-        // Request and permission validation.
-        $cm = $DB->get_record('course_modules', array('id' => $params['zoomid']), '*', MUST_EXIST);
-        $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
-        $course  = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-
-        $context = context_module::instance($cm->id);
+        $context = context_module::instance($params['zoomid']);
         self::validate_context($context);
 
-        require_capability('mod/zoom:view', $context);
-
-        // Check whether user had a grade. If no, then assign full credits to him or her.
-        $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
-
-        // Assign full credits for user who has no grade yet, if this meeting is gradable
-        // (i.e. the grade type is not "None").
-        if (!empty($gradelist->items) && empty($gradelist->items[0]->grades[$USER->id]->grade)) {
-            $grademax = $gradelist->items[0]->grademax;
-            $grades = array('rawgrade' => $grademax,
-                            'userid' => $USER->id,
-                            'usermodified' => $USER->id,
-                            'dategraded' => '',
-                            'feedbackformat' => '',
-                            'feedback' => '');
-            // Call the zoom/lib API.
-            zoom_grade_item_update($zoom, $grades);
-        }
-
-        // Track completion viewed.
-        $completion = new completion_info($course);
-        $completion->set_module_viewed($cm);
+        // Call load meeting function, do not use start url on mobile.
+        $meetinginfo = zoom_load_meeting($params['zoomid'], $context, $usestarturl = false);
 
         // Pass url to join zoom meeting in order to redirect user.
-        $joinurl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
-
         $result = array();
-        $result['status'] = true;
-        $result['joinurl'] = $joinurl->__toString();
+        if ($meetinginfo['nexturl']) {
+            $result['status'] = true;
+            $result['joinurl'] = $meetinginfo['nexturl']->__toString();
+        } else {
+            $result['status'] = false;
+            $result['joinurl'] = '';
+        }
         $result['warnings'] = $warnings;
         return $result;
     }
