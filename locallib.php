@@ -1018,3 +1018,83 @@ function zoom_get_api_url() {
     // Return API URL.
     return $apiurl;
 }
+
+/**
+ * Loads the zoom meeting and passes back a meeting url
+ * after processing events, view completion, grades, and license updates.
+ *
+ * @param int $id course module id
+ * @param object $context moodle context object
+ * @param bool $usestarturl
+ * @return array $returns contains url object 'nexturl' or string 'error'
+ */
+function zoom_load_meeting($id, $context, $usestarturl = true) {
+    global $CFG, $DB, $USER;
+    require_once($CFG->libdir . '/gradelib.php');
+
+    $cm         = get_coursemodule_from_id('zoom', $id, 0, false, MUST_EXIST);
+    $course     = get_course($cm->course);
+    $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
+
+    require_login($course, true, $cm);
+
+    require_capability('mod/zoom:view', $context);
+
+    $returns = array('nexturl' => null, 'error' => null);
+
+    list($inprogress, $available, $finished) = zoom_get_state($zoom);
+
+    // If the meeting is not yet available, deny access.
+    if ($available !== true) {
+        // Get unavailability note.
+        $returns['error'] = zoom_get_unavailability_note($zoom, $finished);
+        return $returns;
+    }
+
+    $userisrealhost = (zoom_get_user_id(false) === $zoom->host_id);
+    $alternativehosts = zoom_get_alternative_host_array_from_string($zoom->alternative_hosts);
+    $userishost = ($userisrealhost || in_array(zoom_get_api_identifier($USER), $alternativehosts, true));
+
+    // Check if we should use the start meeting url.
+    if ($userisrealhost && $usestarturl) {
+        // Important: Only the real host can use this URL, because it joins the meeting as the host user.
+        $returns['nexturl'] = new moodle_url($zoom->start_url);
+    } else {
+        $returns['nexturl'] = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
+    }
+
+    // Record user's clicking join.
+    \mod_zoom\event\join_meeting_button_clicked::create(array('context' => $context, 'objectid' => $zoom->id, 'other' =>
+            array('cmid' => $id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
+
+    // Track completion viewed.
+    $completion = new completion_info($course);
+    $completion->set_module_viewed($cm);
+
+    // Check whether user had a grade. If no, then assign full credits to him or her.
+    $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
+
+    // Assign full credits for user who has no grade yet, if this meeting is gradable (i.e. the grade type is not "None").
+    if (!empty($gradelist->items) && empty($gradelist->items[0]->grades[$USER->id]->grade)) {
+        $grademax = $gradelist->items[0]->grademax;
+        $grades = array('rawgrade' => $grademax,
+                        'userid' => $USER->id,
+                        'usermodified' => $USER->id,
+                        'dategraded' => '',
+                        'feedbackformat' => '',
+                        'feedback' => '');
+
+        zoom_grade_item_update($zoom, $grades);
+    }
+
+    // Upgrade host upon joining meeting, if host if not Licensed.
+    if ($userishost) {
+        $config = get_config('zoom');
+        if (!empty($config->recycleonjoin)) {
+            $service = new mod_zoom_webservice();
+            $service->provide_license($zoom->host_id);
+        }
+    }
+
+    return $returns;
+}
