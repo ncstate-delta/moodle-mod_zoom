@@ -194,7 +194,7 @@ class mod_zoom_external extends external_api {
             $result['status'] = true;
             $result['joinurl'] = $meetinginfo['nexturl']->__toString();
         } else {
-            $warningmsg = clean_param($meetinginfo['error'],PARAM_TEXT);
+            $warningmsg = clean_param($meetinginfo['error'], PARAM_TEXT);
             throw new invalid_response_exception($warningmsg);
         }
         $result['warnings'] = $warnings;
