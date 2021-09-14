@@ -33,7 +33,7 @@ if ($id) {
 
     // Call load meeting function.
     $meetinginfo = zoom_load_meeting($id, $context);
-	
+
     // Redirect if available, otherwise deny access.
     if ($meetinginfo['nexturl']) {
         redirect($meetinginfo['nexturl']);
