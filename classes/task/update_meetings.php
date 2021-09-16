@@ -158,10 +158,11 @@ class update_meetings extends \core\task\scheduled_task {
                     mtrace('  => Updated calendar items for recurring Zoom meeting ID ' . $zoom->meeting_id);
                     zoom_calendar_item_update($newzoom);
                 }
-                
+
                 foreach ($response->tracking_fields as $tf) {
                     $fieldname = strtolower($tf->field);
-                    $oldtf = $DB->get_record('zoom_meeting_tracking_fields', array('meeting_id' => $zoom->id, 'tracking_field' => $fieldname));
+                    $oldtf = $DB->get_record('zoom_meeting_tracking_fields',
+                        array('meeting_id' => $zoom->id, 'tracking_field' => $fieldname));
                     if ($oldtf && ($oldtf->value != $tf->value)) {
                         $oldtf->value = $tf->value;
                         $DB->update_record('zoom_meeting_tracking_fields', $oldtf);

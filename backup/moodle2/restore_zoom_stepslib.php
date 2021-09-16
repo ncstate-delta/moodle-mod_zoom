@@ -92,18 +92,23 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
         $zoom = populate_zoom_from_response($data, $updateddata);
         zoom_calendar_item_update($zoom);
     }
-    
+
+    /**
+     * Process the zoom tracking fields.
+     *
+     * @param array $data
+     */
     protected function process_zoom_tracking_field($data) {
         global $DB;
-        
+
         $data = (object)$data;
         $oldid = $data->id;
-        
+
         $data->meeting_id = $this->get_new_parentid('zoom');
-        
+
         $config = get_config('zoom');
         $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
-        
+
         foreach ($defaulttrackingfields as $key => $trackingfield) {
             $defaulttrackingfields[$key] = strtolower(trim($trackingfield));
         }

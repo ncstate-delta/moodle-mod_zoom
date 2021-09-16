@@ -593,7 +593,7 @@ class mod_zoom_webservice {
             $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->start_time);
             $data['duration'] = (int) ceil($zoom->duration / 60);
         }
-        
+
         // Add tracking field to data.
         $config = get_config('zoom');
         $trackingfields = explode(",", $config->defaulttrackingfields);

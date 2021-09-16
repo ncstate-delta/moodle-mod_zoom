@@ -312,7 +312,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                         get_string('webinar_already_false', 'zoom'));
             }
         }
-        
+
         // Add tracking fields, if configured.
         $config = get_config('zoom');
         $trackingfields = explode(",", $config->defaulttrackingfields);
@@ -658,13 +658,14 @@ class mod_zoom_mod_form extends moodleform_mod {
                 );
             }
         }
-        
+
         if ($config->defaulttrackingfields != '') {
             // Populate modedit form fields with previously saved values.
             $trackingfields = explode(',', $config->defaulttrackingfields);
             foreach ($trackingfields as $trackingfield) {
                 $trackingfield = trim($trackingfield);
-                $tfvalue = $DB->get_field('zoom_meeting_tracking_fields', 'value', array('meeting_id' => $defaultvalues['id'], 'tracking_field' => strtolower($trackingfield)));
+                $tfvalue = $DB->get_field('zoom_meeting_tracking_fields', 'value',
+                    array('meeting_id' => $defaultvalues['id'], 'tracking_field' => strtolower($trackingfield)));
                 if ($tfvalue != false) {
                     $defaultvalues[strtolower($trackingfield)] = $tfvalue;
                 }
