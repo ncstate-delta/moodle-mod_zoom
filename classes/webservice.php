@@ -819,7 +819,7 @@ class mod_zoom_webservice {
         try {
             $response = $this->_make_call('tracking_fields');
         } catch (moodle_exception $error) {
-            throw $error;
+            debugging($error->getMessage());
         }
         return $response;
     }

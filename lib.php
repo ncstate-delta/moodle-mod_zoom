@@ -653,37 +653,39 @@ function mod_zoom_core_calendar_provide_event_action(calendar_event $event,
 
 function mod_zoom_update_tracking_fields() {
     global $DB;
-    
+
     $config = get_config('zoom');
     $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
     $zoomtrackingfields = zoom_list_tracking_fields();
     $configtypes = array('id', 'field', 'required', 'visible', 'recommended_values');
     $configvalue = '';
     $confignames = array();
-    
+
     foreach ($defaulttrackingfields as $defaulttrackingfield) {
         $defaulttrackingfield = trim($defaulttrackingfield);
-        foreach ($zoomtrackingfields as $zoomtrackingfield) {
-            $key = array_search($defaulttrackingfield, $zoomtrackingfield);
-            if ($key) {
-                foreach ($configtypes as $configtype) {
-                    $configname = 'tf_' . strtolower($defaulttrackingfield) . '_' . $configtype;
-                    $confignames[] = $configname;
-                    if ($configtype == 'recommended_values') {
-                        foreach ($zoomtrackingfield[$configtype] as $rv) {
-                            $configvalue .= $rv . ', ';
+        if ($defaulttrackingfield != '') {
+            foreach ($zoomtrackingfields as $zoomtrackingfield) {
+                $key = array_search($defaulttrackingfield, $zoomtrackingfield);
+                if ($key) {
+                    foreach ($configtypes as $configtype) {
+                        $configname = 'tf_' . strtolower($defaulttrackingfield) . '_' . $configtype;
+                        $confignames[] = $configname;
+                        if ($configtype == 'recommended_values') {
+                            foreach ($zoomtrackingfield[$configtype] as $rv) {
+                                $configvalue .= $rv . ', ';
+                            }
+                            $configvalue = rtrim($configvalue, ', ');
+                        } else {
+                            $configvalue = $zoomtrackingfield[$configtype];
                         }
-                        $configvalue = rtrim($configvalue, ', ');
-                    } else {
-                        $configvalue = $zoomtrackingfield[$configtype];
+                        set_config($configname, $configvalue, 'zoom');
                     }
-                    set_config($configname, $configvalue, 'zoom');
+                    break;
                 }
-                break;
             }
         }
     }
-    
+
     $proparray = get_object_vars($config);
     $properties = array_keys($proparray);
     $oldconfigs = array_diff($properties, $confignames);
