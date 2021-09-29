@@ -174,12 +174,14 @@ class mod_zoom_external extends external_api {
      */
     public static function grade_item_update($zoomid) {
         global $CFG;
-        require_once($CFG->dirroot . "/mod/zoom/locallib.php");
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
-        $params = self::validate_parameters(self::get_state_parameters(),
-                                            array(
-                                                'zoomid' => $zoomid
-                                            ));
+        $params = self::validate_parameters(
+            self::get_state_parameters(),
+            array(
+                'zoomid' => $zoomid,
+            )
+        );
         $warnings = array();
 
         $context = context_module::instance($params['zoomid']);
