@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// phpcs:ignore moodle.Files.RequireLogin.Missing
 require_once(dirname(dirname(__DIR__)) . '/config.php');
 require_once(__DIR__ . '/locallib.php');
 
@@ -31,7 +32,7 @@ if ($id) {
     $context = context_module::instance($id);
     $PAGE->set_context($context);
 
-    // Call load meeting function.
+    // Call load meeting function (note: this is where require_login() happens).
     $meetinginfo = zoom_load_meeting($id, $context);
 
     // Redirect if available, otherwise deny access.
