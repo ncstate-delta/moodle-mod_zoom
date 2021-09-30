@@ -237,7 +237,13 @@ class mod_zoom_mod_form extends moodleform_mod {
         $monthlyweekoptions = zoom_get_monthweek_options();
 
         $group = [];
-        $group[] = $mform->createElement('radio', 'monthly_repeat_option', '', get_string('day', 'calendar'), ZOOM_MONTHLY_REPEAT_OPTION_DAY);
+        $group[] = $mform->createElement(
+            'radio',
+            'monthly_repeat_option',
+            '',
+            get_string('day', 'calendar'),
+            ZOOM_MONTHLY_REPEAT_OPTION_DAY
+        );
         $group[] = $mform->createElement('select', 'monthly_day', '', $monthoptions);
         $group[] = $mform->createElement('static', 'month_day_text', '', get_string('month_day_text', 'zoom'));
         $group[] = $mform->createElement('radio', 'monthly_repeat_option', '', '', ZOOM_MONTHLY_REPEAT_OPTION_WEEK);
@@ -255,9 +261,21 @@ class mod_zoom_mod_form extends moodleform_mod {
             $maxoptions[$i] = $i;
         }
         $group = [];
-        $group[] = $mform->createElement('radio', 'end_date_option', '', get_string('end_date_option_by', 'zoom'), ZOOM_END_DATE_OPTION_BY);
+        $group[] = $mform->createElement(
+            'radio',
+            'end_date_option',
+            '',
+            get_string('end_date_option_by', 'zoom'),
+            ZOOM_END_DATE_OPTION_BY
+        );
         $group[] = $mform->createElement('date_selector', 'end_date_time', '');
-        $group[] = $mform->createElement('radio', 'end_date_option', '', get_string('end_date_option_after', 'zoom'), ZOOM_END_DATE_OPTION_AFTER);
+        $group[] = $mform->createElement(
+            'radio',
+            'end_date_option',
+            '',
+            get_string('end_date_option_after', 'zoom'),
+            ZOOM_END_DATE_OPTION_AFTER
+        );
         $group[] = $mform->createElement('select', 'end_times', '', $maxoptions);
         $group[] = $mform->createElement('static', 'end_times_text', '', get_string('end_date_option_occurrences', 'zoom'));
         $mform->addGroup($group, 'radioenddate', get_string('enddate', 'zoom'), null, false);
