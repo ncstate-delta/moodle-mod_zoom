@@ -292,7 +292,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             // If we are creating a new instance.
             if ($isnew) {
                 // Check if the user has a webinar license.
-                $haswebinarlicense = $service->_get_user_settings($zoomuser->id)->feature->webinar;
+                $haswebinarlicense = $service->get_user_settings($zoomuser->id)->feature->webinar;
 
                 // Only show if the admin always wants to show this widget or
                 // if the admin wants to show this widget conditionally and the user has a valid license.
