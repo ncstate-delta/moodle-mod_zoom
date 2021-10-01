@@ -30,6 +30,7 @@ require_once($CFG->libdir . '/environmentlib.php');
 if ($ADMIN->fulltree) {
     require_once($CFG->dirroot.'/mod/zoom/locallib.php');
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+    require_once($CFG->dirroot . '/mod/zoom/classes/invitation.php');
 
     $moodlehashideif = version_compare(normalize_version($CFG->release), '3.7.0', '>=');
 
@@ -42,7 +43,7 @@ if ($ADMIN->fulltree) {
         $errormessage = '';
         try {
             $service = new mod_zoom_webservice();
-            $service->get_user($USER->email);
+            $service->get_user(zoom_get_api_identifier($USER));
         } catch (moodle_exception $error) {
             $notifyclass = 'notifyproblem';
             $status = 'connectionfailed';
@@ -71,10 +72,24 @@ if ($ADMIN->fulltree) {
             get_string('zoomurl_desc', 'mod_zoom'), '', PARAM_URL);
     $settings->add($zoomurl);
 
+    $apiendpointchoices = array(ZOOM_API_ENDPOINT_GLOBAL => get_string('apiendpoint_global', 'mod_zoom'),
+            ZOOM_API_ENDPOINT_EU => get_string('apiendpoint_eu', 'mod_zoom'));
+    $apiendpoint = new admin_setting_configselect('zoom/apiendpoint',
+            get_string('apiendpoint', 'mod_zoom'),
+            get_string('apiendpoint_desc', 'mod_zoom'),
+            ZOOM_API_ENDPOINT_GLOBAL,
+            $apiendpointchoices);
+    $settings->add($apiendpoint);
+
     $proxyhost = new admin_setting_configtext('zoom/proxyhost',
             get_string('option_proxyhost', 'mod_zoom'),
             get_string('option_proxyhost_desc', 'mod_zoom'), '', '/^[a-zA-Z0-9.-]+:[0-9]+$|^$/');
     $settings->add($proxyhost);
+
+    $apiidentifier = new admin_setting_configselect('zoom/apiidentifier',
+        get_string('apiidentifier', 'mod_zoom'), get_string('apiidentifier_desc', 'mod_zoom'),
+        'email', zoom_get_api_identifier_fields());
+    $settings->add($apiidentifier);
 
     // License settings.
     $settings->add(new admin_setting_heading('zoom/licensesettings',
@@ -305,6 +320,14 @@ if ($ADMIN->fulltree) {
         $settings->hide_if('zoom/invitationremoveinvite', 'zoom/invitationregexenabled', 'eq', 0);
     }
 
+    $settings->add(new admin_setting_configcheckbox('zoom/invitationremoveicallink',
+            get_string('invitationremoveicallink', 'mod_zoom'),
+            get_string('invitationremoveicallink_help', 'mod_zoom'),
+            0, 1, 0));
+    if ($moodlehashideif) {
+        $settings->hide_if('zoom/invitationremoveicallink', 'zoom/invitationregexenabled', 'eq', 0);
+    }
+
     // Allow admin to modify regex for invitation parts if zoom api changes.
     foreach (\mod_zoom\invitation::get_default_invitation_regex() as $element => $pattern) {
         $name = 'zoom/' . \mod_zoom\invitation::PREFIX . $element;
@@ -317,8 +340,9 @@ if ($ADMIN->fulltree) {
         }
     }
 
-    // Extra hideif for invite element.
+    // Extra hideif for elements which can be enabled / disabled individually.
     if ($moodlehashideif) {
         $settings->hide_if('zoom/invitation_invite', 'zoom/invitationremoveinvite', 'eq', 0);
+        $settings->hide_if('zoom/invitation_icallink', 'zoom/invitationremoveicallink', 'eq', 0);
     }
 }

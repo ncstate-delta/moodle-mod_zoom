@@ -40,7 +40,7 @@ class mod_zoom_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
-        global $PAGE, $USER, $DB;
+        global $PAGE, $USER;
         $config = get_config('zoom');
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
         $zoomapiidentifier = zoom_get_api_identifier($USER);
@@ -314,21 +314,17 @@ class mod_zoom_mod_form extends moodleform_mod {
         }
 
         // Add tracking fields, if configured.
-        $config = get_config('zoom');
-        $trackingfields = explode(",", $config->defaulttrackingfields);
-        foreach ($trackingfields as $trackingfield) {
-            $trackingfield = trim($trackingfield);
-            $mform->addElement('text', strtolower($trackingfield), $trackingfield);
-            $mform->setType(strtolower($trackingfield), PARAM_TEXT);
-            $rvprop = 'tf_' . strtolower($trackingfield) . '_recommended_values';
-            $rvs = $config->$rvprop;
-            if ($rvs) {
-                $mform->addElement('static', strtolower($trackingfield) . 'rec', null, 'Recommended values: ' . $rvs);
+        $defaulttrackingfields = clean_tracking_fields();
+        foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
+            $mform->addElement('text', $key, $defaulttrackingfield);
+            $mform->setType($key, PARAM_TEXT);
+            $rvprop = 'tf_' . $key . '_recommended_values';
+            if (!empty($config->$rvprop)) {
+                $mform->addElement('static', $key . '_recommended_values', null, get_string('trackingfields_recommendedvalues', 'mod_zoom') . $config->$rvprop);
             }
-            $reqprop = 'tf_' . strtolower($trackingfield) . '_required';
-            $required = $config->$reqprop;
-            if ($required) {
-                $mform->addRule(strtolower($trackingfield), null, 'required', null, 'client');
+            $requiredproperty = 'tf_' . $key . '_required';
+            if (!empty($config->$requiredproperty)) {
+                $mform->addRule($key, null, 'required', null, 'client');
             }
         }
 
@@ -515,7 +511,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $mform->addHelpButton('schedule_for', 'schedulefor', 'zoom');
             }
         }
-        
+
         // Add meeting id.
         $mform->addElement('hidden', 'meeting_id', -1);
         $mform->setType('meeting_id', PARAM_ALPHANUMEXT);
@@ -659,15 +655,14 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
         }
 
-        if ($config->defaulttrackingfields != '') {
+        if ($config->defaulttrackingfields !== '') {
             // Populate modedit form fields with previously saved values.
-            $trackingfields = explode(',', $config->defaulttrackingfields);
-            foreach ($trackingfields as $trackingfield) {
-                $trackingfield = trim($trackingfield);
+            $defaulttrackingfields = clean_tracking_fields();
+            foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
                 $tfvalue = $DB->get_field('zoom_meeting_tracking_fields', 'value',
-                    array('meeting_id' => $defaultvalues['id'], 'tracking_field' => strtolower($trackingfield)));
-                if ($tfvalue != false) {
-                    $defaultvalues[strtolower($trackingfield)] = $tfvalue;
+                    array('meeting_id' => $defaultvalues['id'], 'tracking_field' => $key));
+                if (!empty($tfvalue)) {
+                    $defaultvalues[$key] = $tfvalue;
                 }
             }
         }

@@ -892,7 +892,6 @@ function zoom_get_alternative_host_array_from_string($alternativehoststring) {
 }
 
 /**
-<<<<<<< HEAD
  * Get all custom user profile fields of type text
  *
  * @return array list of user profile fields
@@ -1006,7 +1005,6 @@ function zoom_get_api_url() {
 
     // Return API URL.
     return $apiurl;
-    
 }
 
 /**
@@ -1145,21 +1143,31 @@ function zoom_list_tracking_fields() {
  *
  * @return array tracking fields trimmed, keys as lower case
  */
+<<<<<<< HEAD
 function zoom_clean_tracking_fields() {
+=======
+function clean_tracking_fields() {
+>>>>>>> Resolve PR #308 comments
     $config = get_config('zoom');
     $defaulttrackingfields = explode(',', $config->defaulttrackingfields);
     $trackingfields = array();
 
     foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
         $trimmed = trim($defaulttrackingfield);
+<<<<<<< HEAD
         if (!empty($trimmed)) {
             $key = str_replace(' ', '_', strtolower($trimmed));
             $trackingfields[$key] = $trimmed;
         }
+=======
+        $key = strtolower($trimmed);
+        $trackingfields[$key] = $trimmed;
+>>>>>>> Resolve PR #308 comments
     }
 
     return $trackingfields;
 }
+<<<<<<< HEAD
 
 /**
  * Synchronize tracking field data for a meeting.
@@ -1201,3 +1209,5 @@ function zoom_sync_meeting_tracking_fields($zoomid, $trackingfields) {
         }
     }
 }
+=======
+>>>>>>> Resolve PR #308 comments

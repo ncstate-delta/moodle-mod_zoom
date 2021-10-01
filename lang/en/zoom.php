@@ -291,6 +291,7 @@ $string['title'] = 'Title';
 $string['topic'] = 'Topic';
 $string['trackingfields'] = 'Tracking fields';
 $string['trackingfields_help'] = 'Enter the tracking field name(s)/label(s), separated by commas, to enable for Zoom activities.';
+$string['trackingfields_recommendedvalues'] = 'Recommended values: ';
 $string['unavailable'] = 'You are unable to join at this time.';
 $string['unavailablefirstjoin'] = 'You can join {$a->mins} minutes before the scheduled start time at the earliest.';
 $string['unavailablefinished'] = 'The meeting has finished already.';

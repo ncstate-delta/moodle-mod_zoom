@@ -84,6 +84,11 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         $zoom->password = '';
     }
 
+    // Handle weekdays if weekly recurring meeting selected.
+    if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_WEEKLY) {
+        $zoom->weekly_days = zoom_handle_weekly_days($zoom);
+    }
+
     $zoom->course = (int) $zoom->course;
 
     $response = $service->create_meeting($zoom);
@@ -98,21 +103,28 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         $zoom->host_id = $correcthostzoomuser->id;
     }
 
+    if (isset($zoom->recurring) && isset($response->occurrences) && empty($response->occurrences)) {
+        // Recurring meetings did not create any occurrencces.
+        // This means invalid options selected.
+        // Need to rollback created meeting.
+        $service->delete_meeting($zoom->meeting_id, $zoom->webinar);
+
+        $redirecturl = new moodle_url('/course/view.php', ['id' => $zoom->course]);
+        throw new moodle_exception('erroraddinstance', 'zoom', $redirecturl->out());
+    }
+
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
     // Store tracking field data for meeting.
-    $config = get_config('zoom');
-    $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
+    $defaulttrackingfields = clean_tracking_fields();
 
-    foreach ($defaulttrackingfields as $trackingfield) {
-        $trackingfield = trim($trackingfield);
+    foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
         foreach ($response->tracking_fields as $rtf) {
-            if ($rtf->field == $trackingfield) {
+            if ($rtf->field == $defaulttrackingfield) {
                 $tfobject = new stdClass();
                 $tfobject->meeting_id = $zoom->id;
-                $fieldname = strtolower($trackingfield);
-                $tfobject->tracking_field = $fieldname;
-                $tfobject->value = $zoom->$fieldname;
+                $tfobject->tracking_field = $key;
+                $tfobject->value = $zoom->$key;
                 $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
             }
         }
@@ -155,6 +167,11 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         $zoom->password = '';
     }
 
+    // Handle weekdays if weekly recurring meeting selected.
+    if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_WEEKLY) {
+        $zoom->weekly_days = zoom_handle_weekly_days($zoom);
+    }
+
     $DB->update_record('zoom', $zoom);
 
     $updatedzoomrecord = $DB->get_record('zoom', array('id' => $zoom->id));
@@ -175,23 +192,73 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         return false;
     }
 
-    // Update tracking field data for meeting.
-    $config = get_config('zoom');
-    $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
+    // Get the updated meeting info from zoom, before updating calendar events.
+    $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
+    $zoom = populate_zoom_from_response($zoom, $response);
 
-    foreach ($defaulttrackingfields as $trackingfield) {
-        $trackingfield = trim($trackingfield);
-        $fieldname = strtolower($trackingfield);
+    // Update tracking field data for meeting.
+    $defaulttrackingfields = clean_tracking_fields();
+
+    foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
         $tfobject = $DB->get_record('zoom_meeting_tracking_fields',
-            array('meeting_id' => $updatedzoomrecord->id, 'tracking_field' => $fieldname));
-        $tfobject->value = $zoom->$fieldname;
-        $DB->update_record('zoom_meeting_tracking_fields', $tfobject);
+            array('meeting_id' => $updatedzoomrecord->id, 'tracking_field' => $key));
+        if ($tfobject) {
+            $tfobject->value = $zoom->$key;
+            $DB->update_record('zoom_meeting_tracking_fields', $tfobject);
+        }
     }
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
 
     return true;
+}
+
+/**
+ * Function to handle selected weekdays, for recurring weekly meeting.
+ *
+ * @param stdClass $zoom The zoom instance
+ * @return string The comma separated string for selected weekdays
+ */
+function zoom_handle_weekly_days($zoom) {
+    $weekdaynumbers = [];
+    for ($i = 1; $i <= 7; $i++) {
+        $key = 'weekly_days_' . $i;
+        if (!empty($zoom->$key)) {
+            $weekdaynumbers[] = $i;
+        }
+    }
+    return implode(',', $weekdaynumbers);
+}
+
+/**
+ * Function to unset the weekly options in postprocessing.
+ *
+ * @param stdClass $data The form data object
+ * @return stdClass $data The form data object minus weekly options.
+ */
+function zoom_remove_weekly_options($data) {
+    // Unset the weekly_days options.
+    for ($i = 1; $i <= 7; $i++) {
+        $key = 'weekly_days_' . $i;
+        unset($data->$key);
+    }
+    return $data;
+}
+
+/**
+ * Function to unset the monthly options in postprocessing.
+ *
+ * @param stdClass $data The form data object
+ * @return stdClass $data The form data object minus monthly options.
+ */
+function zoom_remove_monthly_options($data) {
+    // Unset the monthly options.
+    unset($data->monthly_repeat_option);
+    unset($data->monthly_day);
+    unset($data->monthly_week);
+    unset($data->monthly_week_day);
+    return $data;
 }
 
 /**
@@ -227,7 +294,22 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->start_time)) {
         $newzoom->start_time = strtotime($response->start_time);
     }
-    $newzoom->recurring = $response->type == ZOOM_RECURRING_MEETING || $response->type == ZOOM_RECURRING_WEBINAR;
+    $recurringtypes = [
+        ZOOM_RECURRING_MEETING,
+        ZOOM_RECURRING_FIXED_MEETING,
+        ZOOM_RECURRING_WEBINAR,
+        ZOOM_RECURRING_FIXED_WEBINAR,
+    ];
+    $newzoom->recurring = in_array($response->type, $recurringtypes);
+    if (!empty($response->occurrences)) {
+        $newzoom->occurrences = [];
+        // Normalise the occurrence times.
+        foreach ($response->occurrences as $occurrence) {
+            $occurrence->start_time = strtotime($occurrence->start_time);
+            $occurrence->duration = $occurrence->duration * 60;
+            $newzoom->occurrences[] = $occurrence;
+        }
+    }
     if (isset($response->password)) {
         $newzoom->password = $response->password;
     }
@@ -297,7 +379,7 @@ function zoom_delete_instance($id) {
         $DB->delete_records('zoom_meeting_participants', array('uuid' => $meetinginstance->uuid));
     }
     $DB->delete_records('zoom_meeting_details', array('meeting_id' => $zoom->meeting_id));
-    
+
     // Delete tracking field data for deleted meetings.
     $DB->delete_records('zoom_meeting_tracking_fields', array('meeting_id' => $zoom->id));
 
@@ -564,56 +646,6 @@ function mod_zoom_core_calendar_provide_event_action(calendar_event $event,
     );
 }
 
-/**
- * This function updates the tracking field settings in config_plugins.
- */
-function mod_zoom_update_tracking_fields() {
-    global $DB;
-
-    $config = get_config('zoom');
-    $defaulttrackingfields = explode(",", $config->defaulttrackingfields);
-    $zoomtrackingfields = zoom_list_tracking_fields();
-    $configtypes = array('id', 'field', 'required', 'visible', 'recommended_values');
-    $configvalue = '';
-    $confignames = array();
-
-    foreach ($defaulttrackingfields as $defaulttrackingfield) {
-        $defaulttrackingfield = trim($defaulttrackingfield);
-        if ($defaulttrackingfield != '') {
-            foreach ($zoomtrackingfields as $zoomtrackingfield) {
-                $key = array_search($defaulttrackingfield, $zoomtrackingfield);
-                if ($key) {
-                    foreach ($configtypes as $configtype) {
-                        $configname = 'tf_' . strtolower($defaulttrackingfield) . '_' . $configtype;
-                        $confignames[] = $configname;
-                        if ($configtype == 'recommended_values') {
-                            foreach ($zoomtrackingfield[$configtype] as $rv) {
-                                $configvalue .= $rv . ', ';
-                            }
-                            $configvalue = rtrim($configvalue, ', ');
-                        } else {
-                            $configvalue = $zoomtrackingfield[$configtype];
-                        }
-                        set_config($configname, $configvalue, 'zoom');
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    $proparray = get_object_vars($config);
-    $properties = array_keys($proparray);
-    $oldconfigs = array_diff($properties, $confignames);
-    $pattern = '/^tf_([^_]*)_.*/';
-    foreach ($oldconfigs as $oldconfig) {
-        if (preg_match($pattern, $oldconfig, $oldfield)) {
-            set_config($oldconfig, null, 'zoom');
-            $DB->delete_records('zoom_meeting_tracking_fields', array('tracking_field' => $oldfield[1]));
-        }
-    }
-}
-
 /* Gradebook API */
 
 /**
@@ -831,4 +863,49 @@ function mod_zoom_get_fontawesome_icon_map() {
     return [
         'mod_zoom:i/calendar' => 'fa-calendar'
     ];
+}
+
+/**
+ * This function updates the tracking field settings in config_plugins.
+ */
+function mod_zoom_update_tracking_fields() {
+    global $DB;
+
+    $defaulttrackingfields = clean_tracking_fields();
+    $zoomtrackingfields = zoom_list_tracking_fields();
+    $zoomprops = array('id', 'field', 'required', 'visible', 'recommended_values');
+    $configvalue = '';
+    $confignames = array();
+
+    foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
+        if ($defaulttrackingfield !== '') {
+            foreach ($zoomtrackingfields as $zoomtrackingfield) {
+                if (array_search($defaulttrackingfield, $zoomtrackingfield, true)) {
+                    foreach ($zoomprops as $zoomprop) {
+                        $configname = 'tf_' . $key . '_' . $zoomprop;
+                        $confignames[] = $configname;
+                        if ($zoomprop === 'recommended_values') {
+                            $configvalue = implode(', ', $zoomtrackingfield[$zoomprop]);
+                        } else {
+                            $configvalue = $zoomtrackingfield[$zoomprop];
+                        }
+                        set_config($configname, $configvalue, 'zoom');
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    $config = get_config('zoom');
+    $proparray = get_object_vars($config);
+    $properties = array_keys($proparray);
+    $oldconfigs = array_diff($properties, $confignames);
+    $pattern = '/^tf_(.*)_.*$/';
+    foreach ($oldconfigs as $oldconfig) {
+        if (preg_match($pattern, $oldconfig, $oldfield)) {
+            set_config($oldconfig, null, 'zoom');
+            $DB->delete_records('zoom_meeting_tracking_fields', array('tracking_field' => $oldfield[1]));
+        }
+    }
 }
