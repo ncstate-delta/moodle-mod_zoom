@@ -32,6 +32,10 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.1.2
+
+- Make loadmeeting consistent via web and mobile (event, completion, grade, etc) #307 (thanks @nstefanski)
+
 v4.1.1
 
 - Fix invitation class not found exception #296 (thanks @byvamo for reporting)

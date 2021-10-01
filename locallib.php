@@ -829,7 +829,7 @@ function zoom_get_meeting_capacity(string $zoomhostid, bool $iswebinar = false) 
     $service = new mod_zoom_webservice();
 
     // Get the 'feature' section of the user's Zoom settings.
-    $userfeatures = $service->_get_user_settings($zoomhostid)->feature;
+    $userfeatures = $service->get_user_settings($zoomhostid)->feature;
 
     // If this is a webinar.
     if ($iswebinar == true) {
