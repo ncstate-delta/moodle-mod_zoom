@@ -1,4 +1,8 @@
 <?php
-//@codingStandardsIgnoreStart - Ignore library file.
+// phpcs:ignoreFile
+
 namespace Firebase\JWT;
-class SignatureInvalidException extends \UnexpectedValueException {}
+
+class SignatureInvalidException extends \UnexpectedValueException
+{
+}
