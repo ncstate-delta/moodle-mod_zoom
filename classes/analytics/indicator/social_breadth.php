@@ -28,10 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Social breadth indicator.
- *
- * @package   mod_zoom
- * @copyright 2020 Catalyst IT
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class social_breadth extends activity_base {
 

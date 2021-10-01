@@ -30,10 +30,6 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Ad hoc task that performs the actions for approved data privacy requests.
- *
- * @package   mod_zoom
- * @copyright 2018 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
     // This plugin has data.

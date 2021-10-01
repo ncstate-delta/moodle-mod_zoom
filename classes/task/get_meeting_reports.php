@@ -38,10 +38,6 @@ require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
 /**
  * Scheduled task to get the meeting participants for each .
- *
- * @package   mod_zoom
- * @copyright 2018 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class get_meeting_reports extends \core\task\scheduled_task {
 

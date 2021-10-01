@@ -44,10 +44,6 @@ if (!class_exists('Firebase\JWT\JWT')) {
 
 /**
  * Web service class.
- *
- * @package    mod_zoom
- * @copyright  2015 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_zoom_webservice {
 

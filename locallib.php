@@ -104,9 +104,6 @@ define('ZOOM_API_URL_GLOBAL', 'https://api.zoom.us/v2/');
 
 /**
  * Entry not found on Zoom.
- *
- * @copyright  2020 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class zoom_not_found_exception extends moodle_exception {
     /**
@@ -129,9 +126,6 @@ class zoom_not_found_exception extends moodle_exception {
 
 /**
  * Bad request received by Zoom.
- *
- * @copyright  2020 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class zoom_bad_request_exception extends moodle_exception {
     /**
@@ -154,9 +148,6 @@ class zoom_bad_request_exception extends moodle_exception {
 
 /**
  * Couldn't succeed within the allowed number of retries.
- *
- * @copyright  2020 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class zoom_api_retry_failed_exception extends moodle_exception {
     /**
@@ -182,9 +173,6 @@ class zoom_api_retry_failed_exception extends moodle_exception {
 
 /**
  * Exceeded daily API limit.
- *
- * @copyright  2020 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class zoom_api_limit_exception extends moodle_exception {
     /**
