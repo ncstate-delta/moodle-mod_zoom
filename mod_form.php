@@ -320,7 +320,8 @@ class mod_zoom_mod_form extends moodleform_mod {
             $mform->setType($key, PARAM_TEXT);
             $rvprop = 'tf_' . $key . '_recommended_values';
             if (!empty($config->$rvprop)) {
-                $mform->addElement('static', $key . '_recommended_values', null, get_string('trackingfields_recommendedvalues', 'mod_zoom') . $config->$rvprop);
+                $mform->addElement('static', $key . '_recommended_values', null,
+                    get_string('trackingfields_recommendedvalues', 'mod_zoom') . $config->$rvprop);
             }
             $requiredproperty = 'tf_' . $key . '_required';
             if (!empty($config->$requiredproperty)) {
@@ -627,7 +628,7 @@ class mod_zoom_mod_form extends moodleform_mod {
      */
     public function data_preprocessing(&$defaultvalues) {
         global $DB;
-        
+
         parent::data_preprocessing($defaultvalues);
 
         // Get config.

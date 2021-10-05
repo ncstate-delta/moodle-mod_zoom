@@ -297,6 +297,7 @@ $string['unavailablefirstjoin'] = 'You can join {$a->mins} minutes before the sc
 $string['unavailablefinished'] = 'The meeting has finished already.';
 $string['unavailablenotstartedyet'] = 'The meeting has not started yet.';
 $string['updatemeetings'] = 'Update meeting settings from Zoom';
+$string['updatetrackingfields'] = 'Update tracking field settings from Zoom';
 $string['usepersonalmeeting'] = 'Use personal meeting ID {$a}';
 $string['waitingroom'] = 'Waiting room';
 $string['waitingroomenable'] = 'Enable waiting room';
