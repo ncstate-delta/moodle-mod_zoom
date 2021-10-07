@@ -299,7 +299,7 @@ function zoom_get_instance_setup() {
         $course     = $DB->get_record('course', array('id' => $zoom->course), '*', MUST_EXIST);
         $cm         = get_coursemodule_from_instance('zoom', $zoom->id, $course->id, false, MUST_EXIST);
     } else {
-        print_error(get_string('zoomerr_id_missing', 'zoom'));
+        throw new moodle_exception('zoomerr_id_missing', 'mod_zoom');
     }
 
     require_login($course, true, $cm);
