@@ -85,25 +85,25 @@ define(['jquery'], function($) {
         });
 
         // First toggle the values based on initial selections.
-        toggle_start_time_duration();
-        toggle_repeat_interval_text();
-        limit_repeat_values();
+        toggleStartTimeDuration();
+        toggleRepeatIntervalText();
+        limitRepeatValues();
         // Add listerner to "Repeat Every" drop-down.
         $(SELECTORS.REPEAT_SELECT).change(function() {
-            toggle_start_time_duration();
-            toggle_repeat_interval_text();
-            limit_repeat_values();
+            toggleStartTimeDuration();
+            toggleRepeatIntervalText();
+            limitRepeatValues();
         });
         // Add listener for the "Recurring" checkbox
         $(SELECTORS.RECURRING).change(function() {
-            toggle_start_time_duration();
+            toggleStartTimeDuration();
         });
     };
 
     /**
      * Toggle start time and duration elements.
      */
-    var toggle_start_time_duration = function () {
+    var toggleStartTimeDuration = function() {
         // Disable start time and duration if "No Fixed Time" recurring meeting/webinar selected.
         var disabled = false;
         var repeatVal = parseInt($(SELECTORS.REPEAT_SELECT).val(), 10);
@@ -118,7 +118,7 @@ define(['jquery'], function($) {
      * Toggle the text based on repeat type.
      * To show either Days, Weeks or Months
      */
-    var toggle_repeat_interval_text = function () {
+    var toggleRepeatIntervalText = function() {
         $(SELECTORS.REPEAT_INTERVAL).hide();
         var repeatSelectVal = parseInt($(SELECTORS.REPEAT_SELECT).val(), 10);
         if (repeatSelectVal === REPEAT_OPTIONS.REPEAT_OPTION_DAILY) {
@@ -136,7 +136,7 @@ define(['jquery'], function($) {
      * Max value for weekly meeting is 12.
      * Max value for monthly meeting is 3.
      */
-    var limit_repeat_values = function () {
+    var limitRepeatValues = function() {
         var selectedValue = parseInt($(SELECTORS.REPEAT_SELECT).val(), 10);
         // Restrict options if weekly or monthly option selected.
         $(SELECTORS.REPEAT_INTERVAL_OPTIONS).each(function() {
