@@ -45,76 +45,78 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
 
     steps:
-      - name: Checkout
+      - name: Check out repository code
         uses: actions/checkout@v2
         with:
           path: plugin
 
-      - name: Install node
-        uses: actions/setup-node@v1
-        with:
-          node-version: '14.15.0'
-
-      - name: Setup PHP
+      - name: Setup PHP ${{ matrix.php }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: mbstring, pgsql, mysqli, zip, gd
+          ini-values: max_input_vars=5000
+          coverage: none
 
-      - name: Deploy moodle-plugin-ci
+      - name: Initialise moodle-plugin-ci
         run: |
           composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^3
-          # Add dirs to $PATH
           echo $(cd ci/bin; pwd) >> $GITHUB_PATH
           echo $(cd ci/vendor/bin; pwd) >> $GITHUB_PATH
-          # PHPUnit depends on en_AU.UTF-8 locale
           sudo locale-gen en_AU.UTF-8
+          echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
 
-      - name: Install Moodle
-        run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
+      - name: Install moodle-plugin-ci
+        run: |
+          moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
         env:
           DB: ${{ matrix.database }}
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
           MUSTACHE_IGNORE_NAMES: 'mobile_view_page_latest.mustache,mobile_view_page_ionic3.mustache'
+          PHPDOC_IGNORE_PATHS: 'jwt'
 
-      - name: phplint
+      - name: PHP Lint
         if: ${{ always() }}
         run: moodle-plugin-ci phplint
 
-      - name: phpcpd
+      - name: PHP Copy/Paste Detector
+        continue-on-error: true # This step will show errors but will not fail
         if: ${{ always() }}
-        run: moodle-plugin-ci phpcpd || true
+        run: moodle-plugin-ci phpcpd
 
-      - name: phpmd
+      - name: PHP Mess Detector
+        continue-on-error: true # This step will show errors but will not fail
         if: ${{ always() }}
         run: moodle-plugin-ci phpmd
 
-      - name: codechecker
+      - name: Moodle Code Checker
         if: ${{ always() }}
-        run: moodle-plugin-ci codechecker
-        env:
-          PHPDOC_IGNORE_PATHS: jwt
+        run: moodle-plugin-ci codechecker --max-warnings 0
 
-      - name: validate
+      - name: Moodle PHPDoc Checker
+        if: ${{ always() }}
+        run: moodle-plugin-ci phpdoc
+
+      - name: Validating
         if: ${{ always() }}
         run: moodle-plugin-ci validate
 
-      - name: savepoints
+      - name: Check upgrade savepoints
         if: ${{ always() }}
         run: moodle-plugin-ci savepoints
 
-      - name: mustache
+      - name: Mustache Lint
         if: ${{ always() }}
         run: moodle-plugin-ci mustache
 
-      - name: grunt
+      - name: Grunt
         if: ${{ always() }}
-        run: moodle-plugin-ci grunt
+        run: moodle-plugin-ci grunt --max-lint-warnings 0
 
-      - name: phpunit
+      - name: PHPUnit tests
         if: ${{ always() }}
         run: moodle-plugin-ci phpunit
 
-      - name: behat
+      - name: Behat features
         if: ${{ always() }}
         run: moodle-plugin-ci behat --profile chrome
