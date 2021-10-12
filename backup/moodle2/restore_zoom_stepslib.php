@@ -101,12 +101,12 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
     protected function process_zoom_tracking_field($data) {
         global $DB;
 
-        $data = (object)$data;
+        $data = (object) $data;
         $oldid = $data->id;
 
         $data->meeting_id = $this->get_new_parentid('zoom');
 
-        $defaulttrackingfields = clean_tracking_fields();
+        $defaulttrackingfields = zoom_clean_tracking_fields();
         $keys = array_keys($defaulttrackingfields);
 
         if (in_array($data->tracking_field, $keys, true)) {

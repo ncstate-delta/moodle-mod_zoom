@@ -163,10 +163,23 @@ class update_meetings extends \core\task\scheduled_task {
                     $fieldname = strtolower($tf->field);
                     $oldtf = $DB->get_record('zoom_meeting_tracking_fields',
                         array('meeting_id' => $zoom->id, 'tracking_field' => $fieldname));
-                    if ($oldtf && ($oldtf->value !== $tf->value)) {
-                        $oldtf->value = $tf->value;
-                        $DB->update_record('zoom_meeting_tracking_fields', $oldtf);
-                        mtrace('  => Updated Zoom meeting tracking field for Zoom meeting ID ' . $zoom->meeting_id);
+                    if ($oldtf) {
+                        if ($oldtf->value !== $tf->value) {
+                            $oldtf->value = $tf->value;
+                            $DB->update_record('zoom_meeting_tracking_fields', $oldtf);
+                            mtrace('  => Updated Zoom meeting tracking field for Zoom meeting ID ' . $zoom->meeting_id);
+                        }
+                    } else {
+                        $defaulttrackingfields = zoom_clean_tracking_fields();
+                        $key = array_search($tf->field, $defaulttrackingfields, true);
+                        if ($key !== false) {
+                            $tfobject = new stdClass();
+                            $tfobject->meeting_id = $zoom->id;
+                            $tfobject->tracking_field = $key;
+                            $tfobject->value = $zoom->$key;
+                            $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
+                            mtrace('  => Added Zoom meeting tracking field for Zoom meeting ID ' . $zoom->meeting_id);
+                        }
                     }
                 }
             }

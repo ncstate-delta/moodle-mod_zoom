@@ -314,7 +314,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         }
 
         // Add tracking fields, if configured.
-        $defaulttrackingfields = clean_tracking_fields();
+        $defaulttrackingfields = zoom_clean_tracking_fields();
         foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
             $mform->addElement('text', $key, $defaulttrackingfield);
             $mform->setType($key, PARAM_TEXT);
@@ -658,12 +658,12 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         if ($config->defaulttrackingfields !== '') {
             // Populate modedit form fields with previously saved values.
-            $defaulttrackingfields = clean_tracking_fields();
-            foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
-                $tfvalue = $DB->get_field('zoom_meeting_tracking_fields', 'value',
-                    array('meeting_id' => $defaultvalues['id'], 'tracking_field' => $key));
-                if (!empty($tfvalue)) {
-                    $defaultvalues[$key] = $tfvalue;
+            $defaulttrackingfields = zoom_clean_tracking_fields();
+            $tfrows = $DB->get_records('zoom_meeting_tracking_fields', array('meeting_id' => $defaultvalues['id']));
+            foreach ($tfrows as $tfrow) {
+                $tfkey = $tfrow->tracking_field;
+                if (!empty($defaulttrackingfields[$tfkey])) {
+                    $defaultvalues[$tfkey] = $tfrow->value;
                 }
             }
         }

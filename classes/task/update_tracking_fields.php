@@ -15,18 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library of interface functions and constants for module zoom
- *
- * All the core Moodle functions, neeeded to allow the module to work
- * integrated in Moodle should be placed here.
- *
- * All the zoom specific functions, needed to implement all the module
- * logic, should go to locallib.php. This will help to save some memory when
- * Moodle is performing actions across all modules.
+ * Scheduled task for updating Zoom tracking fields
  *
  * @package    mod_zoom
- * @copyright  2018 UC Regents
- * @author     Rohan Khajuria
+ * @copyright  2021 Michelle Melton <meltonml@appstate.edu>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -38,10 +30,6 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
 /**
  * Scheduled task to sychronize tracking field data.
- *
- * @package   mod_zoom
- * @copyright 2018 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class update_tracking_fields extends \core\task\scheduled_task {
 
@@ -70,7 +58,7 @@ class update_tracking_fields extends \core\task\scheduled_task {
             return;
         }
 
-        require_once($CFG->dirroot.'/mod/zoom/lib.php');
+        require_once($CFG->dirroot . '/mod/zoom/lib.php');
 
         // Show trace message.
         mtrace('Starting to process existing Zoom tracking fields ...');

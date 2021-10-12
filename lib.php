@@ -116,16 +116,18 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
     // Store tracking field data for meeting.
-    $defaulttrackingfields = clean_tracking_fields();
+    $defaulttrackingfields = zoom_clean_tracking_fields();
 
     foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
-        foreach ($response->tracking_fields as $rtf) {
-            if ($rtf->field == $defaulttrackingfield) {
-                $tfobject = new stdClass();
-                $tfobject->meeting_id = $zoom->id;
-                $tfobject->tracking_field = $key;
-                $tfobject->value = $zoom->$key;
-                $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
+        if (isset($response->tracking_fields)) {
+            foreach ($response->tracking_fields as $rtf) {
+                if ($rtf->field === $defaulttrackingfield) {
+                    $tfobject = new stdClass();
+                    $tfobject->meeting_id = $zoom->id;
+                    $tfobject->tracking_field = $key;
+                    $tfobject->value = $zoom->$key;
+                    $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
+                }
             }
         }
     }
@@ -192,12 +194,8 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         return false;
     }
 
-    // Get the updated meeting info from zoom, before updating calendar events.
-    $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
-    $zoom = populate_zoom_from_response($zoom, $response);
-
     // Update tracking field data for meeting.
-    $defaulttrackingfields = clean_tracking_fields();
+    $defaulttrackingfields = zoom_clean_tracking_fields();
 
     foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
         $tfobject = $DB->get_record('zoom_meeting_tracking_fields',
@@ -205,8 +203,20 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         if ($tfobject) {
             $tfobject->value = $zoom->$key;
             $DB->update_record('zoom_meeting_tracking_fields', $tfobject);
+        } else {
+            if ($zoom->$key) {
+                $tfobject = new stdClass();
+                $tfobject->meeting_id = $zoom->id;
+                $tfobject->tracking_field = $key;
+                $tfobject->value = $zoom->$key;
+                $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
+            }
         }
     }
+
+    // Get the updated meeting info from zoom, before updating calendar events.
+    $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
+    $zoom = populate_zoom_from_response($zoom, $response);
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
@@ -871,16 +881,15 @@ function mod_zoom_get_fontawesome_icon_map() {
 function mod_zoom_update_tracking_fields() {
     global $DB;
 
-    $defaulttrackingfields = clean_tracking_fields();
+    $defaulttrackingfields = zoom_clean_tracking_fields();
     $zoomtrackingfields = zoom_list_tracking_fields();
     $zoomprops = array('id', 'field', 'required', 'visible', 'recommended_values');
-    $configvalue = '';
     $confignames = array();
 
     foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
         if ($defaulttrackingfield !== '') {
             foreach ($zoomtrackingfields as $zoomtrackingfield) {
-                if (array_search($defaulttrackingfield, $zoomtrackingfield, true)) {
+                if (in_array($defaulttrackingfield, $zoomtrackingfield, true)) {
                     foreach ($zoomprops as $zoomprop) {
                         $configname = 'tf_' . $key . '_' . $zoomprop;
                         $confignames[] = $configname;
@@ -901,11 +910,11 @@ function mod_zoom_update_tracking_fields() {
     $proparray = get_object_vars($config);
     $properties = array_keys($proparray);
     $oldconfigs = array_diff($properties, $confignames);
-    $pattern = '/^tf_(.*)_.*$/';
+    $pattern = '/^tf_(?P<oldfield>.*)_(' . implode('|', $zoomprops) . ')$/';
     foreach ($oldconfigs as $oldconfig) {
-        if (preg_match($pattern, $oldconfig, $oldfield)) {
+        if (preg_match($pattern, $oldconfig, $matches)) {
             set_config($oldconfig, null, 'zoom');
-            $DB->delete_records('zoom_meeting_tracking_fields', array('tracking_field' => $oldfield[1]));
+            $DB->delete_records('zoom_meeting_tracking_fields', array('tracking_field' => $matches['oldfield']));
         }
     }
 }

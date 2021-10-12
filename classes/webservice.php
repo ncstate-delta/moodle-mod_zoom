@@ -595,7 +595,7 @@ class mod_zoom_webservice {
         }
 
         // Add tracking field to data.
-        $defaulttrackingfields = clean_tracking_fields();
+        $defaulttrackingfields = zoom_clean_tracking_fields();
         $tfarray = array();
         foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
             if (isset($zoom->$key)) {
