@@ -34,7 +34,7 @@ if ($id) {
     $course     = get_course($cm->course);
     $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
 } else {
-    print_error('You must specify a course_module ID');
+    throw new moodle_exception('zoomerr_id_missing', 'mod_zoom');
 }
 
 require_login($course, true, $cm);
@@ -50,13 +50,13 @@ $config = get_config('zoom');
 // Check if the admin did not disable the feature.
 if ($config->showdownloadical == ZOOM_DOWNLOADICAL_DISABLE) {
     $disabledredirecturl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
-    print_error('err_downloadicaldisabled', 'mod_zoom', $disabledredirecturl);
+    throw new moodle_exception('err_downloadicaldisabled', 'mod_zoom', $disabledredirecturl);
 }
 
 // Check if we are dealing with a recurring meeting with no fixed time.
 if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
     $errorredirecturl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
-    print_error('err_downloadicalrecurringnofixed', 'mod_zoom', $errorredirecturl);
+    throw new moodle_exception('err_downloadicalrecurringnofixed', 'mod_zoom', $errorredirecturl);
 }
 
 // Start ical file.
@@ -87,7 +87,7 @@ if (empty($events)) {
     // We could handle this case in a nicer way ans return an empty iCal file without events,
     // but as this case should not happen in real life anyway, return a fatal error to make clear that something is wrong.
     $errorredirecturl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
-    print_error('err_downloadicalrecurringempty', 'mod_zoom', $errorredirecturl);
+    throw new moodle_exception('err_downloadicalrecurringempty', 'mod_zoom', $errorredirecturl);
 }
 
 // Iterate over all events.

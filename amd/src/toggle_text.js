@@ -27,7 +27,7 @@ import {get_string as getString} from "core/str";
 export const init = () => {
   const button = document.querySelector("#show-more-button");
   const body = document.querySelector("#show-more-body");
-  button.addEventListener("click", async () => {
+  button.addEventListener("click", async() => {
     if (body.style.display === "") {
       body.style.display = "none";
       button.innerHTML = await getString("meeting_invite_show", "mod_zoom");

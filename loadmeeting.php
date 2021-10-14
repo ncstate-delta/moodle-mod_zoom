@@ -46,5 +46,5 @@ if ($id) {
         redirect($unavailabilityurl, $meetinginfo['error'], null, \core\output\notification::NOTIFY_ERROR);
     }
 } else {
-    print_error('You must specify a course_module ID');
+    throw new moodle_exception('zoomerr_id_missing', 'mod_zoom');
 }

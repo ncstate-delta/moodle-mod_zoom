@@ -287,7 +287,7 @@ function zoom_get_instance_setup() {
         $course     = $DB->get_record('course', array('id' => $zoom->course), '*', MUST_EXIST);
         $cm         = get_coursemodule_from_instance('zoom', $zoom->id, $course->id, false, MUST_EXIST);
     } else {
-        print_error(get_string('zoomerr_id_missing', 'zoom'));
+        throw new moodle_exception('zoomerr_id_missing', 'mod_zoom');
     }
 
     require_login($course, true, $cm);
@@ -465,7 +465,7 @@ function zoom_get_state($zoom) {
 /**
  * Get the Zoom id of the currently logged-in user.
  *
- * @param boolean $required If true, will error if the user doesn't have a Zoom account.
+ * @param bool $required If true, will error if the user doesn't have a Zoom account.
  * @return string
  */
 function zoom_get_user_id($required = true) {
@@ -808,9 +808,9 @@ function zoom_get_unavailability_note($zoom, $finished = null) {
  * Please note: This function does not check if the Zoom user really exists, this has to be checked before calling this function.
  *
  * @param string $zoomhostid The Zoom ID of the host.
- * @param boolean $iswebinar The meeting is a webinar.
+ * @param bool $iswebinar The meeting is a webinar.
  *
- * @return int|boolean The meeting capacity of the Zoom user or false if the user does not have any meeting capacity at all.
+ * @return int|bool The meeting capacity of the Zoom user or false if the user does not have any meeting capacity at all.
  */
 function zoom_get_meeting_capacity(string $zoomhostid, bool $iswebinar = false) {
     // Get Zoom API service instance.

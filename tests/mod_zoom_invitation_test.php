@@ -29,6 +29,9 @@ global $CFG;
 
 require_once($CFG->libdir . '/accesslib.php');
 
+/**
+ * PHPunit testcase class for invitations.
+ */
 class mod_zoom_invitation_testcase extends advanced_testcase {
 
     /**
