@@ -31,13 +31,6 @@ require_once("$CFG->libdir/externallib.php");
 
 /**
  * Zoom external functions
- *
- * @package    mod_zoom
- * @category   external
- * @author     Nick Stefanski
- * @copyright  2017 Auguste Escoffier School of Culinary Arts {@link https://www.escoffier.edu}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @since      Moodle 3.1
  */
 class mod_zoom_external extends external_api {
 

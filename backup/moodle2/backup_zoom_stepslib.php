@@ -18,6 +18,7 @@
  * Defines backup_zoom_activity_structure_step class.
  *
  * @package   mod_zoom
+ * @category  backup
  * @copyright 2015 UC Regents
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,11 +27,6 @@ defined('MOODLE_INTERNAL') || die;
 
 /**
  * Define the complete zoom structure for backup, with file and id annotations.
- *
- * @package   mod_zoom
- * @category  backup
- * @copyright 2015 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_zoom_activity_structure_step extends backup_activity_structure_step {
 

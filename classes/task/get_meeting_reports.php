@@ -15,14 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library of interface functions and constants for module zoom
- *
- * All the core Moodle functions, neeeded to allow the module to work
- * integrated in Moodle should be placed here.
- *
- * All the zoom specific functions, needed to implement all the module
- * logic, should go to locallib.php. This will help to save some memory when
- * Moodle is performing actions across all modules.
+ * Task: get_meeting_reports
  *
  * @package    mod_zoom
  * @copyright  2018 UC Regents
@@ -38,10 +31,6 @@ require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
 /**
  * Scheduled task to get the meeting participants for each .
- *
- * @package   mod_zoom
- * @copyright 2018 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class get_meeting_reports extends \core\task\scheduled_task {
 

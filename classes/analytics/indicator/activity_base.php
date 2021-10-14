@@ -28,10 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Activity base class.
- *
- * @package   mod_zoom
- * @copyright 2020 Catalyst IT
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class activity_base extends \core_analytics\local\indicator\community_of_inquiry_activity {
 

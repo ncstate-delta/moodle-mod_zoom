@@ -28,10 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Records when a join meeting button is clicked.
- *
- * @package    mod_zoom
- * @copyright  2015 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class join_meeting_button_clicked extends \core\event\base {
 

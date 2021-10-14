@@ -31,10 +31,6 @@ use mod_zoom_external;
 
 /**
  * Mobile output class for zoom
- *
- * @package     mod_zoom
- * @copyright   2018 Nick Stefanski <nmstefanski@gmail.com>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mobile {
 

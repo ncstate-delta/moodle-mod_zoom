@@ -28,9 +28,6 @@ global $CFG;
 
 /**
  * PHPunit testcase class.
- *
- * @copyright  2019 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class get_meeting_reports_test extends advanced_testcase {
 

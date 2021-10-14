@@ -30,9 +30,6 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
 /**
  * PHPunit testcase class.
- *
- * @copyright  2020 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_zoom_grade_test extends advanced_testcase {
 

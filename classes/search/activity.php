@@ -28,10 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Search area for mod_zoom activities.
- *
- * @package    mod_zoom
- * @copyright  2019 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class activity extends \core_search\base_activity {
 

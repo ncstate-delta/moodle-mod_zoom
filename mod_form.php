@@ -33,10 +33,6 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
 /**
  * Module instance settings form
- *
- * @package    mod_zoom
- * @copyright  2015 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_zoom_mod_form extends moodleform_mod {
 
@@ -777,10 +773,6 @@ class mod_zoom_mod_form extends moodleform_mod {
 
 /**
  * Form to search for meeting reports.
- *
- * @package    mod_zoom
- * @copyright  2015 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_zoom_report_form extends moodleform {
     /**

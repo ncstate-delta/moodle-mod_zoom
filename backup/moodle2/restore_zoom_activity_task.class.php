@@ -31,11 +31,6 @@ require_once($CFG->dirroot . '/mod/zoom/backup/moodle2/restore_zoom_stepslib.php
  * Restore task for the zoom activity module
  *
  * Provides all the settings and steps to perform complete restore of the activity.
- *
- * @package   mod_zoom
- * @category  backup
- * @copyright 2015 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_zoom_activity_task extends restore_activity_task {
 

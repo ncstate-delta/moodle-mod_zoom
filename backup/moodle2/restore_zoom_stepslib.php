@@ -30,11 +30,6 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
 /**
  * Structure step to restore one zoom activity
- *
- * @package   mod_zoom
- * @category  backup
- * @copyright 2015 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_zoom_activity_structure_step extends restore_activity_structure_step {
 
