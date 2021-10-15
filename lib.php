@@ -116,20 +116,8 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
     // Store tracking field data for meeting.
-    $defaulttrackingfields = zoom_clean_tracking_fields();
-
-    foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
-        if (isset($response->tracking_fields)) {
-            foreach ($response->tracking_fields as $rtf) {
-                if ($rtf->field === $defaulttrackingfield) {
-                    $tfobject = new stdClass();
-                    $tfobject->meeting_id = $zoom->id;
-                    $tfobject->tracking_field = $key;
-                    $tfobject->value = $zoom->$key;
-                    $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
-                }
-            }
-        }
+    if (isset($response->tracking_fields)) {
+        zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields);
     }
 
     zoom_calendar_item_update($zoom);
@@ -194,29 +182,14 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
         return false;
     }
 
-    // Update tracking field data for meeting.
-    $defaulttrackingfields = zoom_clean_tracking_fields();
-
-    foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
-        $tfobject = $DB->get_record('zoom_meeting_tracking_fields',
-            array('meeting_id' => $updatedzoomrecord->id, 'tracking_field' => $key));
-        if ($tfobject) {
-            $tfobject->value = $zoom->$key;
-            $DB->update_record('zoom_meeting_tracking_fields', $tfobject);
-        } else {
-            if ($zoom->$key) {
-                $tfobject = new stdClass();
-                $tfobject->meeting_id = $zoom->id;
-                $tfobject->tracking_field = $key;
-                $tfobject->value = $zoom->$key;
-                $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
-            }
-        }
-    }
-
     // Get the updated meeting info from zoom, before updating calendar events.
     $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
     $zoom = populate_zoom_from_response($zoom, $response);
+
+    // Update tracking field data for meeting.
+    if (isset($response->tracking_fields)) {
+        zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields);
+    }
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
@@ -886,22 +859,17 @@ function mod_zoom_update_tracking_fields() {
     $zoomprops = array('id', 'field', 'required', 'visible', 'recommended_values');
     $confignames = array();
 
-    foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
-        if ($defaulttrackingfield !== '') {
-            foreach ($zoomtrackingfields as $zoomtrackingfield) {
-                if (in_array($defaulttrackingfield, $zoomtrackingfield, true)) {
-                    foreach ($zoomprops as $zoomprop) {
-                        $configname = 'tf_' . $key . '_' . $zoomprop;
-                        $confignames[] = $configname;
-                        if ($zoomprop === 'recommended_values') {
-                            $configvalue = implode(', ', $zoomtrackingfield[$zoomprop]);
-                        } else {
-                            $configvalue = $zoomtrackingfield[$zoomprop];
-                        }
-                        set_config($configname, $configvalue, 'zoom');
-                    }
-                    break;
+    foreach ($zoomtrackingfields as $field => $zoomtrackingfield) {
+        if (isset($defaulttrackingfields[$field])) {
+            foreach ($zoomprops as $zoomprop) {
+                $configname = 'tf_' . $field . '_' . $zoomprop;
+                $confignames[] = $configname;
+                if ($zoomprop === 'recommended_values') {
+                    $configvalue = implode(', ', $zoomtrackingfield[$zoomprop]);
+                } else {
+                    $configvalue = $zoomtrackingfield[$zoomprop];
                 }
+                set_config($configname, $configvalue, 'zoom');
             }
         }
     }

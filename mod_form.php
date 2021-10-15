@@ -313,19 +313,22 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
         }
 
-        // Add tracking fields, if configured.
+        // Add tracking fields, if configured in Moodle AND Zoom.
         $defaulttrackingfields = zoom_clean_tracking_fields();
         foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
-            $mform->addElement('text', $key, $defaulttrackingfield);
-            $mform->setType($key, PARAM_TEXT);
-            $rvprop = 'tf_' . $key . '_recommended_values';
-            if (!empty($config->$rvprop)) {
-                $mform->addElement('static', $key . '_recommended_values', null,
-                    get_string('trackingfields_recommendedvalues', 'mod_zoom') . $config->$rvprop);
-            }
-            $requiredproperty = 'tf_' . $key . '_required';
-            if (!empty($config->$requiredproperty)) {
-                $mform->addRule($key, null, 'required', null, 'client');
+            $configname = 'tf_' . $key . '_field';
+            if (!empty($config->$configname)) {
+                $mform->addElement('text', $key, $defaulttrackingfield);
+                $mform->setType($key, PARAM_TEXT);
+                $rvprop = 'tf_' . $key . '_recommended_values';
+                if (!empty($config->$rvprop)) {
+                    $mform->addElement('static', $key . '_recommended_values', null,
+                        get_string('trackingfields_recommendedvalues', 'mod_zoom') . $config->$rvprop);
+                }
+                $requiredproperty = 'tf_' . $key . '_required';
+                if (!empty($config->$requiredproperty)) {
+                    $mform->addRule($key, null, 'required', null, 'client');
+                }
             }
         }
 

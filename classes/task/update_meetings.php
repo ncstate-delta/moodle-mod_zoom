@@ -159,29 +159,9 @@ class update_meetings extends \core\task\scheduled_task {
                     zoom_calendar_item_update($newzoom);
                 }
 
-                foreach ($response->tracking_fields as $tf) {
-                    $fieldname = strtolower($tf->field);
-                    $oldtf = $DB->get_record('zoom_meeting_tracking_fields',
-                        array('meeting_id' => $zoom->id, 'tracking_field' => $fieldname));
-                    if ($oldtf) {
-                        if ($oldtf->value !== $tf->value) {
-                            $oldtf->value = $tf->value;
-                            $DB->update_record('zoom_meeting_tracking_fields', $oldtf);
-                            mtrace('  => Updated Zoom meeting tracking field for Zoom meeting ID ' . $zoom->meeting_id);
-                        }
-                    } else {
-                        $defaulttrackingfields = zoom_clean_tracking_fields();
-                        $key = array_search($tf->field, $defaulttrackingfields, true);
-                        if ($key !== false) {
-                            $tfobject = new stdClass();
-                            $tfobject->meeting_id = $zoom->id;
-                            $tfobject->tracking_field = $key;
-                            $tfobject->value = $zoom->$key;
-                            $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
-                            mtrace('  => Added Zoom meeting tracking field for Zoom meeting ID ' . $zoom->meeting_id);
-                        }
-                    }
-                }
+                // Update tracking fields for meeting.
+                mtrace('  => Updated tracking fields for Zoom meeting ID ' . $zoom->meeting_id);
+                zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields);
             }
         }
 

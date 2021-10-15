@@ -107,9 +107,8 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
         $data->meeting_id = $this->get_new_parentid('zoom');
 
         $defaulttrackingfields = zoom_clean_tracking_fields();
-        $keys = array_keys($defaulttrackingfields);
 
-        if (in_array($data->tracking_field, $keys, true)) {
+        if (isset($defaulttrackingfields[$data->tracking_field])) {
             $newitemid = $DB->insert_record('zoom_meeting_tracking_fields', $data);
             $this->set_mapping('zoom_tracking_field', $oldid, $newitemid);
         }
