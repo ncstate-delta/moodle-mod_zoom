@@ -609,7 +609,7 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2021081900, 'zoom');
     }
 
-    if ($oldversion < 2021100501) {
+    if ($oldversion < 2021101200) {
         // Define table zoom_meeting_tracking_fields to be created.
         $table = new xmldb_table('zoom_meeting_tracking_fields');
 
@@ -632,7 +632,7 @@ function xmldb_zoom_upgrade($oldversion) {
         }
 
         // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2021100501, 'zoom');
+        upgrade_mod_savepoint(true, 2021101200, 'zoom');
     }
 
     return true;
