@@ -443,63 +443,53 @@ function zoom_get_extra_capabilities() {
  */
 function zoom_calendar_item_update(stdClass $zoom) {
     global $CFG, $DB;
-    require_once($CFG->dirroot.'/calendar/lib.php');
+    require_once($CFG->dirroot . '/calendar/lib.php');
 
+    // Based on data passed back from zoom, create/update/delete events based on data.
+    $newevents = array();
     if (!$zoom->recurring) {
-        $eventid = $DB->get_field('event', 'id', array(
-            'modulename' => 'zoom',
-            'instance' => $zoom->id,
-        ));
-
-        // Load existing event object, or create a new one.
-        $event = zoom_populate_calender_item($zoom);
-        if (!empty($eventid)) {
-            calendar_event::load($eventid)->update($event);
-        } else {
-            calendar_event::create($event);
+        $newevents[''] = zoom_populate_calender_item($zoom);
+    } else if (!empty($zoom->occurrences)) {
+        foreach ($zoom->occurrences as $occurrence) {
+            $uuid = $occurrence->occurrence_id;
+            $newevents[$uuid] = zoom_populate_calender_item($zoom, $occurrence);
         }
-    } else {
-        // Based on data passed back from zoom, create/update/detele events based on data.
-        if (!empty($zoom->occurrences)) {
-            $newevents = array();
-            foreach ($zoom->occurrences as $occurrence) {
-                $uuid = $occurrence->occurrence_id;
-                $newevents[$uuid] = zoom_populate_calender_item($zoom, $occurrence);
-            }
+    }
 
-            // Fetch all the events related to this zoom instance.
-            $conditions = array('modulename' => 'zoom', 'instance' => $zoom->id);
-            $events = $DB->get_records('event', $conditions);
-            $eventfields = array('name', 'timestart', 'timeduration');
-            foreach ($events as $event) {
-                $uuid = $event->uuid;
-                if (isset($newevents[$uuid])) {
-                    // This event already exists in Moodle.
-                    $changed = false;
-                    $newevent = $newevents[$uuid];
-                    // Check if the important fields have actually changed.
-                    foreach ($eventfields as $field) {
-                        if ($newevent->$field !== $event->$field) {
-                            $changed = true;
-                        }
-                    }
-                    if ($changed) {
-                        calendar_event::load($event)->update($newevent);
-                    }
-
-                    // Event has been updated, remove from the list.
-                    unset($newevents[$uuid]);
-                } else {
-                    // Event does not exist in Zoom, so delete from Moodle.
-                    calendar_event::load($event)->delete();
+    // Fetch all the events related to this zoom instance.
+    $conditions = array(
+        'modulename' => 'zoom',
+        'instance' => $zoom->id,
+    );
+    $events = $DB->get_records('event', $conditions);
+    $eventfields = array('name', 'timestart', 'timeduration');
+    foreach ($events as $event) {
+        $uuid = $event->uuid;
+        if (isset($newevents[$uuid])) {
+            // This event already exists in Moodle.
+            $changed = false;
+            $newevent = $newevents[$uuid];
+            // Check if the important fields have actually changed.
+            foreach ($eventfields as $field) {
+                if ($newevent->$field !== $event->$field) {
+                    $changed = true;
                 }
             }
-
-            // Any remaining events in the array, dont exist on Moodle, so create a new event.
-            foreach ($newevents as $uuid => $newevent) {
-                calendar_event::create($newevent);
+            if ($changed) {
+                calendar_event::load($event)->update($newevent);
             }
+
+            // Event has been updated, remove from the list.
+            unset($newevents[$uuid]);
+        } else {
+            // Event does not exist in Zoom, so delete from Moodle.
+            calendar_event::load($event)->delete();
         }
+    }
+
+    // Any remaining events in the array don't exist on Moodle, so create a new event.
+    foreach ($newevents as $uuid => $newevent) {
+        calendar_event::create($newevent);
     }
 }
 
