@@ -32,6 +32,12 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.1.3
+
+- Always use a fresh copy of start_url #316 (thanks @ShilVita for reporting)
+- Synchronize calendar events consistently #319 (thanks @martinoesterreicher for reporting)
+- Update JWT library to v5.4.0 #312
+
 v4.1.2
 
 - Make loadmeeting consistent via web and mobile (event, completion, grade, etc) #307 (thanks @nstefanski)
