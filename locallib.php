@@ -1046,7 +1046,8 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
     // Check if we should use the start meeting url.
     if ($userisrealhost && $usestarturl) {
         // Important: Only the real host can use this URL, because it joins the meeting as the host user.
-        $returns['nexturl'] = new moodle_url($zoom->start_url);
+        $starturl = zoom_get_start_url($zoom->meeting_id, $zoom->webinar, $zoom->join_url);
+        $returns['nexturl'] = new moodle_url($starturl);
     } else {
         $returns['nexturl'] = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
     }
@@ -1094,4 +1095,23 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
     }
 
     return $returns;
+}
+
+/**
+ * Fetches a fresh URL that can be used to start the Zoom meeting.
+ *
+ * @param string $meetingid Zoom meeting ID.
+ * @param bool $iswebinar If the session is a webinar.
+ * @param string $fallbackurl URL to use if the webservice call fails.
+ * @return string Best available URL for starting the meeting.
+ */
+function zoom_get_start_url($meetingid, $iswebinar, $fallbackurl) {
+    try {
+        $service = new mod_zoom_webservice();
+        $response = $service->get_meeting_webinar_info($meetingid, $iswebinar);
+        return $response->start_url ?? $response->join_url;
+    } catch (moodle_exception $e) {
+        // If an exception was thrown, gracefully use the fallback URL.
+        return $fallbackurl;
+    }
 }

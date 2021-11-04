@@ -56,7 +56,6 @@ $stractions = get_string('actions', 'mod_zoom');
 $strsessions = get_string('sessions', 'mod_zoom');
 
 $strmeetingstarted = get_string('meeting_started', 'mod_zoom');
-$strstart = get_string('start', 'mod_zoom');
 $strjoin = get_string('join', 'mod_zoom');
 
 $PAGE->set_url('/mod/zoom/index.php', array('id' => $id));
@@ -162,15 +161,9 @@ foreach ($zooms as $z) {
         $row[3] = ($z->recurring && $z->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) ? '--' : format_time($z->duration);
 
         if ($available) {
-            if ($zoomuserid === false || $zoomuserid != $z->host_id) {
-                $buttonhtml = html_writer::tag('button', $strjoin,
-                        array('type' => 'submit', 'class' => 'btn btn-primary'));
-                $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
-            } else {
-                $buttonhtml = html_writer::tag('button', $strstart,
-                        array('type' => 'submit', 'class' => 'btn btn-success'));
-                $aurl = new moodle_url($z->start_url);
-            }
+            $buttonhtml = html_writer::tag('button', $strjoin,
+                array('type' => 'submit', 'class' => 'btn btn-primary'));
+            $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
             $buttonhtml .= html_writer::input_hidden_params($aurl);
             $row[4] = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
         } else {
