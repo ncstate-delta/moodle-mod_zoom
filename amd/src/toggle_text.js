@@ -17,7 +17,6 @@
  * Toggles text to be shown when a user hits 'Show More' and
  * hides text when user hits 'Show Less'
  *
- * @package    mod_zoom
  * @copyright  2020 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

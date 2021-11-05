@@ -17,7 +17,6 @@
  * Populates or de-populates password field based on whether the
  * password is required or not.
  *
- * @package    mod_zoom
  * @copyright  2018 UC Regents
  * @author     Kubilay Agi
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
