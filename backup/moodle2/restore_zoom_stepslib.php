@@ -63,15 +63,17 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
         $data->start_time = $this->apply_date_offset($data->start_time);
 
         // Either create a new meeting or set meeting as expired.
-        $updateddata = $service->create_meeting($data);
-        if (!$updateddata) {
-            $updateddata = new stdClass;
-            $updateddata->exists_on_zoom = ZOOM_MEETING_EXPIRED;
+        try {
+            $updateddata = $service->create_meeting($data);
+            $data = populate_zoom_from_response($data, $updateddata);
+            $data->exists_on_zoom = ZOOM_MEETING_EXISTS;
+        } catch (moodle_exception $e) {
+            $data->start_url = '';
+            $data->join_url = '';
+            $data->meeting_id = 0;
+            $data->exists_on_zoom = ZOOM_MEETING_EXPIRED;
         }
 
-        $data->start_url = $updateddata->start_url;
-        $data->join_url = $updateddata->join_url;
-        $data->meeting_id = $updateddata->id;
         $data->course = $this->get_courseid();
 
         if (empty($data->timemodified)) {
@@ -89,8 +91,7 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
 
         // Create the calendar events for the new meeting.
         $data->id = $newitemid;
-        $zoom = populate_zoom_from_response($data, $updateddata);
-        zoom_calendar_item_update($zoom);
+        zoom_calendar_item_update($data);
     }
 
     /**
