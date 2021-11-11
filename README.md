@@ -32,6 +32,14 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.2
+
+- Add support for Zoom Tracking Fields #308 (thanks @haietza, @porcospino)
+- Send plaintext version of Moodle intro to Zoom #290 (thanks @Ottendahl, @abias, @yanus for reporting)
+  - Note: To avoid losing Moodle's rich text, we no longer synchronize Zoom's topic back to Moodle.
+- Reduce zoom_refresh_events overreach; fix 'quick edit' issue #320 (thanks @alina-kiz, @jwalits for testing)
+- Add error handling and improve consistency in Zoom activity restore #328 (thanks @jonof)
+
 v4.1.3
 
 - Always use a fresh copy of start_url #316 (thanks @ShilVita for reporting)
