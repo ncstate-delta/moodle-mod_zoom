@@ -383,7 +383,30 @@ function zoom_delete_instance($id) {
  * @return bool
  */
 function zoom_refresh_events($courseid, $zoom, $cm) {
-    return zoom_update_instance($zoom);
+    global $CFG;
+
+    require_once($CFG->dirroot . '/mod/zoom/classes/webservice.php');
+
+    try {
+        $service = new mod_zoom_webservice();
+
+        // Get the updated meeting info from zoom, before updating calendar events.
+        $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
+        $fullzoom = populate_zoom_from_response($zoom, $response);
+
+        // Only if the name has changed, update meeting on Zoom.
+        if ($zoom->name !== $fullzoom->name) {
+            $fullzoom->name = $zoom->name;
+            $service->update_meeting($zoom);
+        }
+
+        zoom_calendar_item_update($fullzoom);
+        zoom_grade_item_update($fullzoom);
+    } catch (moodle_exception $error) {
+        return false;
+    }
+
+    return true;
 }
 
 /**
