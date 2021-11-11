@@ -594,6 +594,19 @@ class mod_zoom_webservice {
             $data['duration'] = (int) ceil($zoom->duration / 60);
         }
 
+        // Add tracking field to data.
+        $defaulttrackingfields = zoom_clean_tracking_fields();
+        $tfarray = array();
+        foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
+            if (isset($zoom->$key)) {
+                $tf = new stdClass();
+                $tf->field = $defaulttrackingfield;
+                $tf->value = $zoom->$key;
+                $tfarray[] = $tf;
+            }
+        }
+        $data['tracking_fields'] = $tfarray;
+
         return $data;
     }
 
@@ -790,6 +803,22 @@ class mod_zoom_webservice {
     public function get_webinars($from, $to) {
         return $this->make_paginated_call('metrics/webinars',
                 ['type' => 'past', 'from' => $from, 'to' => $to], 'webinars');
+    }
+
+    /**
+     * Lists tracking fields configured on the account.
+     *
+     * @return ?stdClass The call's result in JSON format.
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/trackingfield/trackingfieldlist
+     */
+    public function list_tracking_fields() {
+        $response = null;
+        try {
+            $response = $this->make_call('tracking_fields');
+        } catch (moodle_exception $error) {
+            debugging($error->getMessage());
+        }
+        return $response;
     }
 
     /**

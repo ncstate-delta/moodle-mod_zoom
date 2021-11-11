@@ -115,6 +115,11 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
+    // Store tracking field data for meeting.
+    if (isset($response->tracking_fields)) {
+        zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields);
+    }
+
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
 
@@ -180,6 +185,11 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     // Get the updated meeting info from zoom, before updating calendar events.
     $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
     $zoom = populate_zoom_from_response($zoom, $response);
+
+    // Update tracking field data for meeting.
+    if (isset($response->tracking_fields)) {
+        zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields);
+    }
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
@@ -352,6 +362,9 @@ function zoom_delete_instance($id) {
         $DB->delete_records('zoom_meeting_participants', array('uuid' => $meetinginstance->uuid));
     }
     $DB->delete_records('zoom_meeting_details', array('meeting_id' => $zoom->meeting_id));
+
+    // Delete tracking field data for deleted meetings.
+    $DB->delete_records('zoom_meeting_tracking_fields', array('meeting_id' => $zoom->id));
 
     // Delete any dependent records here.
     zoom_calendar_item_delete($zoom);
@@ -833,4 +846,43 @@ function mod_zoom_get_fontawesome_icon_map() {
     return [
         'mod_zoom:i/calendar' => 'fa-calendar'
     ];
+}
+
+/**
+ * This function updates the tracking field settings in config_plugins.
+ */
+function mod_zoom_update_tracking_fields() {
+    global $DB;
+
+    $defaulttrackingfields = zoom_clean_tracking_fields();
+    $zoomtrackingfields = zoom_list_tracking_fields();
+    $zoomprops = array('id', 'field', 'required', 'visible', 'recommended_values');
+    $confignames = array();
+
+    foreach ($zoomtrackingfields as $field => $zoomtrackingfield) {
+        if (isset($defaulttrackingfields[$field])) {
+            foreach ($zoomprops as $zoomprop) {
+                $configname = 'tf_' . $field . '_' . $zoomprop;
+                $confignames[] = $configname;
+                if ($zoomprop === 'recommended_values') {
+                    $configvalue = implode(', ', $zoomtrackingfield[$zoomprop]);
+                } else {
+                    $configvalue = $zoomtrackingfield[$zoomprop];
+                }
+                set_config($configname, $configvalue, 'zoom');
+            }
+        }
+    }
+
+    $config = get_config('zoom');
+    $proparray = get_object_vars($config);
+    $properties = array_keys($proparray);
+    $oldconfigs = array_diff($properties, $confignames);
+    $pattern = '/^tf_(?P<oldfield>.*)_(' . implode('|', $zoomprops) . ')$/';
+    foreach ($oldconfigs as $oldconfig) {
+        if (preg_match($pattern, $oldconfig, $matches)) {
+            set_config($oldconfig, null, 'zoom');
+            $DB->delete_records('zoom_meeting_tracking_fields', array('tracking_field' => $matches['oldfield']));
+        }
+    }
 }

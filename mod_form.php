@@ -313,6 +313,25 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
         }
 
+        // Add tracking fields, if configured in Moodle AND Zoom.
+        $defaulttrackingfields = zoom_clean_tracking_fields();
+        foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
+            $configname = 'tf_' . $key . '_field';
+            if (!empty($config->$configname)) {
+                $mform->addElement('text', $key, $defaulttrackingfield);
+                $mform->setType($key, PARAM_TEXT);
+                $rvprop = 'tf_' . $key . '_recommended_values';
+                if (!empty($config->$rvprop)) {
+                    $mform->addElement('static', $key . '_recommended_values', null,
+                        get_string('trackingfields_recommendedvalues', 'mod_zoom') . $config->$rvprop);
+                }
+                $requiredproperty = 'tf_' . $key . '_required';
+                if (!empty($config->$requiredproperty)) {
+                    $mform->addRule($key, null, 'required', null, 'client');
+                }
+            }
+        }
+
         // Adding the "security" fieldset, where all settings relating to securing and protecting the meeting are shown.
         $mform->addElement('header', 'general', get_string('security', 'mod_zoom'));
 
@@ -611,6 +630,8 @@ class mod_zoom_mod_form extends moodleform_mod {
      * @param array $defaultvalues passed by reference
      */
     public function data_preprocessing(&$defaultvalues) {
+        global $DB;
+
         parent::data_preprocessing($defaultvalues);
 
         // Get config.
@@ -637,8 +658,19 @@ class mod_zoom_mod_form extends moodleform_mod {
                 );
             }
         }
-    }
 
+        if ($config->defaulttrackingfields !== '') {
+            // Populate modedit form fields with previously saved values.
+            $defaulttrackingfields = zoom_clean_tracking_fields();
+            $tfrows = $DB->get_records('zoom_meeting_tracking_fields', array('meeting_id' => $defaultvalues['id']));
+            foreach ($tfrows as $tfrow) {
+                $tfkey = $tfrow->tracking_field;
+                if (!empty($defaulttrackingfields[$tfkey])) {
+                    $defaultvalues[$tfkey] = $tfrow->value;
+                }
+            }
+        }
+    }
 
     /**
      * More validation on form data.

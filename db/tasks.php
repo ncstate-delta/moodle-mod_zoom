@@ -42,5 +42,14 @@ $tasks = array(
         'day' => '*',
         'dayofweek' => '*',
         'month' => '*'
+    ),
+    array(
+        'classname' => 'mod_zoom\task\update_tracking_fields',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '*/6',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
     )
 );

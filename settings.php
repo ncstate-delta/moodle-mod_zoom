@@ -293,6 +293,12 @@ if ($ADMIN->fulltree) {
             1, 1, 0);
     $settings->add($defaultmuteuponentryoption);
 
+    $defaulttrackingfields = new admin_setting_configtextarea('zoom/defaulttrackingfields',
+        get_string('trackingfields', 'mod_zoom'),
+        get_string('trackingfields_help', 'mod_zoom'), '');
+    $defaulttrackingfields->set_updatedcallback('mod_zoom_update_tracking_fields');
+    $settings->add($defaulttrackingfields);
+
     $invitationregexhelp = get_string('invitationregex_help', 'mod_zoom');
     if (!$moodlehashideif) {
         $invitationregexhelp .= "\n\n" . get_string('invitationregex_nohideif', 'mod_zoom',

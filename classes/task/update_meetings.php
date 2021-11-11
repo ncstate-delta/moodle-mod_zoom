@@ -158,6 +158,10 @@ class update_meetings extends \core\task\scheduled_task {
                     mtrace('  => Updated calendar items for recurring Zoom meeting ID ' . $zoom->meeting_id);
                     zoom_calendar_item_update($newzoom);
                 }
+
+                // Update tracking fields for meeting.
+                mtrace('  => Updated tracking fields for Zoom meeting ID ' . $zoom->meeting_id);
+                zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields);
             }
         }
 

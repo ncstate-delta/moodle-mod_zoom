@@ -1115,3 +1115,87 @@ function zoom_get_start_url($meetingid, $iswebinar, $fallbackurl) {
         return $fallbackurl;
     }
 }
+
+/**
+ * Get the configured Zoom tracking fields.
+ *
+ * @return array tracking fields, keys as lower case
+ */
+function zoom_list_tracking_fields() {
+    // Get Zoom API service instance.
+    $service = new mod_zoom_webservice();
+    $trackingfields = array();
+
+    // Get the tracking fields configured on the account.
+    $response = $service->list_tracking_fields();
+    if ($response != null) {
+        foreach ($response->tracking_fields as $trackingfield) {
+            $field = str_replace(' ', '_', strtolower($trackingfield->field));
+            $trackingfields[$field] = (array) $trackingfield;
+        }
+    }
+
+    return $trackingfields;
+}
+
+/**
+ * Trim and lower case tracking fields.
+ *
+ * @return array tracking fields trimmed, keys as lower case
+ */
+function zoom_clean_tracking_fields() {
+    $config = get_config('zoom');
+    $defaulttrackingfields = explode(',', $config->defaulttrackingfields);
+    $trackingfields = array();
+
+    foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
+        $trimmed = trim($defaulttrackingfield);
+        if (!empty($trimmed)) {
+            $key = str_replace(' ', '_', strtolower($trimmed));
+            $trackingfields[$key] = $trimmed;
+        }
+    }
+
+    return $trackingfields;
+}
+
+/**
+ * Synchronize tracking field data for a meeting.
+ *
+ * @param int $zoomid Zoom meeting ID
+ * @param array $trackingfields Tracking fields configured in Zoom.
+ */
+function zoom_sync_meeting_tracking_fields($zoomid, $trackingfields) {
+    global $DB;
+
+    $tfvalues = array();
+    foreach ($trackingfields as $trackingfield) {
+        $field = str_replace(' ', '_', strtolower($trackingfield->field));
+        $tfvalues[$field] = $trackingfield->value;
+    }
+
+    $tfrows = $DB->get_records('zoom_meeting_tracking_fields', array('meeting_id' => $zoomid));
+    $tfobjects = array();
+    foreach ($tfrows as $tfrow) {
+        $tfobjects[$tfrow->tracking_field] = $tfrow;
+    }
+    $defaulttrackingfields = zoom_clean_tracking_fields();
+    foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
+        $value = $tfvalues[$key] ?? '';
+        if (isset($tfobjects[$key])) {
+            $tfobject = $tfobjects[$key];
+            if ($value === '') {
+                $DB->delete_records('zoom_meeting_tracking_fields', array('meeting_id' => $zoomid, 'tracking_field' => $key));
+            } else if ($tfobject->value !== $value) {
+                $tfobject->value = $value;
+                $DB->update_record('zoom_meeting_tracking_fields', $tfobject);
+            }
+        } else if ($value !== '') {
+            $tfobject = new stdClass();
+            $tfobject->meeting_id = $zoomid;
+            $tfobject->tracking_field = $key;
+            $tfobject->value = $value;
+            $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
+        }
+    }
+}
