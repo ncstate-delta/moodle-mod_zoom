@@ -271,9 +271,6 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     }
     $newzoom->meeting_id = $response->id;
     $newzoom->name = $response->topic;
-    if (isset($response->agenda)) {
-        $newzoom->intro = $response->agenda;
-    }
     if (isset($response->start_time)) {
         $newzoom->start_time = strtotime($response->start_time);
     }
