@@ -149,8 +149,8 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Adding the "general" fieldset, where all the common settings are showed.
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        // Add topic (stored in database as 'name').
-        $mform->addElement('text', 'name', get_string('topic', 'zoom'), array('size' => '64'));
+        // Add title (stored in database as 'name').
+        $mform->addElement('text', 'name', get_string('title', 'zoom'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 300), 'maxlength', 300, 'client');

@@ -48,7 +48,7 @@ $strname = get_string('modulenameplural', 'mod_zoom');
 $strnew = get_string('newmeetings', 'mod_zoom');
 $strold = get_string('oldmeetings', 'mod_zoom');
 
-$strtopic = get_string('topic', 'mod_zoom');
+$strtitle = get_string('title', 'mod_zoom');
 $strwebinar = get_string('webinar', 'mod_zoom');
 $strtime = get_string('meeting_time', 'mod_zoom');
 $strduration = get_string('duration', 'mod_zoom');
@@ -77,11 +77,11 @@ $zoomuserid = zoom_get_user_id(false);
 
 $newtable = new html_table();
 $newtable->attributes['class'] = 'generaltable mod_index';
-$newhead = array($strtopic, $strtime, $strduration, $stractions);
+$newhead = array($strtitle, $strtime, $strduration, $stractions);
 $newalign = array('left', 'left', 'left', 'left');
 
 $oldtable = new html_table();
-$oldhead = array($strtopic, $strtime);
+$oldhead = array($strtitle, $strtime);
 $oldalign = array('left', 'left');
 
 // Show section column if there are sections.
