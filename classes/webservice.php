@@ -299,7 +299,7 @@ class mod_zoom_webservice {
      * @see make_call()
      * @link https://zoom.github.io/api/#list-users
      */
-    private function make_paginated_call($url, $data = array(), $datatoget) {
+    private function make_paginated_call($url, $data, $datatoget) {
         $aggregatedata = array();
         $data['page_size'] = ZOOM_MAX_RECORDS_PER_CALL;
         do {
