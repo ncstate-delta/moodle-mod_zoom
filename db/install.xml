@@ -45,6 +45,7 @@
         <FIELD NAME="option_encryption_type" TYPE="char" LENGTH="20" NOTNULL="false" DEFAULT="enhanced_encryption" SEQUENCE="false" COMMENT="Meeting encryption type. Can be &quot;enhanced_encryption&quot;, &quot;e2ee&quot;"/>
         <FIELD NAME="exists_on_zoom" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether the meeting can be found on Zoom servers. Usually should be true, should only be false if API call returned that meeting can't be found."/>
         <FIELD NAME="alternative_hosts" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="recordings_visible_default" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Should the recordings for this meeting be visible by default" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

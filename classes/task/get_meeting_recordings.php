@@ -98,7 +98,7 @@ class get_meeting_recordings extends \core\task\scheduled_task {
                             $rec->passcode = trim($zoomrecordinginfo->passcode);
                             $rec->recordingtype = trim($zoomrecordinginfo->recordingtype);
                             $rec->recordingstart = $recordingstarttime;
-                            $rec->showrecording = $config->viewrecordings;
+                            $rec->showrecording = $zoom->recordings_visible_default;
                             $rec->timecreated = $now;
                             $rec->timemodified = $now;
                             $rec->id = $DB->insert_record('zoom_meeting_recordings', $rec);

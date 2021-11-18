@@ -43,7 +43,7 @@ class backup_zoom_activity_structure_step extends backup_activity_structure_step
             'monthly_week', 'monthly_week_day', 'monthly_repeat_option', 'end_times', 'end_date_time', 'end_date_option',
             'webinar', 'duration', 'timezone', 'password', 'option_jbh', 'option_start_type', 'option_host_video',
             'option_participants_video', 'option_audio', 'option_mute_upon_entry', 'option_waiting_room',
-            'option_authenticated_users', 'option_encryption_type', 'exists_on_zoom', 'alternative_hosts',
+            'option_authenticated_users', 'option_encryption_type', 'exists_on_zoom', 'alternative_hosts', 'recordings_visible_default',
         ));
 
         $trackingfields = new backup_nested_element('trackingfields');
