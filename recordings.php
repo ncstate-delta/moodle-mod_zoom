@@ -27,13 +27,13 @@ require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 require_once(__DIR__ . '/locallib.php');
 
-$id = required_param('id', PARAM_INT);
-
-$config = get_config('zoom');
-
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 
 require_login($course, true, $cm);
+
+if (!get_config('zoom', 'viewrecordings')) {
+    throw new moodle_exception('recordingnotvisible', 'mod_zoom', get_string('recordingnotvisible', 'zoom'));
+}
 
 $context = context_module::instance($cm->id);
 // Set up the page.

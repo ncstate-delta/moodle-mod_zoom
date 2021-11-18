@@ -27,10 +27,13 @@ require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/moodlelib.php');
 require_once(__DIR__ . '/locallib.php');
 
-$id = required_param('id', PARAM_INT);
 $meetinguuid = required_param('meetinguuid', PARAM_TEXT);
 $recordingstart = required_param('recordingstart', PARAM_INT);
 $showrecording = required_param('showrecording', PARAM_INT);
+
+if (!get_config('zoom', 'viewrecordings')) {
+    throw new moodle_exception('recordingnotvisible', 'mod_zoom', get_string('recordingnotvisible', 'zoom'));
+}
 
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 require_login($course, true, $cm);
@@ -39,7 +42,7 @@ $context = context_module::instance($id);
 $PAGE->set_context($context);
 require_capability('mod/zoom:addinstance', $context);
 
-$urlparams = array('id' => $id);
+$urlparams = array('id' => $cm->id);
 $url = new moodle_url('/mod/zoom/recordings.php', $urlparams);
 if (!confirm_sesskey()) {
     redirect($url, get_string('sesskeyinvalid', 'mod_zoom'));

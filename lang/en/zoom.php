@@ -255,6 +255,7 @@ $string['recordingdelete'] = 'Are you sure you want to delete the recording "{$a
 $string['recordinghide'] = 'Hide Recording (Currently Visible)';
 $string['recordinglink'] = 'Recording Link';
 $string['recordingname'] = 'Title';
+$string['recordingnotvisible'] = 'Recording is not visible. Please contact your System Administrator if you believe this is an error';
 $string['recordingpasscode'] = 'Recording Passcode';
 $string['recordings'] = 'Recordings';
 $string['recordingshow'] = 'Show Recording (Currently Hidden)';

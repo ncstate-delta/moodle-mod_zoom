@@ -27,8 +27,11 @@ require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/moodlelib.php');
 require_once(__DIR__ . '/locallib.php');
 
-$id = required_param('id', PARAM_INT);
 $recordingid = required_param('recordingid', PARAM_INT);
+
+if (!get_config('zoom', 'viewrecordings')) {
+    throw new moodle_exception('recordingnotvisible', 'mod_zoom', get_string('recordingnotvisible', 'zoom'));
+}
 
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 require_login($course, true, $cm);
@@ -38,7 +41,13 @@ $PAGE->set_context($context);
 
 require_capability('mod/zoom:view', $context);
 
-if (!$rec = $DB->get_record('zoom_meeting_recordings', array('id' => $recordingid))) {
+// Only show recording that is visble and valid.
+$params = [
+    'id' => $recordingid,
+    'showrecording' => 1,
+    'zoomid' => $zoom->id,
+];
+if (!$rec = $DB->get_record('zoom_meeting_recordings', $params)) {
     throw new moodle_exception('recordingnotfound', 'mod_zoom', '', get_string('recordingnotfound', 'zoom'));
 }
 
