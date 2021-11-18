@@ -40,6 +40,7 @@ v4.2.1
 v4.2
 
 - Add support for Zoom Tracking Fields #308 (thanks @haietza, @porcospino)
+  - New setting `zoom/defaulttrackingfields`
 - Send plaintext version of Moodle intro to Zoom #290 (thanks @Ottendahl, @abias, @yanus for reporting)
   - Note: To avoid losing Moodle's rich text, we no longer synchronize Zoom's topic back to Moodle.
 - Reduce zoom_refresh_events overreach; fix 'quick edit' issue #320 (thanks @alina-kiz, @jwalits for testing)
