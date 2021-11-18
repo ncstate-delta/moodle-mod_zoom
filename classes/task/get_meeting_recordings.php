@@ -73,7 +73,7 @@ class get_meeting_recordings extends \core\task\scheduled_task {
         mtrace('Finding meeting recordings for this account...');
 
         $zoommeetings = zoom_get_all_meeting_records();
-        foreach ($zoommeetings as $meetingid => $zoom) {
+        foreach ($zoommeetings as $zoom) {
             // Only get recordings for this meeting if its recurring or already finished.
             $now = time();
             if ($zoom->recurring || $now > (intval($zoom->start_time) + intval($zoom->duration))) {

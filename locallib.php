@@ -1209,9 +1209,10 @@ function zoom_get_all_meeting_records() {
     global $DB;
 
     $meetings = [];
-    $records = $DB->get_records('zoom');
+    // Only get meetings that exist on zoom.
+    $records = $DB->get_records('zoom', ['exists_on_zoom' => ZOOM_MEETING_EXISTS]);
     foreach ($records as $record) {
-        $meetings[$record->meeting_id] = $record;
+        $meetings[] = $record;
     }
 
     return $meetings;
