@@ -684,13 +684,13 @@ function xmldb_zoom_upgrade($oldversion) {
             $dbman->create_table($table);
         }
 
-        // Add new field for recording_visible_default.
+        // Add new field for recordings_visible_default.
         $table = new xmldb_table('zoom');
-        // Define field recording_visible_default to be added to zoom.
+        // Define field recordings_visible_default to be added to zoom.
         $field = new xmldb_field('recordings_visible_default', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1',
                 'alternative_hosts');
 
-        // Conditionally launch add field recording_visible_default.
+        // Conditionally launch add field recordings_visible_default.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }

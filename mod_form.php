@@ -518,10 +518,10 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Adding option for Recording Visiblity by default.
         $mform->addElement('header', 'general', get_string('recording', 'mod_zoom'));
-        $mform->addElement('advcheckbox', 'recording_visible_default', get_string('recordingvisibility', 'mod_zoom'),
+        $mform->addElement('advcheckbox', 'recordings_visible_default', get_string('recordingvisibility', 'mod_zoom'),
                 get_string('yes'));
-        $mform->setDefault('recording_visible_default', 1);
-        $mform->addHelpButton('recording_visible_default', 'recordingvisibility', 'mod_zoom');
+        $mform->setDefault('recordings_visible_default', 1);
+        $mform->addHelpButton('recordings_visible_default', 'recordingvisibility', 'mod_zoom');
 
         // Add meeting id.
         $mform->addElement('hidden', 'meeting_id', -1);

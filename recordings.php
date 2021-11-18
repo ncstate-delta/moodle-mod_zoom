@@ -74,72 +74,64 @@ if ($iszoommanager) {
 $service = new mod_zoom_webservice();
 
 $now = time();
-if ($zoom->recurring || $now > (intval($zoom->start_time) + intval($zoom->duration))) {
-    // Find all entries for this meeting in the database.
-    $recordings = zoom_get_meeting_recordings_grouped($zoom->id);
-    if (empty($recordings)) {
-        $cell = new html_table_cell();
-        $cell->colspan = count($table->head);
-        $cell->text = get_string('norecordings', 'mod_zoom');
-        $cell->style = 'text-align: center';
-        $row = new html_table_row([$cell]);
-        $table->data = [$row];
-    } else {
-        foreach ($recordings as $timestart => $grouping) {
-            // Output the related recordings into the same row.
-            $recordingdate = '';
-            $recordinghtml = '';
-            $recordingpasscode = '';
-            $recordingshowhtml = '';
-            foreach ($grouping as $recording) {
-                // If zoom admin -> show all recordings.
-                // Or if visible to students.
-                if ($iszoommanager || intval($recording->showrecording) === 1) {
-                    if (empty($recordingdate)) {
-                        $recordingdate = date('F j, Y, g:i:s a \P\T', $recording->recordingstart);
-                    }
-                    if (empty($recordingpasscode)) {
-                        $recordingpasscode = $recording->passcode;
-                    }
-                    if ($iszoommanager && empty($recordingshowhtml)) {
-                        $isrecordinghidden = intval($recording->showrecording) === 0;
-                        $urlparams = [
-                            'id' => $cm->id,
-                            'meetinguuid' => $recording->meetinguuid,
-                            'recordingstart' => $recording->recordingstart,
-                            'showrecording' => ($isrecordinghidden) ? 1 : 0,
-                            'sesskey' => sesskey(),
-                        ];
-                        // If the user is a zoom admin, show the button to toggle whether students can see the recording or not.
-                        $recordingshowurl = new moodle_url('/mod/zoom/showrecording.php', $urlparams);
-                        $recordingshowtext = get_string('recordinghide', 'mod_zoom');
-                        if ($isrecordinghidden) {
-                            $recordingshowtext = get_string('recordingshow', 'mod_zoom');
-                        }
-                        $btnclass = 'btn btn-';
-                        $btnclass .= $isrecordinghidden ? 'dark' : 'primary';
-                        $recordingshowbutton = html_writer::div($recordingshowtext, $btnclass);
-                        $recordingshowbuttonhtml = html_writer::link($recordingshowurl, $recordingshowbutton);
-                        $recordingshowhtml = html_writer::div($recordingshowbuttonhtml);
-                    }
-                    $params = ['id' => $cm->id, 'recordingid' => $recording->id];
-                    $recordingurl = new moodle_url('/mod/zoom/loadrecording.php', $params);
-                    $recordinglink = html_writer::link($recordingurl, $recording->name);
-                    $recordinglinkhtml = html_writer::span($recordinglink, 'recording-link', ['style' => 'margin-right:1rem']);
-                    $recordinghtml .= html_writer::div($recordinglinkhtml, 'recording', ['style' => 'margin-bottom:.5rem']);
-                }
-            }
-            // Output only one row per grouping.
-            $table->data[] = [$recordingdate, $recordinghtml, $recordingpasscode, $recordingshowhtml];
-        }
-    }
-} else {
+
+// Find all entries for this meeting in the database.
+$recordings = zoom_get_meeting_recordings_grouped($zoom->id);
+if (empty($recordings)) {
     $cell = new html_table_cell();
     $cell->colspan = count($table->head);
     $cell->text = get_string('norecordings', 'mod_zoom');
     $cell->style = 'text-align: center';
     $row = new html_table_row([$cell]);
     $table->data = [$row];
+} else {
+    foreach ($recordings as $timestart => $grouping) {
+        // Output the related recordings into the same row.
+        $recordingdate = '';
+        $recordinghtml = '';
+        $recordingpasscode = '';
+        $recordingshowhtml = '';
+        foreach ($grouping as $recording) {
+            // If zoom admin -> show all recordings.
+            // Or if visible to students.
+            if ($iszoommanager || intval($recording->showrecording) === 1) {
+                if (empty($recordingdate)) {
+                    $recordingdate = date('F j, Y, g:i:s a \P\T', $recording->recordingstart);
+                }
+                if (empty($recordingpasscode)) {
+                    $recordingpasscode = $recording->passcode;
+                }
+                if ($iszoommanager && empty($recordingshowhtml)) {
+                    $isrecordinghidden = intval($recording->showrecording) === 0;
+                    $urlparams = [
+                        'id' => $cm->id,
+                        'meetinguuid' => $recording->meetinguuid,
+                        'recordingstart' => $recording->recordingstart,
+                        'showrecording' => ($isrecordinghidden) ? 1 : 0,
+                        'sesskey' => sesskey(),
+                    ];
+                    // If the user is a zoom admin, show the button to toggle whether students can see the recording or not.
+                    $recordingshowurl = new moodle_url('/mod/zoom/showrecording.php', $urlparams);
+                    $recordingshowtext = get_string('recordinghide', 'mod_zoom');
+                    if ($isrecordinghidden) {
+                        $recordingshowtext = get_string('recordingshow', 'mod_zoom');
+                    }
+                    $btnclass = 'btn btn-';
+                    $btnclass .= $isrecordinghidden ? 'dark' : 'primary';
+                    $recordingshowbutton = html_writer::div($recordingshowtext, $btnclass);
+                    $recordingshowbuttonhtml = html_writer::link($recordingshowurl, $recordingshowbutton);
+                    $recordingshowhtml = html_writer::div($recordingshowbuttonhtml);
+                }
+                $params = ['id' => $cm->id, 'recordingid' => $recording->id];
+                $recordingurl = new moodle_url('/mod/zoom/loadrecording.php', $params);
+                $recordinglink = html_writer::link($recordingurl, $recording->name);
+                $recordinglinkhtml = html_writer::span($recordinglink, 'recording-link', ['style' => 'margin-right:1rem']);
+                $recordinghtml .= html_writer::div($recordinglinkhtml, 'recording', ['style' => 'margin-bottom:.5rem']);
+            }
+        }
+        // Output only one row per grouping.
+        $table->data[] = [$recordingdate, $recordinghtml, $recordingpasscode, $recordingshowhtml];
+    }
 }
 
 echo html_writer::table($table);

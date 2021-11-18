@@ -58,6 +58,9 @@ class get_meeting_recordings extends \core\task\scheduled_task {
         } else if (empty($config->apisecret)) {
             mtrace('Skipping task - ', get_string('zoomerr_apisecret_missing', 'zoom'));
             return;
+        } else if (!$config->viewrecordings) {
+            mtrace('Skipping task - ', get_string('zoomerr_viewrecordings_off', 'zoom'));
+            return;
         }
 
         // See if we cannot make anymore API calls.

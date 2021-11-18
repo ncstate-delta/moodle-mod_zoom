@@ -153,7 +153,7 @@ if ($ADMIN->fulltree) {
 
     $viewrecordings = new admin_setting_configcheckbox('zoom/viewrecordings',
             get_string('option_view_recordings', 'mod_zoom'),
-            '', 1, 1, 0);
+            '', 0, 1, 0);
     $settings->add($viewrecordings);
 
     // Supplementary features settings.

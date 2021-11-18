@@ -38,7 +38,7 @@ if (!get_config('zoom', 'viewrecordings')) {
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 require_login($course, true, $cm);
 
-$context = context_module::instance($id);
+$context = context_module::instance($cm->id);
 $PAGE->set_context($context);
 require_capability('mod/zoom:addinstance', $context);
 
