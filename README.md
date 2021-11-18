@@ -32,6 +32,11 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.2.1
+
+- Fix PHP 8 deprecation warning #332 (thanks @ndunand)
+- Fix duplicate column name on "All Meetings" page #330
+
 v4.2
 
 - Add support for Zoom Tracking Fields #308 (thanks @haietza, @porcospino)
