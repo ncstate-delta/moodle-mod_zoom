@@ -254,7 +254,7 @@ if ($isrecurringnotime) {
 }
 
 // Show recordings section if option enabled to view recordings.
-if ($config->viewrecordings) {
+if (!empty($config->viewrecordings)) {
     $recordinghtml = null;
     $recordingaddurl = new moodle_url('/mod/zoom/recordings.php', array('id' => $cm->id));
     $recordingaddbutton = html_writer::div(get_string('recordingview', 'mod_zoom'), 'btn btn-primary');

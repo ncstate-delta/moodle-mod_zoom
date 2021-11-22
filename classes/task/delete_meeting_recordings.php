@@ -75,7 +75,7 @@ class delete_meeting_recordings extends \core\task\scheduled_task {
         $zoomrecordings = zoom_get_meeting_recordings();
         // Fetch all recordings for the unique meetinguuid.
         $meetinguuidsfetched = [];
-        if ($zoomrecordings) {
+        if (!empty($zoomrecordings)) {
             foreach ($zoomrecordings as $zoomrecordingid => $recording) {
                 $meetinguuid = trim($recording->meetinguuid);
                 if (!isset($meetinguuidsfetched[$meetinguuid])) {

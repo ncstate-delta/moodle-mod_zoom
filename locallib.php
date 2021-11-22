@@ -1229,7 +1229,7 @@ function zoom_get_meeting_recordings($zoomid = null) {
     global $DB;
 
     $params = [];
-    if ($zoomid != null) {
+    if ($zoomid !== null) {
         $params['zoomid'] = $zoomid;
     }
     $records = $DB->get_records('zoom_meeting_recordings', $params);

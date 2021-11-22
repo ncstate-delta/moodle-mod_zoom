@@ -47,7 +47,8 @@ $params = [
     'showrecording' => 1,
     'zoomid' => $zoom->id,
 ];
-if (!$rec = $DB->get_record('zoom_meeting_recordings', $params)) {
+$rec = $DB->get_record('zoom_meeting_recordings', $params);
+if (empty($rec)) {
     throw new moodle_exception('recordingnotfound', 'mod_zoom', '', get_string('recordingnotfound', 'zoom'));
 }
 
@@ -55,8 +56,9 @@ $params = array('recordingsid' => $rec->id, 'userid' => $USER->id);
 $now = time();
 
 // Keep track of whether someone has viewed the recording or not.
-if ($view = $DB->get_record('zoom_meeting_recordings_view', $params)) {
-    if (!$view->viewed) {
+$view = $DB->get_record('zoom_meeting_recordings_view', $params);
+if (!empty($view)) {
+    if (empty($view->viewed)) {
         $view->viewed = 1;
         $view->timemodified = $now;
         $DB->update_record('zoom_meeting_recordings_view', $view);
