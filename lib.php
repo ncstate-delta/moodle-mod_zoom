@@ -116,9 +116,7 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
     // Store tracking field data for meeting.
-    if (isset($response->tracking_fields)) {
-        zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields);
-    }
+    zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields ?? array());
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
@@ -187,9 +185,7 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom = populate_zoom_from_response($zoom, $response);
 
     // Update tracking field data for meeting.
-    if (isset($response->tracking_fields)) {
-        zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields);
-    }
+    zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields ?? array());
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);

@@ -1128,7 +1128,7 @@ function zoom_list_tracking_fields() {
 
     // Get the tracking fields configured on the account.
     $response = $service->list_tracking_fields();
-    if ($response != null) {
+    if (isset($response->tracking_fields)) {
         foreach ($response->tracking_fields as $trackingfield) {
             $field = str_replace(' ', '_', strtolower($trackingfield->field));
             $trackingfields[$field] = (array) $trackingfield;
