@@ -635,5 +635,22 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2021111100, 'zoom');
     }
 
+    if ($oldversion < 2021112900) {
+        // Define table zoom_meeting_details to be created.
+        $table = new xmldb_table('zoom_meeting_details');
+        // Conditionally launch add key uuid_unique.
+        if (!$table->getKey('uuid_unique')) {
+            $key = new xmldb_key('uuid_unique', XMLDB_KEY_UNIQUE, ['uuid']);
+            $dbman->add_key($table, $key);
+        }
+
+        // Launch drop key meeting_unique.
+        $key = new xmldb_key('meeting_unique', XMLDB_KEY_UNIQUE, ['meeting_id', 'uuid']);
+        $dbman->drop_key($table, $key);
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2021112900, 'zoom');
+    }
+
     return true;
 }
