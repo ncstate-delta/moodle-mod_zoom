@@ -39,7 +39,7 @@ class delete_meeting_recordings extends \core\task\scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('getmeetingrecordings', 'mod_zoom');
+        return get_string('deletemeetingrecordings', 'mod_zoom');
     }
 
     /**

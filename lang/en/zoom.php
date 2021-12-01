@@ -73,6 +73,7 @@ $string['connectionstatus'] = 'Connection status';
 $string['day'] = 'Day(s)';
 $string['defaultsettings'] = 'Default Zoom settings';
 $string['defaultsettings_help'] = 'These settings define the defaults for all new Zoom meetings and webinars.';
+$string['deletemeetingrecordings'] = 'Delete meeting recordings from Moodle';
 $string['displayleadtime'] = 'Display lead time';
 $string['displayleadtime_desc'] = 'If enabled, the leadtime will be displayed to the users. This way, users are informed that / when they can join the meeting before the scheduled start time. This might keep users from constantly reloading the page until they can join.';
 $string['displayleadtime_nohideif'] = 'Please note: This setting is only processed if the \'{$a}\' setting is set to a value greater than zero.';
