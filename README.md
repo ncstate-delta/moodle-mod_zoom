@@ -32,6 +32,13 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.3
+
+- Add support for Zoom Cloud Recordings #292 (thanks @jwalits, @nstefanski, @abias, ETH Zürich)
+  - New setting `zoom/viewrecordings`
+  - New per activity setting `recordings_visible_default`
+- Fix tracking field PHP notices #337 (thanks @alina-kiz, @ndunand, @haietza)
+
 v4.2.1
 
 - Fix PHP 8 deprecation warning #332 (thanks @ndunand)
