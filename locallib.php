@@ -1199,3 +1199,61 @@ function zoom_sync_meeting_tracking_fields($zoomid, $trackingfields) {
         }
     }
 }
+
+/**
+ * Get all meeting records
+ *
+ * @return array All zoom meetings stored in the database.
+ */
+function zoom_get_all_meeting_records() {
+    global $DB;
+
+    $meetings = [];
+    // Only get meetings that exist on zoom.
+    $records = $DB->get_records('zoom', ['exists_on_zoom' => ZOOM_MEETING_EXISTS]);
+    foreach ($records as $record) {
+        $meetings[] = $record;
+    }
+
+    return $meetings;
+}
+
+/**
+ * Get all recordings for a particular meeting.
+ *
+ * @param int $zoomid Optional. The id of the zoom meeting.
+ *
+ * @return array All the recordings for the zoom meeting.
+ */
+function zoom_get_meeting_recordings($zoomid = null) {
+    global $DB;
+
+    $params = [];
+    if ($zoomid !== null) {
+        $params['zoomid'] = $zoomid;
+    }
+    $records = $DB->get_records('zoom_meeting_recordings', $params);
+    $recordings = [];
+    foreach ($records as $recording) {
+        $recordings[$recording->zoomrecordingid] = $recording;
+    }
+    return $recordings;
+}
+
+/**
+ * Get all meeting recordings grouped together.
+ *
+ * @param int $zoomid The id of the zoom meeting.
+ *
+ * @return array All recordings for the zoom meeting grouped together.
+ */
+function zoom_get_meeting_recordings_grouped($zoomid) {
+    global $DB;
+
+    $records = $DB->get_records('zoom_meeting_recordings', ['zoomid' => $zoomid], 'recordingstart ASC');
+    $recordings = [];
+    foreach ($records as $recording) {
+        $recordings[$recording->meetinguuid][] = $recording;
+    }
+    return $recordings;
+}

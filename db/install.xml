@@ -45,6 +45,7 @@
         <FIELD NAME="option_encryption_type" TYPE="char" LENGTH="20" NOTNULL="false" DEFAULT="enhanced_encryption" SEQUENCE="false" COMMENT="Meeting encryption type. Can be &quot;enhanced_encryption&quot;, &quot;e2ee&quot;"/>
         <FIELD NAME="exists_on_zoom" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether the meeting can be found on Zoom servers. Usually should be true, should only be false if API call returned that meeting can't be found."/>
         <FIELD NAME="alternative_hosts" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="recordings_visible_default" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Should the recordings for this meeting be visible by default" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -107,6 +108,42 @@
       <INDEXES>
         <INDEX NAME="meeting_id" UNIQUE="false" FIELDS="meeting_id"/>
         <INDEX NAME="tracking_field" UNIQUE="false" FIELDS="tracking_field"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="zoom_meeting_recordings" COMMENT="A list of recording links for Zoom meeting activities.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field."/>
+        <FIELD NAME="zoomid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="link to mdl_zoom table"/>
+        <FIELD NAME="meetinguuid" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="zoomrecordingid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="300" NOTNULL="true" SEQUENCE="false" COMMENT="Recording topic. Max of 300 characters."/>
+        <FIELD NAME="externalurl" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Link to view the recording."/>
+        <FIELD NAME="passcode" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false" COMMENT="Passcode to access the recording."/>
+        <FIELD NAME="recordingtype" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="Type of recording."/>
+        <FIELD NAME="recordingstart" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="showrecording" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp when the record was created."/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp when the record was last modified."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key."/>
+        <KEY NAME="zoomid_foreign" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoom" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="zoom_meeting_recordings_view" COMMENT="A list to track when users view Zoom meeting recordings.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field."/>
+        <FIELD NAME="recordingsid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="link to zoom_meeting_recordings table"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The user id from moodle"/>
+        <FIELD NAME="viewed" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Did the user view the recording? 1 for true, 0 for false."/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp when the record was last modified."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key."/>
+        <KEY NAME="recordingsid_foreign" TYPE="foreign" FIELDS="recordingsid" REFTABLE="zoom_meeting_recordings" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
   </TABLES>
