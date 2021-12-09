@@ -301,17 +301,17 @@ function zoom_get_instance_setup() {
 /**
  * Retrieves information for a meeting.
  *
- * @param int $meetingid
+ * @param int $zoomid
  * @return array information about the meeting
  */
-function zoom_get_sessions_for_display($meetingid) {
+function zoom_get_sessions_for_display($zoomid) {
     require_once(__DIR__.'/../../lib/moodlelib.php');
     global $DB;
 
     $sessions = array();
     $format = get_string('strftimedatetimeshort', 'langconfig');
 
-    $instances = $DB->get_records('zoom_meeting_details', array('meeting_id' => $meetingid));
+    $instances = $DB->get_records('zoom_meeting_details', array('zoomid' => $zoomid));
 
     foreach ($instances as $instance) {
         // The meeting uuid, not the participant's uuid.

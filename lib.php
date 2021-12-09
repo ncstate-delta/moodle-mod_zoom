@@ -350,11 +350,11 @@ function zoom_delete_instance($id) {
     }
 
     // If we delete a meeting instance, do we want to delete the participants?
-    $meetinginstances = $DB->get_records('zoom_meeting_details', array('meeting_id' => $zoom->meeting_id));
+    $meetinginstances = $DB->get_records('zoom_meeting_details', array('zoomid' => $zoom->id));
     foreach ($meetinginstances as $meetinginstance) {
-        $DB->delete_records('zoom_meeting_participants', array('uuid' => $meetinginstance->uuid));
+        $DB->delete_records('zoom_meeting_participants', array('detailsid' => $meetinginstance->id));
     }
-    $DB->delete_records('zoom_meeting_details', array('meeting_id' => $zoom->meeting_id));
+    $DB->delete_records('zoom_meeting_details', array('zoomid' => $zoom->id));
 
     // Delete tracking field data for deleted meetings.
     $DB->delete_records('zoom_meeting_tracking_fields', array('meeting_id' => $zoom->id));

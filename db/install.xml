@@ -69,7 +69,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key. Most database actions will be performed using meeting_webinar_instance_id."/>
-        <KEY NAME="meeting_unique" TYPE="unique" FIELDS="meeting_id, uuid"/>
+        <KEY NAME="uuid_unique" TYPE="unique" FIELDS="uuid"/>
         <KEY NAME="zoomid_foreign" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoom" REFFIELDS="id"/>
       </KEYS>
     </TABLE>

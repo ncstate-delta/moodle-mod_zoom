@@ -464,15 +464,13 @@ class get_meeting_reports extends \core\task\scheduled_task {
         $meeting->zoomid = $zoomrecord->id;
 
         // Insert or update meeting details.
-        if (!($DB->record_exists('zoom_meeting_details',
-                array('meeting_id' => $meeting->meeting_id, 'uuid' => $meeting->uuid)))) {
+        if (!($DB->record_exists('zoom_meeting_details', ['uuid' => $meeting->uuid]))) {
             $this->debugmsg('Inserting zoom_meeting_details');
             $detailsid = $DB->insert_record('zoom_meeting_details', $meeting);
         } else {
             // Details entry already exists, so update it.
             $this->debugmsg('Updating zoom_meeting_details');
-            $detailsid = $DB->get_field('zoom_meeting_details', 'id',
-                    array('meeting_id' => $meeting->meeting_id, 'uuid' => $meeting->uuid));
+            $detailsid = $DB->get_field('zoom_meeting_details', 'id', ['uuid' => $meeting->uuid]);
             $meeting->id = $detailsid;
             $DB->update_record('zoom_meeting_details', $meeting);
         }
