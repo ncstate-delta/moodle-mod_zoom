@@ -32,6 +32,13 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.3
+
+- Add support for Zoom Cloud Recordings #292 (thanks @jwalits, @nstefanski, @abias, ETH Zürich)
+  - New setting `zoom/viewrecordings`
+  - New per activity setting `recordings_visible_default`
+- Fix tracking field PHP notices #337 (thanks @alina-kiz, @ndunand, @haietza)
+
 v4.2.1
 
 - Fix PHP 8 deprecation warning #332 (thanks @ndunand)
@@ -40,6 +47,7 @@ v4.2.1
 v4.2
 
 - Add support for Zoom Tracking Fields #308 (thanks @haietza, @porcospino)
+  - New setting `zoom/defaulttrackingfields`
 - Send plaintext version of Moodle intro to Zoom #290 (thanks @Ottendahl, @abias, @yanus for reporting)
   - Note: To avoid losing Moodle's rich text, we no longer synchronize Zoom's topic back to Moodle.
 - Reduce zoom_refresh_events overreach; fix 'quick edit' issue #320 (thanks @alina-kiz, @jwalits for testing)

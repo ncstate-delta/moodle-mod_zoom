@@ -161,7 +161,7 @@ class update_meetings extends \core\task\scheduled_task {
 
                 // Update tracking fields for meeting.
                 mtrace('  => Updated tracking fields for Zoom meeting ID ' . $zoom->meeting_id);
-                zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields);
+                zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields ?? array());
             }
         }
 
