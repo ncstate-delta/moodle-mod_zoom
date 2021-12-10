@@ -32,6 +32,12 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.3.1
+
+- Fix database schema alignment and associated code #335 (thanks @TomoTsuyuki)
+- Run "Update Meetings" task once per day by default #342 (thanks @deraadt for reporting)
+  - Note: You may need to manually adjust your task schedule on existing installs.
+
 v4.3
 
 - Add support for Zoom Cloud Recordings #292 (thanks @jwalits, @nstefanski, @abias, ETH Zürich)
