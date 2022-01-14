@@ -477,17 +477,15 @@ function zoom_get_user_id($required = true) {
         $service = new mod_zoom_webservice();
         try {
             $zoomuser = $service->get_user(zoom_get_api_identifier($USER));
-            if ($zoomuser !== false) {
+            if ($zoomuser !== false && isset($zoomuser->id) && ($zoomuser->id !== false)) {
                 $zoomuserid = $zoomuser->id;
+                $cache->set($USER->id, $zoomuserid);
             }
         } catch (moodle_exception $error) {
             if ($required) {
                 throw $error;
-            } else {
-                $zoomuserid = $zoomuser->id;
             }
         }
-        $cache->set($USER->id, $zoomuserid);
     }
 
     return $zoomuserid;
