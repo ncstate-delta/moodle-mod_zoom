@@ -25,6 +25,7 @@
 namespace mod_zoom;
 
 use basic_testcase;
+use mod_zoom_webservice;
 
 /**
  * PHPunit testcase class.

@@ -25,6 +25,9 @@
 namespace mod_zoom;
 
 use advanced_testcase;
+use mod_zoom_webservice;
+use moodle_exception;
+use zoom_api_retry_failed_exception;
 
 /**
  * PHPunit testcase class.

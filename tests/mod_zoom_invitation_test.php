@@ -26,6 +26,9 @@
 namespace mod_zoom;
 
 use advanced_testcase;
+use context_system;
+use context_course;
+use moodle_url;
 
 /**
  * PHPunit testcase class for invitations.

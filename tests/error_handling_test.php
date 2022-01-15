@@ -25,6 +25,7 @@
 namespace mod_zoom;
 
 use basic_testcase;
+use zoom_not_found_exception;
 
 /**
  * PHPunit testcase class.
@@ -33,13 +34,13 @@ class error_handling_test extends basic_testcase {
 
     /**
      * Exception for when the meeting isn't found on Zoom.
-     * @var mod_zoom\zoom_not_found_exception
+     * @var zoom_not_found_exception
      */
     private $meetingnotfoundexception;
 
     /**
      * Exception for when the user isn't found on Zoom.
-     * @var mod_zoom\zoom_not_found_exception
+     * @var zoom_not_found_exception
      */
     private $usernotfoundexception;
 
@@ -47,13 +48,13 @@ class error_handling_test extends basic_testcase {
      * Exception for when the user is found in the system but they haven't
      * accepted their invite, so they don't have permissions to do what was
      * requested.
-     * @var mod_zoom\zoom_not_found_exception
+     * @var zoom_not_found_exception
      */
     private $invaliduserexception;
 
     /**
      * Exception for when the meeting isn't found on Zoom.
-     * @var mod_zoom\zoom_not_found_exception
+     * @var zoom_not_found_exception
      */
     private $othererrorcodeexception;
 
