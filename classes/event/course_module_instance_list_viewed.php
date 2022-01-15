@@ -24,8 +24,6 @@
 
 namespace mod_zoom\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_zoom instance list viewed event class.
  */

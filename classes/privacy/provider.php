@@ -25,9 +25,6 @@
 
 namespace mod_zoom\privacy;
 
-defined('MOODLE_INTERNAL') || die();
-
-
 /**
  * Ad hoc task that performs the actions for approved data privacy requests.
  */

@@ -24,8 +24,6 @@
 
 namespace mod_zoom\search;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Search area for mod_zoom activities.
  */

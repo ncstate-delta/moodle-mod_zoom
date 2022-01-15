@@ -24,8 +24,6 @@
 
 namespace mod_zoom\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Records when a join meeting button is clicked.
  */

@@ -25,8 +25,6 @@
 
 namespace mod_zoom;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Invitation class.
  */
