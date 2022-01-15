@@ -24,8 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 namespace mod_zoom;
 
 use basic_testcase;
@@ -60,6 +58,14 @@ class error_handling_test extends basic_testcase {
      * @var mod_zoom\zoom_not_found_exception
      */
     private $othererrorcodeexception;
+
+    /**
+     * Setup to ensure that fixtures are loaded.
+     */
+    public static function setUpBeforeClass(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+    }
 
     /**
      * Setup before every test.

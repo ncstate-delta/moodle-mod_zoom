@@ -25,9 +25,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-
-require_once($CFG->libdir . '/accesslib.php');
 namespace mod_zoom;
 
 use advanced_testcase;
@@ -36,6 +33,14 @@ use advanced_testcase;
  * PHPunit testcase class for invitations.
  */
 class mod_zoom_invitation_test extends advanced_testcase {
+
+    /**
+     * Setup to ensure that fixtures are loaded.
+     */
+    public static function setUpBeforeClass(): void {
+        global $CFG;
+        require_once($CFG->libdir . '/accesslib.php');
+    }
 
     /**
      * Run before every test.

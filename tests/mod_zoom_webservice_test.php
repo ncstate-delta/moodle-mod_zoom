@@ -24,9 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 namespace mod_zoom;
 
 use advanced_testcase;
@@ -35,6 +32,14 @@ use advanced_testcase;
  * PHPunit testcase class.
  */
 class mod_zoom_webservice_test extends advanced_testcase {
+
+    /**
+     * Setup to ensure that fixtures are loaded.
+     */
+    public static function setUpBeforeClass(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+    }
 
     /**
      * Setup before every test.

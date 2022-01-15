@@ -24,8 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 namespace mod_zoom;
 
 use basic_testcase;
@@ -40,6 +38,14 @@ class advanced_passcode_test extends basic_testcase {
      * @var object
      */
     private $zoomdata;
+
+    /**
+     * Setup to ensure that fixtures are loaded.
+     */
+    public static function setUpBeforeClass(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+    }
 
     /**
      * Tests that a default password of 6 numbers is created when settings are null.
