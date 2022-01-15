@@ -28,11 +28,14 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
 require_once($CFG->libdir . '/accesslib.php');
+namespace mod_zoom;
+
+use advanced_testcase;
 
 /**
  * PHPunit testcase class for invitations.
  */
-class mod_zoom_invitation_testcase extends advanced_testcase {
+class mod_zoom_invitation_test extends advanced_testcase {
 
     /**
      * Run before every test.

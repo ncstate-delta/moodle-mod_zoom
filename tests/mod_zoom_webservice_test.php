@@ -27,6 +27,9 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
 require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+namespace mod_zoom;
+
+use advanced_testcase;
 
 /**
  * PHPunit testcase class.

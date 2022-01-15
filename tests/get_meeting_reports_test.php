@@ -25,6 +25,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
+namespace mod_zoom;
+
+use advanced_testcase;
 
 /**
  * PHPunit testcase class.
