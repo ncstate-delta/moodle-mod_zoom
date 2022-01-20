@@ -22,9 +22,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_zoom;
 
-global $CFG;
+use advanced_testcase;
+use mod_zoom_webservice;
+use stdClass;
 
 /**
  * PHPunit testcase class.
@@ -33,7 +35,7 @@ class get_meeting_reports_test extends advanced_testcase {
 
     /**
      * Scheduled task object.
-     * @var mod_zoom\task\get_meeting_reports
+     * @var \mod_zoom\task\get_meeting_reports
      */
     private $meetingtask;
 
@@ -67,7 +69,7 @@ class get_meeting_reports_test extends advanced_testcase {
     public function setUp(): void {
         $this->resetAfterTest(true);
 
-        $this->meetingtask = new mod_zoom\task\get_meeting_reports();
+        $this->meetingtask = new \mod_zoom\task\get_meeting_reports();
 
         $data = array('id' => 'ARANDOMSTRINGFORUUID',
             'user_id' => 123456789,
@@ -265,7 +267,7 @@ class get_meeting_reports_test extends advanced_testcase {
 
         // First mock the webservice object, so we can inject the return values
         // for get_meeting_participants.
-        $mockwwebservice = $this->createMock('mod_zoom_webservice');
+        $mockwwebservice = $this->createMock('\mod_zoom_webservice');
 
         // What we want get_meeting_participants to return.
         $participant1 = new stdClass();

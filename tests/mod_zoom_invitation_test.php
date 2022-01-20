@@ -23,16 +23,25 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_zoom;
 
-global $CFG;
-
-require_once($CFG->libdir . '/accesslib.php');
+use advanced_testcase;
+use context_system;
+use context_course;
+use moodle_url;
 
 /**
  * PHPunit testcase class for invitations.
  */
-class mod_zoom_invitation_testcase extends advanced_testcase {
+class mod_zoom_invitation_test extends advanced_testcase {
+
+    /**
+     * Setup to ensure that fixtures are loaded.
+     */
+    public static function setUpBeforeClass(): void {
+        global $CFG;
+        require_once($CFG->libdir . '/accesslib.php');
+    }
 
     /**
      * Run before every test.

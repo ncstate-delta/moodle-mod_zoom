@@ -24,8 +24,6 @@
 
 namespace mod_zoom\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 use context_module;
 use mod_zoom_external;
 

@@ -22,16 +22,25 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_zoom;
 
-global $CFG;
-
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+use advanced_testcase;
+use mod_zoom_webservice;
+use moodle_exception;
+use zoom_api_retry_failed_exception;
 
 /**
  * PHPunit testcase class.
  */
 class mod_zoom_webservice_test extends advanced_testcase {
+
+    /**
+     * Setup to ensure that fixtures are loaded.
+     */
+    public static function setUpBeforeClass(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+    }
 
     /**
      * Setup before every test.

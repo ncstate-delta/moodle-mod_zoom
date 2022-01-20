@@ -22,10 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_zoom;
 
-global $CFG;
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+use basic_testcase;
+use mod_zoom_webservice;
 
 /**
  * PHPunit testcase class.
@@ -37,6 +37,14 @@ class advanced_passcode_test extends basic_testcase {
      * @var object
      */
     private $zoomdata;
+
+    /**
+     * Setup to ensure that fixtures are loaded.
+     */
+    public static function setUpBeforeClass(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+    }
 
     /**
      * Tests that a default password of 6 numbers is created when settings are null.
