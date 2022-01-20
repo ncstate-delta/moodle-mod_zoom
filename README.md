@@ -32,6 +32,11 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.3.2
+
+- Only cache successful Zoom user ID values #350 (thanks @merrill-oakland)
+- Code quality: Align with moodle-local_codechecker v3.0.5 #351
+
 v4.3.1
 
 - Fix database schema alignment and associated code #335 (thanks @TomoTsuyuki)
