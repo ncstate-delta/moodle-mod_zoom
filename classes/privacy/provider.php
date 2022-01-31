@@ -231,6 +231,7 @@ class provider implements
             foreach ($meetingrecordings as $recording) {
                 $DB->delete_records('zoom_meeting_recordings_view', array('recordingsid' => $recording->id));
             }
+            $DB->delete_records('zoom_meeting_recordings', array('zoomid' => $cm->instance));
         }
     }
 
