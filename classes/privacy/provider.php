@@ -81,17 +81,17 @@ class provider implements
             INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
             INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
             INNER JOIN {zoom} z ON z.id = cm.instance
-            INNER JOIN {zoom_meeting_details} zmd ON zmd.zoomid = z.id
+            LEFT JOIN {zoom_meeting_details} zmd ON zmd.zoomid = z.id
             LEFT JOIN {zoom_meeting_participants} zmp ON zmp.detailsid = zmd.id
             LEFT JOIN {zoom_meeting_recordings} zmr ON zmr.zoomid = z.id
             LEFT JOIN {zoom_meeting_recordings_view} zmrv ON zmrv.recordingsid = zmr.id
-                 WHERE zmp.userid = :uclauserid OR zmrv.userid = :uclauserid
+                 WHERE zmp.userid = :userid OR zmrv.userid = :userid
         ';
 
         $params = [
             'modname' => 'zoom',
             'contextlevel' => CONTEXT_MODULE,
-            'uclauserid' => $userid
+            'userid' => $userid
         ];
 
         $contextlist->add_from_sql($sql, $params);
@@ -111,6 +111,8 @@ class provider implements
             return;
         }
 
+        $params = ['modlevel' => CONTEXT_MODULE, 'contextid' => $context->id];
+
         $sql = "SELECT zmp.userid
                   FROM {zoom_meeting_participants} zmp
                   JOIN {zoom_meeting_details} zmd ON zmd.id = zmp.detailsid
@@ -121,8 +123,6 @@ class provider implements
                     ON ctx.instanceid = cm.id
                    AND ctx.contextlevel = :modlevel
                   WHERE ctx.id = :contextid";
-
-        $params = ['modlevel' => CONTEXT_MODULE, 'contextid' => $context->id];
 
         $userlist->add_from_sql('userid', $sql, $params);
 
@@ -164,7 +164,6 @@ class provider implements
                        zmp.join_time,
                        zmp.leave_time,
                        zmp.duration,
-                       zmrv.userid,
                        cm.id AS cmid
                   FROM {context} c
             INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
@@ -172,8 +171,6 @@ class provider implements
             INNER JOIN {zoom} z ON z.id = cm.instance
             INNER JOIN {zoom_meeting_details} zmd ON zmd.zoomid = z.id
             INNER JOIN {zoom_meeting_participants} zmp ON zmp.detailsid = zmd.id
-            INNER JOIN {zoom_meeting_recordings} zmr ON zmr.zoomid = z.id
-            INNER JOIN {zoom_meeting_recordings_view} zmrv.recordingsid = zmr.id
                  WHERE c.id $contextsql
                        AND zmp.userid = :userid
               ORDER BY cm.id ASC
@@ -197,7 +194,6 @@ class provider implements
                 'join_time' => \core_privacy\local\request\transform::datetime($participantinstance->join_time),
                 'leave_time' => \core_privacy\local\request\transform::datetime($participantinstance->leave_time),
                 'duration' => $participantinstance->duration,
-                'userid' => $participantinstance->userid,
             ];
 
             $contextdata = (object) array_merge((array) $contextdata, $instancedata);
@@ -205,6 +201,47 @@ class provider implements
         }
 
         $participantinstances->close();
+
+        $sql = "SELECT zmrv.id,
+                       zmr.name,
+                       zmrv.userid,
+                       zmrv.viewed,
+                       zmrv.timemodified,
+                       cm.id AS cmid
+                  FROM {context} c
+            INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
+            INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
+            INNER JOIN {zoom} z ON z.id = cm.instance
+            INNER JOIN {zoom_meeting_recordings} zmr ON zmr.zoomid = z.id
+            INNER JOIN {zoom_meeting_recordings_view} zmrv.recordingsid = zmr.id
+                 WHERE c.id $contextsql
+                       AND zmrv.userid = :userid
+              ORDER BY cm.id ASC
+        ";
+
+        $params = [
+            'modname' => 'zoom',
+            'contextlevel' => CONTEXT_MODULE,
+            'userid' => $user->id
+        ] + $contextparams;
+
+        $recordingviewinstances = $DB->get_recordset_sql($sql, $params);
+        foreach ($recordingviewinstances as $recordingviewinstance) {
+            $context = \context_module::instance($recordingviewinstance->cmid);
+            $contextdata = \core_privacy\local\request\helper::get_context_data($context, $user);
+
+            $instancedata = [
+                'name' => $recordingviewinstance->name,
+                'userid' => $recordingviewinstance->userid,
+                'viewed' => $recordingviewinstance->viewed,
+                'timemodified' => \core_privacy\local\request\transform::datetime($recordingviewinstance->timemodified),
+            ];
+
+            $contextdata = (object) array_merge((array) $contextdata, $instancedata);
+            \core_privacy\local\request\writer::with_context($context)->export_data(array(), $contextdata);
+        }
+
+        $recordingviewinstances->close();
     }
 
     /**
