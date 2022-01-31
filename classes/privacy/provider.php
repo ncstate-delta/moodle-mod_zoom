@@ -116,7 +116,7 @@ class provider implements
                   JOIN {zoom_meeting_details} zmd ON zmd.id = zmp.detailsid
                   JOIN {zoom} z ON zmd.zoomid = z.id
                   JOIN {modules} m ON m.name = 'zoom'
-                  JOIN {course_modules} cm ON cm.id = z.id
+                  JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
                   JOIN {context} ctx
                     ON ctx.instanceid = cm.id
                    AND ctx.contextlevel = :modlevel
@@ -291,7 +291,7 @@ class provider implements
                   JOIN {zoom_meeting_details} zmd ON zmd.id = zmp.detailsid
                   JOIN {zoom} z ON zmd.zoomid = z.id
                   JOIN {modules} m ON m.name = 'zoom'
-                  JOIN {course_modules} cm ON cm.id = z.id
+                  JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
                   JOIN {context} ctx
                     ON ctx.instanceid = cm.id
                    AND ctx.contextlevel = :modlevel
