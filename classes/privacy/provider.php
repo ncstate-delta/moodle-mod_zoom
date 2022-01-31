@@ -111,18 +111,18 @@ class provider implements
             return;
         }
 
-        $params = ['modlevel' => CONTEXT_MODULE, 'contextid' => $context->id];
+        $params = [
+            'instanceid' => $context->instanceid,
+            'modulename' => 'zoom',
+        ];
 
         $sql = "SELECT zmp.userid
                   FROM {zoom_meeting_participants} zmp
                   JOIN {zoom_meeting_details} zmd ON zmd.id = zmp.detailsid
                   JOIN {zoom} z ON zmd.zoomid = z.id
-                  JOIN {modules} m ON m.name = 'zoom'
+                  JOIN {modules} m ON m.name = :modulename
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
-                  JOIN {context} ctx
-                    ON ctx.instanceid = cm.id
-                   AND ctx.contextlevel = :modlevel
-                  WHERE ctx.id = :contextid";
+                 WHERE cm.id = :instanceid";
 
         $userlist->add_from_sql('userid', $sql, $params);
 
@@ -130,12 +130,9 @@ class provider implements
                   FROM {zoom_meeting_recordings_view} zmrv
                   JOIN {zoom_meeting_recordings} zmr ON zmr.id = zmrv.recordingsid
                   JOIN {zoom} z ON zmr.zoomid = z.id
-                  JOIN {modules} m ON m.name = 'zoom'
+                  JOIN {modules} m ON m.name = :modulename
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
-                  JOIN {context} ctx
-                    ON ctx.instanceid = cm.id
-                    AND ctx.contextlevel = :modlevel
-                WHERE ctx.id = :contextid";
+                 WHERE cm.id = :instanceid";
 
         $userlist->add_from_sql('userid', $sql, $params);
     }
@@ -213,7 +210,7 @@ class provider implements
             INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
             INNER JOIN {zoom} z ON z.id = cm.instance
             INNER JOIN {zoom_meeting_recordings} zmr ON zmr.zoomid = z.id
-            INNER JOIN {zoom_meeting_recordings_view} zmrv.recordingsid = zmr.id
+            INNER JOIN {zoom_meeting_recordings_view} zmrv ON zmrv.recordingsid = zmr.id
                  WHERE c.id $contextsql
                        AND zmrv.userid = :userid
               ORDER BY cm.id ASC
