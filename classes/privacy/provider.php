@@ -85,13 +85,14 @@ class provider implements
             LEFT JOIN {zoom_meeting_participants} zmp ON zmp.detailsid = zmd.id
             LEFT JOIN {zoom_meeting_recordings} zmr ON zmr.zoomid = z.id
             LEFT JOIN {zoom_meeting_recordings_view} zmrv ON zmrv.recordingsid = zmr.id
-                 WHERE zmp.userid = :userid OR zmrv.userid = :userid
+                 WHERE zmp.userid = :userid1 OR zmrv.userid = :userid2
         ';
 
         $params = [
             'modname' => 'zoom',
             'contextlevel' => CONTEXT_MODULE,
-            'userid' => $userid
+            'userid1' => $userid,
+            'userid2' => $userid,
         ];
 
         $contextlist->add_from_sql($sql, $params);
