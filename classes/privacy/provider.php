@@ -187,7 +187,7 @@ class provider implements
 
             $instancedata = [
                 'topic' => $participantinstance->topic,
-                'name' => $participantinstance->name,
+                'participant_name' => $participantinstance->name,
                 'user_email' => $participantinstance->user_email,
                 'join_time' => \core_privacy\local\request\transform::datetime($participantinstance->join_time),
                 'leave_time' => \core_privacy\local\request\transform::datetime($participantinstance->leave_time),
@@ -229,7 +229,7 @@ class provider implements
             $contextdata = \core_privacy\local\request\helper::get_context_data($context, $user);
 
             $instancedata = [
-                'name' => $recordingviewinstance->name,
+                'recording_name' => $recordingviewinstance->name,
                 'userid' => $recordingviewinstance->userid,
                 'viewed' => $recordingviewinstance->viewed,
                 'timemodified' => \core_privacy\local\request\transform::datetime($recordingviewinstance->timemodified),
