@@ -35,7 +35,7 @@ server is properly synchronized with the time servers.
 v4.3.3
 
 - Fix recording table database schema definitions #358 (thanks @jwalits)
-- Compatibility: Moodle upstream upgraded to php-jwt v6.0 #357
+- Compatibility: Moodle upstream upgraded to php-jwt v6.0 #359
 - Renamed primary branch in GitHub to `main` #353
 
 v4.3.2
