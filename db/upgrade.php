@@ -714,5 +714,22 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2021112900, 'zoom');
     }
 
+    if ($oldversion < 2022022400) {
+
+        // Change the recordings_visible_default field in the zoom table.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('recordings_visible_default', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1',
+                'alternative_hosts');
+        $dbman->change_field_default($table, $field);
+
+        // Change the showrecording field in the zoom table.
+        $table = new xmldb_table('zoom_meeting_recordings');
+        $field = new xmldb_field('showrecording', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        $dbman->change_field_default($table, $field);
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2022022400, 'zoom');
+    }
+
     return true;
 }
