@@ -68,6 +68,10 @@ if ($ADMIN->fulltree) {
             get_string('apisecret_desc', 'mod_zoom'), '');
     $settings->add($apisecret);
 
+    $apitimeout = new admin_setting_configtext('zoom/apitimeout', get_string('apitimeout', 'mod_zoom'),
+            get_string('apitimeout_desc', 'mod_zoom'), 60, PARAM_INT);
+    $settings->add($apitimeout);
+
     $zoomurl = new admin_setting_configtext('zoom/zoomurl', get_string('zoomurl', 'mod_zoom'),
             get_string('zoomurl_desc', 'mod_zoom'), '', PARAM_URL);
     $settings->add($zoomurl);

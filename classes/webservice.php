@@ -54,6 +54,12 @@ class mod_zoom_webservice {
     const MAX_RETRIES = 5;
 
     /**
+     * API calls: number of seconds for the timeout.
+     * @var int
+     */
+    const CALL_TIMEOUT = 60;
+
+    /**
      * Default meeting_password_requirement object.
      * @var array
      */
@@ -215,6 +221,16 @@ class mod_zoom_webservice {
         );
         $token = \Firebase\JWT\JWT::encode($payload, $this->apisecret, 'HS256');
         $curl->setHeader('Authorization: Bearer ' . $token);
+
+        $calltimeout = get_config('zoom', 'apitimeout');
+        if (empty($calltimeout)) {
+            $calltimeout = self::CALL_TIMEOUT;
+        }
+
+        $curl->setopt(array(
+            'CURLOPT_CONNECTTIMEOUT' => $calltimeout,
+            'CURLOPT_TIMEOUT' => $calltimeout,
+        ));
 
         if ($method != 'get') {
             $curl->setHeader('Content-Type: application/json');
