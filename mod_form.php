@@ -301,7 +301,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                     }
                     $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'),
                             get_string('webinarthisis', 'zoom'), $webinarattr);
-                    $mform->setDefault('webinar', 0);
+                    $mform->setDefault('webinar', $config->webinardefault);
                     $mform->addHelpButton('webinar', 'webinar', 'zoom');
                 }
             } else if ($this->current->webinar) {
