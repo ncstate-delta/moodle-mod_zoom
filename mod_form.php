@@ -332,6 +332,12 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
         }
 
+        // Add show widget.
+        $mform->addElement('advcheckbox', 'show_schedule', get_string('showschedule', 'zoom'),
+                get_string('showscheduleonview', 'zoom'));
+        $mform->setDefault('show_schedule', $config->defaultshowschedule);
+        $mform->addHelpButton('show_schedule', 'showschedule', 'zoom');
+
         // Adding the "security" fieldset, where all settings relating to securing and protecting the meeting are shown.
         $mform->addElement('header', 'general', get_string('security', 'mod_zoom'));
 
@@ -425,6 +431,12 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('option_authenticated_users', $config->defaultauthusersoption);
         $mform->addHelpButton('option_authenticated_users', 'option_authenticated_users', 'zoom');
 
+        // Add show widget.
+        $mform->addElement('advcheckbox', 'show_security', get_string('showsecurity', 'zoom'),
+                get_string('showsecurityonview', 'zoom'));
+        $mform->setDefault('show_security', $config->defaultshowsecurity);
+        $mform->addHelpButton('show_security', 'showsecurity', 'zoom');
+
         // Adding the "media" fieldset, where all settings relating to media streams in the meeting are shown.
         $mform->addElement('header', 'general', get_string('media', 'mod_zoom'));
 
@@ -459,6 +471,12 @@ class mod_zoom_mod_form extends moodleform_mod {
                 get_string('option_mute_upon_entry', 'mod_zoom'));
         $mform->setDefault('option_mute_upon_entry', $config->defaultmuteuponentryoption);
         $mform->addHelpButton('option_mute_upon_entry', 'option_mute_upon_entry', 'mod_zoom');
+
+        // Add show widget.
+        $mform->addElement('advcheckbox', 'show_media', get_string('showmedia', 'zoom'),
+                get_string('showmediaonview', 'zoom'));
+        $mform->setDefault('show_media', $config->defaultshowmedia);
+        $mform->addHelpButton('show_media', 'showmedia', 'zoom');
 
         // Check if there is any setting to be shown in the "host" fieldset.
         $showschedulingprivilege = ($config->showschedulingprivilege != ZOOM_SCHEDULINGPRIVILEGE_DISABLE) &&
