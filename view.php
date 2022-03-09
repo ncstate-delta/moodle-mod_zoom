@@ -382,7 +382,9 @@ if ($zoom->show_security) {
     // Show encryption type.
     if (!$zoom->webinar) {
         if ($config->showencryptiontype != ZOOM_ENCRYPTION_DISABLE) {
-            $strenc = ($zoom->option_encryption_type === ZOOM_ENCRYPTION_TYPE_E2EE) ? $strencryptionendtoend : $strencryptionenhanced;
+            $strenc = ($zoom->option_encryption_type === ZOOM_ENCRYPTION_TYPE_E2EE)
+                ? $strencryptionendtoend
+                : $strencryptionenhanced;
             $table->data[] = array($strencryption, $strenc);
         }
     }
