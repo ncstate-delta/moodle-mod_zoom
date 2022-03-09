@@ -32,6 +32,7 @@ use mod_zoom\privacy\provider;
  * @copyright  2022 Catalyst IT Australia Pty Ltd
  * @author     2022 Ghaly Marc-Alexandre <marc-alexandreghaly@catalyst-ca.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @coversDefaultClass \mod_zoom\privacy\provider
  */
 class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
     /** @var object The zoom instance object. */
@@ -142,8 +143,6 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
     }
 
     /**
-     * @test
-     *
      * Test for provider::get_metadata().
      * @covers ::get_metadata
      */
