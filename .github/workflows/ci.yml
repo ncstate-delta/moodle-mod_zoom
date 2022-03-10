@@ -111,7 +111,9 @@ jobs:
 
       - name: Grunt
         if: ${{ always() }}
-        run: moodle-plugin-ci grunt --max-lint-warnings 0
+        run: moodle-plugin-ci grunt --max-lint-warnings 0 || [ "$MOODLE_BRANCH" = 'master' ] || [ "$MOODLE_BRANCH" = 'MOODLE_400_STABLE' ]
+        env:
+          MOODLE_BRANCH: ${{ matrix.moodle-branch }}
 
       - name: PHPUnit tests
         if: ${{ always() }}
