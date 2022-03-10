@@ -40,8 +40,9 @@ class mod_zoom_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
-        global $PAGE, $USER;
+        global $PAGE, $USER, $OUTPUT;
         $config = get_config('zoom');
+        $PAGE->requires->css(new moodle_url('/mod/zoom/styles.css'));
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
         $zoomapiidentifier = zoom_get_api_identifier($USER);
 
@@ -331,12 +332,38 @@ class mod_zoom_mod_form extends moodleform_mod {
                 }
             }
         }
-
+        
         // Add show widget.
         $mform->addElement('advcheckbox', 'show_schedule', get_string('showschedule', 'zoom'),
                 get_string('showscheduleonview', 'zoom'));
         $mform->setDefault('show_schedule', $config->defaultshowschedule);
         $mform->addHelpButton('show_schedule', 'showschedule', 'zoom');
+
+        // Adding the "breakout rooms" fieldset.
+        $mform->addElement('header', 'general', get_string('breakoutrooms', 'mod_zoom'));
+
+        $courseid = $this->current->course;
+        $context = context_course::instance($courseid);
+
+        $groups = groups_get_all_groups($courseid);
+        $participants = get_enrolled_users($context);
+
+        // Course participants.
+        $courseparticipants = [];
+        foreach ($participants as $participant) {
+            $courseparticipants[] = array('id' => $participant->id, 'email' => $participant->email);
+        }
+
+        // Course groups.
+        $coursegroups = [];
+        foreach ($groups as $group) {
+            $coursegroups[] = array('id' => $group->id, 'name' => $group->name);
+        }
+
+        $templatedata  = array('rooms' => array(), 'roomscount' => 0,
+            'courseparticipants' => $courseparticipants, 'coursegroups' => $coursegroups);
+
+        $mform->addElement('html', $OUTPUT->render_from_template('zoom/breakoutrooms/rooms', $templatedata));
 
         // Adding the "security" fieldset, where all settings relating to securing and protecting the meeting are shown.
         $mform->addElement('header', 'general', get_string('security', 'mod_zoom'));

@@ -1,0 +1,44 @@
+<table id="breakout-rooms-table" class="table table-bordered" width="100%" height="400">
+  <tr>
+    <td width="20%">
+      <div id="meeting-rooms-list" initial-rooms-count="{{roomscount}}">
+        <div class="mb-2">
+          <span>{{#str}} rooms, zoom{{/str}}</span>
+          <button id="add-room" type="button" title="{{#str}} addroom, zoom{{/str}}" class="btn btn-default btn-sm">
+            <span class="fa fa-plus-circle fa-lg" aria-hidden="true"></span>
+          </button>
+        </div>
+        <ul class="nav nav-pills flex-column" role="tablist">
+          {{#rooms}}
+          <li class="nav-item">
+            <a class="nav-link {{#roomactive}}active{{/roomactive}}" href="#link{{roomid}}" data-toggle="tab" role="tab">
+              <span class="fa fa-trash-o fa-lg pull-right delete-room" title="{{#str}} deleteroom, zoom{{/str}}" aria-hidden="true"></span>
+              <span class="tab-name">{{roomname}}</span>
+            </a>
+          </li>
+          {{/rooms}}
+        </ul>
+        <div class="empty-alert text-center hidden">
+          <p><strong>{{#str}} norooms, zoom{{/str}}</strong></p>
+          <span>
+            {{#str}} addroomalert, zoom{{/str}}
+            <span class="fa fa-plus-circle" aria-hidden="true"></span>
+          </span>
+        </div>
+      </div>
+    </td>
+    <td width="80%">
+      <div id="meeting-rooms-data">
+        <div class="tab-content">
+          {{#rooms}}
+          <div class="tab-pane {{#roomactive}}active{{/roomactive}}" id="link{{roomid}}" role="tabpanel">
+              {{> zoom/breakoutrooms/room/data }}
+          </div>
+          {{/rooms}}
+        </div>
+      </div>
+    </td>
+  </tr>
+</table>
+
+{{> zoom/breakoutrooms/datatoclone/datatoclone }}

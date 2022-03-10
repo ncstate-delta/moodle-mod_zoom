@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery'], function($) {
+define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], function($, autocomplete, str, notification) {
 
     /**
      * CSS selectors used throughout the file.
@@ -97,6 +97,9 @@ define(['jquery'], function($) {
         $(SELECTORS.RECURRING).change(function() {
             toggleStartTimeDuration();
         });
+
+        var breakoutroomsEditor = new BreakoutroomsEditor();
+        breakoutroomsEditor.init();
     };
 
     /**
@@ -151,6 +154,220 @@ define(['jquery'], function($) {
                 $(this).show();
             }
         });
+    };
+
+    /**
+     * Tabs component.
+     * @param {object} tabsColumn
+     * @param {object} tabsContentColumn
+     * @param {int}    initialTabsCount
+     * @param {object} emptyAlert
+     */
+    var TabsComponent  = function (tabsColumn, tabsContentColumn, initialTabsCount, emptyAlert) {
+        this.tabsColumn = tabsColumn;
+        this.tabsContentColumn = tabsContentColumn;
+        this.emptyAlert = emptyAlert;
+        this.countTabs = initialTabsCount;
+
+        /**
+        * init tabs.
+        */
+        this.init = function() {
+            var countTabs = $("li", this.tabsColumn).length;
+            if (!countTabs) {
+                this.emptyAlert.removeClass('hidden');
+            }
+        };
+
+        /**
+        * Build tab.
+        * @param {object} item
+        */
+        this.buildTab = function(item) {
+            var tab = item.tab.element;
+            var tabLink = $(".nav-link", tab);
+
+            // Setting tab name.
+            $(".tab-name", tabLink).text(item.tab.name);
+
+            // Setting tab href.
+            tabLink.attr('href', '#link'+this.countTabs);
+
+            // Activating tab
+            $("li a", this.tabsColumn).removeClass('active');
+            tabLink.addClass('active');
+
+            return tab;
+        };
+
+        /**
+         * Build tab content.
+         * @param {object} item
+         */
+        this.buildTabContent = function(item) {
+            var tabContent = item.tabContent.element;
+
+            // Setting tabContent id.
+            tabContent.attr('id', 'link'+this.countTabs);
+
+            // Activating tabContent.
+            $(".tab-pane", this.tabsContentColumn).removeClass('active');
+            tabContent.addClass('active');
+
+            return tabContent;
+        };
+
+
+        /**
+        * Add tab.
+        * @param {object} item
+        */
+        this.addTab = function(item) {
+            var tab = this.buildTab(item);
+            var tabContent = this.buildTabContent(item);
+
+            this.emptyAlert.addClass('hidden');
+            $("ul", this.tabsColumn).append(tab);
+            $(".tab-content", this.tabsContentColumn).append(tabContent);
+
+            return {"element": tab, "content": tabContent};
+        };
+
+        /**
+         * Delete tab.
+         * @param {object} item
+         */
+        this.deleteTab = function(item) {
+            var tab = item;
+            var tabContent = $($('a', tab).attr('href'));
+
+            tab.remove();
+            tabContent.remove();
+
+            var countTabs = $("li", this.tabsColumn).length;
+            if (!countTabs) {
+                this.emptyAlert.removeClass('hidden');
+            } else {
+                var countActiveTabs = $("li a.active", this.tabsColumn).length;
+                if (!countActiveTabs) {
+                    $("li:first-child a", this.tabsColumn).trigger('click');
+                }
+            }
+        };
+    };
+
+    /**
+     * breakout rooms editor.
+     */
+    var BreakoutroomsEditor = function () {
+        this.roomsListColumn = $("#meeting-rooms-list");
+        this.roomsList = $("ul", this.roomsListColumn);
+        this.addBtn = $("#add-room", this.roomsListColumn);
+        this.emptyAlert = $(".empty-alert", this.roomsListColumn);
+        this.deleteBtn = $(".delete-room", this.roomsListColumn);
+        this.roomsDataColumn = $("#meeting-rooms-data");
+        this.roomItemToClone = $('#rooms-list-item').html();
+        this.roomItemDataToClone = $('#rooms-list-item-data').html();
+        this.initialRoomsCount = parseInt(this.roomsListColumn.attr('initial-rooms-count'));
+        this.tabsComponent = new TabsComponent(this.roomsListColumn, this.roomsDataColumn, this.initialRoomsCount, this.emptyAlert);
+
+        // Add room event.
+        this.init = function() {
+            this.addroomEvent();
+            this.deleteroomEvent();
+            this.buildAutocompleteComponents();
+            this.tabsComponent.init();
+        };
+        // Add room event.
+        this.addroomEvent = function() {
+            var thisObject = this;
+
+            // Adding addroom button click event.
+            thisObject.addBtn.click(function() {
+                thisObject.tabsComponent.countTabs++;
+
+                var newRoomName = "Room"+' '+thisObject.tabsComponent.countTabs;
+                var newRoomElement = $(thisObject.roomItemToClone);
+                var newRoomDataElement = $(thisObject.roomItemDataToClone);
+                var newRoomIndex = thisObject.tabsComponent.countTabs;
+
+                // New room name.
+                var roomNameInputId = 'room-name-'+newRoomIndex;
+                $("input", newRoomDataElement).attr('name', roomNameInputId);
+                $("input", newRoomDataElement).val(newRoomName);
+
+                // New room participants select.
+                var roomParticipantsSelectId = 'participants-'+newRoomIndex;
+                $(".room-participants", newRoomDataElement).attr('id', roomParticipantsSelectId);
+                $(".room-participants", newRoomDataElement).attr('name', roomParticipantsSelectId);
+                thisObject.buildAutocompleteComponent(roomParticipantsSelectId, 'addparticipant');
+
+                // New room participant groups select.
+                var roomGroupsSelectId = 'groups-'+newRoomIndex;
+                $(".room-groups", newRoomDataElement).attr('id', roomGroupsSelectId);
+                $(".room-groups", newRoomDataElement).attr('name', roomGroupsSelectId);
+                thisObject.buildAutocompleteComponent(roomGroupsSelectId, 'addparticipantgroup');
+
+                var newRoom = {"tab": {"name": newRoomName, "element": newRoomElement},
+                    "tabContent": {"element": newRoomDataElement}};
+
+                var addedTab = thisObject.tabsComponent.addTab(newRoom);
+
+                // Adding room name change event.
+                $("input", addedTab.content).on("change keyup paste", function() {
+                    $(".tab-name", addedTab.element).text(this.value);
+                });
+
+                // Adding new room delete button click event.
+                $("li:last .delete-room", thisObject.roomsList).click(function() {
+                    var thisItem = $(this).closest('li');
+                    thisObject.tabsComponent.deleteTab(thisItem);
+                });
+            });
+        };
+
+        // Delete room event.
+        this.deleteroomEvent = function() {
+            var thisObject = this;
+
+            // Adding deleteroom button click event.
+            thisObject.deleteBtn.click(function() {
+                var thisItem = $(this).closest('li');
+                thisObject.tabsComponent.deleteTab(thisItem);
+            });
+        };
+
+        /**
+         * Build autocomplete components.
+         */
+        this.buildAutocompleteComponents = function() {
+            var thisObject = this;
+            $( ".room-participants" ).each(function() {
+                var thisItemId = $(this).attr('id');
+                thisObject.buildAutocompleteComponent(thisItemId, 'addparticipant');
+            });
+
+            $( ".room-groups" ).each(function() {
+                var thisItemId = $(this).attr('id');
+                thisObject.buildAutocompleteComponent(thisItemId, 'addparticipantgroup');
+            });
+        };
+
+        /**
+         * Build autocomplete component.
+         * @param {string} id
+         * @param {string} placeholder
+         */
+        this.buildAutocompleteComponent = function(id, placeholder) {
+            var stringkeys = [{key: placeholder, component: 'zoom'}, {key: 'selectionarea', component: 'zoom'}];
+            str.get_strings(stringkeys).then(function(langstrings) {
+                var placeholderString = langstrings[0];
+                var noSelectionString = langstrings[1];
+
+                autocomplete.enhance('#'+id, false, '', placeholderString, false, true, noSelectionString, true);
+
+            }).fail(notification.exception);
+        };
     };
 
     return {

@@ -11,3 +11,15 @@
 #mod-zoom-old-meetings-header {
     float: left;
 }
+
+#meeting-room-participants,
+#meeting-room-participant-groups {
+    list-style-type: none;
+}
+
+#meeting-rooms-list .empty-alert {
+    margin: auto;
+    width: 80%;
+    padding: 40% 0;
+}
+

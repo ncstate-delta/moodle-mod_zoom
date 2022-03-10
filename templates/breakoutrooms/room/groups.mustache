@@ -1,0 +1,9 @@
+<div class="card">
+    <div class="card-body">
+        <select id="groups-{{roomid}}" class="room-groups" name="groups-{{roomid}}" multiple>
+            {{#coursegroups}}
+            <option value="{{id}}">{{name}}</option>
+            {{/coursegroups}}
+        </select>
+    </div>
+</div>
