@@ -32,6 +32,11 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.3.4
+
+- Privacy: Add tests, support recordings, fix existing code #345 (thanks @jwalits, @tuanngocnguyen, @mattporritt, @marcghaly)
+- Compatibility: grunt rebuild for MDL-73915 #364
+
 v4.3.3
 
 - Fix recording table database schema definitions #358 (thanks @jwalits)
