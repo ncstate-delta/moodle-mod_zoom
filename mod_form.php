@@ -340,7 +340,8 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addHelpButton('show_schedule', 'showschedule', 'zoom');
 
         // Adding the "breakout rooms" fieldset.
-        $mform->addElement('header', 'general', get_string('breakoutrooms', 'mod_zoom'));
+        $mform->addElement('header', 'breakoutrooms', get_string('breakoutrooms', 'mod_zoom'));
+        $mform->setExpanded('breakoutrooms');
 
         $courseid = $this->current->course;
         $context = context_course::instance($courseid);
@@ -348,22 +349,42 @@ class mod_zoom_mod_form extends moodleform_mod {
         $groups = groups_get_all_groups($courseid);
         $participants = get_enrolled_users($context);
 
-        // Course participants.
+        // Getting Course participants.
         $courseparticipants = [];
         foreach ($participants as $participant) {
-            $courseparticipants[] = array('id' => $participant->id, 'email' => $participant->email);
+            $courseparticipants[] = array('participantid' => $participant->id, 'participantemail' => $participant->email);
         }
 
-        // Course groups.
+        // Getting Course groups.
         $coursegroups = [];
         foreach ($groups as $group) {
-            $coursegroups[] = array('id' => $group->id, 'name' => $group->name);
+            $coursegroups[] = array('groupid' => $group->id, 'groupname' => $group->name);
         }
 
+        // Building meeting breakout rooms template data.
         $templatedata  = array('rooms' => array(), 'roomscount' => 0,
-            'courseparticipants' => $courseparticipants, 'coursegroups' => $coursegroups);
+            'roomtoclone' => array('toclone' => 'toclone', 'courseparticipants' => $courseparticipants,
+                'coursegroups' => $coursegroups));
+
+        $currentinstance = $this->current->instance;
+        if ($currentinstance) {
+            $rooms = zoom_build_instance_breakout_rooms_array_for_view($currentinstance,
+                $courseparticipants, $coursegroups);
+
+            $templatedata['rooms'] = $rooms;
+            $templatedata['roomscount'] = count($rooms);
+        }
 
         $mform->addElement('html', $OUTPUT->render_from_template('zoom/breakoutrooms/rooms', $templatedata));
+
+        $mform->addElement('hidden', 'rooms', '');
+        $mform->setType('rooms', PARAM_RAW);
+
+        $mform->addElement('hidden', 'roomsparticipants', '');
+        $mform->setType('roomsparticipants', PARAM_RAW);
+
+        $mform->addElement('hidden', 'roomsgroups', '');
+        $mform->setType('roomsgroups', PARAM_RAW);
 
         // Adding the "security" fieldset, where all settings relating to securing and protecting the meeting are shown.
         $mform->addElement('header', 'general', get_string('security', 'mod_zoom'));

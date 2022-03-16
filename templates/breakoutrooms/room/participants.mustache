@@ -1,8 +1,8 @@
 <div class="card">
     <div class="card-body">
-        <select id="participants-{{roomid}}" class="room-participants" name="participants-{{roomid}}" multiple>
+        <select id="participants-{{roomid}}" class="room-participants" name="{{toclone}}roomsparticipants[]" multiple>
             {{#courseparticipants}}
-            <option value="{{id}}-">{{email}}</option>
+            <option value="{{roomid}}-{{participantid}}" {{#selected}}selected{{/selected}}>{{participantemail}}</option>
             {{/courseparticipants}}
         </select>
     </div>

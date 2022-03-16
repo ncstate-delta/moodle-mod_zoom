@@ -1,6 +1,6 @@
 <div id="data-to-clone" class="hidden">
     <div id="rooms-list-item">
-        <li class="nav-item">
+        <li class="nav-item" id="">
             <a class="nav-link" href="" data-toggle="tab" role="tab">
                 <span class="fa fa-trash-o fa-lg pull-right delete-room" title="{{#str}} deleteroom, zoom{{/str}}" aria-hidden="true"></span>
                 <span class="tab-name"></span>
@@ -9,8 +9,7 @@
     </div>
     <div id="rooms-list-item-data">
         <div class="tab-pane" id="" role="tabpanel">
-            {{> zoom/breakoutrooms/datatoclone/data }}
+            {{> zoom/breakoutrooms/room/data }}
         </div>
     </div>
 </div>
-

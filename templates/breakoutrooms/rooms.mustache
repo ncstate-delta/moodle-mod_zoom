@@ -10,7 +10,7 @@
         </div>
         <ul class="nav nav-pills flex-column" role="tablist">
           {{#rooms}}
-          <li class="nav-item">
+          <li id="tab-{{roomid}}" class="nav-item">
             <a class="nav-link {{#roomactive}}active{{/roomactive}}" href="#link{{roomid}}" data-toggle="tab" role="tab">
               <span class="fa fa-trash-o fa-lg pull-right delete-room" title="{{#str}} deleteroom, zoom{{/str}}" aria-hidden="true"></span>
               <span class="tab-name">{{roomname}}</span>
@@ -41,4 +41,6 @@
   </tr>
 </table>
 
-{{> zoom/breakoutrooms/datatoclone/datatoclone }}
+{{#roomtoclone}}
+{{> zoom/breakoutrooms/room/datatoclone }}
+{{/roomtoclone}}

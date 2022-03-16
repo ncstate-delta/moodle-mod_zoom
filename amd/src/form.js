@@ -170,22 +170,15 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
         this.countTabs = initialTabsCount;
 
         /**
-        * init tabs.
-        */
-        this.init = function() {
-            var countTabs = $("li", this.tabsColumn).length;
-            if (!countTabs) {
-                this.emptyAlert.removeClass('hidden');
-            }
-        };
-
-        /**
         * Build tab.
         * @param {object} item
         */
         this.buildTab = function(item) {
             var tab = item.tab.element;
             var tabLink = $(".nav-link", tab);
+
+            // Setting tab id.
+            tab.attr('id', 'tab-'+this.countTabs);
 
             // Setting tab name.
             $(".tab-name", tabLink).text(item.tab.name);
@@ -273,13 +266,18 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
 
         // Add room event.
         this.init = function() {
-            this.addroomEvent();
-            this.deleteroomEvent();
-            this.buildAutocompleteComponents();
-            this.tabsComponent.init();
+            this.addRoomEvent();
+            this.deleteRoomEvent();
+            var countRooms = $("li", this.roomsListColumn).length;
+            if (countRooms) {
+                this.changeRoomNameEvent();
+                this.buildAutocompleteComponents();
+            } else {
+                this.emptyAlert.removeClass('hidden');
+            }
         };
         // Add room event.
-        this.addroomEvent = function() {
+        this.addRoomEvent = function() {
             var thisObject = this;
 
             // Adding addroom button click event.
@@ -291,43 +289,63 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
                 var newRoomDataElement = $(thisObject.roomItemDataToClone);
                 var newRoomIndex = thisObject.tabsComponent.countTabs;
 
-                // New room name.
+                // Setting new room name.
                 var roomNameInputId = 'room-name-'+newRoomIndex;
-                $("input", newRoomDataElement).attr('name', roomNameInputId);
-                $("input", newRoomDataElement).val(newRoomName);
+                $("input[type=text]", newRoomDataElement).attr('name', roomNameInputId);
+                $("input[type=text]", newRoomDataElement).val(newRoomName);
+                $("input[type=text]", newRoomDataElement).next().attr('name', 'rooms[]');
+                $("input[type=text]", newRoomDataElement).next().val(newRoomName+'|'+newRoomIndex);
 
-                // New room participants select.
+                // Setting new room participants select id/name.
                 var roomParticipantsSelectId = 'participants-'+newRoomIndex;
                 $(".room-participants", newRoomDataElement).attr('id', roomParticipantsSelectId);
-                $(".room-participants", newRoomDataElement).attr('name', roomParticipantsSelectId);
-                thisObject.buildAutocompleteComponent(roomParticipantsSelectId, 'addparticipant');
+                $(".room-participants", newRoomDataElement).attr('name', 'roomsparticipants[]');
 
-                // New room participant groups select.
+                // Setting new room participant groups select id/name.
                 var roomGroupsSelectId = 'groups-'+newRoomIndex;
                 $(".room-groups", newRoomDataElement).attr('id', roomGroupsSelectId);
-                $(".room-groups", newRoomDataElement).attr('name', roomGroupsSelectId);
-                thisObject.buildAutocompleteComponent(roomGroupsSelectId, 'addparticipantgroup');
+                $(".room-groups", newRoomDataElement).attr('name', 'roomsgroups[]');
 
+                // Add new room tab
                 var newRoom = {"tab": {"name": newRoomName, "element": newRoomElement},
                     "tabContent": {"element": newRoomDataElement}};
 
                 var addedTab = thisObject.tabsComponent.addTab(newRoom);
 
-                // Adding room name change event.
-                $("input", addedTab.content).on("change keyup paste", function() {
-                    $(".tab-name", addedTab.element).text(this.value);
-                });
-
-                // Adding new room delete button click event.
+                // Adding new room tab delete button click event.
                 $("li:last .delete-room", thisObject.roomsList).click(function() {
                     var thisItem = $(this).closest('li');
                     thisObject.tabsComponent.deleteTab(thisItem);
                 });
+
+                // Adding new room change name event.
+                $("input[type=text]", addedTab.content).on("change keyup paste", function() {
+                    var oldHiddenValueArray = $(this).next().val().split('|');
+                    var newHiddenValue = this.value +'|'+oldHiddenValueArray[1];
+                    $(this).next().val(newHiddenValue);
+
+                    $(".tab-name", addedTab.element).text(this.value);
+                });
+
+                // Changing participants and groups select options values.
+                $("#"+roomParticipantsSelectId+" option").each(function() {
+                    var thisValue = $(this).attr('value').replace('-', '');
+                    $(this).attr('value', newRoomIndex+'-'+thisValue);
+                });
+
+                $("#"+roomGroupsSelectId+" option").each(function() {
+                    var thisValue = $(this).attr('value').replace('-', '');
+                    $(this).attr('value', newRoomIndex+'-'+thisValue);
+                });
+
+                // Convert select dropdowns to autocomplete component.
+                thisObject.buildAutocompleteComponent(roomParticipantsSelectId, 'addparticipant');
+                thisObject.buildAutocompleteComponent(roomGroupsSelectId, 'addparticipantgroup');
             });
         };
 
         // Delete room event.
-        this.deleteroomEvent = function() {
+        this.deleteRoomEvent = function() {
             var thisObject = this;
 
             // Adding deleteroom button click event.
@@ -337,17 +355,34 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
             });
         };
 
+        // Change room name event.
+        this.changeRoomNameEvent = function() {
+            var thisObject = this;
+
+            $("li", this.roomsListColumn).each(function() {
+                var tabIdArr = $(this).attr('id').split('-');
+                var tabIndex = tabIdArr[1];
+                $('input[name="room-name-'+tabIndex+'"]', thisObject.roomsDataColumn).on("change keyup paste", function() {
+                    var oldHiddenValueArray = $(this).next().val().split('|');
+                    var newHiddenValue = this.value +'|'+oldHiddenValueArray[1];
+                    $(this).next().val(newHiddenValue);
+
+                    $("#tab-"+tabIndex+" .tab-name").text(this.value);
+                });
+            });
+        };
+
         /**
          * Build autocomplete components.
          */
         this.buildAutocompleteComponents = function() {
             var thisObject = this;
-            $( ".room-participants" ).each(function() {
+            $(".room-participants", thisObject.roomsDataColumn).each(function() {
                 var thisItemId = $(this).attr('id');
                 thisObject.buildAutocompleteComponent(thisItemId, 'addparticipant');
             });
 
-            $( ".room-groups" ).each(function() {
+            $(".room-groups", thisObject.roomsDataColumn).each(function() {
                 var thisItemId = $(this).attr('id');
                 thisObject.buildAutocompleteComponent(thisItemId, 'addparticipantgroup');
             });

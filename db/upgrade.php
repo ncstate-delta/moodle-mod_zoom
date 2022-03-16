@@ -757,5 +757,72 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2022031600, 'zoom');
     }
 
+    if ($oldversion < 2022042101) {
+        // Define table zoom_meeting_breakout_rooms to be created.
+        $table = new xmldb_table('zoom_meeting_breakout_rooms');
+
+        // Adding fields to table zoom_meeting_breakout_rooms.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_TEXT, 'medium', null, null, null, null);
+        $table->add_field('meeting_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table zoom_meeting_breakout_rooms.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for customfield_category.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table zoom_rooms_participants to be created.
+        $table = new xmldb_table('zoom_rooms_participants');
+
+        // Adding fields to table zoom_rooms_participants.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('user_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('breakout_room_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table zoom_rooms_participants.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for customfield_category.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table zoom_rooms_groups to be created.
+        $table = new xmldb_table('zoom_rooms_groups');
+
+        // Adding fields to table zoom_rooms_groups.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('group_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('breakout_room_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table zoom_rooms_groups.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for customfield_category.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        $foreignkeys = array(array('name' => 'meeting_id', 'table' => 'zoom_meeting_breakout_rooms',
+            'parent' => 'zoom'),
+            array('name' => 'breakout_room_id', 'table' => 'zoom_rooms_participants',
+            'parent' => 'zoom_meeting_breakout_rooms'),
+            array('name' => 'breakout_room_id', 'table' => 'zoom_rooms_groups',
+                'parent' => 'zoom_meeting_breakout_rooms'),
+        );
+
+        foreach ($foreignkeys as $foreignkey) {
+            $DB->execute("ALTER TABLE {{$foreignkey['table']}}
+                       ADD FOREIGN KEY ({$foreignkey['name']})
+                           REFERENCES {{$foreignkey['parent']}}(id)
+                    ON DELETE CASCADE");
+        }
+
+        upgrade_mod_savepoint(true, 2022042101, 'zoom');
+    }
+
     return true;
 }

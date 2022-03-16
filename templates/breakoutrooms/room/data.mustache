@@ -1,5 +1,6 @@
 <label>Room name</label>
 <input type="text" class="form-control col-sm-6" name="room-name-{{roomid}}" class="room-name" value="{{roomname}}">
+<input type="hidden" name="{{toclone}}rooms[]" value="{{roomname}}|{{roomid}}">
 <hr>
 <span>Participants</span>
 {{> zoom/breakoutrooms/room/participants }}

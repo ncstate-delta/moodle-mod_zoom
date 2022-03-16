@@ -149,5 +149,38 @@
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="zoom_meeting_breakout_rooms" COMMENT="A list of zoom meeting breakout rooms.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_meeting_id" TYPE="foreign" FIELDS="meeting_id" REFTABLE="zoom" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="zoom_rooms_participants" COMMENT="A list of zoom meeting breakout rooms participants.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="breakout_room_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_breakout_room_id" TYPE="foreign" FIELDS="breakout_room_id" REFTABLE="zoom_meeting_breakout_rooms" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="zoom_rooms_groups" COMMENT="A list of zoom meeting breakout rooms groups.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="group_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="breakout_room_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_breakout_room_id" TYPE="foreign" FIELDS="breakout_room_id" REFTABLE="zoom_meeting_breakout_rooms" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
   </TABLES>
 </XMLDB>
