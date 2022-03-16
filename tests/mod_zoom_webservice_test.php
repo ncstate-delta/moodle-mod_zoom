@@ -64,6 +64,18 @@ class mod_zoom_webservice_test extends advanced_testcase {
                 return;
             }
             /**
+             * Stub for curl setopt().
+             * @param array $options
+             * @return void
+             */
+            public function setopt($options = array()) {
+                foreach ($options as $name => $val) {
+                    if (!is_string($name)) {
+                        throw new coding_exception('Curl options are strings');
+                    }
+                }
+            }
+            /**
              * Stub for curl get_errno().
              * @return boolean
              */
@@ -169,6 +181,18 @@ class mod_zoom_webservice_test extends advanced_testcase {
                 return;
             }
             /**
+             * Stub for curl setopt().
+             * @param array $options
+             * @return void
+             */
+            public function setopt($options = array()) {
+                foreach ($options as $name => $val) {
+                    if (!is_string($name)) {
+                        throw new coding_exception('Curl options are strings');
+                    }
+                }
+            }
+            /**
              * Stub for curl get_errno().
              * @return boolean
              */
@@ -224,6 +248,18 @@ class mod_zoom_webservice_test extends advanced_testcase {
             public function setHeader($unusedparam) {
             // @codingStandardsIgnoreEnd
                 return;
+            }
+            /**
+             * Stub for curl setopt().
+             * @param array $options
+             * @return void
+             */
+            public function setopt($options = array()) {
+                foreach ($options as $name => $val) {
+                    if (!is_string($name)) {
+                        throw new coding_exception('Curl options are strings');
+                    }
+                }
             }
             /**
              * Stub for curl get_errno().
@@ -298,6 +334,18 @@ class mod_zoom_webservice_test extends advanced_testcase {
                 return;
             }
             /**
+             * Stub for curl setopt().
+             * @param array $options
+             * @return void
+             */
+            public function setopt($options = array()) {
+                foreach ($options as $name => $val) {
+                    if (!is_string($name)) {
+                        throw new coding_exception('Curl options are strings');
+                    }
+                }
+            }
+            /**
              * Stub for curl get_errno().
              * @return boolean
              */
@@ -359,6 +407,18 @@ class mod_zoom_webservice_test extends advanced_testcase {
             public function setHeader($unusedparam) {
             // @codingStandardsIgnoreend
                 return;
+            }
+            /**
+             * Stub for curl setopt().
+             * @param array $options
+             * @return void
+             */
+            public function setopt($options = array()) {
+                foreach ($options as $name => $val) {
+                    if (!is_string($name)) {
+                        throw new coding_exception('Curl options are strings');
+                    }
+                }
             }
             /**
              * Stub for curl get_errno().
@@ -440,6 +500,18 @@ class mod_zoom_webservice_test extends advanced_testcase {
             public function setHeader($unusedparam) {
             // @codingStandardsIgnoreEnd
                 return;
+            }
+            /**
+             * Stub for curl setopt().
+             * @param array $options
+             * @return void
+             */
+            public function setopt($options = array()) {
+                foreach ($options as $name => $val) {
+                    if (!is_string($name)) {
+                        throw new coding_exception('Curl options are strings');
+                    }
+                }
             }
             /**
              * Stub for curl get_errno().
