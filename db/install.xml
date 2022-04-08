@@ -46,6 +46,9 @@
         <FIELD NAME="exists_on_zoom" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether the meeting can be found on Zoom servers. Usually should be true, should only be false if API call returned that meeting can't be found."/>
         <FIELD NAME="alternative_hosts" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="recordings_visible_default" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Should the recordings for this meeting be visible by default" />
+        <FIELD NAME="show_schedule" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Schedule heading in activity page" />
+        <FIELD NAME="show_security" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Security heading in activity page" />
+        <FIELD NAME="show_media" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Media heading in activity page" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

@@ -238,6 +238,11 @@ if ($ADMIN->fulltree) {
             get_string('recurringmeeting_help', 'mod_zoom'), 0, 1, 0);
     $settings->add($defaultrecurring);
 
+    $defaultshowschedule = new admin_setting_configcheckbox('zoom/defaultshowschedule',
+            get_string('showschedule', 'mod_zoom'),
+            get_string('showschedule_help', 'mod_zoom'), 1, 1, 0);
+    $settings->add($defaultshowschedule);
+
     $defaultrequirepasscode = new admin_setting_configcheckbox('zoom/requirepasscode',
             get_string('requirepasscode', 'mod_zoom'),
             get_string('requirepasscode_help', 'mod_zoom'),
@@ -271,6 +276,11 @@ if ($ADMIN->fulltree) {
             0, 1, 0);
     $settings->add($defaultauthusersoption);
 
+    $defaultshowsecurity = new admin_setting_configcheckbox('zoom/defaultshowsecurity',
+            get_string('showsecurity', 'mod_zoom'),
+            get_string('showsecurity_help', 'mod_zoom'), 1, 1, 0);
+    $settings->add($defaultshowsecurity);
+
     $defaulthostvideo = new admin_setting_configcheckbox('zoom/defaulthostvideo',
             get_string('option_host_video', 'mod_zoom'),
             get_string('option_host_video_help', 'mod_zoom'),
@@ -297,6 +307,11 @@ if ($ADMIN->fulltree) {
             get_string('option_mute_upon_entry_help', 'mod_zoom'),
             1, 1, 0);
     $settings->add($defaultmuteuponentryoption);
+
+    $defaultshowmedia = new admin_setting_configcheckbox('zoom/defaultshowmedia',
+            get_string('showmedia', 'mod_zoom'),
+            get_string('showmedia_help', 'mod_zoom'), 1, 1, 0);
+    $settings->add($defaultshowmedia);
 
     $defaulttrackingfields = new admin_setting_configtextarea('zoom/defaulttrackingfields',
         get_string('trackingfields', 'mod_zoom'),
