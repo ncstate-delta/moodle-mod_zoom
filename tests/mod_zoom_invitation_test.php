@@ -32,6 +32,7 @@ use moodle_url;
 
 /**
  * PHPunit testcase class for invitations.
+ * @covers \mod_zoom\invitation
  */
 class mod_zoom_invitation_test extends advanced_testcase {
 

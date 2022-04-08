@@ -55,6 +55,7 @@ class mod_zoom_grade_test extends advanced_testcase {
 
     /**
      * Tests that Zoom grades can be added and updated in the gradebook.
+     * @covers ::zoom_grade_item_update
      */
     public function test_grade_added() {
         $params['course'] = $this->course->id;
@@ -87,6 +88,7 @@ class mod_zoom_grade_test extends advanced_testcase {
 
     /**
      * Tests that the Zoom grade type cannot be changed to NONE if grades are already inputted.
+     * @covers ::zoom_grade_item_update
      */
     public function test_grade_type_not_none() {
         $params['course'] = $this->course->id;
@@ -117,6 +119,7 @@ class mod_zoom_grade_test extends advanced_testcase {
 
     /**
      * Tests that the Zoom grades can be deleted.
+     * @covers ::zoom_grade_item_delete
      */
     public function test_grade_delete() {
         $params['course'] = $this->course->id;

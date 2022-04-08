@@ -48,6 +48,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that a default password of 6 numbers is created when settings are null.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_default() {
         $this->zoomdata = (object) mod_zoom_webservice::DEFAULT_MEETING_PASSWORD_REQUIREMENT;
@@ -59,6 +60,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that a password has the given minimum length.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_length() {
         $data = array('length' => 8,
@@ -75,6 +77,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that a password is all numbers when the setting is specified.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_only_numeric() {
         $data = array('length' => 10,
@@ -92,6 +95,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that a password has a letter when the setting is specified.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_letter() {
         $data = array('length' => null,
@@ -109,6 +113,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that a password has uppercase and lowercase letters when the setting is specified.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_upper_and_lower_letters() {
         $data = array('length' => null,
@@ -127,6 +132,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that a password has a special character when the setting is specified.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_special_character() {
         $data = array('length' => null,
@@ -144,6 +150,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that a password has correct length, a letter, and a special character when setting is specified.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_all() {
         $data = array('length' => 7,
@@ -162,6 +169,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that the password description is correct when all settings are present.
+     * @covers ::zoom_create_passcode_description
      */
     public function test_pasword_description_all() {
         $data = array('length' => 9,
@@ -183,6 +191,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that the password description is correct when the only numeric option is present.
+     * @covers ::zoom_create_passcode_description
      */
     public function test_pasword_description_only_numeric() {
         $data = array('length' => 8,
@@ -203,6 +212,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that the password description is correct when the default settings are present.
+     * @covers ::zoom_create_passcode_description
      */
     public function test_pasword_description_default() {
         $this->zoomdata = (object) mod_zoom_webservice::DEFAULT_MEETING_PASSWORD_REQUIREMENT;
