@@ -30,6 +30,7 @@ use stdClass;
 
 /**
  * PHPunit testcase class.
+ * @covers \mod_zoom\task\get_meeting_reports
  */
 class get_meeting_reports_test extends advanced_testcase {
 

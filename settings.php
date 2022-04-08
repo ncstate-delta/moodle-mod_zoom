@@ -171,6 +171,11 @@ if ($ADMIN->fulltree) {
             $webinarchoices);
     $settings->add($offerwebinar);
 
+    $webinardefault = new admin_setting_configcheckbox('zoom/webinardefault',
+            get_string('webinar_by_default', 'mod_zoom'),
+            get_string('webinar_by_default_desc', 'mod_zoom'), 0, 1, 0);
+    $settings->add($webinardefault);
+
     $encryptionchoices = array(ZOOM_ENCRYPTION_DISABLE => get_string('encryptiontype_disable', 'mod_zoom'),
             ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE => get_string('encryptiontype_showonlyife2epossible', 'mod_zoom'),
             ZOOM_ENCRYPTION_ALWAYSSHOW => get_string('encryptiontype_alwaysshow', 'mod_zoom'));

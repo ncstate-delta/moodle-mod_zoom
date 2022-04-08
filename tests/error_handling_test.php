@@ -78,6 +78,8 @@ class error_handling_test extends basic_testcase {
 
     /**
      * Tests that uuid are encoded properly for use in web service calls.
+     * @covers ::zoom_is_meeting_gone_error
+     * @covers ::zoom_is_user_not_found_error
      */
     public function test_correct_error_recognition() {
         // Check meeting not found behavior.
