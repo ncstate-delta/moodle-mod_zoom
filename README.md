@@ -32,6 +32,15 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.4.0
+
+- Feature: Allow configuration of section visibility on the view page #363 (thanks @aduranterres, @rayjbarrett1)
+  - New settings `zoom/defaultshowschedule`, `zoom/defaultshowsecurity`, `zoom/defaultshowmedia`
+  - New per activity settings `show_schedule`, `show_security`, `show_media`
+- Feature: Allow administrator to set webinar by default (when available) #367 (thanks @marcellobarile)
+  - New setting `zoom/webinardefault`
+- Code quality: specify code coverage for tests #367
+
 v4.3.4
 
 - Privacy: Add tests, support recordings, fix existing code #345 (thanks @jwalits, @tuanngocnguyen, @mattporritt, @marcghaly)
