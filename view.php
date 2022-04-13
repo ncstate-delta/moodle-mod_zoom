@@ -134,8 +134,6 @@ $strmeetinginviteshow = get_string('meeting_invite_show', 'mod_zoom');
 // Output starts here.
 echo $OUTPUT->header();
 
-echo $OUTPUT->heading(format_string($zoom->name), 2);
-
 // Show notification if the meeting does not exist on Zoom.
 if ($showrecreate) {
     // Only show recreate/delete links in the message for users that can edit.
