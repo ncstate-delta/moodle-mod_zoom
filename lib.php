@@ -785,7 +785,7 @@ function zoom_reset_gradebook($courseid) {
  * This function will remove all user data from zoom activites
  * and clean up any related data.
  *
- * @param $data the data submitted from the reset course.
+ * @param object $data the data submitted from the reset course.
  * @return array status array
  */
 function zoom_reset_userdata($data) {
@@ -821,17 +821,19 @@ function zoom_reset_userdata($data) {
 /**
  * Called by course/reset.php
  *
- * @param $mform form passed by reference
+ * @param object $mform the course reset form that is being built.
  */
 function zoom_reset_course_form_definition(&$mform) {
     $mform->addElement('header', 'zoomheader', get_string('modulenameplural', 'zoom'));
 
-    $mform->addElement('checkbox', 'reset_zoom_all', get_string('resetzoomsall','zoom'));
+    $mform->addElement('checkbox', 'reset_zoom_all', get_string('resetzoomsall', 'zoom'));
 }
 
 /**
  * Course reset form defaults.
- * @return array
+ *
+ * @param object $course data passed by the form.
+ * @return array the defaults.
  */
 function zoom_reset_course_form_defaults($course) {
     return array('reset_zoom_all' => 1);
