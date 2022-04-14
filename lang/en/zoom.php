@@ -186,6 +186,8 @@ $string['meetingcapacitywarningbodyrealhost'] = 'Your Zoom license has a capacit
 $string['meetingcapacitywarningbodyalthost'] = 'The Zoom license of this meeting\'s host, {$a->hostname}, has a capacity of <strong>{$a->meetingcapacity} meeting participants</strong>, but this course has <strong><a href="{$a->courseparticipantsurl}">{$a->eligiblemeetingparticipants} enrolled and active participants</a></strong>.';
 $string['meetingcapacitywarningcontactrealhost'] = 'Please turn to the Zoom account owner to obtain a larger Zoom license if all of these course participants need to join the meeting.';
 $string['meetingcapacitywarningcontactalthost'] = 'Please ask the host to turn to the Zoom account owner to obtain a larger Zoom license if all of these course participants need to join the meeting.';
+$string['meetingparticipantsdeleted'] = 'Meeting participant user data deleted.';
+$string['meetingrecordingsviewdeleted'] = 'Meeting recording user view data deleted.';
 $string['modulename'] = 'Zoom meeting';
 $string['modulenameplural'] = 'Zoom Meetings';
 $string['modulename_help'] = 'Zoom is a video and web conferencing platform that gives authorized users the ability to host online meetings.';
@@ -290,6 +292,7 @@ $string['reportapicalls'] = 'Report API calls exhausted';
 $string['requirepasscode'] = 'Require meeting passcode';
 $string['requirepasscode_help'] = 'Enabling this option will require that the host sets a passcode for the meeting. Joining participants will be required to input this before joining the meeting. Participants who enter the meeting from within the Moodle activity do not need to input this passcode.';
 $string['resetapicalls'] = 'Reset the number of available API calls';
+$string['resetzoomsall'] = 'Delete all user grades, recording user view data, and meeting participant user data.';
 $string['schedule'] = 'Schedule';
 $string['schedulefor'] = 'Schedule meeting for';
 $string['scheduleforself'] = 'Yourself';

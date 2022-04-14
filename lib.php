@@ -758,6 +758,85 @@ function zoom_update_grades(stdClass $zoom, $userid = 0) {
     }
 }
 
+
+/**
+ * Removes all zoom grades from gradebook by course id
+ *
+ * @param int $courseid
+ */
+function zoom_reset_gradebook($courseid) {
+    global $DB;
+
+    $params = array($courseid);
+
+    $sql = "SELECT z.*, cm.idnumber as cmidnumber, z.course as courseid
+          FROM {zoom} z, {course_modules} cm, {modules} m
+         WHERE m.name='zoom' AND m.id=cm.module AND cm.instance=z.id AND z.course=?";
+
+    if ($zooms = $DB->get_records_sql($sql, $params)) {
+        foreach ($zooms as $zoom) {
+            zoom_grade_item_update($zoom, 'reset');
+        }
+    }
+}
+
+/**
+ * This function is used by the reset_course_userdata function in moodlelib.
+ * This function will remove all user data from zoom activites
+ * and clean up any related data.
+ *
+ * @param $data the data submitted from the reset course.
+ * @return array status array
+ */
+function zoom_reset_userdata($data) {
+    global $CFG, $DB;
+
+    $componentstr = get_string('modulenameplural', 'zoom');
+    $status = array();
+
+    // Reset tables that record user data.
+    $DB->delete_records_select('zoom_meeting_participants',
+        'detailsid IN (SELECT zmd.id
+                         FROM {zoom_meeting_details} zmd
+                         JOIN {zoom} z ON z.id = zmd.zoomid
+                        WHERE z.course = ?)', array($data->courseid));
+    $status[] = array(
+        'component' => $componentstr,
+        'item' => get_string('meetingparticipantsdeleted', 'zoom'),
+        'error' => false);
+
+    $DB->delete_records_select('zoom_meeting_recordings_view',
+        'recordingsid IN (SELECT zmr.id
+                         FROM {zoom_meeting_recordings} zmr
+                         JOIN {zoom} z ON z.id = zmr.zoomid
+                        WHERE z.course = ?)', array($data->courseid));
+    $status[] = array(
+        'component' => $componentstr,
+        'item' => get_string('meetingrecordingsviewdeleted', 'zoom'),
+        'error' => false);
+
+    return $status;
+}
+
+/**
+ * Called by course/reset.php
+ *
+ * @param $mform form passed by reference
+ */
+function zoom_reset_course_form_definition(&$mform) {
+    $mform->addElement('header', 'zoomheader', get_string('modulenameplural', 'zoom'));
+
+    $mform->addElement('checkbox', 'reset_zoom_all', get_string('resetzoomsall','zoom'));
+}
+
+/**
+ * Course reset form defaults.
+ * @return array
+ */
+function zoom_reset_course_form_defaults($course) {
+    return array('reset_zoom_all' => 1);
+}
+
 /* File API */
 
 /**
