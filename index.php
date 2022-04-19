@@ -66,6 +66,10 @@ $PAGE->set_pagelayout('incourse');
 
 echo $OUTPUT->header();
 
+if ($CFG->branch < '400') {
+    echo $OUTPUT->heading($strname);
+}
+
 if (! $zooms = get_all_instances_in_course('zoom', $course)) {
     notice(get_string('nozooms', 'mod_zoom'), new moodle_url('/course/view.php', array('id' => $course->id)));
 }
