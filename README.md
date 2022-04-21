@@ -32,6 +32,11 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.5.0
+
+- Feature: Support for Reset course functionality #370 (thanks @izendegi)
+- Compatibility: Improved support for Moodle 4.0 #369
+
 v4.4.0
 
 - Feature: Allow configuration of section visibility on the view page #363 (thanks @aduranterres, @rayjbarrett1)
