@@ -770,8 +770,10 @@ function zoom_reset_gradebook($courseid) {
     $params = array($courseid);
 
     $sql = "SELECT z.*, cm.idnumber as cmidnumber, z.course as courseid
-          FROM {zoom} z, {course_modules} cm, {modules} m
-         WHERE m.name='zoom' AND m.id=cm.module AND cm.instance=z.id AND z.course=?";
+          FROM {zoom} z
+          JOIN {course_modules} cm ON cm.instance = z.id
+          JOIN {modules} m ON m.id = cm.module AND m.name = 'zoom'
+         WHERE z.course = ?";
 
     if ($zooms = $DB->get_records_sql($sql, $params)) {
         foreach ($zooms as $zoom) {
@@ -803,7 +805,8 @@ function zoom_reset_userdata($data) {
     $status[] = array(
         'component' => $componentstr,
         'item' => get_string('meetingparticipantsdeleted', 'zoom'),
-        'error' => false);
+        'error' => false,
+    );
 
     $DB->delete_records_select('zoom_meeting_recordings_view',
         'recordingsid IN (SELECT zmr.id
@@ -812,8 +815,9 @@ function zoom_reset_userdata($data) {
                         WHERE z.course = ?)', array($data->courseid));
     $status[] = array(
         'component' => $componentstr,
-        'item' => get_string('meetingrecordingsviewdeleted', 'zoom'),
-        'error' => false);
+        'item' => get_string('meetingrecordingviewsdeleted', 'zoom'),
+        'error' => false,
+    );
 
     return $status;
 }
