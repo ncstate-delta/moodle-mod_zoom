@@ -38,6 +38,23 @@ class advanced_passcode_test extends basic_testcase {
      */
     private $zoomdata;
 
+    // phpcs:disable moodle.NamingConventions.ValidFunctionName.LowercaseMethod
+    /**
+     * Backward compatibility support for PHPUnit 8 (PHP 7.2 and 7.3).
+     *
+     * @param string $pattern Regular expression.
+     * @param string $string String.
+     * @param string $message Message.
+     */
+    public static function assertMatchesRegularExpression($pattern, $string, $message = ''): void {
+        // phpcs:enable
+        if (method_exists('basic_testcase', 'assertMatchesRegularExpression')) {
+            parent::assertMatchesRegularExpression($pattern, $string, $message);
+        } else {
+            parent::assertRegExp($pattern, $string, $message);
+        }
+    }
+
     /**
      * Setup to ensure that fixtures are loaded.
      */
