@@ -38,6 +38,23 @@ class advanced_passcode_test extends basic_testcase {
      */
     private $zoomdata;
 
+    // phpcs:disable moodle.NamingConventions.ValidFunctionName.LowercaseMethod
+    /**
+     * Backward compatibility support for PHPUnit 8 (PHP 7.2 and 7.3).
+     *
+     * @param string $pattern Regular expression.
+     * @param string $string String.
+     * @param string $message Message.
+     */
+    public static function assertMatchesRegularExpression($pattern, $string, $message = ''): void {
+        // phpcs:enable
+        if (method_exists('basic_testcase', 'assertMatchesRegularExpression')) {
+            parent::assertMatchesRegularExpression($pattern, $string, $message);
+        } else {
+            parent::assertRegExp($pattern, $string, $message);
+        }
+    }
+
     /**
      * Setup to ensure that fixtures are loaded.
      */
@@ -107,8 +124,8 @@ class advanced_passcode_test extends basic_testcase {
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
         $this->assertEquals(strlen($passcode), 6);
-        $this->assertRegExp('/\d/', $passcode);
-        $this->assertRegExp('/[a-zA-Z]/', $passcode);
+        $this->assertMatchesRegularExpression('/\d/', $passcode);
+        $this->assertMatchesRegularExpression('/[a-zA-Z]/', $passcode);
     }
 
     /**
@@ -125,9 +142,9 @@ class advanced_passcode_test extends basic_testcase {
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
         $this->assertEquals(strlen($passcode), 6);
-        $this->assertRegExp('/\d/', $passcode);
-        $this->assertRegExp('/[A-Z]/', $passcode);
-        $this->assertRegExp('/[a-z]/', $passcode);
+        $this->assertMatchesRegularExpression('/\d/', $passcode);
+        $this->assertMatchesRegularExpression('/[A-Z]/', $passcode);
+        $this->assertMatchesRegularExpression('/[a-z]/', $passcode);
     }
 
     /**
@@ -144,8 +161,8 @@ class advanced_passcode_test extends basic_testcase {
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
         $this->assertEquals(strlen($passcode), 6);
-        $this->assertRegExp('/\d/', $passcode);
-        $this->assertRegExp('/[^a-zA-Z\d]/', $passcode);
+        $this->assertMatchesRegularExpression('/\d/', $passcode);
+        $this->assertMatchesRegularExpression('/[^a-zA-Z\d]/', $passcode);
     }
 
     /**
@@ -162,9 +179,9 @@ class advanced_passcode_test extends basic_testcase {
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
         $this->assertEquals(strlen($passcode), 7);
-        $this->assertRegExp('/\d/', $passcode);
-        $this->assertRegExp('/[a-zA-Z]/', $passcode);
-        $this->assertRegExp('/[^a-zA-Z\d]/', $passcode);
+        $this->assertMatchesRegularExpression('/\d/', $passcode);
+        $this->assertMatchesRegularExpression('/[a-zA-Z]/', $passcode);
+        $this->assertMatchesRegularExpression('/[^a-zA-Z\d]/', $passcode);
     }
 
     /**
