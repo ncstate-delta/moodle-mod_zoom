@@ -32,6 +32,11 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.5.1
+
+- Regression: Fix Zoom activity icon visibility #375 (thanks @foxlapinou)
+- Compatibility: Fix PHPUnit deprecation warnings #373
+
 v4.5.0
 
 - Feature: Support for Reset course functionality #370 (thanks @izendegi)
