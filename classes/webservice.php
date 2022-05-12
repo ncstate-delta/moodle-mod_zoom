@@ -621,7 +621,7 @@ class mod_zoom_webservice {
         $data['tracking_fields'] = $tfarray;
 
         $breakoutroom = array('enable' => true, 'rooms' => $zoom->breakoutrooms);
-        $data['settings']['breakout_room'] = json_decode(json_encode($breakoutroom));
+        $data['settings']['breakout_room'] = $breakoutroom;
 
         return $data;
     }

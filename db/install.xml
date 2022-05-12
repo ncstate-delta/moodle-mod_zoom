@@ -152,34 +152,34 @@
     <TABLE NAME="zoom_meeting_breakout_rooms" COMMENT="A list of zoom meeting breakout rooms.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="name" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="zoomid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_meeting_id" TYPE="foreign" FIELDS="meeting_id" REFTABLE="zoom" REFFIELDS="id"/>
+        <KEY NAME="fk_zoomid" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoom" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoom_rooms_participants" COMMENT="A list of zoom meeting breakout rooms participants.">
+    <TABLE NAME="zoom_breakout_participants" COMMENT="A list of zoom meeting breakout rooms participants.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="breakout_room_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="breakoutroomid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_breakout_room_id" TYPE="foreign" FIELDS="breakout_room_id" REFTABLE="zoom_meeting_breakout_rooms" REFFIELDS="id"/>
+        <KEY NAME="fk_breakoutroomid" TYPE="foreign" FIELDS="breakoutroomid" REFTABLE="zoom_meeting_breakout_rooms" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoom_rooms_groups" COMMENT="A list of zoom meeting breakout rooms groups.">
+    <TABLE NAME="zoom_breakout_groups" COMMENT="A list of zoom meeting breakout rooms groups.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="group_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="breakout_room_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="breakoutroomid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_breakout_room_id" TYPE="foreign" FIELDS="breakout_room_id" REFTABLE="zoom_meeting_breakout_rooms" REFFIELDS="id"/>
+        <KEY NAME="fk_breakoutroomid" TYPE="foreign" FIELDS="breakoutroomid" REFTABLE="zoom_meeting_breakout_rooms" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>

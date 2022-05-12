@@ -332,7 +332,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                 }
             }
         }
-        
+
         // Add show widget.
         $mform->addElement('advcheckbox', 'show_schedule', get_string('showschedule', 'zoom'),
                 get_string('showscheduleonview', 'zoom'));
