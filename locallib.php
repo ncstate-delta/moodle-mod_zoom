@@ -498,12 +498,17 @@ function zoom_get_user_id($required = true) {
  */
 function zoom_get_meeting_security_settings() {
     $cache = cache::make('mod_zoom', 'zoommeetingsecurity');
-    if (!($zoommeetingsecurity = $cache->get('meetingsecurity'))) {
+    try {
+        $zoommeetingsecurity = $cache->get('meetingsecurity');
+    } catch (moodle_exception $error) {
+        debugging($error->getMessage());
+    }
+    if (!$zoommeetingsecurity) {
         $service = new mod_zoom_webservice();
         try {
             $zoommeetingsecurity = $service->get_account_meeting_security_settings();
         } catch (moodle_exception $error) {
-            throw $error;
+            debugging($error->getMessage());
         }
         $cache->set('meetingsecurity', $zoommeetingsecurity);
     }
