@@ -429,10 +429,10 @@ class mod_zoom_webservice {
             $response = $this->make_call($url);
             $meetingsecurity = $response->meeting_security;
         } catch (moodle_exception $error) {
+            // Only available for Paid account, return default settings.
             $meetingsecurity = new stdClass();
-            if ($error->zoomerrorcode == 200) {
-                // Only available for Paid account, return default settings.
-            } else {
+            // If some other error, show debug message.
+            if ($error->zoomerrorcode != 200) {
                 debugging($error->getMessage());
             }
         }
