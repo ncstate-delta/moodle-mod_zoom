@@ -444,7 +444,7 @@ class mod_zoom_webservice {
         }
 
         // Set a default encryption setting if it is not present.
-        if (!isset($meeting_security->end_to_end_encrypted_meetings)) {
+        if (!isset($meetingsecurity->end_to_end_encrypted_meetings)) {
             $meetingsecurity->end_to_end_encrypted_meetings = false;
         }
 
