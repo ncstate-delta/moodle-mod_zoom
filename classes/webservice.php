@@ -425,7 +425,7 @@ class mod_zoom_webservice {
      */
     public function get_account_meeting_security_settings() {
         $url = 'accounts/me/settings?option=meeting_security';
-        $response = null;
+        $response = (object) array('meeting_security' => (object) array());
         try {
             $response = $this->make_call($url);
             $meetingsecurity = $response->meeting_security;
