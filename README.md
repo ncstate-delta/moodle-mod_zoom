@@ -32,6 +32,13 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.5.2
+
+- Regression: Avoid requiring paid accounts for meeting default settings #383 (thanks @nstefanski, @nickchen, @valeriy67, @obook)
+  - Introduced in v3.5 to determine passcode requirements.
+- Bugfix: Allow course restore to complete even when Zoom is not fully configured #378
+- Code quality: Require PHPUnit to pass without warnings #379
+
 v4.5.1
 
 - Regression: Fix Zoom activity icon visibility #375 (thanks @foxlapinou)
