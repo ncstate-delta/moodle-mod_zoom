@@ -425,17 +425,29 @@ class mod_zoom_webservice {
      */
     public function get_account_meeting_security_settings() {
         $url = 'accounts/me/settings?option=meeting_security';
-        $response = null;
         try {
             $response = $this->make_call($url);
-            // Set a default meeting password requirment if it is not present.
-            if (!isset($response->meeting_security->meeting_password_requirement)) {
-                $response->meeting_security->meeting_password_requirement = (object) DEFAULT_MEETING_PASSWORD_REQUIREMENT;
-            }
+            $meetingsecurity = $response->meeting_security;
         } catch (moodle_exception $error) {
-            throw $error;
+            // Only available for Paid account, return default settings.
+            $meetingsecurity = new stdClass();
+            // If some other error, show debug message.
+            if ($error->zoomerrorcode != 200) {
+                debugging($error->getMessage());
+            }
         }
-        return $response->meeting_security;
+
+        // Set a default meeting password requirment if it is not present.
+        if (!isset($meetingsecurity->meeting_password_requirement)) {
+              $meetingsecurity->meeting_password_requirement = (object) self::DEFAULT_MEETING_PASSWORD_REQUIREMENT;
+        }
+
+        // Set a default encryption setting if it is not present.
+        if (!isset($meetingsecurity->end_to_end_encrypted_meetings)) {
+            $meetingsecurity->end_to_end_encrypted_meetings = false;
+        }
+
+        return $meetingsecurity;
     }
 
     /**
