@@ -57,13 +57,13 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
         global $DB;
 
         $data = (object)$data;
-        $service = new mod_zoom_webservice();
 
         // Update start_time before attempting to create a new meeting.
         $data->start_time = $this->apply_date_offset($data->start_time);
 
         // Either create a new meeting or set meeting as expired.
         try {
+            $service = new mod_zoom_webservice();
             $updateddata = $service->create_meeting($data);
             $data = populate_zoom_from_response($data, $updateddata);
             $data->exists_on_zoom = ZOOM_MEETING_EXISTS;
