@@ -958,35 +958,42 @@ function mod_zoom_get_fontawesome_icon_map() {
 function mod_zoom_update_tracking_fields() {
     global $DB;
 
-    $defaulttrackingfields = zoom_clean_tracking_fields();
-    $zoomtrackingfields = zoom_list_tracking_fields();
-    $zoomprops = array('id', 'field', 'required', 'visible', 'recommended_values');
-    $confignames = array();
+    try {
+        $defaulttrackingfields = zoom_clean_tracking_fields();
+        $zoomtrackingfields = zoom_list_tracking_fields();
+        $zoomprops = array('id', 'field', 'required', 'visible', 'recommended_values');
+        $confignames = array();
 
-    foreach ($zoomtrackingfields as $field => $zoomtrackingfield) {
-        if (isset($defaulttrackingfields[$field])) {
-            foreach ($zoomprops as $zoomprop) {
-                $configname = 'tf_' . $field . '_' . $zoomprop;
-                $confignames[] = $configname;
-                if ($zoomprop === 'recommended_values') {
-                    $configvalue = implode(', ', $zoomtrackingfield[$zoomprop]);
-                } else {
-                    $configvalue = $zoomtrackingfield[$zoomprop];
+        foreach ($zoomtrackingfields as $field => $zoomtrackingfield) {
+            if (isset($defaulttrackingfields[$field])) {
+                foreach ($zoomprops as $zoomprop) {
+                    $configname = 'tf_' . $field . '_' . $zoomprop;
+                    $confignames[] = $configname;
+                    if ($zoomprop === 'recommended_values') {
+                        $configvalue = implode(', ', $zoomtrackingfield[$zoomprop]);
+                    } else {
+                        $configvalue = $zoomtrackingfield[$zoomprop];
+                    }
+                    set_config($configname, $configvalue, 'zoom');
                 }
-                set_config($configname, $configvalue, 'zoom');
             }
         }
+
+        $config = get_config('zoom');
+        $proparray = get_object_vars($config);
+        $properties = array_keys($proparray);
+        $oldconfigs = array_diff($properties, $confignames);
+        $pattern = '/^tf_(?P<oldfield>.*)_(' . implode('|', $zoomprops) . ')$/';
+        foreach ($oldconfigs as $oldconfig) {
+            if (preg_match($pattern, $oldconfig, $matches)) {
+                set_config($oldconfig, null, 'zoom');
+                $DB->delete_records('zoom_meeting_tracking_fields', array('tracking_field' => $matches['oldfield']));
+            }
+        }
+    } catch (Exception $e) {
+        // Fail gracefully because the callback function might be called directly.
+        return false;
     }
 
-    $config = get_config('zoom');
-    $proparray = get_object_vars($config);
-    $properties = array_keys($proparray);
-    $oldconfigs = array_diff($properties, $confignames);
-    $pattern = '/^tf_(?P<oldfield>.*)_(' . implode('|', $zoomprops) . ')$/';
-    foreach ($oldconfigs as $oldconfig) {
-        if (preg_match($pattern, $oldconfig, $matches)) {
-            set_config($oldconfig, null, 'zoom');
-            $DB->delete_records('zoom_meeting_tracking_fields', array('tracking_field' => $matches['oldfield']));
-        }
-    }
+    return true;
 }
