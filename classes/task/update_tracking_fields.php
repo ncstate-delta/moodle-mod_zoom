@@ -63,7 +63,9 @@ class update_tracking_fields extends \core\task\scheduled_task {
         // Show trace message.
         mtrace('Starting to process existing Zoom tracking fields ...');
 
-        mod_zoom_update_tracking_fields();
+        if (!mod_zoom_update_tracking_fields()) {
+            mtrace('Error: Failed to update tracking fields.');
+        }
 
         // Show trace message.
         mtrace('Finished processing existing Zoom tracking fields');
