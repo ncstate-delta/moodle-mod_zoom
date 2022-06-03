@@ -32,6 +32,10 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.5.3
+
+- Bugfix: Allow plugin settings to update without a configuration exception #386 (thanks @acquaalta)
+
 v4.5.2
 
 - Regression: Avoid requiring paid accounts for meeting default settings #383 (thanks @nstefanski, @nickchen, @valeriy67, @obook)
