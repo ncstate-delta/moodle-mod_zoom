@@ -714,12 +714,11 @@ class mod_zoom_mod_form extends moodleform_mod {
         $config = get_config('zoom');
 
         // Only check for scheduled meetings.
-        if (empty($data['recurring'])) {
+        if (empty($data['recurring']) || ($data['recurring'] == 1 && $data['recurrence_type'] != ZOOM_RECURRINGTYPE_NOTIME)) {
             // Make sure start date is in the future.
             if ($data['start_time'] < strtotime('today')) {
-                $errors['start_time'] = get_string('err_start_time_past', 'zoom');
+                $errors['start_time'] = get_string('err_start_time_past_recurring', 'zoom');
             }
-
             // Make sure duration is positive and no more than 150 hours.
             if ($data['duration'] <= 0) {
                 $errors['duration'] = get_string('err_duration_nonpositive', 'zoom');
