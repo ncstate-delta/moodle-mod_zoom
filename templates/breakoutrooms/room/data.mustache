@@ -43,12 +43,12 @@
         ]
     }
 }}
-<label for="room-name-{{roomid}}">Room name</label>
+<label for="room-name-{{roomid}}">{{#str}} roomname, zoom {{/str}}</label>
 <input type="text" class="form-control col-sm-6 room-name" id="room-name-{{roomid}}" name="room-name-{{roomid}}" value="{{roomname}}">
 <input type="hidden" name="{{toclone}}rooms[{{roomid}}]" value="{{roomname}}">
 <hr>
-<span>Participants</span>
+<span>{{#str}} participants, zoom {{/str}}</span>
 {{> zoom/breakoutrooms/room/participants }}
 <hr>
-<span>Participant groups</span>
+<span>{{#str}} participantgroups, zoom {{/str}}</span>
 {{> zoom/breakoutrooms/room/groups }}

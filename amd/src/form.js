@@ -287,7 +287,7 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
             thisObject.addBtn.click(function() {
                 thisObject.tabsComponent.countTabs++;
 
-                var newRoomName = "Room" + ' ' + thisObject.tabsComponent.countTabs;
+                var newRoomName = str.get_string("room", "zoom") + ' ' + thisObject.tabsComponent.countTabs;
                 var newRoomElement = $(thisObject.roomItemToClone);
                 var newRoomDataElement = $(thisObject.roomItemDataToClone);
                 var newRoomIndex = thisObject.tabsComponent.countTabs;

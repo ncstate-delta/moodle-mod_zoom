@@ -70,8 +70,8 @@
     <td>
       <div id="meeting-rooms-list" data-initial-rooms-count="{{roomscount}}">
         <div class="mb-2">
-          <span>{{#str}} rooms, zoom{{/str}}</span>
-          <button id="add-room" type="button" title="{{#str}} addroom, zoom{{/str}}" class="btn btn-default btn-sm">
+          <span>{{#str}} rooms, zoom {{/str}}</span>
+          <button id="add-room" type="button" title="{{#str}} addroom, zoom {{/str}}" class="btn btn-default btn-sm">
             <span class="fa fa-plus-circle fa-lg" aria-hidden="true"></span>
           </button>
         </div>
@@ -81,16 +81,16 @@
             <a class="nav-link {{#roomactive}}active{{/roomactive}}" href="#link{{roomid}}" data-toggle="tab" role="tab">
               <span class="tab-name">{{roomname}}</span>
             </a>
-            <button class="pull-right delete-room" title="{{#str}} deleteroom, zoom{{/str}}">
+            <button class="pull-right delete-room" title="{{#str}} deleteroom, zoom {{/str}}">
               <span class="fa fa-trash-o fa-lg" aria-hidden="true"></span>
             </button>
           </li>
           {{/rooms}}
         </ul>
         <div class="empty-alert text-center hidden">
-          <p><strong>{{#str}} norooms, zoom{{/str}}</strong></p>
+          <p><strong>{{#str}} norooms, zoom {{/str}}</strong></p>
           <span>
-            {{#str}} addroomalert, zoom{{/str}}
+            {{#str}} addroomalert, zoom {{/str}}
             <span class="fa fa-plus-circle" aria-hidden="true"></span>
           </span>
         </div>
