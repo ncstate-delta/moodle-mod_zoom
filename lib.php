@@ -330,6 +330,9 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->settings->waiting_room)) {
         $newzoom->option_waiting_room = $response->settings->waiting_room;
     }
+    if (isset($response->settings->auto_recording)) {
+        $newzoom->option_auto_recording = $response->settings->auto_recording;
+    }
 
     return $newzoom;
 }

@@ -313,6 +313,24 @@ if ($ADMIN->fulltree) {
             1, 1, 0);
     $settings->add($defaultmuteuponentryoption);
 
+    $autorecordingchoices = array(
+        ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'mod_zoom'),
+        ZOOM_AUTORECORDING_USERDEFAULT => get_string('autorecording_userdefault', 'mod_zoom'),
+        ZOOM_AUTORECORDING_LOCAL => get_string('autorecording_local', 'mod_zoom'),
+        ZOOM_AUTORECORDING_CLOUD => get_string('autorecording_cloud', 'mod_zoom'),
+    );
+    $recordingoption = new admin_setting_configselect('zoom/recordingoption',
+        get_string('option_auto_recording', 'mod_zoom'),
+        get_string('option_auto_recording_help', 'mod_zoom'),
+        'none', $autorecordingchoices);
+    $settings->add($recordingoption);
+
+    $allowrecordingchangeoption = new admin_setting_configcheckbox('zoom/allowrecordingchangeoption',
+        get_string('option_allow_recording_change', 'mod_zoom'),
+        get_string('option_allow_recording_change_help', 'mod_zoom'),
+        0, 1, 0);
+    $settings->add($allowrecordingchangeoption);
+
     $defaultshowmedia = new admin_setting_configcheckbox('zoom/defaultshowmedia',
             get_string('showmedia', 'mod_zoom'),
             get_string('showmedia_help', 'mod_zoom'), 1, 1, 0);

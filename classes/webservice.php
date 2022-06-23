@@ -565,6 +565,24 @@ class mod_zoom_webservice {
             }
         }
 
+        if (!empty($zoom->option_auto_recording)) {
+            $data['settings']['auto_recording'] = $zoom->option_auto_recording;
+        } else {
+            $recordingoption = get_config('zoom', 'recordingoption');
+            if ($recordingoption === ZOOM_AUTORECORDING_USERDEFAULT) {
+                if (isset($zoom->schedule_for)) {
+                    $zoomuser = $this->get_user($zoom->schedule_for);
+                } else {
+                    $zoomapiidentifier = zoom_get_api_identifier($USER);
+                    $zoomuser = $this->get_user($zoomapiidentifier);
+                }
+                $autorecording = $this->get_user_settings($zoomuser->id)->recording->auto_recording;
+                $data['settings']['auto_recording'] = $autorecording;
+            } else {
+                $data['settings']['auto_recording'] = $recordingoption;
+            }
+        }
+
         // Add fields which are effective for meetings only, but not for webinars.
         if (empty($zoom->webinar)) {
             $data['settings']['participant_video'] = (bool) ($zoom->option_participants_video);
