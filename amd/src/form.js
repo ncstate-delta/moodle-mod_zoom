@@ -269,6 +269,9 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
 
         // Add room event.
         this.init = function() {
+            var stringkeys = [{key: 'room', component: 'zoom'}];
+            str.get_strings(stringkeys).then().fail(notification.exception);
+
             this.addRoomEvent();
             this.deleteRoomEvent();
             var countRooms = $("li", this.roomsListColumn).length;
@@ -287,7 +290,7 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
             thisObject.addBtn.click(function() {
                 thisObject.tabsComponent.countTabs++;
 
-                var newRoomName = str.get_string("room", "zoom") + ' ' + thisObject.tabsComponent.countTabs;
+                var newRoomName = M.util.get_string('room', 'zoom') + ' ' + thisObject.tabsComponent.countTabs;
                 var newRoomElement = $(thisObject.roomItemToClone);
                 var newRoomDataElement = $(thisObject.roomItemDataToClone);
                 var newRoomIndex = thisObject.tabsComponent.countTabs;
@@ -329,17 +332,6 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
                     $(this).next().val(newHiddenValue);
 
                     $(".tab-name", addedTab.element).text(this.value);
-                });
-
-                // Changing participants and groups select options values.
-                $("#" + roomParticipantsSelectId + " option").each(function() {
-                    var thisValue = $(this).attr('value').replace('-', '');
-                    $(this).attr('value', thisValue);
-                });
-
-                $("#" + roomGroupsSelectId + " option").each(function() {
-                    var thisValue = $(this).attr('value').replace('-', '');
-                    $(this).attr('value', thisValue);
                 });
 
                 // Convert select dropdowns to autocomplete component.
