@@ -33,10 +33,6 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
 /**
  * Module instance settings form
- *
- * @package    mod_zoom
- * @copyright  2015 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_zoom_mod_form extends moodleform_mod {
 
@@ -45,33 +41,106 @@ class mod_zoom_mod_form extends moodleform_mod {
      */
     public function definition() {
         global $PAGE, $USER;
-        $config = get_config('mod_zoom');
+        $config = get_config('zoom');
+        $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
+        $zoomapiidentifier = zoom_get_api_identifier($USER);
+
+        $isnew = empty($this->_cm);
+
         $service = new mod_zoom_webservice();
-        $zoomuser = $service->get_user($USER->email);
-        if ($zoomuser === false) {
+        $zoomuser = $service->get_user($zoomapiidentifier);
+
+        // If creating a new instance, but the Zoom user does not exist.
+        if ($isnew && $zoomuser === false) {
             // Assume user is using Zoom for the first time.
             $errstring = 'zoomerr_usernotfound';
             // After they set up their account, the user should continue to the page they were on.
             $nexturl = $PAGE->url;
-            throw new moodle_exception($errstring, 'mod_zoom', $nexturl, $config->zoomurl);
+            zoom_fatal_error($errstring, 'mod_zoom', $nexturl, $config->zoomurl);
         }
 
-        // If updating, ensure we can get the meeting on Zoom.
-        $isnew = empty($this->_cm);
+        // Array of emails and proper names of Moodle users in this course that
+        // can add Zoom meetings, and the user can schedule.
+        $scheduleusers = [];
+
+        $canschedule = false;
+        if ($zoomuser !== false) {
+            // Get the array of users they can schedule.
+            $canschedule = $service->get_schedule_for_users($zoomapiidentifier);
+        }
+
+        if (!empty($canschedule)) {
+            // Add the current user.
+            $canschedule[$zoomuser->id] = new stdClass();
+            $canschedule[$zoomuser->id]->email = $USER->email;
+
+            // If the activity exists and the current user is not the current host.
+            if (!$isnew && $zoomuser->id !== $this->current->host_id) {
+                // Get intersection of current host's schedulers and $USER's schedulers to prevent zoom errors.
+                $currenthostschedulers = $service->get_schedule_for_users($this->current->host_id);
+                if (!empty($currenthostschedulers)) {
+                    // Since this is the second argument to array_intersect_key,
+                    // the entry from $canschedule will be used, so we can just
+                    // use true to avoid a service call.
+                    $currenthostschedulers[$this->current->host_id] = true;
+                }
+                $canschedule = array_intersect_key($canschedule, $currenthostschedulers);
+            }
+
+            // Get list of users who can add Zoom activities in this context.
+            $moodleusers = get_enrolled_users($this->context, 'mod/zoom:addinstance', 0, 'u.*', 'lastname');
+
+            // Check each potential host to see if they are a valid host.
+            foreach ($canschedule as $zoomuserinfo) {
+                $zoomemail = strtolower($zoomuserinfo->email);
+                if (isset($scheduleusers[$zoomemail])) {
+                    continue;
+                }
+                if ($zoomemail === strtolower($USER->email)) {
+                    $scheduleusers[$zoomemail] = get_string('scheduleforself', 'zoom');
+                    continue;
+                }
+                foreach ($moodleusers as $muser) {
+                    if ($zoomemail === strtolower($muser->email)) {
+                        $scheduleusers[$zoomemail] = fullname($muser);
+                        break;
+                    }
+                }
+            }
+        }
+
+        $meetinginfo = new stdClass();
         if (!$isnew) {
             try {
-                $service->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
+                $meetinginfo = $service->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
             } catch (moodle_exception $error) {
                 // If the meeting can't be found, offer to recreate the meeting on Zoom.
                 if (zoom_is_meeting_gone_error($error)) {
                     $errstring = 'zoomerr_meetingnotfound';
                     $param = zoom_meetingnotfound_param($this->_cm->id);
                     $nexturl = "/mod/zoom/view.php?id=" . $this->_cm->id;
-                    throw new moodle_exception($errstring, 'mod_zoom', $nexturl, $param, "meeting/get : $error");
+                    zoom_fatal_error($errstring, 'mod_zoom', $nexturl, $param, "meeting/get : $error");
                 } else {
                     throw $error;
                 }
             }
+        }
+
+        // If the current editing user has the host saved in the db for this meeting on their list
+        // of people that they can schedule for, allow them to change the host, otherwise don't.
+        $allowschedule = false;
+        if (!$isnew) {
+            try {
+                $founduser = $service->get_user($meetinginfo->host_id);
+                if ($founduser && array_key_exists($founduser->email, $scheduleusers)) {
+                    $allowschedule = true;
+                }
+            } catch (moodle_exception $error) {
+                // Don't need to throw an error, just leave allowschedule as false.
+                $allowschedule = false;
+            }
+        } else {
+            $allowschedule = true;
         }
 
         // Start of form definition.
@@ -80,93 +149,399 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Adding the "general" fieldset, where all the common settings are showed.
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        // Add topic (stored in database as 'name').
-        $mform->addElement('text', 'name', get_string('topic', 'zoom'), array('size' => '64'));
+        // Add title (stored in database as 'name').
+        $mform->addElement('text', 'name', get_string('title', 'zoom'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 300), 'maxlength', 300, 'client');
 
-        // Add description ('intro' and 'introformat').
+        // Add description 'intro' and 'introformat'.
         $this->standard_intro_elements();
+
+        // Adding the "schedule" fieldset, where all settings relating to date and time are shown.
+        $mform->addElement('header', 'general', get_string('schedule', 'mod_zoom'));
 
         // Add date/time. Validation in validation().
         $mform->addElement('date_time_selector', 'start_time', get_string('start_time', 'zoom'));
-        // Disable for recurring meetings.
-        $mform->disabledIf('start_time', 'recurring', 'checked');
+        // Start time needs to be enabled/disabled based on recurring checkbox as well recurrence_type.
+        // Moved this control to javascript, rather than using disabledIf.
 
         // Add duration.
         $mform->addElement('duration', 'duration', get_string('duration', 'zoom'), array('optional' => false));
         // Validation in validation(). Default to one hour.
         $mform->setDefault('duration', array('number' => 1, 'timeunit' => 3600));
-        // Disable for recurring meetings.
-        $mform->disabledIf('duration', 'recurring', 'checked');
+        // Duration needs to be enabled/disabled based on recurring checkbox as well recurrence_type.
+        // Moved this control to javascript, rather than using disabledIf.
 
-        // Add recurring.
-        $mform->addElement('advcheckbox', 'recurring', get_string('recurringmeeting', 'zoom'));
+        // Add recurring widget.
+        $mform->addElement('advcheckbox', 'recurring', get_string('recurringmeeting', 'zoom'),
+                get_string('recurringmeetingthisis', 'zoom'));
         $mform->setDefault('recurring', $config->defaultrecurring);
         $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
 
-        if ($isnew) {
-            // Add webinar, disabled if the user cannot create webinars.
-            $webinarattr = null;
-            if (!$service->_get_user_settings($zoomuser->id)->feature->webinar) {
-                $webinarattr = array('disabled' => true, 'group' => null);
+        // Add options for recurring meeting.
+        $recurrencetype = [
+            ZOOM_RECURRINGTYPE_NOTIME => get_string('recurrence_option_no_time', 'zoom'),
+            ZOOM_RECURRINGTYPE_DAILY => get_string('recurrence_option_daily', 'zoom'),
+            ZOOM_RECURRINGTYPE_WEEKLY => get_string('recurrence_option_weekly', 'zoom'),
+            ZOOM_RECURRINGTYPE_MONTHLY => get_string('recurrence_option_monthly', 'zoom'),
+        ];
+        $mform->addElement('select', 'recurrence_type', get_string('recurrencetype', 'zoom'), $recurrencetype);
+        $mform->hideif('recurrence_type', 'recurring', 'notchecked');
+
+        // Repeat Interval options.
+        $options = [];
+        for ($i = 1; $i <= 90; $i++) {
+            $options[$i] = $i;
+        }
+        $group = [];
+        $group[] = $mform->createElement('select', 'repeat_interval', '', $options);
+        $htmlspantextstart = '<span class="repeat_interval" id="interval_';
+        $htmlspantextend = '</span>';
+        $group[] = $mform->createElement('html', $htmlspantextstart . 'daily">' . get_string('day', 'zoom') . $htmlspantextend);
+        $group[] = $mform->createElement('html', $htmlspantextstart . 'weekly">' . get_string('week', 'zoom') . $htmlspantextend);
+        $group[] = $mform->createElement('html', $htmlspantextstart . 'monthly">' . get_string('month', 'zoom') . $htmlspantextend);
+        $mform->addGroup($group, 'repeat_group', get_string('repeatinterval', 'zoom'), null, false);
+        $mform->hideif('repeat_group', 'recurrence_type', 'eq', ZOOM_RECURRINGTYPE_NOTIME);
+        $mform->hideif('repeat_group', 'recurring', 'notchecked');
+
+        // Weekly options.
+        $weekdayoptions = zoom_get_weekday_options();
+        $group = [];
+        foreach ($weekdayoptions as $key => $weekday) {
+            $weekdayid = 'weekly_days_' . $key;
+            $attributes = [];
+            $group[] = $mform->createElement('advcheckbox', $weekdayid, '',
+                $weekday, null, array(0, $key));
+        }
+        $mform->addGroup($group, 'weekly_days_group', get_string('occurson', 'zoom'), ' ', false);
+        $mform->hideif('weekly_days_group', 'recurrence_type', 'noteq', ZOOM_RECURRINGTYPE_WEEKLY);
+        $mform->hideif('weekly_days_group', 'recurring', 'notchecked');
+        if (!empty($this->current->weekly_days)) {
+            $weekdaynumbers = explode(',', $this->current->weekly_days);
+            foreach ($weekdaynumbers as $daynumber) {
+                $weekdayid = 'weekly_days_' . $daynumber;
+                $mform->setDefault($weekdayid, $daynumber);
             }
-            $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '', $webinarattr);
-            $mform->setDefault('webinar', 0);
-            $mform->addHelpButton('webinar', 'webinar', 'zoom');
-        } else if ($this->current->webinar) {
-            $mform->addElement('html', get_string('webinar_already_true', 'zoom'));
-        } else {
-            $mform->addElement('html', get_string('webinar_already_false', 'zoom'));
         }
 
+        // Monthly options.
+        $monthoptions = [];
+        for ($i = 1; $i <= 31; $i++) {
+            $monthoptions[$i] = $i;
+        }
+        $monthlyweekoptions = zoom_get_monthweek_options();
+
+        $group = [];
+        $group[] = $mform->createElement(
+            'radio',
+            'monthly_repeat_option',
+            '',
+            get_string('day', 'calendar'),
+            ZOOM_MONTHLY_REPEAT_OPTION_DAY
+        );
+        $group[] = $mform->createElement('select', 'monthly_day', '', $monthoptions);
+        $group[] = $mform->createElement('static', 'month_day_text', '', get_string('month_day_text', 'zoom'));
+        $group[] = $mform->createElement('radio', 'monthly_repeat_option', '', '', ZOOM_MONTHLY_REPEAT_OPTION_WEEK);
+        $group[] = $mform->createElement('select', 'monthly_week', '', $monthlyweekoptions);
+        $group[] = $mform->createElement('select', 'monthly_week_day', '', $weekdayoptions);
+        $group[] = $mform->createElement('static', 'month_week_day_text', '', get_string('month_day_text', 'zoom'));
+        $mform->addGroup($group, 'monthly_day_group', get_string('occurson', 'zoom'), null, false);
+        $mform->hideif('monthly_day_group', 'recurrence_type', 'noteq', ZOOM_RECURRINGTYPE_MONTHLY);
+        $mform->hideif('monthly_day_group', 'recurring', 'notchecked');
+        $mform->setDefault('monthly_repeat_option', ZOOM_MONTHLY_REPEAT_OPTION_DAY);
+
+        // End date option.
+        $maxoptions = [];
+        for ($i = 1; $i <= 50; $i++) {
+            $maxoptions[$i] = $i;
+        }
+        $group = [];
+        $group[] = $mform->createElement(
+            'radio',
+            'end_date_option',
+            '',
+            get_string('end_date_option_by', 'zoom'),
+            ZOOM_END_DATE_OPTION_BY
+        );
+        $group[] = $mform->createElement('date_selector', 'end_date_time', '');
+        $group[] = $mform->createElement(
+            'radio',
+            'end_date_option',
+            '',
+            get_string('end_date_option_after', 'zoom'),
+            ZOOM_END_DATE_OPTION_AFTER
+        );
+        $group[] = $mform->createElement('select', 'end_times', '', $maxoptions);
+        $group[] = $mform->createElement('static', 'end_times_text', '', get_string('end_date_option_occurrences', 'zoom'));
+        $mform->addGroup($group, 'radioenddate', get_string('enddate', 'zoom'), null, false);
+        $mform->hideif('radioenddate', 'recurring', 'notchecked');
+        $mform->hideif('radioenddate', 'recurrence_type', 'eq', ZOOM_RECURRINGTYPE_NOTIME);
+        // Set default option for end date to be "By".
+        $mform->setDefault('end_date_option', ZOOM_END_DATE_OPTION_BY);
+        // Set default end_date_time to be 1 week in the future.
+        $mform->setDefault('end_date_time', strtotime('+1 week'));
+
+        // Supplementary feature: Webinars.
+        // Only show if the admin did not disable this feature completely.
+        if ($config->showwebinars != ZOOM_WEBINAR_DISABLE) {
+            // If we are creating a new instance.
+            if ($isnew) {
+                // Check if the user has a webinar license.
+                $haswebinarlicense = $service->get_user_settings($zoomuser->id)->feature->webinar;
+
+                // Only show if the admin always wants to show this widget or
+                // if the admin wants to show this widget conditionally and the user has a valid license.
+                if ($config->showwebinars == ZOOM_WEBINAR_ALWAYSSHOW ||
+                        ($config->showwebinars == ZOOM_WEBINAR_SHOWONLYIFLICENSE && $haswebinarlicense)) {
+                    // Add webinar option, disabled if the user cannot create webinars.
+                    $webinarattr = null;
+                    if (!$haswebinarlicense) {
+                        $webinarattr = array('disabled' => true, 'group' => null);
+                    }
+                    $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'),
+                            get_string('webinarthisis', 'zoom'), $webinarattr);
+                    $mform->setDefault('webinar', $config->webinardefault);
+                    $mform->addHelpButton('webinar', 'webinar', 'zoom');
+                }
+            } else if ($this->current->webinar) {
+                $mform->addElement('static', 'webinaralreadyset', get_string('webinar', 'zoom'),
+                        get_string('webinar_already_true', 'zoom'));
+            } else {
+                $mform->addElement('static', 'webinaralreadyset', get_string('webinar', 'zoom'),
+                        get_string('webinar_already_false', 'zoom'));
+            }
+        }
+
+        // Add tracking fields, if configured in Moodle AND Zoom.
+        $defaulttrackingfields = zoom_clean_tracking_fields();
+        foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
+            $configname = 'tf_' . $key . '_field';
+            if (!empty($config->$configname)) {
+                $mform->addElement('text', $key, $defaulttrackingfield);
+                $mform->setType($key, PARAM_TEXT);
+                $rvprop = 'tf_' . $key . '_recommended_values';
+                if (!empty($config->$rvprop)) {
+                    $mform->addElement('static', $key . '_recommended_values', null,
+                        get_string('trackingfields_recommendedvalues', 'mod_zoom') . $config->$rvprop);
+                }
+                $requiredproperty = 'tf_' . $key . '_required';
+                if (!empty($config->$requiredproperty)) {
+                    $mform->addRule($key, null, 'required', null, 'client');
+                }
+            }
+        }
+
+        // Add show widget.
+        $mform->addElement('advcheckbox', 'show_schedule', get_string('showschedule', 'zoom'),
+                get_string('showscheduleonview', 'zoom'));
+        $mform->setDefault('show_schedule', $config->defaultshowschedule);
+        $mform->addHelpButton('show_schedule', 'showschedule', 'zoom');
+
+        // Adding the "security" fieldset, where all settings relating to securing and protecting the meeting are shown.
+        $mform->addElement('header', 'general', get_string('security', 'mod_zoom'));
+
+        // Deals with password manager issues.
+        if (isset($this->current->password)) {
+            $this->current->meetingcode = $this->current->password;
+            unset($this->current->password);
+        }
+
+        // Add password requirement prompt.
+        $mform->addElement('advcheckbox', 'requirepasscode', get_string('password', 'zoom'),
+                get_string('requirepasscode', 'zoom'));
+        if (isset($this->current->meetingcode) && strval($this->current->meetingcode) === "") {
+            $mform->setDefault('requirepasscode', 0);
+        } else {
+            $mform->setDefault('requirepasscode', 1);
+        }
+        $mform->addHelpButton('requirepasscode', 'requirepasscode', 'zoom');
+
+        // Set default passcode and description from Zoom security settings.
+        $securitysettings = zoom_get_meeting_security_settings();
         // Add password.
-        $mform->addElement('passwordunmask', 'password', get_string('password', 'zoom'), array('maxlength' => '10'));
+        $mform->addElement('text', 'meetingcode', get_string('setpasscode', 'zoom'), array('maxlength' => '10'));
+        $mform->setType('meetingcode', PARAM_TEXT);
         // Check password uses valid characters.
         $regex = '/^[a-zA-Z0-9@_*-]{1,10}$/';
-        $mform->addRule('password', get_string('err_password', 'mod_zoom'), 'regex', $regex, 'client');
-        $mform->disabledIf('password', 'webinar', 'checked');
+        $mform->addRule('meetingcode', get_string('err_invalid_password', 'mod_zoom'), 'regex', $regex, 'client');
+        $mform->setDefault('meetingcode', zoom_create_default_passcode($securitysettings->meeting_password_requirement));
+        $mform->hideIf('meetingcode', 'requirepasscode', 'notchecked');
+        // Add passcode requirements note (use mform group trick from MDL-66251 to be able to conditionally hide this).
+        $passwordrequirementsgroup = [];
+        $passwordrequirementsgroup[] =& $mform->createElement('static', 'passwordrequirements', '',
+        zoom_create_passcode_description($securitysettings->meeting_password_requirement));
+        $mform->addGroup($passwordrequirementsgroup, 'passwordrequirementsgroup', '', '', false);
+        $mform->hideIf('passwordrequirementsgroup', 'requirepasscode', 'notchecked');
 
-        // Add host/participants video (checked by default).
+        // Supplementary feature: Encryption type.
+        // Only show if the admin did not disable this feature completely.
+        if ($config->showencryptiontype != ZOOM_ENCRYPTION_DISABLE) {
+            // Check if the user can use e2e encryption.
+            $e2eispossible = $securitysettings->end_to_end_encrypted_meetings;
+
+            if ($config->showencryptiontype == ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE && !$e2eispossible) {
+                // If user cannot use e2e and option is not shown to user,
+                // default to enhanced encryption.
+                $mform->addElement('hidden', 'option_encryption_type', ZOOM_ENCRYPTION_TYPE_ENHANCED);
+            } else if ($config->showencryptiontype == ZOOM_ENCRYPTION_ALWAYSSHOW ||
+                    ($config->showencryptiontype == ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE && $e2eispossible)) {
+                // Only show if the admin always wants to show this widget or
+                // if the admin wants to show this widget conditionally and the user can use e2e encryption.
+
+                // Add encryption type option, disabled if the user can't use e2e encryption.
+                $encryptionattr = null;
+                $defaultencryptiontype = $config->defaultencryptiontypeoption;
+                if (!$e2eispossible) {
+                    $encryptionattr = array('disabled' => true);
+                    $defaultencryptiontype = ZOOM_ENCRYPTION_TYPE_ENHANCED;
+                }
+                $mform->addGroup(array(
+                        $mform->createElement('radio', 'option_encryption_type', '',
+                                get_string('option_encryption_type_enhancedencryption', 'zoom'),
+                                ZOOM_ENCRYPTION_TYPE_ENHANCED, $encryptionattr),
+                        $mform->createElement('radio', 'option_encryption_type', '',
+                                get_string('option_encryption_type_endtoendencryption', 'zoom'),
+                                ZOOM_ENCRYPTION_TYPE_E2EE, $encryptionattr)
+                ), 'option_encryption_type_group', get_string('option_encryption_type', 'zoom'), null, false);
+                $mform->setDefault('option_encryption_type', $defaultencryptiontype);
+                $mform->addHelpButton('option_encryption_type_group', 'option_encryption_type', 'zoom');
+                $mform->disabledIf('option_encryption_type_group', 'webinar', 'checked');
+            }
+            $mform->setType('option_encryption_type', PARAM_ALPHANUMEXT);
+        }
+
+        // Add waiting room widget.
+        $mform->addElement('advcheckbox', 'option_waiting_room', get_string('option_waiting_room', 'zoom'),
+                get_string('waitingroomenable', 'zoom'));
+        $mform->addHelpButton('option_waiting_room', 'option_waiting_room', 'zoom');
+        $mform->setDefault('option_waiting_room', $config->defaultwaitingroomoption);
+        $mform->disabledIf('option_waiting_room', 'webinar', 'checked');
+
+        // Add join before host widget.
+        $mform->addElement('advcheckbox', 'option_jbh', get_string('option_jbh', 'zoom'),
+                get_string('joinbeforehostenable', 'zoom'));
+        $mform->setDefault('option_jbh', $config->defaultjoinbeforehost);
+        $mform->addHelpButton('option_jbh', 'option_jbh', 'zoom');
+        $mform->disabledIf('option_jbh', 'webinar', 'checked');
+
+        // Add authenticated users widget.
+        $mform->addElement('advcheckbox', 'option_authenticated_users', get_string('authentication', 'zoom'),
+                get_string('option_authenticated_users', 'zoom'));
+        $mform->setDefault('option_authenticated_users', $config->defaultauthusersoption);
+        $mform->addHelpButton('option_authenticated_users', 'option_authenticated_users', 'zoom');
+
+        // Add show widget.
+        $mform->addElement('advcheckbox', 'show_security', get_string('showsecurity', 'zoom'),
+                get_string('showsecurityonview', 'zoom'));
+        $mform->setDefault('show_security', $config->defaultshowsecurity);
+        $mform->addHelpButton('show_security', 'showsecurity', 'zoom');
+
+        // Adding the "media" fieldset, where all settings relating to media streams in the meeting are shown.
+        $mform->addElement('header', 'general', get_string('media', 'mod_zoom'));
+
+        // Add host/participants video options.
         $mform->addGroup(array(
             $mform->createElement('radio', 'option_host_video', '', get_string('on', 'zoom'), true),
             $mform->createElement('radio', 'option_host_video', '', get_string('off', 'zoom'), false)
-        ), null, get_string('option_host_video', 'zoom'));
+        ), 'option_host_video_group', get_string('option_host_video', 'zoom'), null, false);
         $mform->setDefault('option_host_video', $config->defaulthostvideo);
-        $mform->disabledIf('option_host_video', 'webinar', 'checked');
+        $mform->addHelpButton('option_host_video_group', 'option_host_video', 'zoom');
+        $mform->disabledIf('option_host_video_group', 'webinar', 'checked');
 
         $mform->addGroup(array(
             $mform->createElement('radio', 'option_participants_video', '', get_string('on', 'zoom'), true),
             $mform->createElement('radio', 'option_participants_video', '', get_string('off', 'zoom'), false)
-        ), null, get_string('option_participants_video', 'zoom'));
+        ), 'option_participants_video_group', get_string('option_participants_video', 'zoom'), null, false);
         $mform->setDefault('option_participants_video', $config->defaultparticipantsvideo);
-        $mform->disabledIf('option_participants_video', 'webinar', 'checked');
+        $mform->addHelpButton('option_participants_video_group', 'option_participants_video', 'zoom');
+        $mform->disabledIf('option_participants_video_group', 'webinar', 'checked');
 
         // Add audio options.
         $mform->addGroup(array(
             $mform->createElement('radio', 'option_audio', '', get_string('audio_telephony', 'zoom'), ZOOM_AUDIO_TELEPHONY),
             $mform->createElement('radio', 'option_audio', '', get_string('audio_voip', 'zoom'), ZOOM_AUDIO_VOIP),
             $mform->createElement('radio', 'option_audio', '', get_string('audio_both', 'zoom'), ZOOM_AUDIO_BOTH)
-        ), null, get_string('option_audio', 'zoom'));
+        ), 'option_audio_group', get_string('option_audio', 'zoom'), null, false);
+        $mform->addHelpButton('option_audio_group', 'option_audio', 'zoom');
         $mform->setDefault('option_audio', $config->defaultaudiooption);
 
-        // Add meeting options. Make sure we pass $appendName as false
-        // so the options aren't nested in a 'meetingoptions' array.
-        $mform->addGroup(array(
-            // Join before host.
-            $mform->createElement('advcheckbox', 'option_jbh', '', get_string('option_jbh', 'zoom'))
-        ), 'meetingoptions', get_string('meetingoptions', 'zoom'), null, false);
-        $mform->setDefault('option_jbh', $config->defaultjoinbeforehost);
-        $mform->addHelpButton('meetingoptions', 'meetingoptions', 'zoom');
-        $mform->disabledIf('meetingoptions', 'webinar', 'checked');
+        // Add mute participants upon entry widget.
+        $mform->addElement('advcheckbox', 'option_mute_upon_entry', get_string('audiodefault', 'mod_zoom'),
+                get_string('option_mute_upon_entry', 'mod_zoom'));
+        $mform->setDefault('option_mute_upon_entry', $config->defaultmuteuponentryoption);
+        $mform->addHelpButton('option_mute_upon_entry', 'option_mute_upon_entry', 'mod_zoom');
 
-        // Add alternative hosts.
-        $mform->addElement('text', 'alternative_hosts', get_string('alternative_hosts', 'zoom'), array('size' => '64'));
-        $mform->setType('alternative_hosts', PARAM_TEXT);
-        // Set the maximum field length to 255 because that's the limit on Zoom's end.
-        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
-        $mform->addHelpButton('alternative_hosts', 'alternative_hosts', 'zoom');
+        // Add show widget.
+        $mform->addElement('advcheckbox', 'show_media', get_string('showmedia', 'zoom'),
+                get_string('showmediaonview', 'zoom'));
+        $mform->setDefault('show_media', $config->defaultshowmedia);
+        $mform->addHelpButton('show_media', 'showmedia', 'zoom');
+
+        // Check if there is any setting to be shown in the "host" fieldset.
+        $showschedulingprivilege = ($config->showschedulingprivilege != ZOOM_SCHEDULINGPRIVILEGE_DISABLE) &&
+                count($scheduleusers) > 1 && $allowschedule; // Check if the size is greater than 1 because
+                                                             // we add the editing/creating user by default.
+        $showalternativehosts = ($config->showalternativehosts != ZOOM_ALTERNATIVEHOSTS_DISABLE);
+        if ($showschedulingprivilege || $showalternativehosts) {
+
+            // Adding the "host" fieldset, where all settings relating to defining the meeting host are shown.
+            $mform->addElement('header', 'general', get_string('host', 'mod_zoom'));
+
+            // Supplementary feature: Alternative hosts.
+            // Only show if the admin did not disable this feature completely.
+            if ($showalternativehosts) {
+                // Explain alternativehosts.
+                $mform->addElement('static', 'hostintro', '', get_string('hostintro', 'zoom'));
+
+                // If the admin wants to show the plain input field.
+                if ($config->showalternativehosts == ZOOM_ALTERNATIVEHOSTS_INPUTFIELD) {
+                    // Add alternative hosts.
+                    $mform->addElement('text', 'alternative_hosts', get_string('alternative_hosts', 'zoom'), array('size' => '64'));
+                    $mform->setType('alternative_hosts', PARAM_TEXT);
+                    $mform->addHelpButton('alternative_hosts', 'alternative_hosts', 'zoom');
+
+                    // If the admin wants to show the user picker.
+                } else if ($config->showalternativehosts == ZOOM_ALTERNATIVEHOSTS_PICKER) {
+                    // Get selectable alternative host users based on the capability.
+                    $alternativehostschoices = zoom_get_selectable_alternative_hosts_list($this->context);
+                    // Create autocomplete widget.
+                    $alternativehostsoptions = array(
+                            'multiple' => true,
+                            'showsuggestions' => true,
+                            'placeholder' => get_string('alternative_hosts_picker_placeholder', 'zoom'),
+                            'noselectionstring' => get_string('alternative_hosts_picker_noneselected', 'zoom'));
+                    $mform->addElement('autocomplete', 'alternative_hosts_picker', get_string('alternative_hosts', 'zoom'),
+                            $alternativehostschoices, $alternativehostsoptions);
+                    $mform->setType('alternative_hosts_picker', PARAM_EMAIL);
+                    $mform->addHelpButton('alternative_hosts_picker', 'alternative_hosts_picker', 'zoom');
+                }
+            }
+
+            // Supplementary feature: Scheduling privilege.
+            // Only show if the admin did not disable this feature completely and if current user is able to use it.
+            if ($showschedulingprivilege) {
+                $mform->addElement('select', 'schedule_for', get_string('schedulefor', 'zoom'), $scheduleusers);
+                $mform->setType('schedule_for', PARAM_EMAIL);
+                if (!$isnew) {
+                    $mform->disabledIf('schedule_for', 'change_schedule_for');
+                    $mform->addElement('checkbox', 'change_schedule_for', get_string('changehost', 'zoom'));
+                    $mform->setDefault('schedule_for', strtolower($service->get_user($this->current->host_id)->email));
+                } else {
+                    $mform->setDefault('schedule_for', strtolower($zoomapiidentifier));
+                }
+                $mform->addHelpButton('schedule_for', 'schedulefor', 'zoom');
+            }
+        }
+
+        // Adding option for Recording Visiblity by default.
+        if (!empty($config->viewrecordings)) {
+            $mform->addElement('header', 'general', get_string('recording', 'mod_zoom'));
+            $mform->addElement('advcheckbox', 'recordings_visible_default', get_string('recordingvisibility', 'mod_zoom'),
+                    get_string('yes'));
+            $mform->setDefault('recordings_visible_default', 1);
+            $mform->addHelpButton('recordings_visible_default', 'recordingvisibility', 'mod_zoom');
+        }
 
         // Add meeting id.
         $mform->addElement('hidden', 'meeting_id', -1);
@@ -182,9 +557,146 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();
+        $this->apply_admin_defaults();
 
         // Add standard buttons, common to all modules.
         $this->add_action_buttons();
+    }
+
+    /**
+     * Allows module to modify the data returned by form get_data().
+     * This method is also called in the bulk activity completion form.
+     *
+     * Only available on moodleform_mod.
+     *
+     * @param stdClass $data the form data to be modified.
+     */
+    public function data_postprocessing($data) {
+        global $DB;
+
+        parent::data_postprocessing($data);
+
+        // Get config.
+        $config = get_config('zoom');
+
+        // If the admin did show the alternative hosts user picker.
+        if ($config->showalternativehosts == ZOOM_ALTERNATIVEHOSTS_PICKER) {
+            // If there was at least one alternative host selected, process these users.
+            if (count($data->alternative_hosts_picker) > 0) {
+                // Populate the alternative_hosts field with a concatenated string of email addresses.
+                // This is done as this is the format which Zoom expects and alternative_hosts is the field to store the data
+                // in mod_zoom.
+                // The alternative host user picker is just an add-on to help teachers to fill this field.
+                $data->alternative_hosts = implode(',', $data->alternative_hosts_picker);
+
+                // If there wasn't any alternative host selected.
+            } else {
+                $data->alternative_hosts = '';
+            }
+
+            // Unfortunately, the host is not only able to add alternative hosts in Moodle with the user picker.
+            // He is also able to add any alternative host with an email address in Zoom directly.
+            // Thus, we have to get the latest list of alternative hosts from the DB again now,
+            // identify the users who were not selectable at all in this form and append them to the list
+            // of selected alternative hosts.
+
+            // Get latest list of alternative hosts from the DB.
+            $result = $DB->get_field('zoom', 'alternative_hosts', array('meeting_id' => $data->meeting_id), IGNORE_MISSING);
+
+            // Proceed only if there is a field of alternative hosts already.
+            if ($result !== false) {
+                $alternativehostsdb = zoom_get_alternative_host_array_from_string($result);
+
+                // Get selectable alternative host users based on the capability.
+                $alternativehostschoices = zoom_get_selectable_alternative_hosts_list($this->context);
+
+                // Iterate over the latest list of alternative hosts from the DB.
+                foreach ($alternativehostsdb as $ah) {
+                    // If the existing alternative host would not have been selectable.
+                    if (!array_key_exists($ah, $alternativehostschoices)) {
+                        // Add the alternative host to the alternative_hosts field.
+                        if ($data->alternative_hosts == '') {
+                            $data->alternative_hosts = $ah;
+                        } else {
+                            $data->alternative_hosts .= ',' . $ah;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Add some postprocessing around the recurrence settings.
+        if ($data->recurring) {
+            // If "No fixed time" meeting selected, dont need repeat_interval and other options.
+            if ($data->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
+                unset($data->repeat_interval);
+                // Unset end_times and end_date.
+                unset($data->end_date_option);
+                unset($data->end_times);
+                unset($data->end_date_time);
+            }
+            // If weekly recurring is not selected, unset weekly options.
+            if ($data->recurrence_type != ZOOM_RECURRINGTYPE_WEEKLY) {
+                // Unset the weekly fields.
+                $data = zoom_remove_weekly_options($data);
+            }
+            // If monthly recurring is not selected, unset monthly options.
+            if ($data->recurrence_type != ZOOM_RECURRINGTYPE_MONTHLY) {
+                // Unset the weekly fields.
+                $data = zoom_remove_monthly_options($data);
+            }
+        }
+    }
+
+    /**
+     * Allows module to modify data returned by get_moduleinfo_data() or prepare_new_moduleinfo_data() before calling set_data()
+     * This method is also called in the bulk activity completion form.
+     *
+     * Only available on moodleform_mod.
+     *
+     * @param array $defaultvalues passed by reference
+     */
+    public function data_preprocessing(&$defaultvalues) {
+        global $DB;
+
+        parent::data_preprocessing($defaultvalues);
+
+        // Get config.
+        $config = get_config('zoom');
+
+        // If the admin wants to show the alternative hosts user picker.
+        if ($config->showalternativehosts == ZOOM_ALTERNATIVEHOSTS_PICKER) {
+            // If there is at least one alternative host set.
+            if (isset($defaultvalues['alternative_hosts']) && strlen($defaultvalues['alternative_hosts']) > 0) {
+                // Populate the alternative_hosts_picker field with an exploded array of email addresses.
+                // This is done as alternative_hosts is the field to store the data in mod_zoom and
+                // the alternative host user picker is just an add-on to help teachers to fill this field.
+
+                // At this point, the alternative_hosts field might also contain users who are not selectable in the user picker
+                // as they aren't a member of the course or do not have a Moodle account.
+                // This does not matter as user picker default values which don't have a corresponding autocomplete suggestion
+                // will be simply ignored.
+                // When the form is submitted, these non-selectable alternative hosts will be added again in data_postprocessing().
+
+                // According to the documentation, the Zoom API separates the email addresses with commas,
+                // but we also want to deal with semicolon-separated lists just in case.
+                $defaultvalues['alternative_hosts_picker'] = zoom_get_alternative_host_array_from_string(
+                    $defaultvalues['alternative_hosts']
+                );
+            }
+        }
+
+        if ($config->defaulttrackingfields !== '') {
+            // Populate modedit form fields with previously saved values.
+            $defaulttrackingfields = zoom_clean_tracking_fields();
+            $tfrows = $DB->get_records('zoom_meeting_tracking_fields', array('meeting_id' => $defaultvalues['id']));
+            foreach ($tfrows as $tfrow) {
+                $tfkey = $tfrow->tracking_field;
+                if (!empty($defaulttrackingfields[$tfkey])) {
+                    $defaultvalues[$tfkey] = $tfrow->value;
+                }
+            }
+        }
     }
 
     /**
@@ -196,8 +708,10 @@ class mod_zoom_mod_form extends moodleform_mod {
      * @return array
      */
     public function validation($data, $files) {
-        global $CFG;
+        global $CFG, $USER;
         $errors = array();
+
+        $config = get_config('zoom');
 
         // Only check for scheduled meetings.
         if (empty($data['recurring'])) {
@@ -214,14 +728,101 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
         }
 
-        // Check if the listed alternative hosts are valid users on Zoom.
         require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
         $service = new mod_zoom_webservice();
-        $alternativehosts = explode(',', $data['alternative_hosts']);
-        foreach ($alternativehosts as $alternativehost) {
-            if (!($service->get_user($alternativehost))) {
-                $errors['alternative_hosts'] = 'User ' . $alternativehost . ' was not found on Zoom.';
-                break;
+
+        if (!empty($data['requirepasscode']) && empty($data['meetingcode'])) {
+            $errors['meetingcode'] = get_string('err_password_required', 'mod_zoom');
+        }
+
+        $zoomapiidentifier = zoom_get_api_identifier($USER);
+        if (isset($data['schedule_for']) && strtolower($data['schedule_for']) !== strtolower($zoomapiidentifier)) {
+            $scheduleusers = $service->get_schedule_for_users($zoomapiidentifier);
+            $scheduleok = false;
+            foreach ($scheduleusers as $zuser) {
+                if (strtolower($zuser->email) === strtolower($data['schedule_for'])) {
+                    // Found a matching email address in the Zoom users list.
+                    $scheduleok = true;
+                    break;
+                }
+            }
+            if (!$scheduleok) {
+                $errors['schedule_for'] = get_string('invalidscheduleuser', 'mod_zoom');
+            }
+        }
+
+        // Supplementary feature: Alternative hosts.
+        // Only validate if the admin did not disable this feature completely.
+        if ($config->showalternativehosts != ZOOM_ALTERNATIVEHOSTS_DISABLE) {
+            // If the admin did show the plain input field.
+            if ($config->showalternativehosts == ZOOM_ALTERNATIVEHOSTS_INPUTFIELD) {
+                // Check if the listed alternative hosts are valid users on Zoom.
+                $alternativehosts = zoom_get_alternative_host_array_from_string($data['alternative_hosts']);
+                foreach ($alternativehosts as $alternativehost) {
+                    if (!($service->get_user($alternativehost))) {
+                        $errors['alternative_hosts'] = get_string('zoomerr_alternativehostusernotfound', 'zoom', $alternativehost);
+                        break;
+                    }
+                }
+
+                // If the admin did show the user picker.
+            } else if ($config->showalternativehosts == ZOOM_ALTERNATIVEHOSTS_PICKER) {
+                // Check if the picked alternative hosts are valid users on Zoom.
+                foreach ($data['alternative_hosts_picker'] as $alternativehost) {
+                    if (!($service->get_user($alternativehost))) {
+                        $errors['alternative_hosts_picker'] =
+                                get_string('zoomerr_alternativehostusernotfound', 'zoom', $alternativehost);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Supplementary feature: Encryption type.
+        // Only validate if the admin did not disable this feature completely.
+        if ($config->showencryptiontype != ZOOM_ENCRYPTION_DISABLE) {
+            // Check if given encryption type is valid.
+            if ($data['option_encryption_type'] !== ZOOM_ENCRYPTION_TYPE_ENHANCED &&
+                    $data['option_encryption_type'] !== ZOOM_ENCRYPTION_TYPE_E2EE) {
+                // This will not happen unless the user tampered with the form.
+                // Because of this, we skip adding this string to the language pack.
+                $errors['option_encryption_type_group'] = 'The submitted encryption type is not valid.';
+            }
+        }
+
+        // Add validation for recurring meeting.
+        if ($data['recurring'] == 1) {
+            if ($data['recurrence_type'] == ZOOM_RECURRINGTYPE_WEEKLY) {
+                $weekdaynumbers = [];
+                for ($i = 1; $i <= 7; $i++) {
+                    $key = 'weekly_days_' . $i;
+                    if (!empty($data[$key])) {
+                        $weekdaynumbers[] = $i;
+                    }
+                }
+                if (empty($weekdaynumbers)) {
+                    $errors['weekly_days_group'] = get_string('err_weekly_days', 'zoom');
+                }
+                // For weekly, maximum is 12 weeks.
+                if ($data['repeat_interval'] > 12) {
+                    $errors['repeat_group'] = get_string('err_repeat_weekly_interval', 'zoom');
+                }
+            }
+
+            if ($data['recurrence_type'] == ZOOM_RECURRINGTYPE_MONTHLY) {
+                // For monthly, max is 3 months.
+                if ($data['repeat_interval'] > 3) {
+                    $errors['repeat_group'] = get_string('err_repeat_monthly_interval', 'zoom');
+                }
+            }
+
+            if ($data['recurrence_type'] != ZOOM_RECURRINGTYPE_NOTIME && $data['end_date_option'] == ZOOM_END_DATE_OPTION_BY) {
+                if ($data['end_date_time'] < time()) {
+                    $errors['radioenddate'] = get_string('err_end_date', 'zoom');
+                }
+                if ($data['end_date_time'] < $data['start_time']) {
+                    $errors['radioenddate'] = get_string('err_end_date_before_start', 'zoom');
+                }
             }
         }
 
@@ -231,10 +832,6 @@ class mod_zoom_mod_form extends moodleform_mod {
 
 /**
  * Form to search for meeting reports.
- *
- * @package    mod_zoom
- * @copyright  2015 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_zoom_report_form extends moodleform {
     /**

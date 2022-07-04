@@ -43,11 +43,19 @@ $PAGE->set_url('/mod/zoom/recreate.php', array('id' => $cm->id));
 $zoom->host_id = zoom_get_user_id();
 $service = new mod_zoom_webservice();
 
+$trackingfields = $DB->get_records('zoom_meeting_tracking_fields', array('meeting_id' => $zoom->id));
+foreach ($trackingfields as $trackingfield) {
+    $field = $trackingfield->tracking_field;
+    $zoom->$field = $trackingfield->value;
+}
+
 // Set the current zoom table entry to use the new meeting (meeting_id/etc).
 $response = $service->create_meeting($zoom);
+$zoom = populate_zoom_from_response($zoom, $response);
+$zoom->exists_on_zoom = ZOOM_MEETING_EXISTS;
 $zoom->timemodified = time();
-$zoom->meeting_id = $response->id;
 $DB->update_record('zoom', $zoom);
 
-// Return to course page.
-redirect(course_get_url($course->id));
+// Return to Zoom page.
+redirect(new moodle_url('/mod/zoom/view.php', ['id' => $cm->id]),
+        get_string('recreatesuccessful', 'mod_zoom'));

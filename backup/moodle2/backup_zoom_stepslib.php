@@ -18,19 +18,13 @@
  * Defines backup_zoom_activity_structure_step class.
  *
  * @package   mod_zoom
+ * @category  backup
  * @copyright 2015 UC Regents
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * Define the complete zoom structure for backup, with file and id annotations.
- *
- * @package   mod_zoom
- * @category  backup
- * @copyright 2015 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_zoom_activity_structure_step extends backup_activity_structure_step {
 
@@ -40,22 +34,28 @@ class backup_zoom_activity_structure_step extends backup_activity_structure_step
      * @return backup_nested_element
      */
     protected function define_structure() {
-        // Are we including userinfo?
-        $userinfo = $this->get_setting_value('userinfo');
-
         // Define the root element describing the zoom instance.
         $zoom = new backup_nested_element('zoom', array('id'), array(
-            'intro', 'introformat', 'grade',
-            'uuid', 'meeting_id', 'start_url', 'join_url',
-            'created_at', 'host_id', 'name', 'start_time', 'timemodified',
-            'recurring', 'webinar', 'duration', 'timezone', 'password', 'option_jbh',
-            'option_start_type', 'option_host_video', 'option_participants_video',
-            'option_audio', 'status'));
+            'intro', 'introformat', 'grade', 'meeting_id', 'start_url', 'join_url', 'created_at', 'host_id', 'name',
+            'start_time', 'timemodified', 'recurring', 'recurrence_type', 'repeat_interval', 'weekly_days', 'monthly_day',
+            'monthly_week', 'monthly_week_day', 'monthly_repeat_option', 'end_times', 'end_date_time', 'end_date_option',
+            'webinar', 'duration', 'timezone', 'password', 'option_jbh', 'option_start_type', 'option_host_video',
+            'option_participants_video', 'option_audio', 'option_mute_upon_entry', 'option_waiting_room',
+            'option_authenticated_users', 'option_encryption_type', 'exists_on_zoom', 'alternative_hosts',
+            'recordings_visible_default', 'show_schedule', 'show_security', 'show_media',
+        ));
+
+        $trackingfields = new backup_nested_element('trackingfields');
+
+        $trackingfield = new backup_nested_element('trackingfield', array('id'), array('meeting_id', 'tracking_field', 'value'));
 
         // If we had more elements, we would build the tree here.
+        $zoom->add_child($trackingfields);
+        $trackingfields->add_child($trackingfield);
 
         // Define data sources.
         $zoom->set_source_table('zoom', array('id' => backup::VAR_ACTIVITYID));
+        $trackingfield->set_source_table('zoom_meeting_tracking_fields', array('meeting_id' => backup::VAR_ACTIVITYID));
 
         // If we were referring to other tables, we would annotate the relation
         // with the element's annotate_ids() method.

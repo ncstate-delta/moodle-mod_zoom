@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/zoom/db" VERSION="20190912" COMMENT="Zoom module"
+<XMLDB PATH="mod/zoom/db" VERSION="20210303" COMMENT="Zoom module"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -11,7 +11,7 @@
         <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="false" SEQUENCE="false" COMMENT="Format of description field"/>
         <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Maximum grade (points possible) for this activity. Negative value indicates a scale being used."/>
-        <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="meeting_id" TYPE="int" LENGTH="15" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="start_url" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="join_url" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="created_at" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="ISO datetime format"/>
@@ -20,17 +20,35 @@
         <FIELD NAME="start_time" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting start time (Unix timestamp, seconds). For scheduled meeting only."/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp when the instance was last modified."/>
         <FIELD NAME="recurring" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Is the meeting or webinar recurring?"/>
+        <FIELD NAME="recurrence_type" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Is the recurring meeting weekly, daily or monthly" />
+        <FIELD NAME="repeat_interval" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Specify the repeat interval of the meeting" />
+        <FIELD NAME="weekly_days" TYPE="char" LENGTH="14" NOTNULL="false" SEQUENCE="false" COMMENT="Specify the days for weekly recurring meetings" />
+        <FIELD NAME="monthly_day" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Specify the day for a recurring monthly meeting" />
+        <FIELD NAME="monthly_week" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Specify the week for a recurring monthly meeting" />
+        <FIELD NAME="monthly_week_day" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Specify a day of the week for a recurring monthly meeting" />
+        <FIELD NAME="monthly_repeat_option" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="For UI purposes. To determine which monthly repeat option is chosen" />
+        <FIELD NAME="end_times" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="The amount of times meeting should occur before its canceled" />
+        <FIELD NAME="end_date_time" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="The final date (Unix timestamp, seconds) of the meeting before its canceled" />
+        <FIELD NAME="end_date_option" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="For UI purposes. To determine which end date option is chosen" />
         <FIELD NAME="webinar" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Is this a webinar?"/>
         <FIELD NAME="duration" TYPE="int" LENGTH="6" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting duration (seconds). For scheduled meeting only."/>
         <FIELD NAME="timezone" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Timezone to format start_time, like &quot;America/Los_Angeles&quot;. For scheduled meeting only."/>
         <FIELD NAME="password" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting password. Password may only contain the following characters: [a-zA-Z0-9@-_*]. Max of 10 characters"/>
         <FIELD NAME="option_jbh" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Join meeting before host start the meeting."/>
         <FIELD NAME="option_start_type" TYPE="char" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Meeting start type. Can be &quot;video&quot; or &quot;screen_share&quot;. (deprecated)"/>
-        <FIELD NAME="option_host_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Start video when host joins meeting."/>
-        <FIELD NAME="option_participants_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Start video when participants join meeting."/>
+        <FIELD NAME="option_host_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Start video when host joins meeting."/>
+        <FIELD NAME="option_participants_video" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Start video when participants join meeting."/>
         <FIELD NAME="option_audio" TYPE="char" LENGTH="9" NOTNULL="false" DEFAULT="both" SEQUENCE="false" COMMENT="Meeting audio options. Can be &quot;both&quot;, &quot;telephony&quot;, &quot;voip&quot;."/>
+        <FIELD NAME="option_mute_upon_entry" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="option_waiting_room" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="option_authenticated_users" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="option_encryption_type" TYPE="char" LENGTH="20" NOTNULL="false" DEFAULT="enhanced_encryption" SEQUENCE="false" COMMENT="Meeting encryption type. Can be &quot;enhanced_encryption&quot;, &quot;e2ee&quot;"/>
         <FIELD NAME="exists_on_zoom" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether the meeting can be found on Zoom servers. Usually should be true, should only be false if API call returned that meeting can't be found."/>
         <FIELD NAME="alternative_hosts" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="recordings_visible_default" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Should the recordings for this meeting be visible by default" />
+        <FIELD NAME="show_schedule" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Schedule heading in activity page" />
+        <FIELD NAME="show_security" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Security heading in activity page" />
+        <FIELD NAME="show_media" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Media heading in activity page" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -42,7 +60,7 @@
     <TABLE NAME="zoom_meeting_details" COMMENT="A queue for the Cron to add meeting report info to zoom_meetings_participants table.">
       <FIELDS>
         <FIELD NAME="uuid" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting UUID or webinar UUID per Zoom API."/>
-        <FIELD NAME="meeting_id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting_id or webinar_id per Zoom API."/>
+        <FIELD NAME="meeting_id" TYPE="int" LENGTH="15" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting_id or webinar_id per Zoom API."/>
         <FIELD NAME="end_time" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="When the meeting ended/will end"/>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field. Other than that it's useless."/>
         <FIELD NAME="start_time" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false"/>
@@ -54,28 +72,78 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key. Most database actions will be performed using meeting_webinar_instance_id."/>
-        <KEY NAME="meeting_unique" TYPE="unique" FIELDS="meeting_id, uuid"/>
+        <KEY NAME="uuid_unique" TYPE="unique" FIELDS="uuid"/>
         <KEY NAME="zoomid_foreign" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoom" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="zoom_meeting_participants" COMMENT="A list of each meeting existing on Moodle and when its participants entered/left.">
       <FIELDS>
-        <FIELD NAME="zoomuserid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The user_id per Zoom API"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field. Other than that it's useless."/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The user id from moodle"/>
+        <FIELD NAME="zoomuserid" TYPE="char" LENGTH="35" NOTNULL="true" SEQUENCE="false" COMMENT="The user_id per Zoom API"/>
         <FIELD NAME="uuid" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false" COMMENT="The participant UUID per Zoom API."/>
         <FIELD NAME="user_email" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The particpant's email per Zoom API."/>
         <FIELD NAME="join_time" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="When the particpant joined the meeting."/>
         <FIELD NAME="leave_time" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="When the participant left the meeting."/>
         <FIELD NAME="duration" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="The time for which the participant was in the meeting."/>
-        <FIELD NAME="attentiveness_score" TYPE="char" LENGTH="7" NOTNULL="true" SEQUENCE="false" COMMENT="How attentive the participant was during the meeting."/>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field. Other than that it's useless."/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The user id from moodle"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="user's name"/>
         <FIELD NAME="detailsid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="link to zoom_meeting_details table"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key. Most database actions will be performed using participant_universal_id."/>
-        <KEY NAME="user_by_meeting_key" TYPE="unique" FIELDS="detailsid, zoomuserid" COMMENT="composite key"/>
         <KEY NAME="detailsid_foreign" TYPE="foreign" FIELDS="detailsid" REFTABLE="zoom_meeting_details" REFFIELDS="id" COMMENT="there is no index built on this because making it a foreign key does that automatically"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+        <INDEX NAME="uuid" UNIQUE="false" FIELDS="uuid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="zoom_meeting_tracking_fields" COMMENT="A list of tracking field values for meetings in Zoom.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The id of the meeting from the DB table."/>
+        <FIELD NAME="tracking_field" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The label/name for the tracking field."/>
+        <FIELD NAME="value" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Configured value for tracking field."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="meeting_id" UNIQUE="false" FIELDS="meeting_id"/>
+        <INDEX NAME="tracking_field" UNIQUE="false" FIELDS="tracking_field"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="zoom_meeting_recordings" COMMENT="A list of recording links for Zoom meeting activities.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field."/>
+        <FIELD NAME="zoomid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="link to mdl_zoom table"/>
+        <FIELD NAME="meetinguuid" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="zoomrecordingid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="300" NOTNULL="true" SEQUENCE="false" COMMENT="Recording topic. Max of 300 characters."/>
+        <FIELD NAME="externalurl" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Link to view the recording."/>
+        <FIELD NAME="passcode" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false" COMMENT="Passcode to access the recording."/>
+        <FIELD NAME="recordingtype" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="Type of recording."/>
+        <FIELD NAME="recordingstart" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="showrecording" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp when the record was created."/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp when the record was last modified."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key."/>
+        <KEY NAME="zoomid_foreign" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoom" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="zoom_meeting_recordings_view" COMMENT="A list to track when users view Zoom meeting recordings.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field."/>
+        <FIELD NAME="recordingsid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="link to zoom_meeting_recordings table"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The user id from moodle"/>
+        <FIELD NAME="viewed" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Did the user view the recording? 1 for true, 0 for false."/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp when the record was last modified."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key."/>
+        <KEY NAME="recordingsid_foreign" TYPE="foreign" FIELDS="recordingsid" REFTABLE="zoom_meeting_recordings" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>

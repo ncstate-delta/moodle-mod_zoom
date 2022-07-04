@@ -29,11 +29,6 @@ require_once($CFG->dirroot . '/mod/zoom/backup/moodle2/backup_zoom_stepslib.php'
 
 /**
  * Provides the steps to perform one complete backup of the zoom instance
- *
- * @package   mod_zoom
- * @category  backup
- * @copyright 2015 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_zoom_activity_task extends backup_activity_task {
 
@@ -56,7 +51,7 @@ class backup_zoom_activity_task extends backup_activity_task {
      * @param string $content some HTML text that eventually contains URLs to the activity instance scripts
      * @return string the content with the URLs encoded
      */
-    static public function encode_content_links($content) {
+    public static function encode_content_links($content) {
         global $CFG;
 
         $base = preg_quote($CFG->wwwroot, '/');

@@ -28,8 +28,8 @@ $tasks = array(
     array(
         'classname' => 'mod_zoom\task\update_meetings',
         'blocking' => 0,
-        'minute' => '0',
-        'hour' => '0',
+        'minute' => '30',
+        'hour' => '4',
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*'
@@ -38,18 +38,36 @@ $tasks = array(
         'classname' => 'mod_zoom\task\get_meeting_reports',
         'blocking' => 0,
         'minute' => '0',
-        'hour' => '0,12',
+        'hour' => '*/6',
         'day' => '*',
         'dayofweek' => '*',
         'month' => '*'
     ),
     array(
-        'classname' => 'mod_zoom\task\reset_api_calls',
+        'classname' => 'mod_zoom\task\update_tracking_fields',
         'blocking' => 0,
-        'minute' => '59',
-        'hour' => '23',
+        'minute' => '0',
+        'hour' => '*/6',
         'day' => '*',
         'dayofweek' => '*',
         'month' => '*'
-    )
+    ),
+    array(
+        'classname' => 'mod_zoom\task\get_meeting_recordings',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '*/3',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
+    ),
+    array(
+        'classname' => 'mod_zoom\task\delete_meeting_recordings',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '0',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
+    ),
 );

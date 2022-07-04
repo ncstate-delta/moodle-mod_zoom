@@ -31,13 +31,6 @@ require_once("$CFG->libdir/externallib.php");
 
 /**
  * Zoom external functions
- *
- * @package    mod_zoom
- * @category   external
- * @author     Nick Stefanski
- * @copyright  2017 Auguste Escoffier School of Culinary Arts {@link https://www.escoffier.edu}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @since      Moodle 3.1
  */
 class mod_zoom_external extends external_api {
 
@@ -78,7 +71,6 @@ class mod_zoom_external extends external_api {
         // Request and permission validation.
         $cm = $DB->get_record('course_modules', array('id' => $params['zoomid']), '*', MUST_EXIST);
         $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
-        $course  = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
         $context = context_module::instance($cm->id);
         self::validate_context($context);
@@ -105,7 +97,7 @@ class mod_zoom_external extends external_api {
         $result['audioopt'] = $zoom->option_audio;
 
         if (!$zoom->recurring) {
-            if (!$zoom->exists_on_zoom) {
+            if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
                 $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
             } else if ($finished) {
                 $status = get_string('meeting_finished', 'mod_zoom');
@@ -174,49 +166,32 @@ class mod_zoom_external extends external_api {
      * @throws moodle_exception
      */
     public static function grade_item_update($zoomid) {
-        global $DB, $CFG, $USER;
-        require_once($CFG->dirroot . "/mod/zoom/lib.php");
-        require_once($CFG->libdir . '/gradelib.php');
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
-        $params = self::validate_parameters(self::get_state_parameters(),
-                                            array(
-                                                'zoomid' => $zoomid
-                                            ));
+        $params = self::validate_parameters(
+            self::get_state_parameters(),
+            array(
+                'zoomid' => $zoomid,
+            )
+        );
         $warnings = array();
 
-        // Request and permission validation.
-        $cm = $DB->get_record('course_modules', array('id' => $params['zoomid']), '*', MUST_EXIST);
-        $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
-        $course  = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-
-        $context = context_module::instance($cm->id);
+        $context = context_module::instance($params['zoomid']);
         self::validate_context($context);
 
-        require_capability('mod/zoom:view', $context);
-
-        // Check whether user had a grade. If no, then assign full credits to him or her.
-        $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
-
-        // Assign full credits for user who has no grade yet, if this meeting is gradable
-        // (i.e. the grade type is not "None").
-        if (!empty($gradelist->items) && empty($gradelist->items[0]->grades[$USER->id]->grade)) {
-            $grademax = $gradelist->items[0]->grademax;
-            $grades = array('rawgrade' => $grademax,
-                            'userid' => $USER->id,
-                            'usermodified' => $USER->id,
-                            'dategraded' => '',
-                            'feedbackformat' => '',
-                            'feedback' => '');
-            // Call the zoom/lib API.
-            zoom_grade_item_update($zoom, $grades);
-        }
+        // Call load meeting function, do not use start url on mobile.
+        $meetinginfo = zoom_load_meeting($params['zoomid'], $context, $usestarturl = false);
 
         // Pass url to join zoom meeting in order to redirect user.
-        $joinurl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
-
         $result = array();
-        $result['status'] = true;
-        $result['joinurl'] = $joinurl->__toString();
+        if ($meetinginfo['nexturl']) {
+            $result['status'] = true;
+            $result['joinurl'] = $meetinginfo['nexturl']->__toString();
+        } else {
+            $warningmsg = clean_param($meetinginfo['error'], PARAM_TEXT);
+            throw new invalid_response_exception($warningmsg);
+        }
         $result['warnings'] = $warnings;
         return $result;
     }

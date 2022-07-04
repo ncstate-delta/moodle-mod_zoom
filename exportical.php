@@ -34,7 +34,7 @@ if ($id) {
     $course     = get_course($cm->course);
     $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
 } else {
-    print_error('You must specify a course_module ID');
+    throw new moodle_exception('zoomerr_id_missing', 'mod_zoom');
 }
 
 require_login($course, true, $cm);
@@ -44,32 +44,61 @@ $PAGE->set_context($context);
 
 require_capability('mod/zoom:view', $context);
 
+// Get config.
+$config = get_config('zoom');
+
+// Check if the admin did not disable the feature.
+if ($config->showdownloadical == ZOOM_DOWNLOADICAL_DISABLE) {
+    $disabledredirecturl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
+    throw new moodle_exception('err_downloadicaldisabled', 'mod_zoom', $disabledredirecturl);
+}
+
+// Check if we are dealing with a recurring meeting with no fixed time.
+if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
+    $errorredirecturl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
+    throw new moodle_exception('err_downloadicalrecurringnofixed', 'mod_zoom', $errorredirecturl);
+}
+
 // Start ical file.
 $ical = new iCalendar;
 $ical->add_property('method', 'PUBLISH');
 $ical->add_property('prodid', '-//Moodle Pty Ltd//NONSGML Moodle Version ' . $CFG->version . '//EN');
 
-// Create event and populate properties.
-$event = new iCalendar_event;
-$hostaddress = str_replace('http://', '', $CFG->wwwroot);
-$hostaddress = str_replace('https://', '', $hostaddress);
-$event->add_property('uid', $zoom->meeting_id . '@' . $hostaddress); // A unique identifier.
-$event->add_property('summary', $zoom->name); // Title.
-$event->add_property('dtstamp', Bennu::timestamp_to_datetime()); // Time of creation.
-$event->add_property('last-modified', Bennu::timestamp_to_datetime($zoom->timemodified));
-$event->add_property('dtstart', Bennu::timestamp_to_datetime($zoom->start_time)); // Start time.
-$event->add_property('dtend', Bennu::timestamp_to_datetime($zoom->start_time + $zoom->duration)); // End time.
+// Get the meeting invite note to add to the description property.
+$service = new mod_zoom_webservice();
+$meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($cm->id);
 
 // Compute and add description property to event.
 $convertedtext = html_to_text($zoom->intro);
-$descriptiontext = get_string('calendardescriptionURL', 'mod_zoom', $zoom->join_url);
+$descriptiontext = get_string('calendardescriptionURL', 'mod_zoom', $CFG->wwwroot . '/mod/zoom/view.php?id=' . $cm->id);
 if (!empty($convertedtext)) {
     $descriptiontext .= get_string('calendardescriptionintro', 'mod_zoom', $convertedtext);
 }
-$event->add_property('description', $descriptiontext);
+if (!empty($meetinginvite)) {
+    $descriptiontext .= "\n\n" . $meetinginvite;
+}
 
-// Start formatting ical.
-$ical->add_component($event);
+// Get all occurrences of the meeting from the DB.
+$params = array('modulename' => 'zoom', 'instance' => $zoom->id);
+$events = $DB->get_records('event', $params, 'timestart ASC');
+
+// If we haven't got at least a single occurrence.
+if (empty($events)) {
+    // We could handle this case in a nicer way ans return an empty iCal file without events,
+    // but as this case should not happen in real life anyway, return a fatal error to make clear that something is wrong.
+    $errorredirecturl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
+    throw new moodle_exception('err_downloadicalrecurringempty', 'mod_zoom', $errorredirecturl);
+}
+
+// Iterate over all events.
+// We will add each event as an individual iCal event.
+foreach ($events as $event) {
+    $icalevent = zoom_helper_icalendar_event($event, $descriptiontext);
+    // Add the event to the iCal file.
+    $ical->add_component($icalevent);
+}
+
+// Start output of iCal file.
 $serialized = $ical->serialize();
 $filename = 'icalexport.ics';
 

@@ -15,61 +15,36 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Load zoom meeting and assign grade to the user join the meeting.
- *
- * You can have a rather longer description of the file as well,
- * if you like, and it can span multiple lines.
+ * Load zoom meeting.
  *
  * @package    mod_zoom
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once($CFG->libdir . '/gradelib.php');
-require_once($CFG->libdir . '/moodlelib.php');
-require_once(dirname(__FILE__).'/locallib.php');
+// phpcs:ignore moodle.Files.RequireLogin.Missing
+require_once(dirname(dirname(__DIR__)) . '/config.php');
+require_once(__DIR__ . '/locallib.php');
 
 // Course_module ID.
 $id = required_param('id', PARAM_INT);
 if ($id) {
-    $cm         = get_coursemodule_from_id('zoom', $id, 0, false, MUST_EXIST);
-    $course     = get_course($cm->course);
-    $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
-} else {
-    print_error('You must specify a course_module ID');
-}
-$userishost = (zoom_get_user_id(false) == $zoom->host_id);
+    $context = context_module::instance($id);
+    $PAGE->set_context($context);
 
-require_login($course, true, $cm);
+    // Call load meeting function (note: this is where require_login() happens).
+    $meetinginfo = zoom_load_meeting($id, $context);
 
-$context = context_module::instance($cm->id);
-$PAGE->set_context($context);
+    // Redirect if available, otherwise deny access.
+    if ($meetinginfo['nexturl']) {
+        redirect($meetinginfo['nexturl']);
+    } else {
+        // Get redirect URL.
+        $unavailabilityurl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
 
-require_capability('mod/zoom:view', $context);
-if ($userishost) {
-    $nexturl = new moodle_url($zoom->start_url);
-} else {
-    // Check whether user had a grade. If no, then assign full credits to him or her.
-    $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
-
-    // Assign full credits for user who has no grade yet, if this meeting is gradable (i.e. the grade type is not "None").
-    if (!empty($gradelist->items) && empty($gradelist->items[0]->grades[$USER->id]->grade)) {
-        $grademax = $gradelist->items[0]->grademax;
-        $grades = array('rawgrade' => $grademax,
-                        'userid' => $USER->id,
-                        'usermodified' => $USER->id,
-                        'dategraded' => '',
-                        'feedbackformat' => '',
-                        'feedback' => '');
-
-        zoom_grade_item_update($zoom, $grades);
+        // Redirect the user back to the activity overview page.
+        redirect($unavailabilityurl, $meetinginfo['error'], null, \core\output\notification::NOTIFY_ERROR);
     }
-
-    $nexturl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
+} else {
+    throw new moodle_exception('zoomerr_id_missing', 'mod_zoom');
 }
-
-// Record user's clicking join.
-\mod_zoom\event\join_meeting_button_clicked::create(array('context' => $context, 'objectid' => $zoom->id, 'other' =>
-        array('cmid' => $id, 'meetingid' => (int) $zoom->meeting_id, 'userishost' => $userishost)))->trigger();
-redirect($nexturl);
