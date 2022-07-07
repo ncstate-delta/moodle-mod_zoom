@@ -108,6 +108,7 @@ $string['err_password_required'] = 'Passcode is required.';
 $string['err_repeat_weekly_interval'] = 'Max interval for weekly meeting is 12 weeks';
 $string['err_repeat_monthly_interval'] = 'Max interval for monthly meeting is 3 months';
 $string['err_start_time_past'] = 'The start date cannot be in the past.';
+$string['err_start_time_past_recurring'] = 'For recurring meetings, the date portion of this field is the earliest possible date for the next meeting. This date must be today or in the future.';
 $string['err_weekly_days'] = 'Select day(s) for the recurring weekly meeting';
 $string['erroraddinstance'] = 'Could not create new zoom meeting. Invalid options selected for a recurring meeting.';
 $string['errorwebservice_badrequest'] = 'Zoom received a bad request: {$a}';
