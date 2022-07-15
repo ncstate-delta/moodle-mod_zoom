@@ -11,3 +11,34 @@
 #mod-zoom-old-meetings-header {
     float: left;
 }
+
+#meeting-room-participants,
+#meeting-room-participant-groups {
+    list-style-type: none;
+}
+
+#meeting-rooms-list .empty-alert {
+    margin: auto;
+    width: 80%;
+    padding: 40% 0;
+}
+
+#breakout-rooms-table {
+    width: 100%;
+    height: 400px;
+}
+
+#breakout-rooms-table td:first-child {
+    width: 20%;
+}
+
+#breakout-rooms-table td:nth-child(2) {
+    width: 80%;
+}
+
+#breakout-rooms-table .delete-room {
+    margin: -34px 5px;
+    background: transparent;
+    border: none;
+}
+

@@ -94,6 +94,12 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     $zoom->course = (int) $zoom->course;
 
+    $zoom->breakoutrooms = array();
+    if (!empty($zoom->rooms)) {
+        $breakoutrooms = zoom_build_instance_breakout_rooms_array_for_api($zoom);
+        $zoom->breakoutrooms = $breakoutrooms['zoom'];
+    }
+
     $response = $service->create_meeting($zoom);
     $zoom = populate_zoom_from_response($zoom, $response);
     $zoom->timemodified = time();
@@ -117,6 +123,10 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     }
 
     $zoom->id = $DB->insert_record('zoom', $zoom);
+    if (!empty($zoom->breakoutrooms)) {
+        // We ignore the API response and save the local data for breakout rooms to support dynamic users and groups.
+        zoom_insert_instance_breakout_rooms($zoom->id, $breakoutrooms['db']);
+    }
 
     // Store tracking field data for meeting.
     zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields ?? array());
@@ -164,6 +174,13 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     }
 
     $DB->update_record('zoom', $zoom);
+
+    $zoom->breakoutrooms = array();
+    if (!empty($zoom->rooms)) {
+        $breakoutrooms = zoom_build_instance_breakout_rooms_array_for_api($zoom);
+        zoom_update_instance_breakout_rooms($zoom->id, $breakoutrooms['db']);
+        $zoom->breakoutrooms = $breakoutrooms['zoom'];
+    }
 
     $updatedzoomrecord = $DB->get_record('zoom', array('id' => $zoom->id));
     $zoom->meeting_id = $updatedzoomrecord->meeting_id;
@@ -367,6 +384,9 @@ function zoom_delete_instance($id) {
     zoom_grade_item_delete($zoom);
 
     $DB->delete_records('zoom', array('id' => $zoom->id));
+
+    // Delete breakout rooms.
+    zoom_delete_instance_breakout_rooms($zoom->id);
 
     return true;
 }
@@ -997,3 +1017,228 @@ function mod_zoom_update_tracking_fields() {
 
     return true;
 }
+
+/**
+ * Insert zoom instance breakout rooms
+ *
+ * @param int $zoomid
+ * @param array $breakoutrooms zoom breakout rooms
+ */
+function zoom_insert_instance_breakout_rooms($zoomid, $breakoutrooms) {
+    global $DB;
+
+    foreach ($breakoutrooms as $breakoutroom) {
+        $item = new stdClass();
+        $item->name = $breakoutroom['name'];
+        $item->zoomid  = $zoomid;
+
+        $breakoutroomid = $DB->insert_record('zoom_meeting_breakout_rooms', $item);
+
+        foreach ($breakoutroom['participants'] as $participant) {
+            $item = new stdClass();
+            $item->userid = $participant;
+            $item->breakoutroomid = $breakoutroomid;
+            $DB->insert_record('zoom_breakout_participants', $item);
+        }
+
+        foreach ($breakoutroom['groups'] as $group) {
+            $item = new stdClass();
+            $item->groupid = $group;
+            $item->breakoutroomid = $breakoutroomid;
+            $DB->insert_record('zoom_breakout_groups', $item);
+        }
+    }
+}
+
+/**
+ * Update zoom instance breakout rooms
+ *
+ * @param int $zoomid
+ * @param array $breakoutrooms
+ */
+function zoom_update_instance_breakout_rooms($zoomid, $breakoutrooms) {
+    global $DB;
+
+    zoom_delete_instance_breakout_rooms($zoomid);
+    zoom_insert_instance_breakout_rooms($zoomid, $breakoutrooms);
+}
+
+/**
+ * Delete zoom instance breakout rooms
+ *
+ * @param int $zoomid
+ */
+function zoom_delete_instance_breakout_rooms($zoomid) {
+    global $DB;
+
+    $zoomcurrentbreakoutroomsids = $DB->get_fieldset_select('zoom_meeting_breakout_rooms', 'id', "zoomid = {$zoomid}");
+
+    foreach ($zoomcurrentbreakoutroomsids as $id) {
+        $DB->delete_records('zoom_breakout_participants', array('breakoutroomid' => $id));
+        $DB->delete_records('zoom_breakout_groups', array('breakoutroomid' => $id));
+    }
+
+    $DB->delete_records('zoom_meeting_breakout_rooms', array('zoomid' => $zoomid));
+}
+
+/**
+ * Build zoom instance breakout rooms array for api
+ *
+ * @param stdClass $zoom Submitted data from the form in mod_form.php.
+ * @return array The meeting breakout rooms array.
+ */
+function zoom_build_instance_breakout_rooms_array_for_api($zoom) {
+    $context = context_course::instance($zoom->course);
+    $users = get_enrolled_users($context);
+    $groups = groups_get_all_groups($zoom->course);
+
+    // Building meeting breakout rooms array.
+    $breakoutrooms = array();
+    if (!empty($zoom->rooms)) {
+        foreach ($zoom->rooms as $roomid => $roomname) {
+
+            // Getting meeting rooms participants.
+            $roomparticipants = array();
+            $dbroomparticipants = array();
+            if (!empty($zoom->roomsparticipants[$roomid])) {
+                foreach ($zoom->roomsparticipants[$roomid] as $participantid) {
+                    if (isset($users[$participantid])) {
+                        $roomparticipants[] = $users[$participantid]->email;
+                        $dbroomparticipants[] = $participantid;
+                    }
+                }
+            }
+
+            // Getting meeting rooms groups members.
+            $roomgroupsmembers = array();
+            $dbroomgroupsmembers = array();
+            if (!empty($zoom->roomsgroups[$roomid])) {
+                foreach ($zoom->roomsgroups[$roomid] as $groupid) {
+                    if (isset($groups[$groupid])) {
+                        $groupmembers = groups_get_members($groupid);
+                        $roomgroupsmembers[] = array_column(array_values($groupmembers), 'email');
+                        $dbroomgroupsmembers[] = $groupid;
+                    }
+                }
+                $roomgroupsmembers = array_merge(...$roomgroupsmembers);
+            }
+
+            $zoomdata = array('name' => $roomname,
+                'participants' => array_values(array_unique(array_merge($roomparticipants, $roomgroupsmembers))));
+
+            $dbdata = array('name' => $roomname,
+                'participants' => $dbroomparticipants, 'groups' => $dbroomgroupsmembers);
+
+            $breakoutrooms['zoom'][] = $zoomdata;
+            $breakoutrooms['db'][] = $dbdata;
+        }
+    }
+
+    return $breakoutrooms;
+}
+
+/**
+ * Build zoom instance breakout rooms array for view.
+ *
+ * @param int $zoomid
+ * @param array $courseparticipants
+ * @param array $coursegroups
+ * @return array The meeting breakout rooms array.
+ */
+function zoom_build_instance_breakout_rooms_array_for_view($zoomid, $courseparticipants, $coursegroups) {
+    $breakoutrooms = zoom_get_instance_breakout_rooms($zoomid);
+    $rooms = array();
+
+    if (!empty($breakoutrooms)) {
+        foreach ($breakoutrooms as $key => $breakoutroom) {
+            $roomparticipants = $courseparticipants;
+            if (!empty($breakoutroom['participants'])) {
+                $participants = $breakoutroom['participants'];
+                $roomparticipants = array_map(function($roomparticipant) use ($participants) {
+                    if (isset($participants[$roomparticipant['participantid']])) {
+                        $roomparticipant['selected'] = true;
+                    }
+
+                    return $roomparticipant;
+                }, $courseparticipants);
+            }
+
+            $roomgroups = $coursegroups;
+            if (!empty($breakoutroom['groups'])) {
+                $groups = $breakoutroom['groups'];
+                $roomgroups = array_map(function($roomgroup) use ($groups) {
+                    if (isset($groups[$roomgroup['groupid']])) {
+                        $roomgroup['selected'] = true;
+                    }
+
+                    return $roomgroup;
+                }, $coursegroups);
+            }
+
+            $rooms[] = array('roomid' => $breakoutroom['roomid'], 'roomname' => $breakoutroom['roomname'],
+                'courseparticipants' => $roomparticipants, 'coursegroups' => $roomgroups);
+        }
+
+        $rooms[0]['roomactive'] = true;
+    }
+
+    return $rooms;
+}
+
+/**
+ * Get zoom instance breakout rooms.
+ *
+ * @param int $zoomid
+ * @return array
+ */
+function zoom_get_instance_breakout_rooms($zoomid) {
+    global $DB;
+
+    $breakoutrooms = array();
+    $params = array($zoomid);
+
+    $sql = "SELECT id, name
+        FROM {zoom_meeting_breakout_rooms}
+        WHERE zoomid = ?";
+
+    $rooms = $DB->get_records_sql($sql, $params);
+
+    foreach ($rooms as $room) {
+        $breakoutrooms[$room->id] = array(
+            'roomid' => $room->id,
+            'roomname' => $room->name,
+            'participants' => array(),
+            'groups' => array(),
+        );
+
+        // Get breakout room participants.
+        $params = array($room->id);
+        $sql = "SELECT userid
+        FROM {zoom_breakout_participants}
+        WHERE breakoutroomid = ?";
+
+        $participants = $DB->get_records_sql($sql, $params);
+
+        if (!empty($participants)) {
+            foreach ($participants as $participant) {
+                $breakoutrooms[$room->id]['participants'][$participant->userid] = $participant->userid;
+            }
+        }
+
+        // Get breakout room groups.
+        $sql = "SELECT groupid
+        FROM {zoom_breakout_groups}
+        WHERE breakoutroomid = ?";
+
+        $groups = $DB->get_records_sql($sql, $params);
+
+        if (!empty($groups)) {
+            foreach ($groups as $group) {
+                $breakoutrooms[$room->id]['groups'][$group->groupid] = $group->groupid;
+            }
+        }
+    }
+
+    return $breakoutrooms;
+}
+
