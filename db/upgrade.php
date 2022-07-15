@@ -757,7 +757,7 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2022031600, 'zoom');
     }
 
-    if ($oldversion < 2022060201) {
+    if ($oldversion < 2022071500) {
         // Define table zoom_meeting_breakout_rooms to be created.
         $table = new xmldb_table('zoom_meeting_breakout_rooms');
 
@@ -811,7 +811,7 @@ function xmldb_zoom_upgrade($oldversion) {
         }
 
         // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2022060201, 'zoom');
+        upgrade_mod_savepoint(true, 2022071500, 'zoom');
     }
 
     return true;

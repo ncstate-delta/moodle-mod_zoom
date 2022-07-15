@@ -32,6 +32,11 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.6.0
+
+- Feature: Pre-assign Breakout Rooms #371 (thanks @annouarf, @levemar, University of Montreal, @mhughes2k)
+- Bugfix: Validate start times and duration for timed recurring meetings #389 (thanks @nchan31, @jwalits)
+
 v4.5.3
 
 - Bugfix: Allow plugin settings to update without a configuration exception #386 (thanks @acquaalta)
