@@ -25,14 +25,16 @@ import {get_string as getString} from "core/str";
 
 export const init = () => {
   const button = document.querySelector("#show-more-button");
-  const body = document.querySelector("#show-more-body");
-  button.addEventListener("click", async() => {
-    if (body.style.display === "") {
-      body.style.display = "none";
-      button.innerHTML = await getString("meeting_invite_show", "mod_zoom");
-    } else {
-      body.style.display = "";
-      button.innerHTML = await getString("meeting_invite_hide", "mod_zoom");
-    }
-  });
+  if (button !== null) {
+    const body = document.querySelector("#show-more-body");
+    button.addEventListener("click", async() => {
+      if (body.style.display === "") {
+        body.style.display = "none";
+        button.innerHTML = await getString("meeting_invite_show", "mod_zoom");
+      } else {
+        body.style.display = "";
+        button.innerHTML = await getString("meeting_invite_hide", "mod_zoom");
+      }
+    });
+  }
 };
