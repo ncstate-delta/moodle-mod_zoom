@@ -151,13 +151,15 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
         $newcollection = provider::get_metadata($collection);
         $itemcollection = $newcollection->get_collection();
 
-        $this->assertCount(3, $itemcollection);
+        $this->assertCount(4, $itemcollection);
         $table = reset($itemcollection);
         $table2 = $itemcollection[1];
         $table3 = $itemcollection[2];
+        $table4 = $itemcollection[3];
         $this->assertEquals('zoom_meeting_participants', $table->get_name());
         $this->assertEquals('zoom_meeting_details', $table2->get_name());
         $this->assertEquals('zoom_meeting_recordings_view', $table3->get_name());
+        $this->assertEquals('zoom_breakout_participants', $table4->get_name());
 
         $privacyfields1 = $table->get_privacy_fields();
         $this->assertArrayHasKey('name', $privacyfields1);

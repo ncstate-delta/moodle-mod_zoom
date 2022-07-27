@@ -389,3 +389,5 @@ $string['showsecurity_help'] = 'Enabling this option will show the Security sect
 $string['showmedia'] = 'Show Media section';
 $string['showmediaonview'] = 'Show Media section on meeting page';
 $string['showmedia_help'] = 'Enabling this option will show the Media section on the meeting activity page.';
+$string['privacy:metadata:zoom_breakout_participants'] = 'The database table to store a list of zoom meeting breakout rooms participants';
+$string['privacy:metadata:zoom_breakout_participants:userid'] = 'The id of the participant user';
