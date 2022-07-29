@@ -141,7 +141,6 @@ class provider implements
 
         $userlist->add_from_sql('userid', $sql, $params);
 
-
         $sql = "SELECT zbp.userid
                   FROM {zoom_breakout_participants} zbp
                   JOIN {zoom_meeting_breakout_rooms} zmbr ON zbp.breakoutroomid = zmbr.id
@@ -327,11 +326,9 @@ class provider implements
                     $DB->delete_records('zoom_breakout_participants',
                             array('breakoutroomid' => $room->id, 'userid' => $user->id));
                 }
-
             }
         }
     }
-
 
     /**
      * Delete multiple users within a single context.
@@ -349,67 +346,36 @@ class provider implements
         // Prepare SQL to gather all completed IDs.
         $userids = $userlist->get_userids();
         list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+        $params = array_merge($inparams, ['contextid' => $context->id, 'modlevel' => CONTEXT_MODULE]);
 
-        $sql = "SELECT zmp.id
-                  FROM {zoom_meeting_participants} zmp
-                  JOIN {zoom_meeting_details} zmd ON zmd.id = zmp.detailsid
+        $sql = "SELECT zmd.id
+                  FROM {zoom_meeting_details} zmd
                   JOIN {zoom} z ON zmd.zoomid = z.id
                   JOIN {modules} m ON m.name = 'zoom'
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
-                  JOIN {context} ctx
-                    ON ctx.instanceid = cm.id
-                   AND ctx.contextlevel = :modlevel
-                  WHERE ctx.id = :contextid
-                    AND zmp.userid $insql";
+                  JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :modlevel
+                 WHERE ctx.id = :contextid";
 
-        $params = array_merge($inparams, ['contextid' => $context->id, 'modlevel' => CONTEXT_MODULE]);
-        if ($zooms = $DB->get_records_sql($sql, $params)) {
-            $zmpids = [];
-            foreach ($zooms as $zoom) {
-                $zmpids[] = $zoom->id;
-            }
-            $DB->delete_records_select('zoom_meeting_participants', "id IN (".implode(',', $zmpids).")");
-        }
+        $DB->delete_records_select('zoom_meeting_participants', "userid $insql AND detailsid IN ($sql)", $params);
 
-        $sql = "SELECT zmrv.id
-                  FROM {zoom_meeting_recordings_view} zmrv
-                  JOIN {zoom_meeting_recordings} zmr ON zmrv.recordingsid = zmr.id
+        $sql = "SELECT zmr.id
+                  FROM {zoom_meeting_recordings} zmr
                   JOIN {zoom} z ON zmr.zoomid = z.id
                   JOIN {modules} m ON m.name = 'zoom'
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
-                  JOIN {context} ctx
-                    ON cm.id = ctx.instanceid
-                   AND ctx.contextlevel = :modlevel
-                  WHERE ctx.id = :contextid
-                    AND zmrv.userid $insql";
+                  JOIN {context} ctx ON cm.id = ctx.instanceid AND ctx.contextlevel = :modlevel
+                 WHERE ctx.id = :contextid";
 
-        if ($zooms = $DB->get_records_sql($sql, $params)) {
-            $zmrvids = [];
-            foreach ($zooms as $zoom) {
-                $zmrvids[] = $zoom->id;
-            }
-            $DB->delete_records_select('zoom_meeting_recordings_view', "id IN (".implode(',', $zmrvids).")");
-        }
+        $DB->delete_records_select('zoom_meeting_recordings_view', "userid $insql AND recordingsid IN ($sql)", $params);
 
-        $sql = "SELECT zbp.id
-                  FROM {zoom_breakout_participants} zbp
-                  JOIN {zoom_meeting_breakout_rooms} zmbr ON zmbr.id = zbp.breakoutroomid
+        $sql = "SELECT zmbr.id
+                  FROM {zoom_meeting_breakout_rooms} zmbr
                   JOIN {zoom} z ON zmbr.zoomid = z.id
                   JOIN {modules} m ON m.name = 'zoom'
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
-                  JOIN {context} ctx
-                    ON ctx.instanceid = cm.id
-                   AND ctx.contextlevel = :modlevel
-                  WHERE ctx.id = :contextid
-                    AND zbp.userid $insql";
+                  JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :modlevel
+                 WHERE ctx.id = :contextid";
 
-        $params = array_merge($inparams, ['contextid' => $context->id, 'modlevel' => CONTEXT_MODULE]);
-        if ($zooms = $DB->get_records_sql($sql, $params)) {
-            $zbpids = [];
-            foreach ($zooms as $zoom) {
-                $zbpids[] = $zoom->id;
-            }
-            $DB->delete_records_select('zoom_breakout_participants', "id IN (".implode(',', $zbpids).")");
-        }
+        $DB->delete_records_select('zoom_breakout_participants', "userid $insql AND breakoutroomid IN ($sql)", $params);
     }
 }

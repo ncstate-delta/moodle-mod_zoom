@@ -179,6 +179,11 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
         $this->assertArrayHasKey('userid', $privacyfields3);
 
         $this->assertEquals('privacy:metadata:zoom_meeting_view', $table3->get_summary());
+
+        $privacyfields4 = $table4->get_privacy_fields();
+        $this->assertArrayHasKey('userid', $privacyfields4);
+
+        $this->assertEquals('privacy:metadata:zoom_breakout_participants', $table4->get_summary());
     }
 
     /**
