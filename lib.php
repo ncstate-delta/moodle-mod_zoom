@@ -681,7 +681,7 @@ function mod_zoom_core_calendar_provide_event_action(calendar_event $event,
 function zoom_scale_used_anywhere($scaleid) {
     global $DB;
 
-    if ($scaleid and $DB->record_exists('zoom', array('grade' => -$scaleid))) {
+    if ($scaleid && $DB->record_exists('zoom', array('grade' => -$scaleid))) {
         return true;
     } else {
         return false;
