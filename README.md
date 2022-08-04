@@ -32,6 +32,11 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.6.1
+
+- Bugfix: Avoid JavaScript error when 'Show More' button does not exist #392 (thanks @mwithheld)
+- Bugfix: Add missing privacy coverage for breakout rooms; fix privacy data deletion #395 (thanks @hdagheda)
+
 v4.6.0
 
 - Feature: Pre-assign Breakout Rooms #371 (thanks @annouarf, @levemar, University of Montreal, @mhughes2k)
