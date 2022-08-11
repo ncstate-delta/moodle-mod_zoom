@@ -817,32 +817,25 @@ function zoom_get_meeting_capacity(string $zoomhostid, bool $iswebinar = false) 
     // Get the 'feature' section of the user's Zoom settings.
     $userfeatures = $service->get_user_settings($zoomhostid)->feature;
 
+    $meetingcapacity = false;
+
     // If this is a webinar.
-    if ($iswebinar == true) {
-        // Get the 'webinar_capacity' value.
-        $meetingcapacity = $userfeatures->webinar_capacity;
-
-        // If the user does not have a webinar capacity for any reason, return.
-        if (is_int($meetingcapacity) == false || $meetingcapacity <= 0) {
-            return false;
+    if ($iswebinar === true) {
+        // Get the appropriate capacity value.
+        if (!empty($userfeatures->webinar_capacity)) {
+            $meetingcapacity = $userfeatures->webinar_capacity;
+        } else if (!empty($userfeatures->zoom_events_capacity)) {
+            $meetingcapacity = $userfeatures->zoom_events_capacity;
         }
-
-        // If this isn't a webinar but a regular meeting.
     } else {
-        // Get the 'meeting_capacity' value.
-        $meetingcapacity = $userfeatures->meeting_capacity;
+        // If this is a meeting, get the 'meeting_capacity' value.
+        if (!empty($userfeatures->meeting_capacity)) {
+            $meetingcapacity = $userfeatures->meeting_capacity;
 
-        // If the user does not have a meeting capacity for any reason, return.
-        if (is_int($meetingcapacity) == false || $meetingcapacity <= 0) {
-            return false;
-        }
-
-        // Check if the user has a 'large_meeting' license and, if yes, if this is bigger than the given 'meeting_capacity' value.
-        if ($userfeatures->large_meeting === true &&
-                isset($userfeatures->large_meeting_capacity) &&
-                is_int($userfeatures->large_meeting_capacity) != false &&
-                $userfeatures->large_meeting_capacity > $userfeatures->meeting_capacity) {
-            $meetingcapacity = $userfeatures->large_meeting_capacity;
+            // Check if the user has a 'large_meeting' license that has a higher capacity value.
+            if (!empty($userfeatures->large_meeting_capacity) && $userfeatures->large_meeting_capacity > $meetingcapacity) {
+                $meetingcapacity = $userfeatures->large_meeting_capacity;
+            }
         }
     }
 
