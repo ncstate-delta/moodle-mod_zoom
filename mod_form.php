@@ -524,6 +524,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add autorecording option if enabled.
         $allowrecordingchangeoption = $config->allowrecordingchangeoption;
+        $this->allowrecordingchangeoption = $allowrecordingchangeoption;
         if ($allowrecordingchangeoption) {
             // Add auto recording options according to user settings.
             $label = get_string('autorecording', 'zoom');
@@ -597,7 +598,15 @@ class mod_zoom_mod_form extends moodleform_mod {
             // Supplementary feature: Scheduling privilege.
             // Only show if the admin did not disable this feature completely and if current user is able to use it.
             if ($showschedulingprivilege) {
-                $mform->addElement('select', 'schedule_for', get_string('schedulefor', 'zoom'), $scheduleusers);
+                if ($allowrecordingchangeoption) {
+                    $PAGE->requires->js_call_amd('mod_zoom/scheduleforchooser', 'init');
+                    $mform->addElement('select', 'schedule_for', get_string('schedulefor', 'zoom'), $scheduleusers, [
+                        'data-scheduleforchooser-field' => 'selector',
+                    ]);
+                } else {
+                    $mform->addElement('select', 'schedule_for', get_string('schedulefor', 'zoom'), $scheduleusers);
+                }
+
                 $mform->setType('schedule_for', PARAM_EMAIL);
                 if (!$isnew) {
                     $mform->disabledIf('schedule_for', 'change_schedule_for');
@@ -607,6 +616,15 @@ class mod_zoom_mod_form extends moodleform_mod {
                     $mform->setDefault('schedule_for', strtolower($zoomapiidentifier));
                 }
                 $mform->addHelpButton('schedule_for', 'schedulefor', 'zoom');
+
+                if ($allowrecordingchangeoption) {
+                    // Button to update auto recording options based on the user permissions in Zoom (will be hidden by JavaScript).
+                    $mform->registerNoSubmitButton('updateautorecordingoptions');
+                    $mform->addElement('submit', 'updateautorecordingoptions', get_string('autorecordingoptionsupdate'), [
+                        'data-scheduleforchooser-field' => 'updateButton',
+                        'class' => 'd-none',
+                    ]);
+                }
             }
         }
 
@@ -644,6 +662,10 @@ class mod_zoom_mod_form extends moodleform_mod {
      */
     public function definition_after_data() {
         global $DB;
+
+        if (!$this->allowrecordingchangeoption) {
+            return;
+        }
 
         $mform = $this->_form;
 

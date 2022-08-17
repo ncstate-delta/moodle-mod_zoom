@@ -66,6 +66,7 @@ $string['autorecording_cloud'] = 'Cloud';
 $string['autorecording_local'] = 'Local';
 $string['autorecording_none'] = 'None';
 $string['autorecording_userdefault'] = 'Use default Zoom user settings';
+$string['autorecordingoptionsupdate'] = 'Update auto recording options';
 $string['breakoutrooms'] = 'Breakout rooms';
 $string['cachedef_zoomid'] = 'The zoom user id of the user';
 $string['cachedef_sessions'] = 'Information from the zoom get user report request';
