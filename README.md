@@ -32,6 +32,13 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.6.2
+
+- Regression: Rename mustache templates for backward compatibility #398 (thanks @PhilipBeacon)
+  - Introduced in v4.6.0 by new mustache templates in sub-directories (a Moodle 3.8 feature).
+- Bugfix: Recognize the Webinar capabilities of a Zoom Events license #338 (thanks @dottbarbieri)
+- Bugfix: Avoid PHP Warning when restoring Zoom activities without breakout room data #399
+
 v4.6.1
 
 - Bugfix: Avoid JavaScript error when 'Show More' button does not exist #392 (thanks @mwithheld)
