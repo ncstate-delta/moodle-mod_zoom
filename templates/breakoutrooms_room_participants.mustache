@@ -15,21 +15,21 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_zoom/breakoutrooms/room/groups
+    @template mod_zoom/breakoutrooms_room_participants
 
     Context variables required for this template:
     * roomid Room ID.
     * roomname Room name.
-    * coursegroups Array of groups. 
+    * courseparticipants Array of participants.
 
     Example context (json):
     {
         "roomid": "1",
         "roomname": "room1",
-        "coursegroups": [
+        "courseparticipants": [
             {
-                "groupid": "3",
-                "groupname": "group3",
+                "participantid": "2",
+                "participantemail": "a@example.com",
                 "selected": true
             }
         ]
@@ -37,10 +37,10 @@
 }}
 <div class="card">
     <div class="card-body">
-        <select id="groups-{{roomid}}" class="room-groups" name="{{toclone}}roomsgroups[{{roomid}}][]" multiple>
-            {{#coursegroups}}
-            <option value="{{groupid}}" {{#selected}}selected{{/selected}}>{{groupname}}</option>
-            {{/coursegroups}}
+        <select id="participants-{{roomid}}" class="room-participants" name="{{toclone}}roomsparticipants[{{roomid}}][]" multiple>
+            {{#courseparticipants}}
+            <option value="{{participantid}}" {{#selected}}selected{{/selected}}>{{participantemail}}</option>
+            {{/courseparticipants}}
         </select>
     </div>
 </div>

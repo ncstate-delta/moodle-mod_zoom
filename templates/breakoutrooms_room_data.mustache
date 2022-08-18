@@ -15,13 +15,13 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_zoom/breakoutrooms/room/datatoclone
+    @template mod_zoom/breakoutrooms_room_data
 
     Context variables required for this template:
     * roomid Room ID.
     * roomname Room name.
     * courseparticipants Array of participants.
-    * coursegroups Array of groups. 
+    * coursegroups Array of groups.
       
     Example context (json):
     {
@@ -43,20 +43,12 @@
         ]
     }
 }}
-<div id="data-to-clone" class="hidden">
-    <ul id="rooms-list-item" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link" href="" data-toggle="tab" role="tab">
-                <span class="tab-name"></span>
-            </a>
-            <button type="button" class="pull-right delete-room" title="{{#str}} deleteroom, zoom {{/str}}">
-              <span class="fa fa-trash-o fa-lg" aria-hidden="true"></span>
-            </button>
-        </li>
-    </ul>
-    <div id="rooms-list-item-data">
-        <div class="tab-pane" role="tabpanel">
-            {{> zoom/breakoutrooms/room/data }}
-        </div>
-    </div>
-</div>
+<label for="room-name-{{roomid}}">{{#str}} roomname, zoom {{/str}}</label>
+<input type="text" class="form-control col-sm-6 room-name" id="room-name-{{roomid}}" name="room-name-{{roomid}}" value="{{roomname}}">
+<input type="hidden" name="{{toclone}}rooms[{{roomid}}]" value="{{roomname}}">
+<hr>
+<span>{{#str}} participants, zoom {{/str}}</span>
+{{> zoom/breakoutrooms_room_participants }}
+<hr>
+<span>{{#str}} participantgroups, zoom {{/str}}</span>
+{{> zoom/breakoutrooms_room_groups }}

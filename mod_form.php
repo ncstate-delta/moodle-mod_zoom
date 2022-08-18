@@ -376,7 +376,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             $templatedata['roomscount'] = count($rooms);
         }
 
-        $mform->addElement('html', $OUTPUT->render_from_template('zoom/breakoutrooms/rooms', $templatedata));
+        $mform->addElement('html', $OUTPUT->render_from_template('zoom/breakoutrooms_rooms', $templatedata));
 
         $mform->addElement('hidden', 'rooms', '');
         $mform->setType('rooms', PARAM_RAW);

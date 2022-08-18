@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_zoom/breakoutrooms/rooms
+    @template mod_zoom/breakoutrooms_rooms
 
     Context variables required for this template:
     * roomscount Number of rooms.
@@ -101,7 +101,7 @@
         <div class="tab-content">
           {{#rooms}}
           <div class="tab-pane {{#roomactive}}active{{/roomactive}}" id="link{{roomid}}" role="tabpanel">
-              {{> zoom/breakoutrooms/room/data }}
+              {{> zoom/breakoutrooms_room_data }}
           </div>
           {{/rooms}}
         </div>
@@ -111,5 +111,5 @@
 </table>
 
 {{#roomtoclone}}
-{{> zoom/breakoutrooms/room/datatoclone }}
+{{> zoom/breakoutrooms_room_datatoclone }}
 {{/roomtoclone}}
