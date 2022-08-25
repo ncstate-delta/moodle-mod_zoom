@@ -322,13 +322,13 @@ if ($ADMIN->fulltree) {
     $recordingoption = new admin_setting_configselect('zoom/recordingoption',
         get_string('option_auto_recording', 'mod_zoom'),
         get_string('option_auto_recording_help', 'mod_zoom'),
-        'none', $autorecordingchoices);
+        ZOOM_AUTORECORDING_NONE, $autorecordingchoices);
     $settings->add($recordingoption);
 
     $allowrecordingchangeoption = new admin_setting_configcheckbox('zoom/allowrecordingchangeoption',
         get_string('option_allow_recording_change', 'mod_zoom'),
         get_string('option_allow_recording_change_help', 'mod_zoom'),
-        0, 1, 0);
+        1, 1, 0);
     $settings->add($allowrecordingchangeoption);
 
     $defaultshowmedia = new admin_setting_configcheckbox('zoom/defaultshowmedia',
