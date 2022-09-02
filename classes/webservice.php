@@ -28,7 +28,7 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 require_once($CFG->dirroot.'/lib/filelib.php');
 
 // Some plugins already might include this library, like mod_bigbluebuttonbn.
-// Hacky, but need to create whitelist of plugins that might have JWT library.
+// Hacky, but need to create list of plugins that might have JWT library.
 // NOTE: Remove file_exists checks and the JWT library in mod when versions prior to Moodle 3.7 is no longer supported.
 if (!class_exists('Firebase\JWT\JWT')) {
     if (file_exists($CFG->dirroot.'/lib/php-jwt/src/JWT.php')) {

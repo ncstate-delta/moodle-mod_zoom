@@ -264,7 +264,7 @@ v2.1
 v2.0.1
 
 - Fixing conflicts with Firebase\JWT library. If more conflicts are found,
-  please contact plugin maintainer to add whitelist in classes/webservice.php.
+  please contact plugin maintainer to add to list in classes/webservice.php.
 
 v2.0
 
