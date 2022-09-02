@@ -49,6 +49,7 @@
         <FIELD NAME="show_schedule" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Schedule heading in activity page" />
         <FIELD NAME="show_security" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Security heading in activity page" />
         <FIELD NAME="show_media" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Media heading in activity page" />
+        <FIELD NAME="option_auto_recording" TYPE="char" LENGTH="5" NOTNULL="true" DEFAULT="none" SEQUENCE="false" COMMENT="Auto record meeting." />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

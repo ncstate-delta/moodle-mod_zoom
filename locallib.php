@@ -101,6 +101,11 @@ define('ZOOM_API_ENDPOINT_EU', 'eu');
 define('ZOOM_API_ENDPOINT_GLOBAL', 'global');
 define('ZOOM_API_URL_EU', 'https://eu01api-www4local.zoom.us/v2/');
 define('ZOOM_API_URL_GLOBAL', 'https://api.zoom.us/v2/');
+// Auto-recording options.
+define('ZOOM_AUTORECORDING_NONE', 'none');
+define('ZOOM_AUTORECORDING_USERDEFAULT', 'userdefault');
+define('ZOOM_AUTORECORDING_LOCAL', 'local');
+define('ZOOM_AUTORECORDING_CLOUD', 'cloud');
 
 /**
  * Entry not found on Zoom.

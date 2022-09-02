@@ -35,6 +35,12 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
  * Module instance settings form
  */
 class mod_zoom_mod_form extends moodleform_mod {
+    /**
+     * Helper property for showing the scheduling privilege options.
+     *
+     * @var bool
+     */
+    private $showschedulingprivilege;
 
     /**
      * Defines forms elements
@@ -521,6 +527,30 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('option_mute_upon_entry', $config->defaultmuteuponentryoption);
         $mform->addHelpButton('option_mute_upon_entry', 'option_mute_upon_entry', 'mod_zoom');
 
+        // Add autorecording option if enabled.
+        $allowrecordingchangeoption = $config->allowrecordingchangeoption;
+        if ($allowrecordingchangeoption) {
+            // Add auto recording options according to user settings.
+            $options = array(
+                ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'mod_zoom'),
+            );
+            $recordingsettings = $service->get_user_settings($zoomuser->id)->recording;
+
+            $localrecording = $recordingsettings->local_recording;
+            if ($localrecording) {
+                $options[ZOOM_AUTORECORDING_LOCAL] = get_string('autorecording_local', 'mod_zoom');
+            }
+
+            $cloudrecording = $recordingsettings->cloud_recording;
+            if ($cloudrecording) {
+                $options[ZOOM_AUTORECORDING_CLOUD] = get_string('autorecording_cloud', 'mod_zoom');
+            }
+
+            $mform->addElement('select', 'option_auto_recording', get_string('option_auto_recording', 'mod_zoom'), $options);
+            $mform->setDefault('option_auto_recording', $config->recordingoption);
+            $mform->addHelpButton('option_auto_recording', 'option_auto_recording', 'mod_zoom');
+        }
+
         // Add show widget.
         $mform->addElement('advcheckbox', 'show_media', get_string('showmedia', 'zoom'),
                 get_string('showmediaonview', 'zoom'));
@@ -531,6 +561,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $showschedulingprivilege = ($config->showschedulingprivilege != ZOOM_SCHEDULINGPRIVILEGE_DISABLE) &&
                 count($scheduleusers) > 1 && $allowschedule; // Check if the size is greater than 1 because
                                                              // we add the editing/creating user by default.
+        $this->showschedulingprivilege = $showschedulingprivilege;
         $showalternativehosts = ($config->showalternativehosts != ZOOM_ALTERNATIVEHOSTS_DISABLE);
         if ($showschedulingprivilege || $showalternativehosts) {
 
@@ -570,7 +601,15 @@ class mod_zoom_mod_form extends moodleform_mod {
             // Supplementary feature: Scheduling privilege.
             // Only show if the admin did not disable this feature completely and if current user is able to use it.
             if ($showschedulingprivilege) {
-                $mform->addElement('select', 'schedule_for', get_string('schedulefor', 'zoom'), $scheduleusers);
+                if ($allowrecordingchangeoption) {
+                    $PAGE->requires->js_call_amd('mod_zoom/scheduleforchooser', 'init');
+                    $mform->addElement('select', 'schedule_for', get_string('schedulefor', 'mod_zoom'), $scheduleusers, [
+                        'data-scheduleforchooser-field' => 'selector',
+                    ]);
+                } else {
+                    $mform->addElement('select', 'schedule_for', get_string('schedulefor', 'mod_zoom'), $scheduleusers);
+                }
+
                 $mform->setType('schedule_for', PARAM_EMAIL);
                 if (!$isnew) {
                     $mform->disabledIf('schedule_for', 'change_schedule_for');
@@ -580,6 +619,20 @@ class mod_zoom_mod_form extends moodleform_mod {
                     $mform->setDefault('schedule_for', strtolower($zoomapiidentifier));
                 }
                 $mform->addHelpButton('schedule_for', 'schedulefor', 'zoom');
+
+                if ($allowrecordingchangeoption) {
+                    // Button to update auto recording options based on the user permissions in Zoom (will be hidden by JavaScript).
+                    $mform->registerNoSubmitButton('updateautorecordingoptions');
+                    $mform->addElement(
+                        'submit',
+                        'updateautorecordingoptions',
+                        get_string('autorecordingoptionsupdate', 'mod_zoom'),
+                        [
+                            'data-scheduleforchooser-field' => 'updateButton',
+                            'class' => 'd-none',
+                        ]
+                    );
+                }
             }
         }
 
@@ -610,6 +663,59 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add standard buttons, common to all modules.
         $this->add_action_buttons();
+    }
+
+    /**
+     * Fill in the current page data for this course.
+     */
+    public function definition_after_data() {
+        global $USER;
+
+        // Get config.
+        $config = get_config('zoom');
+
+        if (!$config->allowrecordingchangeoption) {
+            return;
+        }
+
+        $mform = $this->_form;
+
+        $service = new mod_zoom_webservice();
+        if ($this->showschedulingprivilege) {
+            $scheduleelement =& $mform->getElement('schedule_for');
+            $values = $scheduleelement->getValue();
+
+            if (empty($values)) {
+                return;
+            }
+
+            $scheduleforuser = current($values);
+            $zoomuser = $service->get_user($scheduleforuser);
+        } else {
+            $zoomapiidentifier = zoom_get_api_identifier($USER);
+            $zoomuser = $service->get_user($zoomapiidentifier);
+        }
+
+        $recordingelement =& $mform->getElement('option_auto_recording');
+        $recordingelement->removeOptions();
+
+        // Add auto recording options according to user settings.
+        $options = array(
+            ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'mod_zoom'),
+        );
+        $recordingsettings = $service->get_user_settings($zoomuser->id)->recording;
+
+        $localrecording = $recordingsettings->local_recording;
+        if ($localrecording) {
+            $options[ZOOM_AUTORECORDING_LOCAL] = get_string('autorecording_local', 'mod_zoom');
+        }
+
+        $cloudrecording = $recordingsettings->cloud_recording;
+        if ($cloudrecording) {
+            $options[ZOOM_AUTORECORDING_CLOUD] = get_string('autorecording_cloud', 'mod_zoom');
+        }
+
+        $recordingelement->load($options);
     }
 
     /**
