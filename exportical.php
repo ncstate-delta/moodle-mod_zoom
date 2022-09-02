@@ -65,8 +65,7 @@ $ical->add_property('method', 'PUBLISH');
 $ical->add_property('prodid', '-//Moodle Pty Ltd//NONSGML Moodle Version ' . $CFG->version . '//EN');
 
 // Get the meeting invite note to add to the description property.
-$service = new mod_zoom_webservice();
-$meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($cm->id);
+$meetinginvite = zoom_webservice()->get_meeting_invitation($zoom)->get_display_string($cm->id);
 
 // Compute and add description property to event.
 $convertedtext = html_to_text($zoom->intro);

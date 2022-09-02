@@ -571,12 +571,12 @@ class mod_zoom_webservice {
             $recordingoption = get_config('zoom', 'recordingoption');
             if ($recordingoption === ZOOM_AUTORECORDING_USERDEFAULT) {
                 if (isset($zoom->schedule_for)) {
-                    $zoomuser = $this->get_user($zoom->schedule_for);
+                    $zoomuser = zoom_get_user($zoom->schedule_for);
                 } else {
                     $zoomapiidentifier = zoom_get_api_identifier($USER);
-                    $zoomuser = $this->get_user($zoomapiidentifier);
+                    $zoomuser = zoom_get_user($zoomapiidentifier);
                 }
-                $autorecording = $this->get_user_settings($zoomuser->id)->recording->auto_recording;
+                $autorecording = zoom_get_user_settings($zoomuser->id)->recording->auto_recording;
                 $data['settings']['auto_recording'] = $autorecording;
             } else {
                 $data['settings']['auto_recording'] = $recordingoption;

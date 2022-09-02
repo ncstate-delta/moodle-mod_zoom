@@ -26,7 +26,6 @@
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
-require_once(dirname(__FILE__).'/classes/webservice.php');
 
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 
@@ -41,7 +40,6 @@ $PAGE->set_url('/mod/zoom/recreate.php', array('id' => $cm->id));
 // We will use the logged-in user's Zoom account to recreate,
 // in case the meeting's former owner no longer exists on Zoom.
 $zoom->host_id = zoom_get_user_id();
-$service = new mod_zoom_webservice();
 
 $trackingfields = $DB->get_records('zoom_meeting_tracking_fields', array('meeting_id' => $zoom->id));
 foreach ($trackingfields as $trackingfield) {
@@ -50,7 +48,7 @@ foreach ($trackingfields as $trackingfield) {
 }
 
 // Set the current zoom table entry to use the new meeting (meeting_id/etc).
-$response = $service->create_meeting($zoom);
+$response = zoom_webservice()->create_meeting($zoom);
 $zoom = populate_zoom_from_response($zoom, $response);
 $zoom->exists_on_zoom = ZOOM_MEETING_EXISTS;
 $zoom->timemodified = time();

@@ -65,9 +65,6 @@ $alternativehosts = zoom_get_alternative_host_array_from_string($zoom->alternati
 // Check if this user is the host or an alternative host.
 $userishost = ($userisrealhost || in_array(zoom_get_api_identifier($USER), $alternativehosts, true));
 
-// Get Zoom webservice instance.
-$service = new mod_zoom_webservice();
-
 // Get host user from Zoom.
 $hostuser = false;
 $showrecreate = false;
@@ -75,8 +72,8 @@ if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
     $showrecreate = true;
 } else {
     try {
-        $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
-        $hostuser = $service->get_user($zoom->host_id);
+        zoom_webservice()->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
+        $hostuser = zoom_get_user($zoom->host_id);
     } catch (moodle_exception $error) {
         $showrecreate = zoom_is_meeting_gone_error($error);
 
@@ -103,7 +100,6 @@ if ($hostuser) {
     $hostmoodleuser->middlename = '';
 }
 
-$meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($cm->id);
 $isrecurringnotime = ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME);
 
 $stryes = get_string('yes');
@@ -444,7 +440,7 @@ if ($zoom->show_media) {
             && ($zoom->option_audio === ZOOM_AUDIO_BOTH || $zoom->option_audio === ZOOM_AUDIO_TELEPHONY)
             && ($userishost || has_capability('mod/zoom:viewdialin', $context))) {
         // Get meeting invitation from Zoom.
-        $meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($cm->id);
+        $meetinginvite = zoom_webservice()->get_meeting_invitation($zoom)->get_display_string($cm->id);
         // Show meeting invitation if there is any.
         if (!empty($meetinginvite)) {
             $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);

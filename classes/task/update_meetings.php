@@ -25,10 +25,6 @@
 
 namespace mod_zoom\task;
 
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
-
 /**
  * Scheduled task to sychronize meeting data.
  */
@@ -58,9 +54,11 @@ class update_meetings extends \core\task\scheduled_task {
             mtrace('Skipping task - ', get_string('zoomerr_apisecret_missing', 'zoom'));
             return;
         }
+
         require_once($CFG->dirroot.'/lib/modinfolib.php');
         require_once($CFG->dirroot.'/mod/zoom/lib.php');
-        require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+
         $service = new \mod_zoom_webservice();
 
         // Show trace message.
