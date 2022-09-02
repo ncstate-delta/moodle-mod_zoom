@@ -527,7 +527,6 @@ class mod_zoom_mod_form extends moodleform_mod {
         $this->allowrecordingchangeoption = $allowrecordingchangeoption;
         if ($allowrecordingchangeoption) {
             // Add auto recording options according to user settings.
-            $label = get_string('autorecording', 'zoom');
             $options = array(
                 ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'zoom'),
             );
@@ -543,9 +542,9 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $options[ZOOM_AUTORECORDING_CLOUD] = get_string('autorecording_cloud', 'zoom');
             }
 
-            $mform->addElement('select', 'option_auto_recording', $label, $options);
+            $mform->addElement('select', 'option_auto_recording', get_string('option_auto_recording', 'zoom'), $options);
             $mform->setDefault('option_auto_recording', $config->recordingoption);
-            $mform->addHelpButton('option_auto_recording', 'auto_recording', 'zoom');
+            $mform->addHelpButton('option_auto_recording', 'option_auto_recording', 'zoom');
         }
 
         // Add show widget.
@@ -620,7 +619,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                 if ($allowrecordingchangeoption) {
                     // Button to update auto recording options based on the user permissions in Zoom (will be hidden by JavaScript).
                     $mform->registerNoSubmitButton('updateautorecordingoptions');
-                    $mform->addElement('submit', 'updateautorecordingoptions', get_string('autorecordingoptionsupdate'), [
+                    $mform->addElement('submit', 'updateautorecordingoptions', get_string('autorecordingoptionsupdate', 'mod_zoom'), [
                         'data-scheduleforchooser-field' => 'updateButton',
                         'class' => 'd-none',
                     ]);

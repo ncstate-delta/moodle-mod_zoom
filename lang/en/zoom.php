@@ -61,7 +61,6 @@ $string['audio_telephony'] = 'Telephone only';
 $string['audio_voip'] = 'Computer audio only';
 $string['audiodefault'] = 'Audio default';
 $string['authentication'] = 'Authentication';
-$string['autorecording'] = 'Auto recording';
 $string['autorecording_cloud'] = 'Cloud';
 $string['autorecording_local'] = 'Local';
 $string['autorecording_none'] = 'None';
