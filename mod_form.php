@@ -35,6 +35,12 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
  * Module instance settings form
  */
 class mod_zoom_mod_form extends moodleform_mod {
+    /**
+     * Helper property for showing the scheduling privilege options.
+     *
+     * @var bool
+     */
+    private $showschedulingprivilege;
 
     /**
      * Defines forms elements
@@ -50,7 +56,6 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         $service = new mod_zoom_webservice();
         $zoomuser = $service->get_user($zoomapiidentifier);
-        $this->zoomuser = $zoomuser;
 
         // If creating a new instance, but the Zoom user does not exist.
         if ($isnew && $zoomuser === false) {
@@ -524,7 +529,6 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add autorecording option if enabled.
         $allowrecordingchangeoption = $config->allowrecordingchangeoption;
-        $this->allowrecordingchangeoption = $allowrecordingchangeoption;
         if ($allowrecordingchangeoption) {
             // Add auto recording options according to user settings.
             $options = array(
@@ -665,9 +669,12 @@ class mod_zoom_mod_form extends moodleform_mod {
      * Fill in the current page data for this course.
      */
     public function definition_after_data() {
-        global $DB;
+        global $USER;
 
-        if (!$this->allowrecordingchangeoption) {
+        // Get config.
+        $config = get_config('zoom');
+
+        if (!$config->allowrecordingchangeoption) {
             return;
         }
 
@@ -685,7 +692,8 @@ class mod_zoom_mod_form extends moodleform_mod {
             $scheduleforuser = current($values);
             $zoomuser = $service->get_user($scheduleforuser);
         } else {
-            $zoomuser = $this->zoomuser;
+            $zoomapiidentifier = zoom_get_api_identifier($USER);
+            $zoomuser = $service->get_user($zoomapiidentifier);
         }
 
         $recordingelement =& $mform->getElement('option_auto_recording');
