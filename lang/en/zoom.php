@@ -25,6 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['accountid'] = 'Zoom account ID';
+$string['accountid_desc'] = '';
 $string['actions'] = 'Actions';
 $string['addparticipant'] = 'Add a participant';
 $string['addparticipantgroup'] = 'Add a group of participants';
@@ -75,6 +77,10 @@ $string['calendardescriptionintro'] = "\nDescription:\n{\$a}";
 $string['calendariconalt'] = 'Calendar icon';
 $string['changehost'] = 'Change host';
 $string['clickjoin'] = 'Clicked join meeting button';
+$string['clientid'] = 'Zoom client ID';
+$string['clientid_desc'] = '';
+$string['clientsecret'] = 'Zoom client secret';
+$string['clientsecret_desc'] = '';
 $string['connectionok'] = 'Connection working.';
 $string['connectionfailed'] = 'Connection failed: ';
 $string['connectionsettings'] = 'Connection settings';
