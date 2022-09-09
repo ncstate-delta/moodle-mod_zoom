@@ -994,7 +994,8 @@ class mod_zoom_webservice {
             $curl->setHeader('Content-Type: application/json');
 
             $timecalled = time();
-            $response = $this->make_curl_call($curl, 'post', 'https://zoom.us/oauth/token?grant_type=account_credentials&account_id=' . $this->accountid, array());
+            $response = $this->make_curl_call($curl, 'post',
+                'https://zoom.us/oauth/token?grant_type=account_credentials&account_id=' . $this->accountid, array());
 
             if ($curl->get_errno()) {
                 throw new moodle_exception('errorwebservice', 'mod_zoom', '', $curl->error);

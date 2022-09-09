@@ -19,6 +19,28 @@ JWT will be deprecated in June 2023; see https://marketplace.zoom.us/docs/guides
 You will need to create a Server-to-Server OAuth app and that will generate
 the client ID, client secret, and account ID.
 
+The following scopes are used by this plugin:
+
+- account:read:admin
+- dashboard_meetings:read:admin
+- dashboard_webinars:read:admin
+- meeting:read
+- meeting:read:admin
+- meeting:write
+- meeting:write:admin
+- recording:read
+- recording:read:admin
+- report:read:admin
+- tracking_fields:read:admin
+- user_info:read
+- user:read
+- user:read:admin
+- user:write:admin
+- webinar:read
+- webinar:read:admin
+- webinar:write
+- webinar:write:admin
+
 ## Installation
 
 1. Install plugin to mod/zoom. More details at https://docs.moodle.org/39/en/Installing_plugins#Installing_a_plugin
