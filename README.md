@@ -15,11 +15,14 @@ required.
 See https://marketplace.zoom.us/docs/guides/build/jwt-app. You will need to
 create a JWT app and that will generate the API key and secret.
 
+JWT will be deprecated in June 2023; see https://marketplace.zoom.us/docs/guides/build/server-to-server-oauth-app.
+You will need to create a Server-to-Server OAuth app and that will generate
+the client ID, client secret, and account ID.
+
 ## Installation
 
 1. Install plugin to mod/zoom. More details at https://docs.moodle.org/39/en/Installing_plugins#Installing_a_plugin
-2. Once you install the plugin you need to set the following set the following
-   settings to enable the plugin:
+2. Once you install the plugin you need to set the following settings to enable the plugin:
 
 - Zoom API key (mod_zoom | apikey)
 - Zoom API secret (mod_zoom | apisecret)
@@ -29,6 +32,12 @@ Please note that the API key and secret is not the same as the LTI key/secret.
 
 If you get "Access token is expired" errors, make sure the date/time on your
 server is properly synchronized with the time servers.
+
+After JWT deprecation in June 2023, you need to set the following  settings to enable the plugin:
+
+- Zoom client ID (mod_zoom | clientid)
+- Zoom client secret (mod_zoom | clientsecret)
+- Zoom account ID (mod_zoom | accountid)
 
 ## Changelog
 
