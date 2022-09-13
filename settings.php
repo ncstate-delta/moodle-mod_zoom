@@ -57,14 +57,6 @@ if ($ADMIN->fulltree) {
             get_string('connectionsettings', 'mod_zoom'),
             get_string('connectionsettings_desc', 'mod_zoom')));
 
-    $apikey = new admin_setting_configtext('zoom/apikey', get_string('apikey', 'mod_zoom'),
-            get_string('apikey_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
-    $settings->add($apikey);
-
-    $apisecret = new admin_setting_configpasswordunmask('zoom/apisecret', get_string('apisecret', 'mod_zoom'),
-            get_string('apisecret_desc', 'mod_zoom'), '');
-    $settings->add($apisecret);
-
     $clientid = new admin_setting_configtext('zoom/clientid', get_string('clientid', 'mod_zoom'),
             get_string('clientid_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
     $settings->add($clientid);
@@ -76,6 +68,14 @@ if ($ADMIN->fulltree) {
     $accountid = new admin_setting_configtext('zoom/accountid', get_string('accountid', 'mod_zoom'),
             get_string('accountid_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
     $settings->add($accountid);
+
+    $apikey = new admin_setting_configtext('zoom/apikey', get_string('apikey', 'mod_zoom'),
+            get_string('apikey_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
+    $settings->add($apikey);
+
+    $apisecret = new admin_setting_configpasswordunmask('zoom/apisecret', get_string('apisecret', 'mod_zoom'),
+            get_string('apisecret_desc', 'mod_zoom'), '');
+    $settings->add($apisecret);
 
     $zoomurl = new admin_setting_configtext('zoom/zoomurl', get_string('zoomurl', 'mod_zoom'),
             get_string('zoomurl_desc', 'mod_zoom'), '', PARAM_URL);

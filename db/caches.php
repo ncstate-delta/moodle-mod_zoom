@@ -31,4 +31,7 @@ $definitions = array(
     'zoommeetingsecurity' => array(
         'mode' => cache_store::MODE_APPLICATION
     ),
+    'oauth' => array(
+        'mode' => cache_store::MODE_APPLICATION
+    ),
 );

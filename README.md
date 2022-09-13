@@ -8,14 +8,14 @@ synchronization, grading and backup/restore.
 
 This plugin is designed for Educational or Business Zoom accounts.
 
-To connect to the Zoom APIs this plugin requires an account level JWT app to be
-created. To create an account-level JWT app the Developer Role Permission is
-required.
+To connect to the Zoom APIs this plugin requires an account level app to be
+created.
 
-See https://marketplace.zoom.us/docs/guides/build/jwt-app. You will need to
-create a JWT app and that will generate the API key and secret.
+## Server-to-Server OAuth
+To create an account-level server-to-server oauth app, the Server-to-server OAuth app
+Permission is required.
 
-JWT will be deprecated in June 2023; see https://marketplace.zoom.us/docs/guides/build/server-to-server-oauth-app.
+See https://marketplace.zoom.us/docs/guides/build/server-to-server-oauth-app.
 You will need to create a Server-to-Server OAuth app and that will generate
 the client ID, client secret, and account ID.
 
@@ -24,27 +24,78 @@ The following scopes are used by this plugin:
 - account:read:admin
 - dashboard_meetings:read:admin
 - dashboard_webinars:read:admin
-- meeting:read
 - meeting:read:admin
-- meeting:write
 - meeting:write:admin
-- recording:read
 - recording:read:admin
 - report:read:admin
 - tracking_fields:read:admin
-- user_info:read
-- user:read
 - user:read:admin
 - user:write:admin
-- webinar:read
 - webinar:read:admin
-- webinar:write
 - webinar:write:admin
+
+Scopes outlined by plugin settings:
+
+- Create/edit/delete meetings/webinars
+    - account:read:admin
+    - meeting:read:admin
+    - meeting:write:admin
+    - webinar:read:admin
+    - webinar:write:admin
+    - user:read:admin
+    - report:read:admin (Pro user and up)
+    - dashboard_meetings:read:admin (Business accounts and higher)
+    - dashboard_webinars:read:admin  (Business accounts and higher)
+- Number of licenses (zoom | licensesnumber)
+    - user:read:admin
+- Redefine licenses (zoom | utmost)
+     - user:read:admin
+    - user:write:admin
+- Recycle license upon join (zoom | recycleonjoin)
+    - user:read:admin
+    - user:write:admin
+- Allow recordings to be viewed (zoom | viewrecordings)
+    - recording:read:admin
+- Webinar (zoom | showwebinars)
+    - user:read:admin
+    - webinar:write:admin
+    - webinar:read:admin
+    - dashboard_webinars:read:admin
+- Webinar by default (zoom | webinardefault)
+    - user:read:admin
+    - webinar:write:admin
+    - webinar:read:admin
+    - dashboard_webinars:read:admin
+- Scheduling privilege (zoom | showschedulingprivilege)
+    - user:read:admin
+- Alternative Hosts (zoom | showalternativehosts (Show alternative hosts option as user picker with autocompletion))
+    - user:read:admin
+- Meeting capacity warning (zoom | showcapacitywarning)
+    - user:read:admin
+- Download iCal (zoom | showdownloadical)
+    - meeting:read:admin 
+- Automatic recording (zoom | recordingoption (Use default Zoom user settings))
+    - user:read:admin
+- Tracking fields (zoom | defaulttrackingfields)
+    - tracking_fields:read:admin
+
+## JWT
+JWT will be deprecated in June 2023. To create an account-level JWT app the Developer Role Permission is
+required.
+
+See https://marketplace.zoom.us/docs/guides/build/jwt-app. You will need to
+create a JWT app and that will generate the API key and secret.
 
 ## Installation
 
 1. Install plugin to mod/zoom. More details at https://docs.moodle.org/39/en/Installing_plugins#Installing_a_plugin
 2. Once you install the plugin you need to set the following settings to enable the plugin:
+
+- Zoom client ID (mod_zoom | clientid)
+- Zoom client secret (mod_zoom | clientsecret)
+- Zoom account ID (mod_zoom | accountid)
+
+JWT will be deprecated in June 2023. For a JWT app, you need to set the following settings to enable the plugin:
 
 - Zoom API key (mod_zoom | apikey)
 - Zoom API secret (mod_zoom | apisecret)
@@ -54,12 +105,6 @@ Please note that the API key and secret is not the same as the LTI key/secret.
 
 If you get "Access token is expired" errors, make sure the date/time on your
 server is properly synchronized with the time servers.
-
-After JWT deprecation in June 2023, you need to set the following  settings to enable the plugin:
-
-- Zoom client ID (mod_zoom | clientid)
-- Zoom client secret (mod_zoom | clientsecret)
-- Zoom account ID (mod_zoom | accountid)
 
 ## Changelog
 
