@@ -33,6 +33,10 @@ class mod_zoom_generator extends testing_module_generator {
         global $CFG;
         require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 
+        set_config('clientid', 'test', 'zoom');
+        set_config('clientsecret', 'test', 'zoom');
+        set_config('accountid', 'test', 'zoom');
+        // TODO: Remove with JWT deprecation June 2023.
         set_config('apikey', 'test', 'zoom');
         set_config('apisecret', 'test', 'zoom');
 
