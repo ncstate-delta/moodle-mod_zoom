@@ -1,10 +1,10 @@
 # Intro
 
-Zoom is the web and app based video conferencing service (http://zoom.us). This
+[Zoom](https://zoom.us) is a web- and app-based video conferencing service. This
 plugin offers tight integration with Moodle, supporting meeting creation,
-synchronization, grading, and backup/restore.
+synchronization, grading and backup/restore.
 
-# Prerequisites
+## Prerequisites
 
 This plugin is designed for Educational or Business Zoom accounts.
 
@@ -31,6 +31,13 @@ If you get "Access token is expired" errors, make sure the date/time on your
 server is properly synchronized with the time servers.
 
 ## Changelog
+
+v4.7.0
+
+- Feature: Allow automatic recording #390 (thanks @aduranterres, @lcollong)
+  - New settings `zoom/recordingoption`, `zoom/allowrecordingchangeoption`
+  - New per activity setting `option_auto_recording`
+- Performance: Static caching of repeated API calls #402 (thanks @aduranterres)
 
 v4.6.2
 
