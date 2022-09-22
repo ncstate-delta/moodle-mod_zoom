@@ -26,7 +26,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/zoom/locallib.php');
-require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
 /**
  * Structure step to restore one zoom activity
@@ -63,8 +62,7 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
 
         // Either create a new meeting or set meeting as expired.
         try {
-            $service = new mod_zoom_webservice();
-            $updateddata = $service->create_meeting($data);
+            $updateddata = zoom_webservice()->create_meeting($data);
             $data = populate_zoom_from_response($data, $updateddata);
             $data->exists_on_zoom = ZOOM_MEETING_EXISTS;
         } catch (moodle_exception $e) {

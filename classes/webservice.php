@@ -28,7 +28,7 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 require_once($CFG->dirroot.'/lib/filelib.php');
 
 // Some plugins already might include this library, like mod_bigbluebuttonbn.
-// Hacky, but need to create whitelist of plugins that might have JWT library.
+// Hacky, but need to create list of plugins that might have JWT library.
 // NOTE: Remove file_exists checks and the JWT library in mod when versions prior to Moodle 3.7 is no longer supported.
 if (!class_exists('Firebase\JWT\JWT')) {
     if (file_exists($CFG->dirroot.'/lib/php-jwt/src/JWT.php')) {
@@ -571,12 +571,12 @@ class mod_zoom_webservice {
             $recordingoption = get_config('zoom', 'recordingoption');
             if ($recordingoption === ZOOM_AUTORECORDING_USERDEFAULT) {
                 if (isset($zoom->schedule_for)) {
-                    $zoomuser = $this->get_user($zoom->schedule_for);
+                    $zoomuser = zoom_get_user($zoom->schedule_for);
                 } else {
                     $zoomapiidentifier = zoom_get_api_identifier($USER);
-                    $zoomuser = $this->get_user($zoomapiidentifier);
+                    $zoomuser = zoom_get_user($zoomapiidentifier);
                 }
-                $autorecording = $this->get_user_settings($zoomuser->id)->recording->auto_recording;
+                $autorecording = zoom_get_user_settings($zoomuser->id)->recording->auto_recording;
                 $data['settings']['auto_recording'] = $autorecording;
             } else {
                 $data['settings']['auto_recording'] = $recordingoption;

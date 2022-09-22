@@ -71,8 +71,6 @@ if ($iszoommanager) {
     ];
 }
 
-$service = new mod_zoom_webservice();
-
 // Find all entries for this meeting in the database.
 $recordings = zoom_get_meeting_recordings_grouped($zoom->id);
 if (empty($recordings)) {

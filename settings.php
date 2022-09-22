@@ -28,8 +28,6 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 require_once($CFG->libdir . '/environmentlib.php');
 
 if ($ADMIN->fulltree) {
-    require_once($CFG->dirroot.'/mod/zoom/locallib.php');
-    require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
     require_once($CFG->dirroot . '/mod/zoom/classes/invitation.php');
 
     $moodlehashideif = version_compare(normalize_version($CFG->release), '3.7.0', '>=');
@@ -42,8 +40,7 @@ if ($ADMIN->fulltree) {
         $notifyclass = 'notifysuccess';
         $errormessage = '';
         try {
-            $service = new mod_zoom_webservice();
-            $service->get_user(zoom_get_api_identifier($USER));
+            zoom_get_user(zoom_get_api_identifier($USER));
         } catch (moodle_exception $error) {
             $notifyclass = 'notifyproblem';
             $status = 'connectionfailed';

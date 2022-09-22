@@ -479,9 +479,8 @@ function zoom_get_user_id($required = true) {
     $cache = cache::make('mod_zoom', 'zoomid');
     if (!($zoomuserid = $cache->get($USER->id))) {
         $zoomuserid = false;
-        $service = new mod_zoom_webservice();
         try {
-            $zoomuser = $service->get_user(zoom_get_api_identifier($USER));
+            $zoomuser = zoom_get_user(zoom_get_api_identifier($USER));
             if ($zoomuser !== false && isset($zoomuser->id) && ($zoomuser->id !== false)) {
                 $zoomuserid = $zoomuser->id;
                 $cache->set($USER->id, $zoomuserid);
@@ -504,9 +503,8 @@ function zoom_get_user_id($required = true) {
 function zoom_get_meeting_security_settings() {
     $cache = cache::make('mod_zoom', 'zoommeetingsecurity');
     if (!($zoommeetingsecurity = $cache->get('meetingsecurity'))) {
-        $service = new mod_zoom_webservice();
         try {
-            $zoommeetingsecurity = $service->get_account_meeting_security_settings();
+            $zoommeetingsecurity = zoom_webservice()->get_account_meeting_security_settings();
         } catch (moodle_exception $error) {
             throw $error;
         }
@@ -667,9 +665,6 @@ function zoom_get_selectable_alternative_hosts_list(context $context) {
     // Create array of users.
     $selectablealternativehosts = array();
 
-    // Create Zoom API instance.
-    $service = new mod_zoom_webservice();
-
     // Iterate over selectable alternative host users.
     foreach ($users as $u) {
         // Note: Basically, if this is the user's own data row, the data row should be skipped.
@@ -682,7 +677,7 @@ function zoom_get_selectable_alternative_hosts_list(context $context) {
         // Verify that the user really has a Zoom account.
         // Furthermore, verify that the user's status is active. Adding a pending or inactive user as alternative host will result
         // in a Zoom API error otherwise.
-        $zoomuser = $service->get_user($u->email);
+        $zoomuser = zoom_get_user($u->email);
         if ($zoomuser !== false && $zoomuser->status === 'active') {
             // Add user to array of users.
             $selectablealternativehosts[$u->email] = fullname($u);
@@ -816,11 +811,8 @@ function zoom_get_unavailability_note($zoom, $finished = null) {
  * @return int|bool The meeting capacity of the Zoom user or false if the user does not have any meeting capacity at all.
  */
 function zoom_get_meeting_capacity(string $zoomhostid, bool $iswebinar = false) {
-    // Get Zoom API service instance.
-    $service = new mod_zoom_webservice();
-
     // Get the 'feature' section of the user's Zoom settings.
-    $userfeatures = $service->get_user_settings($zoomhostid)->feature;
+    $userfeatures = zoom_get_user_settings($zoomhostid)->feature;
 
     $meetingcapacity = false;
 
@@ -1085,8 +1077,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
     if ($userishost) {
         $config = get_config('zoom');
         if (!empty($config->recycleonjoin)) {
-            $service = new mod_zoom_webservice();
-            $service->provide_license($zoom->host_id);
+            zoom_webservice()->provide_license($zoom->host_id);
         }
     }
 
@@ -1103,8 +1094,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
  */
 function zoom_get_start_url($meetingid, $iswebinar, $fallbackurl) {
     try {
-        $service = new mod_zoom_webservice();
-        $response = $service->get_meeting_webinar_info($meetingid, $iswebinar);
+        $response = zoom_webservice()->get_meeting_webinar_info($meetingid, $iswebinar);
         return $response->start_url ?? $response->join_url;
     } catch (moodle_exception $e) {
         // If an exception was thrown, gracefully use the fallback URL.
@@ -1118,12 +1108,10 @@ function zoom_get_start_url($meetingid, $iswebinar, $fallbackurl) {
  * @return array tracking fields, keys as lower case
  */
 function zoom_list_tracking_fields() {
-    // Get Zoom API service instance.
-    $service = new mod_zoom_webservice();
     $trackingfields = array();
 
     // Get the tracking fields configured on the account.
-    $response = $service->list_tracking_fields();
+    $response = zoom_webservice()->list_tracking_fields();
     if (isset($response->tracking_fields)) {
         foreach ($response->tracking_fields as $trackingfield) {
             $field = str_replace(' ', '_', strtolower($trackingfield->field));
@@ -1252,4 +1240,51 @@ function zoom_get_meeting_recordings_grouped($zoomid) {
         $recordings[$recording->meetinguuid][] = $recording;
     }
     return $recordings;
+}
+
+/**
+ * Singleton for Zoom webservice class.
+ *
+ * @return \mod_zoom_webservice
+ */
+function zoom_webservice() {
+    static $service;
+
+    if (empty($service)) {
+        $service = new mod_zoom_webservice();
+    }
+
+    return $service;
+}
+
+/**
+ * Helper to get a Zoom user, efficiently.
+ *
+ * @param string|int $identifier The user's email or the user's ID per Zoom API.
+ * @return stdClass|false If user is found, returns a Zoom user object. Otherwise, returns false.
+ */
+function zoom_get_user($identifier) {
+    static $users = array();
+
+    if (!isset($users[$identifier])) {
+        $users[$identifier] = zoom_webservice()->get_user($identifier);
+    }
+
+    return $users[$identifier];
+}
+
+/**
+ * Helper to get Zoom user settings, efficiently.
+ *
+ * @param string|int $identifier The user's email or the user's ID per Zoom API.
+ * @return stdClass|false If user is found, returns a Zoom user object. Otherwise, returns false.
+ */
+function zoom_get_user_settings($identifier) {
+    static $settings = array();
+
+    if (!isset($settings[$identifier])) {
+        $settings[$identifier] = zoom_webservice()->get_user_settings($identifier);
+    }
+
+    return $settings[$identifier];
 }
