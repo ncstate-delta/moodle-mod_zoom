@@ -670,6 +670,8 @@ class mod_zoom_mod_form extends moodleform_mod {
     public function definition_after_data() {
         global $USER;
 
+        parent::definition_after_data();
+
         // Get config.
         $config = get_config('zoom');
 
@@ -862,7 +864,8 @@ class mod_zoom_mod_form extends moodleform_mod {
      */
     public function validation($data, $files) {
         global $CFG, $USER;
-        $errors = array();
+
+        $errors = parent::validation($data, $files);
 
         $config = get_config('zoom');
 
