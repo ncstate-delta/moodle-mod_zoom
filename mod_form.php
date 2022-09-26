@@ -412,7 +412,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addHelpButton('requirepasscode', 'requirepasscode', 'zoom');
 
         // Set default passcode and description from Zoom security settings.
-        $securitysettings = zoom_get_meeting_security_settings();
+        $securitysettings = zoom_get_meeting_security_settings($zoomapiidentifier);
         // Add password.
         $mform->addElement('text', 'meetingcode', get_string('setpasscode', 'zoom'), array('maxlength' => '10'));
         $mform->setType('meetingcode', PARAM_TEXT);
