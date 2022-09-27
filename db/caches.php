@@ -32,6 +32,8 @@ $definitions = array(
         'mode' => cache_store::MODE_APPLICATION
     ),
     'oauth' => array(
-        'mode' => cache_store::MODE_APPLICATION
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'simpledata' => true
     ),
 );

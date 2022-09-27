@@ -75,32 +75,11 @@ class get_meeting_reports extends \core\task\scheduled_task {
      * @param array $hostuuids      If passed, will find only meetings for given array of host uuids.
      */
     public function execute($paramstart = null, $paramend = null, $hostuuids = null) {
-        $config = get_config('zoom');
-        $useoauth = true;
-
-        if (empty($config->clientid) || empty($config->clientsecret) || empty($config->accountid)) {
-            $useoauth = false;
-        }
-
-        if ($useoauth) {
-            if (empty($config->clientid)) {
-                mtrace('Skipping task - ', get_string('zoomerr_clientid_missing', 'zoom'));
-                return;
-            } else if (empty($config->clientsecret)) {
-                mtrace('Skipping task - ', get_string('zoomerr_clientsecret_missing', 'zoom'));
-                return;
-            } else if (empty($config->accountid)) {
-                mtrace('Skipping task - ', get_string('zoomerr_accountid_missing', 'zoom'));
-                return;
-            }
-        } else {
-            if (empty($config->apikey)) {
-                mtrace('Skipping task - ', get_string('zoomerr_apikey_missing', 'zoom'));
-                return;
-            } else if (empty($config->apisecret)) {
-                mtrace('Skipping task - ', get_string('zoomerr_apisecret_missing', 'zoom'));
-                return;
-            }
+        try {
+            $service = new \mod_zoom_webservice();
+        } catch (\moodle_exception $exception) {
+            mtrace('Skipping task - ', $exception->getMessage());
+            return;
         }
 
         // See if we cannot make anymore API calls.

@@ -145,21 +145,21 @@ class mod_zoom_webservice {
             if (!empty($config->clientid)) {
                 $this->clientid = $config->clientid;
             } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_clientid_missing', 'zoom'));
+                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_field_missing', 'mod_zoom', 'client ID'));
             }
 
             // Get and remember the client secret.
             if (!empty($config->clientsecret)) {
                 $this->clientsecret = $config->clientsecret;
             } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_clientsecret_missing', 'zoom'));
+                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_field_missing', 'mod_zoom', 'client secret'));
             }
 
             // Get and remember the account ID.
             if (!empty($config->accountid)) {
                 $this->accountid = $config->accountid;
             } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_accountid_missing', 'zoom'));
+                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_field_missing', 'mod_zoom', 'account id'));
             }
         } else {
             // Get and remember the API key.
@@ -167,7 +167,7 @@ class mod_zoom_webservice {
             if (!empty($config->apikey)) {
                 $this->apikey = $config->apikey;
             } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apikey_missing', 'zoom'));
+                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_field_missing', 'mod_zoom', 'API key'));
             }
 
             // Get and remember the API secret.
@@ -175,7 +175,7 @@ class mod_zoom_webservice {
             if (!empty($config->apisecret)) {
                 $this->apisecret = $config->apisecret;
             } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apisecret_missing', 'zoom'));
+                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_field_missing', 'mod_zoom', 'API secret'));
             }
         }
 
@@ -260,11 +260,7 @@ class mod_zoom_webservice {
 
         // TODO: Remove JWT auth when deprecated in June 2023.
         if (isset($this->clientid) && isset($this->clientsecret) && isset($this->accountid)) {
-            try {
-                $token = $this->get_access_token();
-            } catch (moodle_exception $error) {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', $error->getMessage());
-            }
+            $token = $this->get_access_token();
         } else {
             $payload = array(
                 'iss' => $this->apikey,
@@ -989,16 +985,10 @@ class mod_zoom_webservice {
      */
     private function get_access_token() {
         $cache = cache::make('mod_zoom', 'oauth');
-        if (!($token = $cache->get('accesstoken'))) {
+        $token = $cache->get('accesstoken');
+        $expires = $cache->get('expires');
+        if (empty($token) || empty($expires) || time() >= $expires) {
             $token = $this->oauth($cache);
-        } else {
-            if (!($expires = $cache->get('expires'))) {
-                $token = $this->oauth($cache);
-            } else {
-                if (time() > $expires) {
-                    $token = $this->oauth($cache);
-                }
-            }
         }
         return $token;
     }

@@ -8,79 +8,41 @@ synchronization, grading and backup/restore.
 
 This plugin is designed for Educational or Business Zoom accounts.
 
-To connect to the Zoom APIs this plugin requires an account level app to be
+To connect to the Zoom APIs, this plugin requires an account-level app to be
 created.
 
-## Server-to-Server OAuth
-To create an account-level server-to-server oauth app, the Server-to-server OAuth app
-Permission is required.
+### Server-to-Server OAuth
+To [create an account-level Server-to-Server OAuth app](https://marketplace.zoom.us/docs/guides/build/server-to-server-oauth-app), the `Server-to-server OAuth app`
+permission is required.
 
-See https://marketplace.zoom.us/docs/guides/build/server-to-server-oauth-app.
-You will need to create a Server-to-Server OAuth app and that will generate
-the client ID, client secret, and account ID.
+The Server-to-Server OAuth app will generate a client ID, client secret and account ID.
 
-The following scopes are used by this plugin:
+At a minimum, the following scopes are required by this plugin:
 
-- account:read:admin
-- dashboard_meetings:read:admin
-- dashboard_webinars:read:admin
-- meeting:read:admin
-- meeting:write:admin
-- recording:read:admin
-- report:read:admin
-- tracking_fields:read:admin
-- user:read:admin
-- user:write:admin
-- webinar:read:admin
-- webinar:write:admin
+- meeting:read:admin (Read meeting details)
+- meeting:write:admin (Create/Update meetings)
+- user:read:admin (Read user details)
 
-Scopes outlined by plugin settings:
+Additional scopes are required for certain functionality:
 
-- Create/edit/delete meetings/webinars
+- Account-level passcode / encryption policies
     - account:read:admin
-    - meeting:read:admin
-    - meeting:write:admin
-    - webinar:read:admin
-    - webinar:write:admin
-    - user:read:admin
-    - report:read:admin (Pro user and up)
+- Reports for meetings / webinars
     - dashboard_meetings:read:admin (Business accounts and higher)
     - dashboard_webinars:read:admin  (Business accounts and higher)
-- Number of licenses (zoom | licensesnumber)
-    - user:read:admin
-- Redefine licenses (zoom | utmost)
-     - user:read:admin
-    - user:write:admin
-- Recycle license upon join (zoom | recycleonjoin)
-    - user:read:admin
-    - user:write:admin
+    - report:read:admin (Pro user and up)
 - Allow recordings to be viewed (zoom | viewrecordings)
     - recording:read:admin
-- Webinar (zoom | showwebinars)
-    - user:read:admin
-    - webinar:write:admin
-    - webinar:read:admin
-    - dashboard_webinars:read:admin
-- Webinar by default (zoom | webinardefault)
-    - user:read:admin
-    - webinar:write:admin
-    - webinar:read:admin
-    - dashboard_webinars:read:admin
-- Scheduling privilege (zoom | showschedulingprivilege)
-    - user:read:admin
-- Alternative Hosts (zoom | showalternativehosts (Show alternative hosts option as user picker with autocompletion))
-    - user:read:admin
-- Meeting capacity warning (zoom | showcapacitywarning)
-    - user:read:admin
-- Download iCal (zoom | showdownloadical)
-    - meeting:read:admin 
-- Automatic recording (zoom | recordingoption (Use default Zoom user settings))
-    - user:read:admin
 - Tracking fields (zoom | defaulttrackingfields)
     - tracking_fields:read:admin
+- Recycle licenses (zoom | utmost), (zoom | recycleonjoin)
+    - user:write:admin
+- Webinars (zoom | showwebinars), (zoom | webinardefault)
+    - webinar:read:admin
+    - webinar:write:admin
 
-## JWT
-JWT will be deprecated in June 2023. To create an account-level JWT app the Developer Role Permission is
+### JWT
+JWT will be deprecated in June 2023. To create an account-level JWT app the 'JWT' permission is
 required.
 
 See https://marketplace.zoom.us/docs/guides/build/jwt-app. You will need to
@@ -99,12 +61,13 @@ JWT will be deprecated in June 2023. For a JWT app, you need to set the followin
 
 - Zoom API key (mod_zoom | apikey)
 - Zoom API secret (mod_zoom | apisecret)
-- Zoom home page URL (mod_zoom | zoomurl), Link to your organization's custom Zoom landing page.
 
 Please note that the API key and secret is not the same as the LTI key/secret.
 
 If you get "Access token is expired" errors, make sure the date/time on your
 server is properly synchronized with the time servers.
+
+- Zoom home page URL (mod_zoom | zoomurl), Link to your organization's custom Zoom landing page.
 
 ## Changelog
 
