@@ -51,7 +51,7 @@ class delete_meeting_recordings extends \core\task\scheduled_task {
         global $DB;
 
         try {
-            $service = new \mod_zoom_webservice();
+            $service = zoom_webservice();
         } catch (\moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;

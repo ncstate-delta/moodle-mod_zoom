@@ -53,7 +53,7 @@ class get_meeting_recordings extends \core\task\scheduled_task {
 
         $config = get_config('zoom');
         try {
-            $service = new \mod_zoom_webservice();
+            $service = zoom_webservice();
         } catch (\moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
@@ -71,8 +71,6 @@ class get_meeting_recordings extends \core\task\scheduled_task {
                     get_string('strftimedaydatetime', 'core_langconfig')));
             return;
         }
-
-        $service = new \mod_zoom_webservice();
 
         mtrace('Finding meeting recordings for this account...');
 

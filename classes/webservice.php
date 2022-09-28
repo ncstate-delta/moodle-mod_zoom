@@ -134,64 +134,47 @@ class mod_zoom_webservice {
      */
     public function __construct() {
         $config = get_config('zoom');
-        $useoauth = true;
 
+        $requiredfields = array(
+            'clientid',
+            'clientsecret',
+            'accountid',
+        );
+
+        // TODO: Remove when JWT is no longer supported in June 2023.
         if (empty($config->clientid) || empty($config->clientsecret) || empty($config->accountid)) {
-            $useoauth = false;
+            $requiredfields = array(
+                'apikey',
+                'apisecret',
+            );
         }
 
-        if ($useoauth) {
-            // Get and remember the client ID.
-            if (!empty($config->clientid)) {
-                $this->clientid = $config->clientid;
-            } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_field_missing', 'mod_zoom', 'client ID'));
+        try {
+            // Get and remember each required field.
+            foreach ($requiredfields as $requiredfield) {
+                if (!empty($config->$requiredfield)) {
+                    $this->$requiredfield = $config->$requiredfield;
+                } else {
+                    throw new moodle_exception('zoomerr_field_missing', 'mod_zoom', '', get_string($requiredfield, 'mod_zoom'));
+                }
             }
 
-            // Get and remember the client secret.
-            if (!empty($config->clientsecret)) {
-                $this->clientsecret = $config->clientsecret;
-            } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_field_missing', 'mod_zoom', 'client secret'));
-            }
+            // Get and remember the API URL.
+            $this->apiurl = zoom_get_api_url();
 
-            // Get and remember the account ID.
-            if (!empty($config->accountid)) {
-                $this->accountid = $config->accountid;
-            } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_field_missing', 'mod_zoom', 'account id'));
+            // Get and remember the plugin settings to recycle licenses.
+            if (!empty($config->utmost)) {
+                $this->recyclelicenses = $config->utmost;
             }
-        } else {
-            // Get and remember the API key.
-            // TODO: Remove when JWT is no longer supported in June 2023.
-            if (!empty($config->apikey)) {
-                $this->apikey = $config->apikey;
-            } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_field_missing', 'mod_zoom', 'API key'));
+            if ($this->recyclelicenses) {
+                if (!empty($config->licensesnumber)) {
+                    $this->numlicenses = $config->licensesnumber;
+                } else {
+                    throw new moodle_exception('zoomerr_licensesnumber_missing', 'mod_zoom');
+                }
             }
-
-            // Get and remember the API secret.
-            // TODO: Remove when JWT is no longer supported in June 2023.
-            if (!empty($config->apisecret)) {
-                $this->apisecret = $config->apisecret;
-            } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_field_missing', 'mod_zoom', 'API secret'));
-            }
-        }
-
-        // Get and remember the API URL.
-        $this->apiurl = zoom_get_api_url();
-
-        // Get and remember the plugin settings to recycle licenses.
-        if (!empty($config->utmost)) {
-            $this->recyclelicenses = $config->utmost;
-        }
-        if ($this->recyclelicenses) {
-            if (!empty($config->licensesnumber)) {
-                $this->numlicenses = $config->licensesnumber;
-            } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_licensesnumber_missing', 'zoom'));
-            }
+        } catch (moodle_exception $exception) {
+            throw new moodle_exception('errorwebservice', 'mod_zoom', '', $exception->getMessage());
         }
     }
 
@@ -766,12 +749,7 @@ class mod_zoom_webservice {
      */
     public function get_meeting_webinar_info($id, $webinar) {
         $url = ($webinar ? 'webinars/' : 'meetings/') . $id;
-        $response = null;
-        try {
-            $response = $this->make_call($url);
-        } catch (moodle_exception $error) {
-            throw $error;
-        }
+        $response = $this->make_call($url);
         return $response;
     }
 
@@ -983,7 +961,7 @@ class mod_zoom_webservice {
      * @throws moodle_exception
      * @return string access token
      */
-    private function get_access_token() {
+    protected function get_access_token() {
         $cache = cache::make('mod_zoom', 'oauth');
         $token = $cache->get('accesstoken');
         $expires = $cache->get('expires');

@@ -48,7 +48,7 @@ class update_meetings extends \core\task\scheduled_task {
         global $CFG, $DB;
 
         try {
-            $service = new \mod_zoom_webservice();
+            $service = zoom_webservice();
         } catch (\moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;

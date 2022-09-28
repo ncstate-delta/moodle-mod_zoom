@@ -76,7 +76,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
      */
     public function execute($paramstart = null, $paramend = null, $hostuuids = null) {
         try {
-            $service = new \mod_zoom_webservice();
+            $this->service = zoom_webservice();
         } catch (\moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
@@ -88,10 +88,6 @@ class get_meeting_reports extends \core\task\scheduled_task {
             mtrace('Out of API calls, retry after ' . userdate($retryafter,
                     get_string('strftimedaydatetime', 'core_langconfig')));
             return;
-        }
-
-        if (is_null($this->service)) {
-            $this->service = new \mod_zoom_webservice();
         }
 
         $this->debuggingenabled = debugging();

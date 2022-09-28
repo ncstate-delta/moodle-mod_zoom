@@ -51,7 +51,7 @@ class update_tracking_fields extends \core\task\scheduled_task {
         global $CFG;
 
         try {
-            $service = new \mod_zoom_webservice();
+            zoom_webservice();
         } catch (\moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
