@@ -57,6 +57,10 @@ if ($ADMIN->fulltree) {
             get_string('connectionsettings', 'mod_zoom'),
             get_string('connectionsettings_desc', 'mod_zoom')));
 
+    $accountid = new admin_setting_configtext('zoom/accountid', get_string('accountid', 'mod_zoom'),
+            get_string('accountid_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
+    $settings->add($accountid);
+
     $clientid = new admin_setting_configtext('zoom/clientid', get_string('clientid', 'mod_zoom'),
             get_string('clientid_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
     $settings->add($clientid);
@@ -64,10 +68,6 @@ if ($ADMIN->fulltree) {
     $clientsecret = new admin_setting_configpasswordunmask('zoom/clientsecret', get_string('clientsecret', 'mod_zoom'),
             get_string('clientsecret_desc', 'mod_zoom'), '');
     $settings->add($clientsecret);
-
-    $accountid = new admin_setting_configtext('zoom/accountid', get_string('accountid', 'mod_zoom'),
-            get_string('accountid_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
-    $settings->add($accountid);
 
     $apikey = new admin_setting_configtext('zoom/apikey', get_string('apikey', 'mod_zoom'),
             get_string('apikey_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
