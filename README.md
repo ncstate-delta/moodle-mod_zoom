@@ -71,6 +71,14 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.8.0
+
+- Feature: Support Server-to-Server OAuth app #387 (thanks @haietza, @mhughes2k)
+  - New settings `zoom/accountid`, `zoom/clientid`, `zoom/clientsecret`
+  - Reminder: You must [switch from JWT to Server-to-Server OAuth by June 2023](https://marketplace.zoom.us/docs/guides/build/jwt-app/jwt-faq/).
+- Regression: Locked settings were not being applied #407 (thanks @krab-stik)
+  - Introduced in v4.7.0 while adding support for automatic recording.
+
 v4.7.0
 
 - Feature: Allow automatic recording #390 (thanks @aduranterres, @lcollong)
