@@ -8,8 +8,41 @@ synchronization, grading and backup/restore.
 
 This plugin is designed for Educational or Business Zoom accounts.
 
-To connect to the Zoom APIs this plugin requires an account level JWT app to be
-created. To create an account-level JWT app the Developer Role Permission is
+To connect to the Zoom APIs, this plugin requires an account-level app to be
+created.
+
+### Server-to-Server OAuth
+To [create an account-level Server-to-Server OAuth app](https://marketplace.zoom.us/docs/guides/build/server-to-server-oauth-app), the `Server-to-server OAuth app`
+permission is required.
+
+The Server-to-Server OAuth app will generate a client ID, client secret and account ID.
+
+At a minimum, the following scopes are required by this plugin:
+
+- meeting:read:admin (Read meeting details)
+- meeting:write:admin (Create/Update meetings)
+- user:read:admin (Read user details)
+
+Additional scopes are required for certain functionality:
+
+- Account-level passcode / encryption policies
+    - account:read:admin
+- Reports for meetings / webinars
+    - dashboard_meetings:read:admin (Business accounts and higher)
+    - dashboard_webinars:read:admin  (Business accounts and higher)
+    - report:read:admin (Pro user and up)
+- Allow recordings to be viewed (zoom | viewrecordings)
+    - recording:read:admin
+- Tracking fields (zoom | defaulttrackingfields)
+    - tracking_fields:read:admin
+- Recycle licenses (zoom | utmost), (zoom | recycleonjoin)
+    - user:write:admin
+- Webinars (zoom | showwebinars), (zoom | webinardefault)
+    - webinar:read:admin
+    - webinar:write:admin
+
+### JWT
+JWT will be deprecated in June 2023. To create an account-level JWT app the 'JWT' permission is
 required.
 
 See https://marketplace.zoom.us/docs/guides/build/jwt-app. You will need to
@@ -18,17 +51,23 @@ create a JWT app and that will generate the API key and secret.
 ## Installation
 
 1. Install plugin to mod/zoom. More details at https://docs.moodle.org/39/en/Installing_plugins#Installing_a_plugin
-2. Once you install the plugin you need to set the following set the following
-   settings to enable the plugin:
+2. Once you install the plugin you need to set the following settings to enable the plugin:
+
+- Zoom client ID (mod_zoom | clientid)
+- Zoom client secret (mod_zoom | clientsecret)
+- Zoom account ID (mod_zoom | accountid)
+
+JWT will be deprecated in June 2023. For a JWT app, you need to set the following settings to enable the plugin:
 
 - Zoom API key (mod_zoom | apikey)
 - Zoom API secret (mod_zoom | apisecret)
-- Zoom home page URL (mod_zoom | zoomurl), Link to your organization's custom Zoom landing page.
 
 Please note that the API key and secret is not the same as the LTI key/secret.
 
 If you get "Access token is expired" errors, make sure the date/time on your
 server is properly synchronized with the time servers.
+
+- Zoom home page URL (mod_zoom | zoomurl), Link to your organization's custom Zoom landing page.
 
 ## Changelog
 

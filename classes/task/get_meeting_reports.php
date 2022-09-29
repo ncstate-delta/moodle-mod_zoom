@@ -75,12 +75,10 @@ class get_meeting_reports extends \core\task\scheduled_task {
      * @param array $hostuuids      If passed, will find only meetings for given array of host uuids.
      */
     public function execute($paramstart = null, $paramend = null, $hostuuids = null) {
-        $config = get_config('zoom');
-        if (empty($config->apikey)) {
-            mtrace('Skipping task - ', get_string('zoomerr_apikey_missing', 'zoom'));
-            return;
-        } else if (empty($config->apisecret)) {
-            mtrace('Skipping task - ', get_string('zoomerr_apisecret_missing', 'zoom'));
+        try {
+            $this->service = zoom_webservice();
+        } catch (\moodle_exception $exception) {
+            mtrace('Skipping task - ', $exception->getMessage());
             return;
         }
 
@@ -90,10 +88,6 @@ class get_meeting_reports extends \core\task\scheduled_task {
             mtrace('Out of API calls, retry after ' . userdate($retryafter,
                     get_string('strftimedaydatetime', 'core_langconfig')));
             return;
-        }
-
-        if (is_null($this->service)) {
-            $this->service = new \mod_zoom_webservice();
         }
 
         $this->debuggingenabled = debugging();

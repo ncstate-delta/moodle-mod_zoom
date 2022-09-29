@@ -975,21 +975,23 @@ function mod_zoom_update_tracking_fields() {
 
     try {
         $defaulttrackingfields = zoom_clean_tracking_fields();
-        $zoomtrackingfields = zoom_list_tracking_fields();
         $zoomprops = array('id', 'field', 'required', 'visible', 'recommended_values');
         $confignames = array();
 
-        foreach ($zoomtrackingfields as $field => $zoomtrackingfield) {
-            if (isset($defaulttrackingfields[$field])) {
-                foreach ($zoomprops as $zoomprop) {
-                    $configname = 'tf_' . $field . '_' . $zoomprop;
-                    $confignames[] = $configname;
-                    if ($zoomprop === 'recommended_values') {
-                        $configvalue = implode(', ', $zoomtrackingfield[$zoomprop]);
-                    } else {
-                        $configvalue = $zoomtrackingfield[$zoomprop];
+        if (!empty($defaulttrackingfields)) {
+            $zoomtrackingfields = zoom_list_tracking_fields();
+            foreach ($zoomtrackingfields as $field => $zoomtrackingfield) {
+                if (isset($defaulttrackingfields[$field])) {
+                    foreach ($zoomprops as $zoomprop) {
+                        $configname = 'tf_' . $field . '_' . $zoomprop;
+                        $confignames[] = $configname;
+                        if ($zoomprop === 'recommended_values') {
+                            $configvalue = implode(', ', $zoomtrackingfield[$zoomprop]);
+                        } else {
+                            $configvalue = $zoomtrackingfield[$zoomprop];
+                        }
+                        set_config($configname, $configvalue, 'zoom');
                     }
-                    set_config($configname, $configvalue, 'zoom');
                 }
             }
         }

@@ -49,6 +49,10 @@ class mod_zoom_webservice_test extends advanced_testcase {
     public function setUp(): void {
         $this->resetAfterTest();
         // Set fake values so we can test methods in class.
+        set_config('clientid', 'test', 'zoom');
+        set_config('clientsecret', 'test', 'zoom');
+        set_config('accountid', 'test', 'zoom');
+        // TODO: Remove with JWT deprecation June 2023.
         set_config('apikey', 'test', 'zoom');
         set_config('apisecret', 'test', 'zoom');
 
@@ -84,7 +88,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
      * Tests that uuid are encoded properly for use in web service calls.
      */
     public function test_encode_uuid() {
-        $service = new \mod_zoom_webservice();
+        $service = zoom_webservice();
 
         // If uuid includes / or // it needs to be double encoded.
         $uuid = $service->encode_uuid('/u2F0gUNSqqC7DT+08xKrw==');
@@ -103,7 +107,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
      */
     public function test_meeting_not_found_exception() {
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('make_curl_call', 'get_curl_object'))
+            ->setMethods(array('make_curl_call', 'get_curl_object', 'get_access_token'))
             ->getMock();
 
         $mockservice->expects($this->any())
@@ -113,6 +117,10 @@ class mod_zoom_webservice_test extends advanced_testcase {
         $mockservice->expects($this->any())
             ->method('get_curl_object')
             ->willReturn($this->notfoundmockcurl);
+
+        $mockservice->expects($this->any())
+            ->method('get_access_token')
+            ->willReturn('token123');
 
         $foundexception = false;
         try {
@@ -130,7 +138,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
      */
     public function test_user_not_found_exception() {
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('make_curl_call', 'get_curl_object'))
+            ->setMethods(array('make_curl_call', 'get_curl_object', 'get_access_token'))
             ->getMock();
 
         $mockservice->expects($this->any())
@@ -140,6 +148,10 @@ class mod_zoom_webservice_test extends advanced_testcase {
         $mockservice->expects($this->any())
             ->method('get_curl_object')
             ->willReturn($this->notfoundmockcurl);
+
+        $mockservice->expects($this->any())
+            ->method('get_access_token')
+            ->willReturn('token123');
 
         $foundexception = false;
         try {
@@ -185,7 +197,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
         };
 
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('make_curl_call', 'get_curl_object'))
+            ->setMethods(array('make_curl_call', 'get_curl_object', 'get_access_token'))
             ->getMock();
 
         $mockservice->expects($this->any())
@@ -195,6 +207,10 @@ class mod_zoom_webservice_test extends advanced_testcase {
         $mockservice->expects($this->any())
             ->method('get_curl_object')
             ->willReturn($invalidmockcurl);
+
+        $mockservice->expects($this->any())
+            ->method('get_access_token')
+            ->willReturn('token123');
 
         $foundexception = false;
         try {
@@ -259,7 +275,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
         };
 
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('make_curl_call', 'get_curl_object'))
+            ->setMethods(array('make_curl_call', 'get_curl_object', 'get_access_token'))
             ->getMock();
 
         $mockservice->expects($this->any())
@@ -271,6 +287,10 @@ class mod_zoom_webservice_test extends advanced_testcase {
         $mockservice->expects($this->any())
             ->method('get_curl_object')
             ->willReturn($retrywithheadermockcurl);
+
+        $mockservice->expects($this->any())
+            ->method('get_access_token')
+            ->willReturn('token123');
 
         $result = $mockservice->get_user("1");
         // Expect 3 debugging calls for each retry attempt.
@@ -327,7 +347,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
         };
 
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('make_curl_call', 'get_curl_object'))
+            ->setMethods(array('make_curl_call', 'get_curl_object', 'get_access_token'))
             ->getMock();
 
         $mockservice->expects($this->any())
@@ -337,6 +357,10 @@ class mod_zoom_webservice_test extends advanced_testcase {
         $mockservice->expects($this->any())
             ->method('get_curl_object')
             ->willReturn($retrynoheadermockcurl);
+
+        $mockservice->expects($this->any())
+            ->method('get_access_token')
+            ->willReturn('token123');
 
         $result = $mockservice->get_user("1");
         $this->assertDebuggingCalledCount($expectedcount = 3);
@@ -405,12 +429,16 @@ class mod_zoom_webservice_test extends advanced_testcase {
         };
 
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('get_curl_object'))
+            ->setMethods(array('get_curl_object', 'get_access_token'))
             ->getMock();
 
         $mockservice->expects($this->any())
             ->method('get_curl_object')
             ->willReturn($retryfailuremockcurl);
+
+        $mockservice->expects($this->any())
+            ->method('get_access_token')
+            ->willReturn('token123');
 
         $foundexception = false;
         try {
@@ -483,12 +511,16 @@ class mod_zoom_webservice_test extends advanced_testcase {
         };
 
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('get_curl_object'))
+            ->setMethods(array('get_curl_object', 'get_access_token'))
             ->getMock();
 
         $mockservice->expects($this->any())
             ->method('get_curl_object')
             ->willReturn($retryqpsmockcurl);
+
+        $mockservice->expects($this->any())
+            ->method('get_access_token')
+            ->willReturn('token123');
 
         $foundexception = false;
         try {

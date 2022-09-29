@@ -52,13 +52,14 @@ class get_meeting_recordings extends \core\task\scheduled_task {
         global $DB;
 
         $config = get_config('zoom');
-        if (empty($config->apikey)) {
-            mtrace('Skipping task - ', get_string('zoomerr_apikey_missing', 'zoom'));
+        try {
+            $service = zoom_webservice();
+        } catch (\moodle_exception $exception) {
+            mtrace('Skipping task - ', $exception->getMessage());
             return;
-        } else if (empty($config->apisecret)) {
-            mtrace('Skipping task - ', get_string('zoomerr_apisecret_missing', 'zoom'));
-            return;
-        } else if (empty($config->viewrecordings)) {
+        }
+
+        if (empty($config->viewrecordings)) {
             mtrace('Skipping task - ', get_string('zoomerr_viewrecordings_off', 'zoom'));
             return;
         }
@@ -70,8 +71,6 @@ class get_meeting_recordings extends \core\task\scheduled_task {
                     get_string('strftimedaydatetime', 'core_langconfig')));
             return;
         }
-
-        $service = new \mod_zoom_webservice();
 
         mtrace('Finding meeting recordings for this account...');
 
