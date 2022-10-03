@@ -345,6 +345,11 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('show_schedule', $config->defaultshowschedule);
         $mform->addHelpButton('show_schedule', 'showschedule', 'zoom');
 
+        // Add registration widget
+        $mform->addElement('advcheckbox', 'registration_required', get_string('registration_required', 'zoom'), get_string('registration_required_text', 'zoom'));
+        $mform->setDefault('registration_required', $config->defaultregistrationrequired);
+        $mform->addHelpButton('registration_required', 'registration_required', 'zoom');
+
         // Adding the "breakout rooms" fieldset.
         $mform->addElement('header', 'breakoutrooms', get_string('breakoutrooms', 'mod_zoom'));
         $mform->setExpanded('breakoutrooms');

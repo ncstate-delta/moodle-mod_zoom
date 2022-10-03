@@ -50,6 +50,7 @@
         <FIELD NAME="show_security" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Security heading in activity page" />
         <FIELD NAME="show_media" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Media heading in activity page" />
         <FIELD NAME="option_auto_recording" TYPE="char" LENGTH="5" NOTNULL="true" DEFAULT="none" SEQUENCE="false" COMMENT="Auto record meeting." />
+        <FIELD NAME="registration_required" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Force participants to register for the meeting/webinar" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

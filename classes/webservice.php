@@ -581,6 +581,14 @@ class mod_zoom_webservice {
             $data['settings']['meeting_authentication'] = (bool) $zoom->option_authenticated_users;
         }
 
+        if ($zoom->registration_required) {
+            //0 — Automatically approve registration.
+            $data['settings']['approval_type'] = 0;
+        } else {
+            //2 — No registration required.
+            $data['settings']['approval_type'] = 2;
+        }
+
         if (!empty($zoom->webinar)) {
             if ($zoom->recurring) {
                 if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
@@ -1012,5 +1020,23 @@ class mod_zoom_webservice {
         } else {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_no_access_token', 'zoom'));
         }
+    }
+
+     /**
+     * List the meeting or webinar registrants from Zoom.
+     *
+     * @param int $id The meeting_id or webinar_id of the meeting or webinar to retrieve.
+     * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
+     * @return stdClass The meeting's or webinar's information.
+     */
+    public function get_meeting_registrants($id, $webinar) {
+        $url = ($webinar ? 'webinars/' : 'meetings/') . $id . '/registrants';
+        $response = null;
+        try {
+            $response = $this->make_call($url);
+        } catch (moodle_exception $error) {
+            throw $error;
+        }
+        return $response;
     }
 }

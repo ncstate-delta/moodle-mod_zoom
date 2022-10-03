@@ -1020,8 +1020,14 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
 
     list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
+    $user_is_registered = false;
+    if ($zoom->registration_required) {
+        // Check if user already registered.
+        $user_is_registered = zoom_is_user_registered_for_meeting($USER->email, $zoom->meeting_id, $zoom->webinar);
+    }
+
     // If the meeting is not yet available, deny access.
-    if ($available !== true) {
+    if ($available !== true  && (!$zoom->registration_required || ($zoom->registration_required && $user_is_registered))) {
         // Get unavailability note.
         $returns['error'] = zoom_get_unavailability_note($zoom, $finished);
         return $returns;
@@ -1037,7 +1043,14 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
         $starturl = zoom_get_start_url($zoom->meeting_id, $zoom->webinar, $zoom->join_url);
         $returns['nexturl'] = new moodle_url($starturl);
     } else {
-        $returns['nexturl'] = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
+        $url = $zoom->join_url;
+        if ($zoom->registration_required) {
+            $registrant_join_url = zoom_get_registrant_join_url($USER->email, $zoom->meeting_id, $zoom->webinar);
+            if ($registrant_join_url) {
+                $url = $registrant_join_url;
+            }
+        }       
+        $returns['nexturl'] = new moodle_url($url, array('uname' => fullname($USER)));
     }
 
     // Record user's clicking join.
@@ -1287,4 +1300,64 @@ function zoom_get_user_settings($identifier) {
     }
 
     return $settings[$identifier];
+}
+
+/**
+ * 
+ * Get the zoom meeting registrants.
+ * 
+ * @param string $meetingid Zoom meeting ID.
+ * @param bool $iswebinar If the session is a webinar.
+ * @return stdClass|error Returns a Zoom object containing the registrants (if found).
+ * 
+ */
+function zoom_get_meeting_registrants($meetingid, $iswebinar) {
+    try {
+        $response = zoom_webservice()->get_meeting_registrants($meetingid, $iswebinar);
+        return $response;
+    } catch (moodle_exception $error) {
+        throw $error;
+    }
+}
+
+/**
+ * Checks if a user has registered for a meeting/webinar based on their email address.
+ * 
+ * @param string $useremail The email address of a user used to determine if they registered or not.
+ * @param string $meetingid Zoom meeting ID.
+ * @param bool $iswebinar If the session is a webinar.
+ * @return bool Returns whether or not the user has registered for the zoom meeting/webinar based on their email address.
+ */
+function zoom_is_user_registered_for_meeting($useremail, $meetingid, $iswebinar) {
+    $registrants_reponse = zoom_get_meeting_registrants($meetingid, $iswebinar);
+    if ($registrants_reponse) {
+        $registrants = $registrants_reponse->registrants;
+        foreach($registrants as $registrant) {
+            if (strcasecmp($useremail, $registrant->email) == 0) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/**
+ * Get the join url for a user for the specified meeting/webinar.
+ * 
+ * @param string $useremail The email address of a user used to determine if they registered or not.
+ * @param string $meetingid Zoom meeting ID.
+ * @param bool $iswebinar If the session is a webinar.
+ * @return string|false Returns the join url for the user (based on email address) for the specified meeting (if found).
+ */
+function zoom_get_registrant_join_url($useremail, $meetingid, $iswebinar) {
+    $registrants_reponse = zoom_get_meeting_registrants($meetingid, $iswebinar);
+    if ($registrants_reponse) {
+        $registrants = $registrants_reponse->registrants;
+        foreach($registrants as $registrant) {
+            if (strcasecmp($useremail, $registrant->email) == 0) {
+                return $registrant->join_url;
+            }
+        }
+    }
+    return false;
 }
