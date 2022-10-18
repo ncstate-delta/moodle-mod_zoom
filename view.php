@@ -148,7 +148,7 @@ if ($showrecreate) {
 }
 
 // Show intro.
-if ($zoom->intro) {
+if ($zoom->intro && $CFG->branch < '400') {
     echo $OUTPUT->box(format_module_intro('zoom', $zoom, $cm->id), 'generalbox mod_introbox', 'intro');
 }
 
