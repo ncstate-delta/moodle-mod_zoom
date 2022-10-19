@@ -257,10 +257,10 @@ if ($ADMIN->fulltree) {
             get_string('showschedule_help', 'mod_zoom'), 1, 1, 0);
     $settings->add($defaultshowschedule);
 
-    $defaultregistrationrequired = new admin_setting_configcheckbox('zoom/defaultregistrationrequired', 
-            get_string('registration_required', 'mod_zoom'), 
-            get_string('registration_required_help', 'mod_zoom'), 0, 1, 0);
-    $settings->add($defaultregistrationrequired);
+    $defaultregistration = new admin_setting_configcheckbox('zoom/defaultregistration',
+            get_string('registration', 'mod_zoom'),
+            get_string('registration_help', 'mod_zoom'), ZOOM_REGISTRATION_OFF, ZOOM_REGISTRATION_AUTOMATIC, ZOOM_REGISTRATION_OFF);
+    $settings->add($defaultregistration);
 
     $defaultrequirepasscode = new admin_setting_configcheckbox('zoom/requirepasscode',
             get_string('requirepasscode', 'mod_zoom'),

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/zoom/db" VERSION="20210303" COMMENT="Zoom module"
+<XMLDB PATH="mod/zoom/db" VERSION="20221003" COMMENT="Zoom module"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -50,7 +50,7 @@
         <FIELD NAME="show_security" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Security heading in activity page" />
         <FIELD NAME="show_media" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show Media heading in activity page" />
         <FIELD NAME="option_auto_recording" TYPE="char" LENGTH="5" NOTNULL="true" DEFAULT="none" SEQUENCE="false" COMMENT="Auto record meeting." />
-        <FIELD NAME="registration_required" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Force participants to register for the meeting/webinar" />
+        <FIELD NAME="registration" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="2" SEQUENCE="false" COMMENT="Force participants to register for the meeting/webinar" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

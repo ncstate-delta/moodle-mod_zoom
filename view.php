@@ -201,23 +201,25 @@ list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
 // Show join meeting button or unavailability note.
 if (!$showrecreate) {
+    // If registration is required, check the registration.
+    if (!$userishost && $zoom->registration != ZOOM_REGISTRATION_OFF) {
+        $userisregistered = zoom_is_user_registered_for_meeting($USER->email, $zoom->meeting_id, $zoom->webinar);
+
+        // Unregistered users are allowed to register.
+        if (!$userisregistered) {
+            $available = true;
+        }
+    }
+
     if ($available) {
         // Show join meeting button.
         if ($userishost) {
             $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
         } else {
-            // Check if registration is required
-            $btntext = '';
-            if (!$zoom->registration_required) {
-                $btntext = $strjoin;
-            } else {
-                // Check if user already registered.
-                $user_is_registered = zoom_is_user_registered_for_meeting($USER->email, $zoom->meeting_id, $zoom->webinar);
-                if ($user_is_registered) {
-                    $btntext = $strjoin;
-                } else {
-                    $btntext = $strregister;
-                }
+            $btntext = $strjoin;
+            // If user is not already registered, use register text.
+            if ($zoom->registration != ZOOM_REGISTRATION_OFF && !$userisregistered) {
+                $btntext = $strregister;
             }
             $buttonhtml = html_writer::tag('button', $btntext, array('type' => 'submit', 'class' => 'btn btn-primary'));
         }
@@ -225,27 +227,13 @@ if (!$showrecreate) {
         $buttonhtml .= html_writer::input_hidden_params($aurl);
         $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
     } else {
-        $display_unavailability_note = true;
-        if (!$userishost && $zoom->registration_required) {
-            // Check if user already registered.
-            $user_is_registered = zoom_is_user_registered_for_meeting($USER->email, $zoom->meeting_id, $zoom->webinar);
-            if (!$user_is_registered) {
-                $display_unavailability_note = false;
-                $buttonhtml = html_writer::tag('button', $strregister, array('type' => 'submit', 'class' => 'btn btn-primary'));
-                $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
-                $buttonhtml .= html_writer::input_hidden_params($aurl);
-                $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
-            }
-        }
-        if ($display_unavailability_note) {
-            // Get unavailability note.
-            $unavailabilitynote = zoom_get_unavailability_note($zoom, $finished);
+        // Get unavailability note.
+        $unavailabilitynote = zoom_get_unavailability_note($zoom, $finished);
 
-            // Show unavailability note.
-            // Ideally, this would use $OUTPUT->notification(), but this renderer adds a close icon to the notification which does not
-            // make sense here. So we build the notification manually.
-            $link = html_writer::tag('div', $unavailabilitynote, array('class' => 'alert alert-primary'));
-        }
+        // Show unavailability note.
+        // Ideally, this would use $OUTPUT->notification(), but this renderer adds a close icon to the notification which does not
+        // make sense here. So we build the notification manually.
+        $link = html_writer::tag('div', $unavailabilitynote, array('class' => 'alert alert-primary'));
     }
     echo $OUTPUT->box_start('generalbox text-center');
     echo $link;

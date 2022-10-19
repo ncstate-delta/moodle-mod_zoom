@@ -830,8 +830,8 @@ function xmldb_zoom_upgrade($oldversion) {
     if ($oldversion < 2022102700) {
         $table = new xmldb_table('zoom');
 
-        // Define and conditionally add field registration_required.
-        $field = new xmldb_field('registration_required', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'show_media');
+        // Define and conditionally add field registration.
+        $field = new xmldb_field('registration', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '2', 'option_auto_recording');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }

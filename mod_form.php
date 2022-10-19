@@ -345,10 +345,17 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('show_schedule', $config->defaultshowschedule);
         $mform->addHelpButton('show_schedule', 'showschedule', 'zoom');
 
-        // Add registration widget
-        $mform->addElement('advcheckbox', 'registration_required', get_string('registration_required', 'zoom'), get_string('registration_required_text', 'zoom'));
-        $mform->setDefault('registration_required', $config->defaultregistrationrequired);
-        $mform->addHelpButton('registration_required', 'registration_required', 'zoom');
+        // Add registration widget.
+        $mform->addElement(
+            'advcheckbox',
+            'registration',
+            get_string('registration', 'mod_zoom'),
+            get_string('registration_text', 'mod_zoom'),
+            array(),
+            array(ZOOM_REGISTRATION_OFF, ZOOM_REGISTRATION_AUTOMATIC)
+        );
+        $mform->setDefault('registration', $config->defaultregistration);
+        $mform->addHelpButton('registration', 'registration', 'mod_zoom');
 
         // Adding the "breakout rooms" fieldset.
         $mform->addElement('header', 'breakoutrooms', get_string('breakoutrooms', 'mod_zoom'));
@@ -805,6 +812,11 @@ class mod_zoom_mod_form extends moodleform_mod {
                 // Unset the weekly fields.
                 $data = zoom_remove_monthly_options($data);
             }
+        }
+
+        // Workaround for MDL-76095 because automatically-approved registrations are mode "0".
+        if (isset($data->registration) && $data->registration === 'on') {
+            $data->registration = ZOOM_REGISTRATION_AUTOMATIC;
         }
     }
 

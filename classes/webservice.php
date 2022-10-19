@@ -580,13 +580,8 @@ class mod_zoom_webservice {
         if (isset($zoom->option_authenticated_users)) {
             $data['settings']['meeting_authentication'] = (bool) $zoom->option_authenticated_users;
         }
-
-        if ($zoom->registration_required) {
-            //0 — Automatically approve registration.
-            $data['settings']['approval_type'] = 0;
-        } else {
-            //2 — No registration required.
-            $data['settings']['approval_type'] = 2;
+        if (isset($zoom->registration)) {
+            $data['settings']['approval_type'] = $zoom->registration;
         }
 
         if (!empty($zoom->webinar)) {
@@ -1022,7 +1017,7 @@ class mod_zoom_webservice {
         }
     }
 
-     /**
+    /**
      * List the meeting or webinar registrants from Zoom.
      *
      * @param int $id The meeting_id or webinar_id of the meeting or webinar to retrieve.
@@ -1031,12 +1026,7 @@ class mod_zoom_webservice {
      */
     public function get_meeting_registrants($id, $webinar) {
         $url = ($webinar ? 'webinars/' : 'meetings/') . $id . '/registrants';
-        $response = null;
-        try {
-            $response = $this->make_call($url);
-        } catch (moodle_exception $error) {
-            throw $error;
-        }
+        $response = $this->make_call($url);
         return $response;
     }
 }
