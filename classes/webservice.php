@@ -983,6 +983,11 @@ class mod_zoom_webservice {
         $curl->setHeader('Authorization: Basic ' . base64_encode($this->clientid . ':' . $this->clientsecret));
         $curl->setHeader('Content-Type: application/json');
 
+        // Force HTTP/1.1 to avoid HTTP/2 "stream not closed" issue.
+        $curl->setopt(array(
+            'CURLOPT_HTTP_VERSION' => CURL_HTTP_VERSION_1_1,
+        ));
+
         $timecalled = time();
         $response = $this->make_curl_call($curl, 'post',
             'https://zoom.us/oauth/token?grant_type=account_credentials&account_id=' . $this->accountid, array());
