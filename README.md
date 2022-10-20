@@ -71,6 +71,11 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.8.1
+
+- Bugfix: Moodle 4 was displaying the activity description twice #417 (thanks @Laur0r, @haietza)
+- Bugfix: Avoid HTTP/2 error when using Server-to-Server OAuth #418 (thanks @phette23)
+
 v4.8.0
 
 - Feature: Support Server-to-Server OAuth app #387 (thanks @haietza, @mhughes2k)
@@ -84,6 +89,7 @@ v4.7.0
 - Feature: Allow automatic recording #390 (thanks @aduranterres, @lcollong)
   - New settings `zoom/recordingoption`, `zoom/allowrecordingchangeoption`
   - New per activity setting `option_auto_recording`
+  - Known issue: Causes pre-existing events to turn off automatic recording when edited.
 - Performance: Static caching of repeated API calls #402 (thanks @aduranterres)
 
 v4.6.2
