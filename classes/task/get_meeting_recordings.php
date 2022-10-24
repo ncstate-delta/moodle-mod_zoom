@@ -51,7 +51,6 @@ class get_meeting_recordings extends \core\task\scheduled_task {
     public function execute() {
         global $DB;
 
-        $config = get_config('zoom');
         try {
             $service = zoom_webservice();
         } catch (\moodle_exception $exception) {
@@ -59,6 +58,7 @@ class get_meeting_recordings extends \core\task\scheduled_task {
             return;
         }
 
+        $config = get_config('zoom');
         if (empty($config->viewrecordings)) {
             mtrace('Skipping task - ', get_string('zoomerr_viewrecordings_off', 'zoom'));
             return;
