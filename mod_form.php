@@ -53,11 +53,10 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         $isnew = empty($this->_cm);
 
-        $zoomapiidentifier = zoom_get_api_identifier($USER);
-        $zoomuser = zoom_get_user($zoomapiidentifier);
+        $zoomuserid = zoom_get_user_id(false);
 
         // If creating a new instance, but the Zoom user does not exist.
-        if ($isnew && $zoomuser === false) {
+        if ($isnew && $zoomuserid === false) {
             // Assume user is using Zoom for the first time.
             $errstring = 'zoomerr_usernotfound';
             // After they set up their account, the user should continue to the page they were on.
@@ -70,18 +69,18 @@ class mod_zoom_mod_form extends moodleform_mod {
         $scheduleusers = [];
 
         $canschedule = false;
-        if ($zoomuser !== false) {
+        if ($zoomuserid !== false) {
             // Get the array of users they can schedule.
-            $canschedule = zoom_webservice()->get_schedule_for_users($zoomapiidentifier);
+            $canschedule = zoom_webservice()->get_schedule_for_users($zoomuserid);
         }
 
         if (!empty($canschedule)) {
             // Add the current user.
-            $canschedule[$zoomuser->id] = new stdClass();
-            $canschedule[$zoomuser->id]->email = $USER->email;
+            $canschedule[$zoomuserid] = new stdClass();
+            $canschedule[$zoomuserid]->email = $USER->email;
 
             // If the activity exists and the current user is not the current host.
-            if (!$isnew && $zoomuser->id !== $this->current->host_id) {
+            if (!$isnew && $zoomuserid !== $this->current->host_id) {
                 // Get intersection of current host's schedulers and $USER's schedulers to prevent zoom errors.
                 $currenthostschedulers = zoom_webservice()->get_schedule_for_users($this->current->host_id);
                 if (!empty($currenthostschedulers)) {
@@ -115,10 +114,9 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
         }
 
-        $meetinginfo = new stdClass();
         if (!$isnew) {
             try {
-                $meetinginfo = zoom_webservice()->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
+                zoom_webservice()->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
             } catch (moodle_exception $error) {
                 // If the meeting can't be found, offer to recreate the meeting on Zoom.
                 if (zoom_is_meeting_gone_error($error)) {
@@ -137,7 +135,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $allowschedule = false;
         if (!$isnew) {
             try {
-                $founduser = zoom_get_user($meetinginfo->host_id);
+                $founduser = zoom_get_user($this->current->host_id);
                 if ($founduser && array_key_exists($founduser->email, $scheduleusers)) {
                     $allowschedule = true;
                 }
@@ -294,7 +292,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             // If we are creating a new instance.
             if ($isnew) {
                 // Check if the user has a webinar license.
-                $userfeatures = zoom_get_user_settings($zoomuser->id)->feature;
+                $userfeatures = zoom_get_user_settings($zoomuserid)->feature;
                 $haswebinarlicense = !empty($userfeatures->webinar) || !empty($userfeatures->zoom_events);
 
                 // Only show if the admin always wants to show this widget or
@@ -533,15 +531,16 @@ class mod_zoom_mod_form extends moodleform_mod {
             $options = array(
                 ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'mod_zoom'),
             );
-            $recordingsettings = zoom_get_user_settings($zoomuser->id)->recording;
 
-            $localrecording = $recordingsettings->local_recording;
-            if ($localrecording) {
+            if ($zoomuserid !== false) {
+                $recordingsettings = zoom_get_user_settings($zoomuserid)->recording;
+            }
+
+            if (!empty($recordingsettings->local_recording)) {
                 $options[ZOOM_AUTORECORDING_LOCAL] = get_string('autorecording_local', 'mod_zoom');
             }
 
-            $cloudrecording = $recordingsettings->cloud_recording;
-            if ($cloudrecording) {
+            if (!empty($recordingsettings->cloud_recording)) {
                 $options[ZOOM_AUTORECORDING_CLOUD] = get_string('autorecording_cloud', 'mod_zoom');
             }
 
@@ -615,7 +614,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                     $mform->addElement('checkbox', 'change_schedule_for', get_string('changehost', 'zoom'));
                     $mform->setDefault('schedule_for', strtolower(zoom_get_user($this->current->host_id)->email));
                 } else {
-                    $mform->setDefault('schedule_for', strtolower($zoomapiidentifier));
+                    $mform->setDefault('schedule_for', strtolower(zoom_get_api_identifier($USER)));
                 }
                 $mform->addHelpButton('schedule_for', 'schedulefor', 'zoom');
 
@@ -668,8 +667,6 @@ class mod_zoom_mod_form extends moodleform_mod {
      * Fill in the current page data for this course.
      */
     public function definition_after_data() {
-        global $USER;
-
         parent::definition_after_data();
 
         // Get config.
@@ -691,9 +688,9 @@ class mod_zoom_mod_form extends moodleform_mod {
 
             $scheduleforuser = current($values);
             $zoomuser = zoom_get_user($scheduleforuser);
+            $zoomuserid = $zoomuser->id;
         } else {
-            $zoomapiidentifier = zoom_get_api_identifier($USER);
-            $zoomuser = zoom_get_user($zoomapiidentifier);
+            $zoomuserid = zoom_get_user_id(false);
         }
 
         $recordingelement =& $mform->getElement('option_auto_recording');
@@ -703,15 +700,16 @@ class mod_zoom_mod_form extends moodleform_mod {
         $options = array(
             ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'mod_zoom'),
         );
-        $recordingsettings = zoom_get_user_settings($zoomuser->id)->recording;
 
-        $localrecording = $recordingsettings->local_recording;
-        if ($localrecording) {
+        if ($zoomuserid !== false) {
+            $recordingsettings = zoom_get_user_settings($zoomuserid)->recording;
+        }
+
+        if (!empty($recordingsettings->local_recording)) {
             $options[ZOOM_AUTORECORDING_LOCAL] = get_string('autorecording_local', 'mod_zoom');
         }
 
-        $cloudrecording = $recordingsettings->cloud_recording;
-        if ($cloudrecording) {
+        if (!empty($recordingsettings->cloud_recording)) {
             $options[ZOOM_AUTORECORDING_CLOUD] = get_string('autorecording_cloud', 'mod_zoom');
         }
 
@@ -900,9 +898,9 @@ class mod_zoom_mod_form extends moodleform_mod {
             $errors['meetingcode'] = get_string('err_password_required', 'mod_zoom');
         }
 
-        $zoomapiidentifier = zoom_get_api_identifier($USER);
-        if (isset($data['schedule_for']) && strtolower($data['schedule_for']) !== strtolower($zoomapiidentifier)) {
-            $scheduleusers = zoom_webservice()->get_schedule_for_users($zoomapiidentifier);
+        if (isset($data['schedule_for']) && strtolower($data['schedule_for']) !== strtolower(zoom_get_api_identifier($USER))) {
+            $zoomuserid = zoom_get_user_id();
+            $scheduleusers = zoom_webservice()->get_schedule_for_users($zoomuserid);
             $scheduleok = false;
             foreach ($scheduleusers as $zuser) {
                 if (strtolower($zuser->email) === strtolower($data['schedule_for'])) {
