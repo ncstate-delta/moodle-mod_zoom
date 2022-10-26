@@ -134,14 +134,17 @@ class mod_zoom_mod_form extends moodleform_mod {
         // of people that they can schedule for, allow them to change the host, otherwise don't.
         $allowschedule = false;
         if (!$isnew) {
-            try {
-                $founduser = zoom_get_user($this->current->host_id);
-                if ($founduser && array_key_exists($founduser->email, $scheduleusers)) {
-                    $allowschedule = true;
+            // Only need to check if there are scheduling options available.
+            if (!empty($scheduleusers)) {
+                try {
+                    $founduser = zoom_get_user($this->current->host_id);
+                    if ($founduser && array_key_exists($founduser->email, $scheduleusers)) {
+                        $allowschedule = true;
+                    }
+                } catch (moodle_exception $error) {
+                    // Don't need to throw an error, just leave allowschedule as false.
+                    $allowschedule = false;
                 }
-            } catch (moodle_exception $error) {
-                // Don't need to throw an error, just leave allowschedule as false.
-                $allowschedule = false;
             }
         } else {
             $allowschedule = true;
@@ -532,8 +535,13 @@ class mod_zoom_mod_form extends moodleform_mod {
                 ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'mod_zoom'),
             );
 
-            if ($zoomuserid !== false) {
-                $recordingsettings = zoom_get_user_settings($zoomuserid)->recording;
+            $hostuserid = $zoomuserid;
+            if (!empty($this->current->host_id)) {
+                $hostuserid = $this->current->host_id;
+            }
+
+            if (!empty($hostuserid)) {
+                $recordingsettings = zoom_get_user_settings($hostuserid)->recording;
             }
 
             if (!empty($recordingsettings->local_recording)) {
@@ -689,6 +697,8 @@ class mod_zoom_mod_form extends moodleform_mod {
             $scheduleforuser = current($values);
             $zoomuser = zoom_get_user($scheduleforuser);
             $zoomuserid = $zoomuser->id;
+        } else if (!empty($this->current->host_id)) {
+            $zoomuserid = $this->current->host_id;
         } else {
             $zoomuserid = zoom_get_user_id(false);
         }

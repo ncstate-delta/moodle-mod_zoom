@@ -66,14 +66,12 @@ $alternativehosts = zoom_get_alternative_host_array_from_string($zoom->alternati
 $userishost = ($userisrealhost || in_array(zoom_get_api_identifier($USER), $alternativehosts, true));
 
 // Get host user from Zoom.
-$hostuser = false;
 $showrecreate = false;
 if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
     $showrecreate = true;
 } else {
     try {
         zoom_webservice()->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
-        $hostuser = zoom_get_user($zoom->host_id);
     } catch (moodle_exception $error) {
         $showrecreate = zoom_is_meeting_gone_error($error);
 
@@ -89,15 +87,23 @@ if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
     }
 }
 
-// Compose Moodle user object for host.
-if ($hostuser) {
-    $hostmoodleuser = new stdClass();
-    $hostmoodleuser->firstname = $hostuser->first_name;
-    $hostmoodleuser->lastname = $hostuser->last_name;
-    $hostmoodleuser->alternatename = '';
-    $hostmoodleuser->firstnamephonetic = '';
-    $hostmoodleuser->lastnamephonetic = '';
-    $hostmoodleuser->middlename = '';
+function zoom_get_user_display_name($zoomuserid) {
+    try {
+        $hostuser = zoom_get_user($zoomuserid);
+
+        // Compose Moodle user object for host.
+        $hostmoodleuser = new stdClass();
+        $hostmoodleuser->firstname = $hostuser->first_name;
+        $hostmoodleuser->lastname = $hostuser->last_name;
+        $hostmoodleuser->alternatename = '';
+        $hostmoodleuser->firstnamephonetic = '';
+        $hostmoodleuser->lastnamephonetic = '';
+        $hostmoodleuser->middlename = '';
+
+        return fullname($hostmoodleuser);
+    } catch (moodle_exception $error) {
+        return null;
+    }
 }
 
 $isrecurringnotime = ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME);
@@ -171,7 +177,7 @@ if (!$showrecreate && $config->showcapacitywarning == true) {
                     'eligiblemeetingparticipants' => $eligiblemeetingparticipants,
                     'zoomprofileurl' => $config->zoomurl.'/profile',
                     'courseparticipantsurl' => $participantspageurl->out(),
-                    'hostname' => fullname($hostmoodleuser));
+                    'hostname' => zoom_get_user_display_name($zoom->host_id));
             $meetingcapacitywarning = get_string('meetingcapacitywarningheading', 'mod_zoom');
             $meetingcapacitywarning .= html_writer::empty_tag('br');
             if ($userisrealhost == true) {
@@ -288,8 +294,9 @@ if ($zoom->show_schedule) {
     }
 
     // Show host.
-    if ($hostuser) {
-        $table->data[] = array($strhost, fullname($hostmoodleuser));
+    $hostdisplayname = zoom_get_user_display_name($zoom->host_id);
+    if (isset($hostdisplayname)) {
+        $table->data[] = array($strhost, $hostdisplayname);
     }
 
     // Display alternate hosts if they exist and if the admin did not disable the feature.
