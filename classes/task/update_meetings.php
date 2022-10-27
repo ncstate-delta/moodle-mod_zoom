@@ -25,6 +25,12 @@
 
 namespace mod_zoom\task;
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot . '/lib/modinfolib.php');
+require_once($CFG->dirroot . '/mod/zoom/lib.php');
+require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+
 /**
  * Scheduled task to sychronize meeting data.
  */
@@ -45,7 +51,7 @@ class update_meetings extends \core\task\scheduled_task {
      * @return boolean
      */
     public function execute() {
-        global $CFG, $DB;
+        global $DB;
 
         try {
             $service = zoom_webservice();
@@ -53,10 +59,6 @@ class update_meetings extends \core\task\scheduled_task {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
         }
-
-        require_once($CFG->dirroot.'/lib/modinfolib.php');
-        require_once($CFG->dirroot.'/mod/zoom/lib.php');
-        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
         // Show trace message.
         mtrace('Starting to process existing Zoom meeting activities ...');
