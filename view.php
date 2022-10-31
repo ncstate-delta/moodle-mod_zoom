@@ -87,6 +87,13 @@ if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
     }
 }
 
+/**
+ * Get the display name for a Zoom user.
+ * This is wrapped in a function to avoid unnecessary API calls.
+ *
+ * @param string $zoomuserid Zoom user ID.
+ * @return ?string
+ */
 function zoom_get_user_display_name($zoomuserid) {
     try {
         $hostuser = zoom_get_user($zoomuserid);
