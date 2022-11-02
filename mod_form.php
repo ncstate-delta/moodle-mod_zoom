@@ -187,10 +187,10 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add options for recurring meeting.
         $recurrencetype = [
-            ZOOM_RECURRINGTYPE_NOTIME => get_string('recurrence_option_no_time', 'zoom'),
             ZOOM_RECURRINGTYPE_DAILY => get_string('recurrence_option_daily', 'zoom'),
             ZOOM_RECURRINGTYPE_WEEKLY => get_string('recurrence_option_weekly', 'zoom'),
             ZOOM_RECURRINGTYPE_MONTHLY => get_string('recurrence_option_monthly', 'zoom'),
+            ZOOM_RECURRINGTYPE_NOTIME => get_string('recurrence_option_no_time', 'zoom'),
         ];
         $mform->addElement('select', 'recurrence_type', get_string('recurrencetype', 'zoom'), $recurrencetype);
         $mform->hideif('recurrence_type', 'recurring', 'notchecked');
@@ -356,6 +356,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         );
         $mform->setDefault('registration', $config->defaultregistration);
         $mform->addHelpButton('registration', 'registration', 'mod_zoom');
+        $mform->hideIf('registration', 'recurrence_type', 'eq', ZOOM_RECURRINGTYPE_NOTIME);
 
         // Adding the "breakout rooms" fieldset.
         $mform->addElement('header', 'breakoutrooms', get_string('breakoutrooms', 'mod_zoom'));
@@ -817,6 +818,13 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Workaround for MDL-76095 because automatically-approved registrations are mode "0".
         if (isset($data->registration) && $data->registration === 'on') {
             $data->registration = ZOOM_REGISTRATION_AUTOMATIC;
+        }
+
+        // Make sure registration is not enabled for No Fixed Time recurring meetings.
+        if ($data->recurring && $data->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
+            if (isset($data->registration) && $data->registration == ZOOM_REGISTRATION_AUTOMATIC) {
+                $data->registration = ZOOM_REGISTRATION_OFF;
+            }
         }
     }
 
