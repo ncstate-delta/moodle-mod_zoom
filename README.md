@@ -25,8 +25,6 @@ At a minimum, the following scopes are required by this plugin:
 
 Additional scopes are required for certain functionality:
 
-- Account-level passcode / encryption policies
-    - account:read:admin
 - Reports for meetings / webinars
     - dashboard_meetings:read:admin (Business accounts and higher)
     - dashboard_webinars:read:admin  (Business accounts and higher)
@@ -50,12 +48,12 @@ create a JWT app and that will generate the API key and secret.
 
 ## Installation
 
-1. Install plugin to mod/zoom. More details at https://docs.moodle.org/39/en/Installing_plugins#Installing_a_plugin
+1. Install plugin to mod/zoom. More details at https://docs.moodle.org/en/Installing_plugins#Installing_a_plugin
 2. Once you install the plugin you need to set the following settings to enable the plugin:
 
+- Zoom account ID (mod_zoom | accountid)
 - Zoom client ID (mod_zoom | clientid)
 - Zoom client secret (mod_zoom | clientsecret)
-- Zoom account ID (mod_zoom | accountid)
 
 JWT will be deprecated in June 2023. For a JWT app, you need to set the following settings to enable the plugin:
 

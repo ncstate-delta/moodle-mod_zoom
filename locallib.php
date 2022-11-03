@@ -498,17 +498,15 @@ function zoom_get_user_id($required = true) {
 /**
  * Get the Zoom meeting security settings, including meeting password requirements of the user's master account.
  *
+ * @param string|int $identifier The user's email or the user's ID per Zoom API.
  * @return stdClass
  */
-function zoom_get_meeting_security_settings() {
+function zoom_get_meeting_security_settings($identifier) {
     $cache = cache::make('mod_zoom', 'zoommeetingsecurity');
-    if (!($zoommeetingsecurity = $cache->get('meetingsecurity'))) {
-        try {
-            $zoommeetingsecurity = zoom_webservice()->get_account_meeting_security_settings();
-        } catch (moodle_exception $error) {
-            throw $error;
-        }
-        $cache->set('meetingsecurity', $zoommeetingsecurity);
+    $zoommeetingsecurity = $cache->get($identifier);
+    if (empty($zoommeetingsecurity)) {
+        $zoommeetingsecurity = zoom_webservice()->get_account_meeting_security_settings($identifier);
+        $cache->set($identifier, $zoommeetingsecurity);
     }
 
     return $zoommeetingsecurity;
