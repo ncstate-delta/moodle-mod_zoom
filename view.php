@@ -106,6 +106,7 @@ $stryes = get_string('yes');
 $strno = get_string('no');
 $strstart = get_string('start_meeting', 'mod_zoom');
 $strjoin = get_string('join_meeting', 'mod_zoom');
+$strregister = get_string('register', 'mod_zoom');
 $strtime = get_string('meeting_time', 'mod_zoom');
 $strduration = get_string('duration', 'mod_zoom');
 $strpassprotect = get_string('passwordprotected', 'mod_zoom');
@@ -200,12 +201,27 @@ list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
 // Show join meeting button or unavailability note.
 if (!$showrecreate) {
+    // If registration is required, check the registration.
+    if (!$userishost && $zoom->registration != ZOOM_REGISTRATION_OFF) {
+        $userisregistered = zoom_is_user_registered_for_meeting($USER->email, $zoom->meeting_id, $zoom->webinar);
+
+        // Unregistered users are allowed to register.
+        if (!$userisregistered) {
+            $available = true;
+        }
+    }
+
     if ($available) {
         // Show join meeting button.
         if ($userishost) {
             $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
         } else {
-            $buttonhtml = html_writer::tag('button', $strjoin, array('type' => 'submit', 'class' => 'btn btn-primary'));
+            $btntext = $strjoin;
+            // If user is not already registered, use register text.
+            if ($zoom->registration != ZOOM_REGISTRATION_OFF && !$userisregistered) {
+                $btntext = $strregister;
+            }
+            $buttonhtml = html_writer::tag('button', $btntext, array('type' => 'submit', 'class' => 'btn btn-primary'));
         }
         $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
         $buttonhtml .= html_writer::input_hidden_params($aurl);

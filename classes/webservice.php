@@ -581,6 +581,9 @@ class mod_zoom_webservice {
         if (isset($zoom->option_authenticated_users)) {
             $data['settings']['meeting_authentication'] = (bool) $zoom->option_authenticated_users;
         }
+        if (isset($zoom->registration)) {
+            $data['settings']['approval_type'] = $zoom->registration;
+        }
 
         if (!empty($zoom->webinar)) {
             if ($zoom->recurring) {
@@ -1013,5 +1016,18 @@ class mod_zoom_webservice {
         } else {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_no_access_token', 'zoom'));
         }
+    }
+
+    /**
+     * List the meeting or webinar registrants from Zoom.
+     *
+     * @param int $id The meeting_id or webinar_id of the meeting or webinar to retrieve.
+     * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
+     * @return stdClass The meeting's or webinar's information.
+     */
+    public function get_meeting_registrants($id, $webinar) {
+        $url = ($webinar ? 'webinars/' : 'meetings/') . $id . '/registrants';
+        $response = $this->make_call($url);
+        return $response;
     }
 }
