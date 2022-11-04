@@ -272,7 +272,13 @@ class mod_zoom_webservice {
         if ($httpstatus >= 400) {
             switch($httpstatus) {
                 case 400:
-                    throw new zoom_bad_request_exception($response->message, $response->code);
+                    $errorstring = '';
+                    if (!empty($response->errors)) {
+                        foreach ($response->errors as $error) {
+                            $errorstring .= ' ' . $error->message;
+                        }
+                    }
+                    throw new zoom_bad_request_exception($response->message . $errorstring, $response->code);
                 case 404:
                     throw new zoom_not_found_exception($response->message, $response->code);
                 case 429:
