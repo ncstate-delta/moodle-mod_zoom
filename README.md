@@ -69,6 +69,19 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.9.0
+
+- Feature: Allow Registration #412 (thanks @paulandm, @haietza, @MoleLR, @lcollong, @louisaoc)
+  - New settings `zoom/defaultregistration`
+  - New per activity setting `registration`
+- Bugfix: Update meetings task was throwing an exception #421 (thanks @lexxkoto)
+- Bugfix: Add missing cache definition language string #408 (thanks @aspark21)
+- Bugfix: Use user-level meeting security configuration #408
+  - Removed OAuth scope: `account:read:admin`
+- Regression: Moodle < 3.4 does not support hideIf()
+  - Introduced in v3.5 of this plugin while tidying the form UI.
+  - Minimum required Moodle version officially increased to 3.4.
+
 v4.8.1
 
 - Bugfix: Moodle 4 was displaying the activity description twice #417 (thanks @Laur0r, @haietza)
