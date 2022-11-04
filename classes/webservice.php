@@ -259,18 +259,18 @@ class mod_zoom_webservice {
             $curl->setHeader('Content-Type: application/json');
             $data = is_array($data) ? json_encode($data) : $data;
         }
-        $response = $this->make_curl_call($curl, $method, $url, $data);
+        $rawresponse = $this->make_curl_call($curl, $method, $url, $data);
 
         if ($curl->get_errno()) {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', $curl->error);
         }
 
-        $response = json_decode($response);
+        $response = json_decode($rawresponse);
 
         $httpstatus = $curl->get_info()['http_code'];
 
         if ($httpstatus >= 400) {
-            switch($httpstatus) {
+            switch ($httpstatus) {
                 case 400:
                     $errorstring = '';
                     if (!empty($response->errors)) {
