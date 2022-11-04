@@ -253,6 +253,7 @@ class mod_zoom_webservice {
         }
 
         $curl->setHeader('Authorization: Bearer ' . $token);
+        $curl->setHeader('Accept: application/json');
 
         if ($method != 'get') {
             $curl->setHeader('Content-Type: application/json');
