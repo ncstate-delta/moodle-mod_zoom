@@ -412,13 +412,16 @@ class mod_zoom_webservice {
      * Incrementally retrieves the active paid users and compares against $numlicenses.
      * @see $numlicenses
      * @return bool Whether the paid user license limit has been reached.
+     * @throws dml_exception
      */
     private function paid_user_limit_reached() {
         $userslist = $this->list_users();
         $numusers = 0;
         foreach ($userslist as $user) {
-            if ($user->type != ZOOM_USER_TYPE_BASIC && ++$numusers >= $this->numlicenses) {
-                return true;
+            if (core_user::get_user_by_email($user->email)) {
+                if ($user->type != ZOOM_USER_TYPE_BASIC && ++$numusers >= $this->numlicenses) {
+                    return true;
+                }
             }
         }
         return false;
@@ -428,12 +431,13 @@ class mod_zoom_webservice {
      * Gets the ID of the user, of all the paid users, with the oldest last login time.
      *
      * @return string|false If user is found, returns the User ID. Otherwise, returns false.
+     * @throws dml_exception
      */
     private function get_least_recently_active_paid_user_id() {
         $usertimes = array();
         $userslist = $this->list_users();
         foreach ($userslist as $user) {
-            if ($user->type != ZOOM_USER_TYPE_BASIC && isset($user->last_login_time)) {
+            if ($user->type != ZOOM_USER_TYPE_BASIC && isset($user->last_login_time) && core_user::get_user_by_email($user->email)) {
                 $usertimes[$user->id] = strtotime($user->last_login_time);
             }
         }
