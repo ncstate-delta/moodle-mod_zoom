@@ -253,25 +253,32 @@ class mod_zoom_webservice {
         }
 
         $curl->setHeader('Authorization: Bearer ' . $token);
+        $curl->setHeader('Accept: application/json');
 
         if ($method != 'get') {
             $curl->setHeader('Content-Type: application/json');
             $data = is_array($data) ? json_encode($data) : $data;
         }
-        $response = $this->make_curl_call($curl, $method, $url, $data);
+        $rawresponse = $this->make_curl_call($curl, $method, $url, $data);
 
         if ($curl->get_errno()) {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', $curl->error);
         }
 
-        $response = json_decode($response);
+        $response = json_decode($rawresponse);
 
         $httpstatus = $curl->get_info()['http_code'];
 
         if ($httpstatus >= 400) {
-            switch($httpstatus) {
+            switch ($httpstatus) {
                 case 400:
-                    throw new zoom_bad_request_exception($response->message, $response->code);
+                    $errorstring = '';
+                    if (!empty($response->errors)) {
+                        foreach ($response->errors as $error) {
+                            $errorstring .= ' ' . $error->message;
+                        }
+                    }
+                    throw new zoom_bad_request_exception($response->message . $errorstring, $response->code);
                 case 404:
                     throw new zoom_not_found_exception($response->message, $response->code);
                 case 429:
