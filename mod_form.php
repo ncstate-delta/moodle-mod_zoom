@@ -169,7 +169,11 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addElement('header', 'general', get_string('schedule', 'mod_zoom'));
 
         // Add date/time. Validation in validation().
-        $mform->addElement('date_time_selector', 'start_time', get_string('start_time', 'zoom'));
+        $starttimeoptions = array(
+            'step' => 5,
+            'defaulttime' => time() + 3600,
+        );
+        $mform->addElement('date_time_selector', 'start_time', get_string('start_time', 'zoom'), $starttimeoptions);
         // Start time needs to be enabled/disabled based on recurring checkbox as well recurrence_type.
         // Moved this control to javascript, rather than using disabledIf.
 
