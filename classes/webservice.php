@@ -111,6 +111,12 @@ class mod_zoom_webservice {
     protected $recyclelicenses;
 
     /**
+     * Whether to check instance users
+     * @var bool
+     */
+    protected $instanceusers;
+
+    /**
      * Maximum limit of paid users
      * @var int
      */
@@ -165,6 +171,9 @@ class mod_zoom_webservice {
             // Get and remember the plugin settings to recycle licenses.
             if (!empty($config->utmost)) {
                 $this->recyclelicenses = $config->utmost;
+                if(!empty($config->instanceusers)) {
+                    $this->instanceusers = $config->instanceusers;
+                }
             }
             if ($this->recyclelicenses) {
                 if (!empty($config->licensesnumber)) {
@@ -424,8 +433,20 @@ class mod_zoom_webservice {
         $userslist = $this->list_users();
         $numusers = 0;
         foreach ($userslist as $user) {
-            if ($user->type != ZOOM_USER_TYPE_BASIC && ++$numusers >= $this->numlicenses) {
-                return true;
+            if ($user->type != ZOOM_USER_TYPE_BASIC) {
+                if ($this->instanceusers) {
+                    if (core_user::get_user_by_email($user->email)) {
+                        $numusers++;
+                        if ($numusers >= $this->numlicenses) {
+                            return true;
+                        }
+                    }
+                } else {
+                    $numusers++;
+                    if ($numusers >= $this->numlicenses) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
@@ -441,7 +462,13 @@ class mod_zoom_webservice {
         $userslist = $this->list_users();
         foreach ($userslist as $user) {
             if ($user->type != ZOOM_USER_TYPE_BASIC && isset($user->last_login_time)) {
-                $usertimes[$user->id] = strtotime($user->last_login_time);
+                if ($this->instanceusers) {
+                    if (core_user::get_user_by_email($user->email)) {
+                        $usertimes[$user->id] = strtotime($user->last_login_time);
+                    }
+                } else {
+                    $usertimes[$user->id] = strtotime($user->last_login_time);
+                }
             }
         }
 
