@@ -3,7 +3,7 @@ on:
   # a pull request. 
   push:
     branches:
-      - task/sonar-scan-github-actions
+      - master
 name: SonarQube Scan
 jobs:
   sonarqube:
