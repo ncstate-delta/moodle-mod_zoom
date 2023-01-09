@@ -116,8 +116,8 @@ if ($ADMIN->fulltree) {
     $settings->add($utmost);
 
     $instanceusers = new admin_setting_configcheckbox('zoom/instanceusers',
-                    get_string('instanceusers', 'mod_zoom'),
-                    get_string('instanceusers_desc', 'mod_zoom'), 0);
+            get_string('instanceusers', 'mod_zoom'),
+            get_string('instanceusers_desc', 'mod_zoom'), 0, 1, 0);
     $settings->add($instanceusers);
 
     $recycleonjoin = new admin_setting_configcheckbox('zoom/recycleonjoin',
