@@ -35,7 +35,7 @@ class backup_zoom_activity_structure_step extends backup_activity_structure_step
      */
     protected function define_structure() {
         // Define the root element describing the zoom instance.
-        $zoom = new backup_nested_element('zoom', array('id'), array(
+        $zoom = new backup_nested_element('zoom', ['id'], [
             'intro', 'introformat', 'grade', 'meeting_id', 'start_url', 'join_url', 'created_at', 'host_id', 'name',
             'start_time', 'timemodified', 'recurring', 'recurrence_type', 'repeat_interval', 'weekly_days', 'monthly_day',
             'monthly_week', 'monthly_week_day', 'monthly_repeat_option', 'end_times', 'end_date_time', 'end_date_option',
@@ -44,19 +44,19 @@ class backup_zoom_activity_structure_step extends backup_activity_structure_step
             'option_authenticated_users', 'option_encryption_type', 'exists_on_zoom', 'alternative_hosts',
             'recordings_visible_default', 'show_schedule', 'show_security', 'show_media', 'option_auto_recording',
             'registration',
-        ));
+        ]);
 
         $trackingfields = new backup_nested_element('trackingfields');
 
-        $trackingfield = new backup_nested_element('trackingfield', array('id'), array('meeting_id', 'tracking_field', 'value'));
+        $trackingfield = new backup_nested_element('trackingfield', ['id'], ['meeting_id', 'tracking_field', 'value']);
 
         // If we had more elements, we would build the tree here.
         $zoom->add_child($trackingfields);
         $trackingfields->add_child($trackingfield);
 
         // Define data sources.
-        $zoom->set_source_table('zoom', array('id' => backup::VAR_ACTIVITYID));
-        $trackingfield->set_source_table('zoom_meeting_tracking_fields', array('meeting_id' => backup::VAR_ACTIVITYID));
+        $zoom->set_source_table('zoom', ['id' => backup::VAR_ACTIVITYID]);
+        $trackingfield->set_source_table('zoom_meeting_tracking_fields', ['meeting_id' => backup::VAR_ACTIVITYID]);
 
         // If we were referring to other tables, we would annotate the relation
         // with the element's annotate_ids() method.

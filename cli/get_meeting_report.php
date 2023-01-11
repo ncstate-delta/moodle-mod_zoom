@@ -29,16 +29,16 @@ require_once($CFG->libdir . '/clilib.php');
 
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(
-        array(
-                'help' => false,
-                'start' => false,
-                'end' => false,
-                'hostuuid' => false,
-                'courseid' => false
-        ),
-        array(
-                'h' => 'help'
-        )
+    [
+        'help' => false,
+        'start' => false,
+        'end' => false,
+        'hostuuid' => false,
+        'courseid' => false,
+    ],
+    [
+        'h' => 'help',
+    ]
 );
 
 if ($unrecognized) {
@@ -64,11 +64,10 @@ Example:
 
 $hostuuids = null;
 if (!empty($options['hostuuid'])) {
-    $hostuuids = array($options['hostuuid']);
+    $hostuuids = [$options['hostuuid']];
 } else if (!empty($options['courseid'])) {
     // Find all hosts for course.
-    $hostuuids = $DB->get_fieldset_select('zoom', 'DISTINCT host_id', 'course=:courseid',
-            array('courseid' => $options['courseid']));
+    $hostuuids = $DB->get_fieldset_select('zoom', 'DISTINCT host_id', 'course=:courseid', ['courseid' => $options['courseid']]);
     if (empty($hostuuids)) {
         cli_writeln(get_string('nozoomsfound', 'mod_zoom'));
         cli_error('No hosts found for course');

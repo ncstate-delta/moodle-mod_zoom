@@ -24,50 +24,50 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$tasks = array(
-    array(
+$tasks = [
+    [
         'classname' => 'mod_zoom\task\update_meetings',
         'blocking' => 0,
         'minute' => '30',
         'hour' => '4',
         'day' => '*',
         'month' => '*',
-        'dayofweek' => '*'
-    ),
-    array(
+        'dayofweek' => '*',
+    ],
+    [
         'classname' => 'mod_zoom\task\get_meeting_reports',
         'blocking' => 0,
         'minute' => '0',
         'hour' => '*/6',
         'day' => '*',
         'dayofweek' => '*',
-        'month' => '*'
-    ),
-    array(
+        'month' => '*',
+    ],
+    [
         'classname' => 'mod_zoom\task\update_tracking_fields',
         'blocking' => 0,
         'minute' => '0',
         'hour' => '*/6',
         'day' => '*',
         'dayofweek' => '*',
-        'month' => '*'
-    ),
-    array(
+        'month' => '*',
+    ],
+    [
         'classname' => 'mod_zoom\task\get_meeting_recordings',
         'blocking' => 0,
         'minute' => '0',
         'hour' => '*/3',
         'day' => '*',
         'dayofweek' => '*',
-        'month' => '*'
-    ),
-    array(
+        'month' => '*',
+    ],
+    [
         'classname' => 'mod_zoom\task\delete_meeting_recordings',
         'blocking' => 0,
         'minute' => '0',
         'hour' => '0',
         'day' => '*',
         'dayofweek' => '*',
-        'month' => '*'
-    ),
-);
+        'month' => '*',
+    ],
+];

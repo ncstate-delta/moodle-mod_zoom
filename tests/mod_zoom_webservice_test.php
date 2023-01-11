@@ -79,7 +79,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
              * @return array
              */
             public function get_info() {
-                return array('http_code' => 404);
+                return ['http_code' => 404];
             }
         };
     }
@@ -107,7 +107,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
      */
     public function test_meeting_not_found_exception() {
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('make_curl_call', 'get_curl_object', 'get_access_token'))
+            ->setMethods(['make_curl_call', 'get_curl_object', 'get_access_token'])
             ->getMock();
 
         $mockservice->expects($this->any())
@@ -138,7 +138,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
      */
     public function test_user_not_found_exception() {
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('make_curl_call', 'get_curl_object', 'get_access_token'))
+            ->setMethods(['make_curl_call', 'get_curl_object', 'get_access_token'])
             ->getMock();
 
         $mockservice->expects($this->any())
@@ -192,12 +192,12 @@ class mod_zoom_webservice_test extends advanced_testcase {
              * @return array
              */
             public function get_info() {
-                return array('http_code' => 400);
+                return ['http_code' => 400];
             }
         };
 
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('make_curl_call', 'get_curl_object', 'get_access_token'))
+            ->setMethods(['make_curl_call', 'get_curl_object', 'get_access_token'])
             ->getMock();
 
         $mockservice->expects($this->any())
@@ -255,9 +255,9 @@ class mod_zoom_webservice_test extends advanced_testcase {
             public function get_info() {
                 $this->numgetinfocalls++;
                 if ($this->numgetinfocalls <= 3) {
-                    return array('http_code' => 429);
+                    return ['http_code' => 429];
                 }
-                return array('http_code' => 200);
+                return ['http_code' => 200];
             }
             // @codingStandardsIgnoreStart
             /**
@@ -275,7 +275,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
         };
 
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('make_curl_call', 'get_curl_object', 'get_access_token'))
+            ->setMethods(['make_curl_call', 'get_curl_object', 'get_access_token'])
             ->getMock();
 
         $mockservice->expects($this->any())
@@ -331,9 +331,9 @@ class mod_zoom_webservice_test extends advanced_testcase {
             public function get_info() {
                 $this->numgetinfocalls++;
                 if ($this->numgetinfocalls <= 3) {
-                    return array('http_code' => 429);
+                    return ['http_code' => 429];
                 }
-                return array('http_code' => 200);
+                return ['http_code' => 200];
             }
             // @codingStandardsIgnoreStart
             /**
@@ -347,7 +347,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
         };
 
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('make_curl_call', 'get_curl_object', 'get_access_token'))
+            ->setMethods(['make_curl_call', 'get_curl_object', 'get_access_token'])
             ->getMock();
 
         $mockservice->expects($this->any())
@@ -429,7 +429,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
         };
 
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('get_curl_object', 'get_access_token'))
+            ->setMethods(['get_curl_object', 'get_access_token'])
             ->getMock();
 
         $mockservice->expects($this->any())
@@ -481,7 +481,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
              * @return array
              */
             public function get_info() {
-                return array('http_code' => 429);
+                return ['http_code' => 429];
             }
             /**
              * Returns error code and message.
@@ -511,7 +511,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
         };
 
         $mockservice = $this->getMockBuilder('\mod_zoom_webservice')
-            ->setMethods(array('get_curl_object', 'get_access_token'))
+            ->setMethods(['get_curl_object', 'get_access_token'])
             ->getMock();
 
         $mockservice->expects($this->any())

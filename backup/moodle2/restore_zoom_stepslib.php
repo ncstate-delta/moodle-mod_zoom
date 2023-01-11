@@ -39,7 +39,7 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
      */
     protected function define_structure() {
 
-        $paths = array();
+        $paths = [];
         $paths[] = new restore_path_element('zoom', '/activity/zoom');
         $paths[] = new restore_path_element('zoom_tracking_field', '/activity/zoom/trackingfields/trackingfield');
 

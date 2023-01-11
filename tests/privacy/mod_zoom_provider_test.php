@@ -63,7 +63,7 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
         $params = [
             'course' => $course->id,
             'name' => 'First Zoom Activity',
-            'showpreview' => 0
+            'showpreview' => 0,
         ];
 
         $plugingenerator = $generator->get_plugin_generator('mod_zoom');
@@ -85,7 +85,7 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
             'uuid' => 'someuuid',
             'duration' => 60,
             'participants' => 3,
-            'zoomid' => $zoom->id
+            'zoomid' => $zoom->id,
         ];
 
         $zmid = $DB->insert_record('zoom_meeting_details', $meeting, true);
@@ -96,7 +96,7 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
             'leave_time' => 1646769062,
             'duration' => 60,
             'name' => 'Michell',
-            'detailsid' => $zmid
+            'detailsid' => $zmid,
         ];
         $participant2 = (object) [
             'zoomuserid' => 9999,
@@ -105,7 +105,7 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
             'leave_time' => 1646769062,
             'duration' => 60,
             'name' => 'John',
-            'detailsid' => $zmid
+            'detailsid' => $zmid,
         ];
         $zmparticipantsid = $DB->insert_record('zoom_meeting_participants', $participant, true);
         $zmparticipantsid2 = $DB->insert_record('zoom_meeting_participants', $participant2, true);
@@ -117,18 +117,18 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
             'externalurl' => 'www.dummyurl.com',
             'recordingtype' => 'recordingtype',
             'recordingstart' => 1646769061,
-            'showrecording' => 1
+            'showrecording' => 1,
         ];
         $meetingrecordingid = $DB->insert_record('zoom_meeting_recordings', $meetingrecording, true);
         $meetingrecordingsview = (object) [
             'recordingsid' => $meetingrecordingid,
             'userid' => $student->id,
-            'viewed' => 1
+            'viewed' => 1,
         ];
         $meetingrecordingsview2 = (object) [
             'recordingsid' => $meetingrecordingid,
             'userid' => $student2->id,
-            'viewed' => 1
+            'viewed' => 1,
         ];
         $DB->insert_record('zoom_meeting_recordings_view', $meetingrecordingsview, true);
         $DB->insert_record('zoom_meeting_recordings_view', $meetingrecordingsview2, true);

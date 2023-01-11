@@ -38,17 +38,17 @@ list($course, $cm, $zoom) = zoom_get_instance_setup();
 $context = context_module::instance($cm->id);
 $iszoommanager = has_capability('mod/zoom:addinstance', $context);
 
-$event = \mod_zoom\event\course_module_viewed::create(array(
+$event = \mod_zoom\event\course_module_viewed::create([
     'objectid' => $PAGE->cm->instance,
     'context' => $PAGE->context,
-));
+]);
 $event->add_record_snapshot('course', $PAGE->course);
 $event->add_record_snapshot($PAGE->cm->modname, $zoom);
 $event->trigger();
 
 // Print the page header.
 
-$PAGE->set_url('/mod/zoom/view.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/zoom/view.php', ['id' => $cm->id]);
 $PAGE->set_title(format_string($zoom->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->requires->js_call_amd("mod_zoom/toggle_text", 'init');
@@ -180,12 +180,14 @@ if (!$showrecreate && $config->showcapacitywarning == true) {
         // If the number of eligible course participants exceeds the meeting capacity, output a warning.
         if ($eligiblemeetingparticipants > $meetingcapacity) {
             // Compose warning string.
-            $participantspageurl = new moodle_url('/user/index.php', array('id' => $course->id));
-            $meetingcapacityplaceholders = array('meetingcapacity' => $meetingcapacity,
-                    'eligiblemeetingparticipants' => $eligiblemeetingparticipants,
-                    'zoomprofileurl' => $config->zoomurl.'/profile',
-                    'courseparticipantsurl' => $participantspageurl->out(),
-                    'hostname' => zoom_get_user_display_name($zoom->host_id));
+            $participantspageurl = new moodle_url('/user/index.php', ['id' => $course->id]);
+            $meetingcapacityplaceholders = [
+                'meetingcapacity' => $meetingcapacity,
+                'eligiblemeetingparticipants' => $eligiblemeetingparticipants,
+                'zoomprofileurl' => $config->zoomurl.'/profile',
+                'courseparticipantsurl' => $participantspageurl->out(),
+                'hostname' => zoom_get_user_display_name($zoom->host_id),
+            ];
             $meetingcapacitywarning = get_string('meetingcapacitywarningheading', 'mod_zoom');
             $meetingcapacitywarning .= html_writer::empty_tag('br');
             if ($userisrealhost == true) {
@@ -204,7 +206,7 @@ if (!$showrecreate && $config->showcapacitywarning == true) {
 
             // Ideally, this would use $OUTPUT->notification(), but this renderer adds a close icon to the notification which
             // does not make sense here. So we build the notification manually.
-            echo html_writer::tag('div', $meetingcapacitywarning, array('class' => 'alert alert-warning'));
+            echo html_writer::tag('div', $meetingcapacitywarning, ['class' => 'alert alert-warning']);
         }
     }
 }
@@ -227,18 +229,18 @@ if (!$showrecreate) {
     if ($available) {
         // Show join meeting button.
         if ($userishost) {
-            $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
+            $buttonhtml = html_writer::tag('button', $strstart, ['type' => 'submit', 'class' => 'btn btn-success']);
         } else {
             $btntext = $strjoin;
             // If user is not already registered, use register text.
             if ($zoom->registration != ZOOM_REGISTRATION_OFF && !$userisregistered) {
                 $btntext = $strregister;
             }
-            $buttonhtml = html_writer::tag('button', $btntext, array('type' => 'submit', 'class' => 'btn btn-primary'));
+            $buttonhtml = html_writer::tag('button', $btntext, ['type' => 'submit', 'class' => 'btn btn-primary']);
         }
-        $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
+        $aurl = new moodle_url('/mod/zoom/loadmeeting.php', ['id' => $cm->id]);
         $buttonhtml .= html_writer::input_hidden_params($aurl);
-        $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
+        $link = html_writer::tag('form', $buttonhtml, ['action' => $aurl->out_omit_querystring(), 'target' => '_blank']);
     } else {
         // Get unavailability note.
         $unavailabilitynote = zoom_get_unavailability_note($zoom, $finished);
@@ -246,7 +248,7 @@ if (!$showrecreate) {
         // Show unavailability note.
         // Ideally, this would use $OUTPUT->notification(), but this renderer adds a close icon to the notification which does not
         // make sense here. So we build the notification manually.
-        $link = html_writer::tag('div', $unavailabilitynote, array('class' => 'alert alert-primary'));
+        $link = html_writer::tag('div', $unavailabilitynote, ['class' => 'alert alert-primary']);
     }
     echo $OUTPUT->box_start('generalbox text-center');
     echo $link;
@@ -260,46 +262,46 @@ if ($zoom->show_schedule) {
     // Start "Schedule" table.
     $table = new html_table();
     $table->attributes['class'] = 'generaltable mod_view';
-    $table->align = array('center', 'left');
-    $table->size = array('35%', '65%');
+    $table->align = ['center', 'left'];
+    $table->size = ['35%', '65%'];
     $numcolumns = 2;
 
     // Show start/end date or recurring meeting information.
     if ($isrecurringnotime) {
-        $table->data[] = array(get_string('recurringmeeting', 'mod_zoom'), get_string('recurringmeetingexplanation', 'mod_zoom'));
+        $table->data[] = [get_string('recurringmeeting', 'mod_zoom'), get_string('recurringmeetingexplanation', 'mod_zoom')];
     } else if ($zoom->recurring && $zoom->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
-        $table->data[] = array(get_string('recurringmeeting', 'mod_zoom'), get_string('recurringmeetingthisis', 'mod_zoom'));
+        $table->data[] = [get_string('recurringmeeting', 'mod_zoom'), get_string('recurringmeetingthisis', 'mod_zoom')];
         $nextoccurrence = zoom_get_next_occurrence($zoom);
         if ($nextoccurrence > 0) {
-            $table->data[] = array(get_string('nextoccurrence', 'mod_zoom'), userdate($nextoccurrence));
+            $table->data[] = [get_string('nextoccurrence', 'mod_zoom'), userdate($nextoccurrence)];
         } else {
-            $table->data[] = array(get_string('nextoccurrence', 'mod_zoom'), get_string('nooccurrenceleft', 'mod_zoom'));
+            $table->data[] = [get_string('nextoccurrence', 'mod_zoom'), get_string('nooccurrenceleft', 'mod_zoom')];
         }
-        $table->data[] = array($strduration, format_time($zoom->duration));
+        $table->data[] = [$strduration, format_time($zoom->duration)];
     } else {
-        $table->data[] = array($strtime, userdate($zoom->start_time));
-        $table->data[] = array($strduration, format_time($zoom->duration));
+        $table->data[] = [$strtime, userdate($zoom->start_time)];
+        $table->data[] = [$strduration, format_time($zoom->duration)];
     }
 
     // Show recordings section if option enabled to view recordings.
     if (!empty($config->viewrecordings)) {
         $recordinghtml = null;
-        $recordingaddurl = new moodle_url('/mod/zoom/recordings.php', array('id' => $cm->id));
+        $recordingaddurl = new moodle_url('/mod/zoom/recordings.php', ['id' => $cm->id]);
         $recordingaddbutton = html_writer::div(get_string('recordingview', 'mod_zoom'), 'btn btn-primary');
-        $recordingaddbuttonhtml = html_writer::link($recordingaddurl, $recordingaddbutton, array('target' => '_blank'));
+        $recordingaddbuttonhtml = html_writer::link($recordingaddurl, $recordingaddbutton, ['target' => '_blank']);
         $recordingaddhtml = html_writer::div($recordingaddbuttonhtml);
         $recordinghtml .= $recordingaddhtml;
 
-        $table->data[] = array(get_string('recordings', 'mod_zoom'), $recordinghtml);
+        $table->data[] = [get_string('recordings', 'mod_zoom'), $recordinghtml];
     }
 
     // Display add-to-calendar button if meeting was found and isn't recurring and if the admin did not disable the feature.
     if ($config->showdownloadical != ZOOM_DOWNLOADICAL_DISABLE && !$showrecreate && !$isrecurringnotime) {
-        $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
+        $icallink = new moodle_url('/mod/zoom/exportical.php', ['id' => $cm->id]);
         $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'));
         $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
-        $buttonhtml = html_writer::link((string) $icallink, $calendarbutton, array('target' => '_blank'));
-        $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
+        $buttonhtml = html_writer::link((string) $icallink, $calendarbutton, ['target' => '_blank']);
+        $table->data[] = [get_string('addtocalendar', 'mod_zoom'), $buttonhtml];
     }
 
     // Show meeting status.
@@ -313,13 +315,13 @@ if ($zoom->show_schedule) {
         } else {
             $status = get_string('meeting_not_started', 'mod_zoom');
         }
-        $table->data[] = array($strstatus, $status);
+        $table->data[] = [$strstatus, $status];
     }
 
     // Show host.
     $hostdisplayname = zoom_get_user_display_name($zoom->host_id);
     if (isset($hostdisplayname)) {
-        $table->data[] = array($strhost, $hostdisplayname);
+        $table->data[] = [$strhost, $hostdisplayname];
     }
 
     // Display alternate hosts if they exist and if the admin did not disable the feature.
@@ -358,20 +360,20 @@ if ($zoom->show_schedule) {
                 }
 
                 // Output the concatenated string of alternative hosts.
-                $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $alternativehoststring);
+                $table->data[] = [get_string('alternative_hosts', 'mod_zoom'), $alternativehoststring];
 
                 // Otherwise we stick with the plain list of email addresses as we got it from Zoom directly.
             } else {
-                $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts);
+                $table->data[] = [get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts];
             }
         }
     }
 
     // Show sessions link to users with edit capability.
     if ($iszoommanager) {
-        $sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
+        $sessionsurl = new moodle_url('/mod/zoom/report.php', ['id' => $cm->id]);
         $sessionslink = html_writer::link($sessionsurl, get_string('sessionsreport', 'mod_zoom'));
-        $table->data[] = array(get_string('sessions', 'mod_zoom'), $sessionslink);
+        $table->data[] = [get_string('sessions', 'mod_zoom'), $sessionslink];
     }
 
     // Output table.
@@ -385,8 +387,8 @@ if ($zoom->show_security) {
     // Start "Security" table.
     $table = new html_table();
     $table->attributes['class'] = 'generaltable mod_view';
-    $table->align = array('center', 'left');
-    $table->size = array('35%', '65%');
+    $table->align = ['center', 'left'];
+    $table->size = ['35%', '65%'];
     $numcolumns = 2;
 
     // Get passcode information.
@@ -395,16 +397,16 @@ if ($zoom->show_security) {
     $canviewjoinurl = ($userishost || has_capability('mod/zoom:viewjoinurl', $context));
 
     // Show passcode status.
-    $table->data[] = array($strpassprotect, $strhaspass);
+    $table->data[] = [$strpassprotect, $strhaspass];
 
     // Show passcode.
     if ($haspassword && ($canviewjoinurl || get_config('zoom', 'displaypassword'))) {
-        $table->data[] = array($strpassword, $zoom->password);
+        $table->data[] = [$strpassword, $zoom->password];
     }
 
     // Show join link.
     if ($canviewjoinurl) {
-        $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, array('target' => '_blank')));
+        $table->data[] = [$strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, ['target' => '_blank'])];
     }
 
     // Show encryption type.
@@ -413,24 +415,24 @@ if ($zoom->show_security) {
             $strenc = ($zoom->option_encryption_type === ZOOM_ENCRYPTION_TYPE_E2EE)
                 ? $strencryptionendtoend
                 : $strencryptionenhanced;
-            $table->data[] = array($strencryption, $strenc);
+            $table->data[] = [$strencryption, $strenc];
         }
     }
 
     // Show waiting room.
     if (!$zoom->webinar) {
         $strwr = ($zoom->option_waiting_room) ? $stryes : $strno;
-        $table->data[] = array($strwwaitingroom, $strwr);
+        $table->data[] = [$strwwaitingroom, $strwr];
     }
 
     // Show join before host.
     if (!$zoom->webinar) {
         $strjbh = ($zoom->option_jbh) ? $stryes : $strno;
-        $table->data[] = array($strjoinbeforehost, $strjbh);
+        $table->data[] = [$strjoinbeforehost, $strjbh];
     }
 
     // Show authentication.
-    $table->data[] = array($strauthenticatedusers, ($zoom->option_authenticated_users) ? $stryes : $strno);
+    $table->data[] = [$strauthenticatedusers, ($zoom->option_authenticated_users) ? $stryes : $strno];
 
     // Output table.
     echo html_writer::table($table);
@@ -443,27 +445,27 @@ if ($zoom->show_media) {
     // Start "Media" table.
     $table = new html_table();
     $table->attributes['class'] = 'generaltable mod_view';
-    $table->align = array('center', 'left');
-    $table->size = array('35%', '65%');
+    $table->align = ['center', 'left'];
+    $table->size = ['35%', '65%'];
     $numcolumns = 2;
 
     // Show host video.
     if (!$zoom->webinar) {
         $strvideohost = ($zoom->option_host_video) ? $stryes : $strno;
-        $table->data[] = array($strstartvideohost, $strvideohost);
+        $table->data[] = [$strstartvideohost, $strvideohost];
     }
 
     // Show participants video.
     if (!$zoom->webinar) {
         $strparticipantsvideo = ($zoom->option_participants_video) ? $stryes : $strno;
-        $table->data[] = array($strstartvideopart, $strparticipantsvideo);
+        $table->data[] = [$strstartvideopart, $strparticipantsvideo];
     }
 
     // Show audio options.
-    $table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom'));
+    $table->data[] = [$straudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom')];
 
     // Show audio default configuration.
-    $table->data[] = array($strmuteuponentry, ($zoom->option_mute_upon_entry) ? $stryes : $strno);
+    $table->data[] = [$strmuteuponentry, ($zoom->option_mute_upon_entry) ? $stryes : $strno];
 
     // Show dial-in information.
     if (!$showrecreate
@@ -475,10 +477,10 @@ if ($zoom->show_media) {
         if (!empty($meetinginvite)) {
             $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);
             $showbutton = html_writer::tag('button', $strmeetinginviteshow,
-                    array('id' => 'show-more-button', 'class' => 'btn btn-link pt-0 pl-0'));
+                    ['id' => 'show-more-button', 'class' => 'btn btn-link pt-0 pl-0']);
             $meetinginvitebody = html_writer::div($meetinginvitetext, '',
-                    array('id' => 'show-more-body', 'style' => 'display: none;'));
-            $table->data[] = array($strmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, ''));
+                    ['id' => 'show-more-body', 'style' => 'display: none;']);
+            $table->data[] = [$strmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, '')];
         }
     }
 
@@ -489,7 +491,7 @@ if ($zoom->show_media) {
 // Supplementary feature: All meetings link.
 // Only show if the admin did not disable this feature completely.
 if ($config->showallmeetings != ZOOM_ALLMEETINGS_DISABLE) {
-    $urlall = new moodle_url('/mod/zoom/index.php', array('id' => $course->id));
+    $urlall = new moodle_url('/mod/zoom/index.php', ['id' => $course->id]);
     $linkall = html_writer::link($urlall, $strall);
     echo $OUTPUT->box_start('generalbox mt-4 pt-4 border-top text-center');
     echo $linkall;

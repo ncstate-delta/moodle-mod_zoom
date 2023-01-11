@@ -42,7 +42,7 @@ $context = context_module::instance($cm->id);
 $PAGE->set_context($context);
 require_capability('mod/zoom:addinstance', $context);
 
-$urlparams = array('id' => $cm->id);
+$urlparams = ['id' => $cm->id];
 $url = new moodle_url('/mod/zoom/recordings.php', $urlparams);
 if (!confirm_sesskey()) {
     redirect($url, get_string('sesskeyinvalid', 'mod_zoom'));

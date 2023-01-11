@@ -81,8 +81,10 @@ if ($ADMIN->fulltree) {
             get_string('zoomurl_desc', 'mod_zoom'), '', PARAM_URL);
     $settings->add($zoomurl);
 
-    $apiendpointchoices = array(ZOOM_API_ENDPOINT_GLOBAL => get_string('apiendpoint_global', 'mod_zoom'),
-            ZOOM_API_ENDPOINT_EU => get_string('apiendpoint_eu', 'mod_zoom'));
+    $apiendpointchoices = [
+        ZOOM_API_ENDPOINT_GLOBAL => get_string('apiendpoint_global', 'mod_zoom'),
+        ZOOM_API_ENDPOINT_EU => get_string('apiendpoint_eu', 'mod_zoom'),
+    ];
     $apiendpoint = new admin_setting_configselect('zoom/apiendpoint',
             get_string('apiendpoint', 'mod_zoom'),
             get_string('apiendpoint_desc', 'mod_zoom'),
@@ -125,8 +127,8 @@ if ($ADMIN->fulltree) {
             get_string('globalsettings', 'mod_zoom'),
             get_string('globalsettings_desc', 'mod_zoom')));
 
-    $jointimechoices = array(0, 5, 10, 15, 20, 30, 45, 60);
-    $jointimeselect = array();
+    $jointimechoices = [0, 5, 10, 15, 20, 30, 45, 60];
+    $jointimeselect = [];
     foreach ($jointimechoices as $minutes) {
         $jointimeselect[$minutes] = $minutes . ' ' . get_string('mins');
     }
@@ -170,9 +172,11 @@ if ($ADMIN->fulltree) {
             get_string('supplementaryfeaturessettings', 'mod_zoom'),
             get_string('supplementaryfeaturessettings_desc', 'mod_zoom')));
 
-    $webinarchoices = array(ZOOM_WEBINAR_DISABLE => get_string('webinar_disable', 'mod_zoom'),
-            ZOOM_WEBINAR_SHOWONLYIFLICENSE => get_string('webinar_showonlyiflicense', 'mod_zoom'),
-            ZOOM_WEBINAR_ALWAYSSHOW => get_string('webinar_alwaysshow', 'mod_zoom'));
+    $webinarchoices = [
+        ZOOM_WEBINAR_DISABLE => get_string('webinar_disable', 'mod_zoom'),
+        ZOOM_WEBINAR_SHOWONLYIFLICENSE => get_string('webinar_showonlyiflicense', 'mod_zoom'),
+        ZOOM_WEBINAR_ALWAYSSHOW => get_string('webinar_alwaysshow', 'mod_zoom'),
+    ];
     $offerwebinar = new admin_setting_configselect('zoom/showwebinars',
             get_string('webinar', 'mod_zoom'),
             get_string('webinar_desc', 'mod_zoom'),
@@ -185,9 +189,11 @@ if ($ADMIN->fulltree) {
             get_string('webinar_by_default_desc', 'mod_zoom'), 0, 1, 0);
     $settings->add($webinardefault);
 
-    $encryptionchoices = array(ZOOM_ENCRYPTION_DISABLE => get_string('encryptiontype_disable', 'mod_zoom'),
-            ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE => get_string('encryptiontype_showonlyife2epossible', 'mod_zoom'),
-            ZOOM_ENCRYPTION_ALWAYSSHOW => get_string('encryptiontype_alwaysshow', 'mod_zoom'));
+    $encryptionchoices = [
+        ZOOM_ENCRYPTION_DISABLE => get_string('encryptiontype_disable', 'mod_zoom'),
+        ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE => get_string('encryptiontype_showonlyife2epossible', 'mod_zoom'),
+        ZOOM_ENCRYPTION_ALWAYSSHOW => get_string('encryptiontype_alwaysshow', 'mod_zoom'),
+    ];
     $offerencryption = new admin_setting_configselect('zoom/showencryptiontype',
             get_string('encryptiontype', 'mod_zoom'),
             get_string('encryptiontype_desc', 'mod_zoom'),
@@ -195,8 +201,10 @@ if ($ADMIN->fulltree) {
             $encryptionchoices);
     $settings->add($offerencryption);
 
-    $schedulingprivilegechoices = array(ZOOM_SCHEDULINGPRIVILEGE_DISABLE => get_string('schedulingprivilege_disable', 'mod_zoom'),
-            ZOOM_SCHEDULINGPRIVILEGE_ENABLE => get_string('schedulingprivilege_enable', 'mod_zoom'));
+    $schedulingprivilegechoices = [
+        ZOOM_SCHEDULINGPRIVILEGE_DISABLE => get_string('schedulingprivilege_disable', 'mod_zoom'),
+        ZOOM_SCHEDULINGPRIVILEGE_ENABLE => get_string('schedulingprivilege_enable', 'mod_zoom'),
+    ];
     $offerschedulingprivilege = new admin_setting_configselect('zoom/showschedulingprivilege',
             get_string('schedulingprivilege', 'mod_zoom'),
             get_string('schedulingprivilege_desc', 'mod_zoom'),
@@ -204,19 +212,23 @@ if ($ADMIN->fulltree) {
             $schedulingprivilegechoices);
     $settings->add($offerschedulingprivilege);
 
-    $alternativehostschoices = array(ZOOM_ALTERNATIVEHOSTS_DISABLE => get_string('alternative_hosts_disable', 'mod_zoom'),
-            ZOOM_ALTERNATIVEHOSTS_INPUTFIELD => get_string('alternative_hosts_inputfield', 'mod_zoom'),
-            ZOOM_ALTERNATIVEHOSTS_PICKER => get_string('alternative_hosts_picker', 'mod_zoom'));
+    $alternativehostschoices = [
+        ZOOM_ALTERNATIVEHOSTS_DISABLE => get_string('alternative_hosts_disable', 'mod_zoom'),
+        ZOOM_ALTERNATIVEHOSTS_INPUTFIELD => get_string('alternative_hosts_inputfield', 'mod_zoom'),
+        ZOOM_ALTERNATIVEHOSTS_PICKER => get_string('alternative_hosts_picker', 'mod_zoom'),
+    ];
     $alternativehostsroles = zoom_get_selectable_alternative_hosts_rolestring(context_system::instance());
     $offeralternativehosts = new admin_setting_configselect('zoom/showalternativehosts',
             get_string('alternative_hosts', 'mod_zoom'),
-            get_string('alternative_hosts_desc', 'mod_zoom', array('roles' => $alternativehostsroles)),
+            get_string('alternative_hosts_desc', 'mod_zoom', ['roles' => $alternativehostsroles]),
             ZOOM_ALTERNATIVEHOSTS_INPUTFIELD,
             $alternativehostschoices);
     $settings->add($offeralternativehosts);
 
-    $capacitywarningchoices = array(ZOOM_CAPACITYWARNING_DISABLE => get_string('meetingcapacitywarning_disable', 'mod_zoom'),
-            ZOOM_CAPACITYWARNING_ENABLE => get_string('meetingcapacitywarning_enable', 'mod_zoom'));
+    $capacitywarningchoices = [
+        ZOOM_CAPACITYWARNING_DISABLE => get_string('meetingcapacitywarning_disable', 'mod_zoom'),
+        ZOOM_CAPACITYWARNING_ENABLE => get_string('meetingcapacitywarning_enable', 'mod_zoom'),
+    ];
     $offercapacitywarning = new admin_setting_configselect('zoom/showcapacitywarning',
             get_string('meetingcapacitywarning', 'mod_zoom'),
             get_string('meetingcapacitywarning_desc', 'mod_zoom'),
@@ -224,8 +236,10 @@ if ($ADMIN->fulltree) {
             $capacitywarningchoices);
     $settings->add($offercapacitywarning);
 
-    $allmeetingschoices = array(ZOOM_ALLMEETINGS_DISABLE => get_string('allmeetings_disable', 'mod_zoom'),
-            ZOOM_ALLMEETINGS_ENABLE => get_string('allmeetings_enable', 'mod_zoom'));
+    $allmeetingschoices = [
+        ZOOM_ALLMEETINGS_DISABLE => get_string('allmeetings_disable', 'mod_zoom'),
+        ZOOM_ALLMEETINGS_ENABLE => get_string('allmeetings_enable', 'mod_zoom'),
+    ];
     $offerallmeetings = new admin_setting_configselect('zoom/showallmeetings',
             get_string('allmeetings', 'mod_zoom'),
             get_string('allmeetings_desc', 'mod_zoom'),
@@ -233,8 +247,10 @@ if ($ADMIN->fulltree) {
             $allmeetingschoices);
     $settings->add($offerallmeetings);
 
-    $downloadicalchoices = array(ZOOM_DOWNLOADICAL_DISABLE => get_string('downloadical_disable', 'mod_zoom'),
-            ZOOM_DOWNLOADICAL_ENABLE => get_string('downloadical_enable', 'mod_zoom'));
+    $downloadicalchoices = [
+        ZOOM_DOWNLOADICAL_DISABLE => get_string('downloadical_disable', 'mod_zoom'),
+        ZOOM_DOWNLOADICAL_ENABLE => get_string('downloadical_enable', 'mod_zoom'),
+    ];
     $offerdownloadical = new admin_setting_configselect('zoom/showdownloadical',
             get_string('downloadical', 'mod_zoom'),
             get_string('downloadical_desc', 'mod_zoom'),
@@ -269,8 +285,10 @@ if ($ADMIN->fulltree) {
     $defaultrequirepasscode->set_locked_flag_options(admin_setting_flag::ENABLED, true);
     $settings->add($defaultrequirepasscode);
 
-    $encryptionchoices = array(ZOOM_ENCRYPTION_TYPE_ENHANCED => get_string('option_encryption_type_enhancedencryption', 'mod_zoom'),
-            ZOOM_ENCRYPTION_TYPE_E2EE => get_string('option_encryption_type_endtoendencryption', 'mod_zoom'));
+    $encryptionchoices = [
+        ZOOM_ENCRYPTION_TYPE_ENHANCED => get_string('option_encryption_type_enhancedencryption', 'mod_zoom'),
+        ZOOM_ENCRYPTION_TYPE_E2EE => get_string('option_encryption_type_endtoendencryption', 'mod_zoom'),
+    ];
     $defaultencryptiontypeoption = new admin_setting_configselect('zoom/defaultencryptiontypeoption',
             get_string('option_encryption_type', 'mod_zoom'),
             get_string('option_encryption_type_help', 'mod_zoom'),
@@ -312,9 +330,11 @@ if ($ADMIN->fulltree) {
             0, 1, 0);
     $settings->add($defaultparticipantsvideo);
 
-    $audiochoices = array(ZOOM_AUDIO_TELEPHONY => get_string('audio_telephony', 'mod_zoom'),
-                          ZOOM_AUDIO_VOIP => get_string('audio_voip', 'mod_zoom'),
-                          ZOOM_AUDIO_BOTH => get_string('audio_both', 'mod_zoom'));
+    $audiochoices = [
+        ZOOM_AUDIO_TELEPHONY => get_string('audio_telephony', 'mod_zoom'),
+        ZOOM_AUDIO_VOIP => get_string('audio_voip', 'mod_zoom'),
+        ZOOM_AUDIO_BOTH => get_string('audio_both', 'mod_zoom')
+    ];
     $defaultaudiooption = new admin_setting_configselect('zoom/defaultaudiooption',
             get_string('option_audio', 'mod_zoom'),
             get_string('option_audio_help', 'mod_zoom'),
@@ -327,12 +347,12 @@ if ($ADMIN->fulltree) {
             1, 1, 0);
     $settings->add($defaultmuteuponentryoption);
 
-    $autorecordingchoices = array(
+    $autorecordingchoices = [
         ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'mod_zoom'),
         ZOOM_AUTORECORDING_USERDEFAULT => get_string('autorecording_userdefault', 'mod_zoom'),
         ZOOM_AUTORECORDING_LOCAL => get_string('autorecording_local', 'mod_zoom'),
         ZOOM_AUTORECORDING_CLOUD => get_string('autorecording_cloud', 'mod_zoom'),
-    );
+    ];
     $recordingoption = new admin_setting_configselect('zoom/recordingoption',
         get_string('option_auto_recording', 'mod_zoom'),
         get_string('option_auto_recording_help', 'mod_zoom'),

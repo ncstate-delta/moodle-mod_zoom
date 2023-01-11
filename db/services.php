@@ -27,9 +27,9 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$functions = array(
+$functions = [
 
-    'mod_zoom_get_state' => array(
+    'mod_zoom_get_state' => [
         'classname'     => 'mod_zoom_external',
         'methodname'    => 'get_state',
         'classpath'     => 'mod/zoom/classes/external.php',
@@ -37,17 +37,17 @@ $functions = array(
         . 'status, and the start time, duration, and other meeting options.',
         'type'          => 'read',
         'capabilities'  => 'mod/zoom:view',
-        'services'      => array(MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'),
-    ),
+        'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'],
+    ],
 
-    'mod_zoom_grade_item_update' => array(
+    'mod_zoom_grade_item_update' => [
         'classname'     => 'mod_zoom_external',
         'methodname'    => 'grade_item_update',
         'classpath'     => 'mod/zoom/classes/external.php',
         'description'   => 'Creates or updates grade item for the given zoom instance and returns join url.',
         'type'          => 'write',
         'capabilities'  => 'mod/zoom:view',
-        'services'      => array(MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'),
-    ),
+        'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'],
+    ],
 
-);
+];
