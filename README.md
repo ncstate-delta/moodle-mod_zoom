@@ -69,6 +69,12 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.9.2
+
+- Bugfix: New meetings did not know which user to check for security settings #438 (thanks @haietza)
+- Bugfix: Use select field so registration option saves correctly #448 (thanks @paulandm)
+- Compatibility: grunt rebuild against Moodle 4.1 #446
+
 v4.9.1
 
 - Regression: Administrators without Zoom account were unable to edit #422 (thanks @juanbrunetmf)
