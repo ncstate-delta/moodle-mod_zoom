@@ -676,12 +676,16 @@ function mod_zoom_core_calendar_provide_event_action(calendar_event $event,
     $zoom = $DB->get_record('zoom', ['id' => $cm->instance], '*');
     list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
-    return $factory->create_instance(
-        get_string('join_meeting', 'zoom'),
-        new \moodle_url('/mod/zoom/view.php', ['id' => $cm->id]),
-        1,
-        $available
-    );
+    if ($finished) {
+        return null; // No point to showing finished meetings in overview.
+    } else {
+        return $factory->create_instance(
+            get_string('join_meeting', 'zoom'),
+            new \moodle_url('/mod/zoom/view.php', ['id' => $cm->id]),
+            1,
+            $available
+        );
+    }
 }
 
 /* Gradebook API */
