@@ -258,6 +258,12 @@ if ($ADMIN->fulltree) {
             $downloadicalchoices);
     $settings->add($offerdownloadical);
 
+    $sendicalnotifications = new admin_setting_configcheckbox('zoom/sendicalnotifications',
+            get_string('sendicalnotifications', 'mod_zoom'),
+            get_string('sendicalnotifications_help', 'mod_zoom'),
+            0, 1, 0);
+    $settings->add($sendicalnotifications);
+
     // Default Zoom settings.
     $settings->add(new admin_setting_heading('zoom/defaultsettings',
             get_string('defaultsettings', 'mod_zoom'),
