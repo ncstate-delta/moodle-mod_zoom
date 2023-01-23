@@ -142,14 +142,14 @@ class send_ical_notifications extends \core\task\scheduled_task {
             $description .= '</p>';
 
             // If no registration required - then the same join link can be used - only one ical object needed
-            if (!$zoom->registration_required) {
+            if ($zoom->registration == ZOOM_REGISTRATION_OFF) {
                 $ical = $this->create_ical_object($zoom, $zoom_event, $cal_event, $description);
                 $filename = $this->serialize_attachment($ical);
             }                 
 
             foreach($users as $user) {
                 // If registration is required - then a unique registration link per user is required - different ical objects needed
-                if ($zoom->registration_required) {
+                if ($zoom->registration != ZOOM_REGISTRATION_OFF) {
                     $ical = $this->create_ical_object($zoom, $zoom_event, $cal_event, $description, $user);
                     $filename = $this->serialize_attachment($ical);
                 }
@@ -208,7 +208,7 @@ class send_ical_notifications extends \core\task\scheduled_task {
             throw new \coding_exception("Negative duration is not supported yet.");
         }
 
-        if (!$zoom->registration_required) {
+        if ($zoom->registration == ZOOM_REGISTRATION_OFF) {
             $ev->add_property('location', $zoom->join_url);
         } else {
             $registrant_join_url = zoom_get_registrant_join_url($user->email, $zoom->meeting_id, $zoom->webinar);
@@ -287,12 +287,12 @@ class send_ical_notifications extends \core\task\scheduled_task {
     }
 
     /**
-     * Returns the name of main notifications task name as 'Local aJourney Notifications'.
+     * Returns the name of the task.
      *
      * @return string task name.
      */
     public function get_name() {
-        return get_string('send_ical_notifications', 'mod_zoom');
+        return get_string('sendicalnotifications', 'mod_zoom');
     }
     
 }
