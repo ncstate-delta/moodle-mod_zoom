@@ -70,13 +70,13 @@ $tasks = [
         'dayofweek' => '*',
         'month' => '*',
     ],
-    array(
+    [
         'classname' => 'mod_zoom\task\send_ical_notifications',
         'blocking' => 0,
         'minute' => '*/5',
         'hour' => '*',
         'day' => '*',
         'dayofweek' => '*',
-        'month' => '*'
-    )
+        'month' => '*',
+    ],
 ];
