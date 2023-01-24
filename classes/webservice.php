@@ -1037,4 +1037,66 @@ class mod_zoom_webservice {
         $response = $this->make_call($url);
         return $response;
     }
+
+    /**
+     * Get the roles for the Zoom account.
+     */
+    private function get_roles() {
+        $url = '/roles';
+        $response = null;
+        try {
+            $response = $this->make_call($url);
+        } catch (moodle_exception $error) {
+            throw $error;
+        }
+        return $response;
+    }
+
+    /**
+     * Get the role members for the supplied role id.
+     * @param int $id The Zoom Role ID.
+     * @return stdClass The Zoom object containing the role member information.
+     */
+    private function get_role_members($role_id) {
+        $url = '/roles/' . $role_id . '/members';
+        $response = null;
+        try {
+            $response = $this->make_call($url);
+        } catch (moodle_exception $error) {
+            throw $error;
+        }
+        return $response;
+    }
+
+    /**
+     * Returns whether or not the current user is capable of creating a meeting/webinar that requires registration.
+     * @return boolean
+     */
+    public function get_user_registration_capable() {
+        global $USER;
+
+        $zoom_roles = $this->get_roles();
+        if ($zoom_roles) {
+            $owner_role_id = -1;
+            foreach ($zoom_roles->roles as $zoom_role) {
+                if ($zoom_role->name == 'Owner') {
+                    $owner_role_id = $zoom_role->id;
+                    break;
+                }
+            }
+            if ($owner_role_id != -1) {
+                $owner_role_members = $this->get_role_members($owner_role_id);
+
+                if ($owner_role_members) {
+                    foreach ($owner_role_members->members as $zoom_owner_member) {
+                        if ($zoom_owner_member->email == $USER->email) {
+                            return true;
+                        }
+                    } 
+                }
+            }
+        }
+        return false;
+    }
+
 }

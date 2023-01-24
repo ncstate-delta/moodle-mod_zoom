@@ -1020,6 +1020,14 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
         }
 
+        // Validation for registration required functionality
+        if ($data['registration'] != ZOOM_REGISTRATION_OFF) {
+            $capable_user_found = zoom_webservice()->get_user_registration_capable();
+            if (!$capable_user_found) {
+                $errors['registration'] = get_string('err_registration', 'zoom');
+            }
+        }
+
         return $errors;
     }
 }
