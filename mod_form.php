@@ -351,14 +351,11 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addHelpButton('show_schedule', 'showschedule', 'zoom');
 
         // Add registration widget.
-        $mform->addElement(
-            'advcheckbox',
-            'registration',
-            get_string('registration', 'mod_zoom'),
-            get_string('registration_text', 'mod_zoom'),
-            [],
-            [ZOOM_REGISTRATION_OFF, ZOOM_REGISTRATION_AUTOMATIC]
-        );
+        $registrationoptions = [
+            ZOOM_REGISTRATION_OFF => get_string('no'),
+            ZOOM_REGISTRATION_AUTOMATIC => get_string('registration_text', 'mod_zoom'),
+        ];
+        $mform->addElement('select', 'registration', get_string('registration', 'mod_zoom'), $registrationoptions);
         $mform->setDefault('registration', $config->defaultregistration);
         $mform->addHelpButton('registration', 'registration', 'mod_zoom');
         $mform->hideIf('registration', 'recurrence_type', 'eq', ZOOM_RECURRINGTYPE_NOTIME);
@@ -832,11 +829,6 @@ class mod_zoom_mod_form extends moodleform_mod {
                 // Unset the weekly fields.
                 $data = zoom_remove_monthly_options($data);
             }
-        }
-
-        // Workaround for MDL-76095 because automatically-approved registrations are mode "0".
-        if (isset($data->registration) && $data->registration === 'on') {
-            $data->registration = ZOOM_REGISTRATION_AUTOMATIC;
         }
 
         // Make sure registration is not enabled for No Fixed Time recurring meetings.
