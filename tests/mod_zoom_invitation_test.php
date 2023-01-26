@@ -564,7 +564,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         // - one time for the recurring meeting with no fixed time.
         $debugmessage = 'No match found in zoom invitation for element: "icallink"'
             . ' with pattern: "/^.+download and import the following iCalendar.+$\n.+$/mi".';
-        $this->assertDebuggingCalledCount(2, array($debugmessage, $debugmessage));
+        $this->assertDebuggingCalledCount(2, [$debugmessage, $debugmessage]);
     }
 
     /**

@@ -52,7 +52,7 @@ if (empty($rec)) {
     throw new moodle_exception('recordingnotfound', 'mod_zoom', '', get_string('recordingnotfound', 'zoom'));
 }
 
-$params = array('recordingsid' => $rec->id, 'userid' => $USER->id);
+$params = ['recordingsid' => $rec->id, 'userid' => $USER->id];
 $now = time();
 
 // Keep track of whether someone has viewed the recording or not.

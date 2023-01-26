@@ -29,7 +29,7 @@ require_once(dirname(__FILE__).'/../../lib/moodlelib.php');
 
 $id = required_param('id', PARAM_INT); // Course.
 
-$course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
 
 require_course_login($course);
 
@@ -37,9 +37,9 @@ $context = context_course::instance($course->id);
 require_capability('mod/zoom:view', $context);
 $iszoommanager = has_capability('mod/zoom:addinstance', $context);
 
-$params = array(
-    'context' => $context
-);
+$params = [
+    'context' => $context,
+];
 $event = \mod_zoom\event\course_module_instance_list_viewed::create($params);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
@@ -58,7 +58,7 @@ $strsessions = get_string('sessions', 'mod_zoom');
 $strmeetingstarted = get_string('meeting_started', 'mod_zoom');
 $strjoin = get_string('join', 'mod_zoom');
 
-$PAGE->set_url('/mod/zoom/index.php', array('id' => $id));
+$PAGE->set_url('/mod/zoom/index.php', ['id' => $id]);
 $PAGE->navbar->add($strname);
 $PAGE->set_title("$course->shortname: $strname");
 $PAGE->set_heading($course->fullname);
@@ -71,7 +71,7 @@ if ($CFG->branch < '400') {
 }
 
 if (! $zooms = get_all_instances_in_course('zoom', $course)) {
-    notice(get_string('nozooms', 'mod_zoom'), new moodle_url('/course/view.php', array('id' => $course->id)));
+    notice(get_string('nozooms', 'mod_zoom'), new moodle_url('/course/view.php', ['id' => $course->id]));
 }
 
 $usesections = course_format_uses_sections($course->format);
@@ -80,12 +80,12 @@ $zoomuserid = zoom_get_user_id(false);
 
 $newtable = new html_table();
 $newtable->attributes['class'] = 'generaltable mod_index';
-$newhead = array($strtitle, $strtime, $strduration, $stractions);
-$newalign = array('left', 'left', 'left', 'left');
+$newhead = [$strtitle, $strtime, $strduration, $stractions];
+$newalign = ['left', 'left', 'left', 'left'];
 
 $oldtable = new html_table();
-$oldhead = array($strtitle, $strtime);
-$oldalign = array('left', 'left');
+$oldhead = [$strtitle, $strtime];
+$oldalign = ['left', 'left'];
 
 // Show section column if there are sections.
 if ($usesections) {
@@ -113,7 +113,7 @@ $now = time();
 $modinfo = get_fast_modinfo($course);
 $cms = $modinfo->instances['zoom'];
 foreach ($zooms as $z) {
-    $row = array();
+    $row = [];
     list($inprogress, $available, $finished) = zoom_get_state($z);
 
     $cm = $cms[$z->id];
@@ -121,7 +121,7 @@ foreach ($zooms as $z) {
         $row[0] = get_section_name($course, $cm->sectionnum);
     }
 
-    $url = new moodle_url('view.php', array('id' => $cm->id));
+    $url = new moodle_url('view.php', ['id' => $cm->id]);
     $row[1] = html_writer::link($url, $cm->get_formatted_name());
     if ($z->webinar) {
         $row[1] .= " ($strwebinar)";
@@ -143,7 +143,7 @@ foreach ($zooms as $z) {
         $displaytime = userdate($z->start_time);
     }
 
-    $report = new moodle_url('report.php', array('id' => $cm->id));
+    $report = new moodle_url('report.php', ['id' => $cm->id]);
     $sessions = html_writer::link($report, $strsessions);
 
     if ($finished) {
@@ -154,8 +154,7 @@ foreach ($zooms as $z) {
         $oldtable->data[] = $row;
     } else {
         if ($inprogress) {
-            $label = html_writer::tag('span', $strmeetingstarted,
-                    array('class' => 'label label-info zoom-info'));
+            $label = html_writer::tag('span', $strmeetingstarted, ['class' => 'label label-info zoom-info']);
             $row[2] = html_writer::tag('div', $label);
         } else {
             $row[2] = $displaytime;
@@ -164,11 +163,10 @@ foreach ($zooms as $z) {
         $row[3] = ($z->recurring && $z->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) ? '--' : format_time($z->duration);
 
         if ($available) {
-            $buttonhtml = html_writer::tag('button', $strjoin,
-                array('type' => 'submit', 'class' => 'btn btn-primary'));
-            $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
+            $buttonhtml = html_writer::tag('button', $strjoin, ['type' => 'submit', 'class' => 'btn btn-primary']);
+            $aurl = new moodle_url('/mod/zoom/loadmeeting.php', ['id' => $cm->id]);
             $buttonhtml .= html_writer::input_hidden_params($aurl);
-            $row[4] = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
+            $row[4] = html_writer::tag('form', $buttonhtml, ['action' => $aurl->out_omit_querystring(), 'target' => '_blank']);
         } else {
             $row[4] = '--';
         }
@@ -186,14 +184,13 @@ echo html_writer::table($newtable);
 echo $OUTPUT->heading($strold, 4, null, 'mod-zoom-old-meetings-header');
 // Show refresh meeting sessions link only if user can run the 'refresh session reports' console command.
 if (has_capability('mod/zoom:refreshsessions', $context)) {
-    $linkarguments = array(
+    $linkarguments = [
         'courseid' => $id,
         'start' => date('Y-m-d', strtotime('-3 days')),
         'end' => date('Y-m-d'),
-    );
-    $url = new moodle_url($CFG->wwwroot. '/mod/zoom/console/get_meeting_report.php',
-            $linkarguments);
-    echo html_writer::link($url, get_string('refreshreports', 'mod_zoom'), array('target' => '_blank', 'class' => 'pl-4'));
+    ];
+    $url = new moodle_url($CFG->wwwroot. '/mod/zoom/console/get_meeting_report.php', $linkarguments);
+    echo html_writer::link($url, get_string('refreshreports', 'mod_zoom'), ['target' => '_blank', 'class' => 'pl-4']);
 }
 echo html_writer::table($oldtable);
 

@@ -64,16 +64,16 @@ class update_meetings extends \core\task\scheduled_task {
         mtrace('Starting to process existing Zoom meeting activities ...');
 
         // Check all meetings, in case they were deleted/changed on Zoom.
-        $zoomstoupdate = $DB->get_records('zoom', array('exists_on_zoom' => ZOOM_MEETING_EXISTS));
-        $courseidstoupdate = array();
-        $calendarfields = array('intro', 'introformat', 'start_time', 'duration', 'recurring');
+        $zoomstoupdate = $DB->get_records('zoom', ['exists_on_zoom' => ZOOM_MEETING_EXISTS]);
+        $courseidstoupdate = [];
+        $calendarfields = ['intro', 'introformat', 'start_time', 'duration', 'recurring'];
 
         foreach ($zoomstoupdate as $zoom) {
             // Show trace message.
             mtrace('Processing next Zoom meeting activity ...');
             mtrace('  Zoom meeting ID: ' . $zoom->meeting_id);
             mtrace('  Zoom meeting title: '. $zoom->name);
-            $zoomactivityurl = new \moodle_url('/mod/zoom/view.php', array('n' => $zoom->id));
+            $zoomactivityurl = new \moodle_url('/mod/zoom/view.php', ['n' => $zoom->id]);
             mtrace('  Zoom meeting activity URL: '. $zoomactivityurl->out());
             mtrace('  Moodle course ID: '. $zoom->course);
 
@@ -158,7 +158,7 @@ class update_meetings extends \core\task\scheduled_task {
 
                 // Update tracking fields for meeting.
                 mtrace('  => Updated tracking fields for Zoom meeting ID ' . $zoom->meeting_id);
-                zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields ?? array());
+                zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields ?? []);
             }
         }
 

@@ -41,7 +41,7 @@ class mod_zoom_generator extends testing_module_generator {
         set_config('apisecret', 'test', 'zoom');
 
         // Mock Zoom data for testing.
-        $defaultzoomsettings = array(
+        $defaultzoomsettings = [
             'grade' => 0,
             'name' => 'Test Zoom Meeting',
             'meeting_id' => 1,
@@ -58,7 +58,7 @@ class mod_zoom_generator extends testing_module_generator {
             'start_time' => mktime(0, 0, 0, 2, 22, 2021),
             'duration' => 60,
             'exists_on_zoom' => ZOOM_MEETING_EXPIRED,
-        );
+        ];
 
         $record = (object) (array) $record;
         foreach ($defaultzoomsettings as $name => $value) {

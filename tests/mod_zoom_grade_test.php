@@ -68,7 +68,7 @@ class mod_zoom_grade_test extends advanced_testcase {
         $this->assertEquals(0, count($gradebook->items[0]->grades));
 
         // Insert grade for student.
-        $studentgrade = array('userid' => $this->student->id, 'rawgrade' => 50);
+        $studentgrade = ['userid' => $this->student->id, 'rawgrade' => 50];
         zoom_grade_item_update($instance, $studentgrade);
 
         // Gradebook should contain a grade for student.
@@ -77,7 +77,7 @@ class mod_zoom_grade_test extends advanced_testcase {
         $this->assertEquals(50, $gradebook->items[0]->grades[$this->student->id]->grade);
 
         // Update grade for student.
-        $studentgrade = array('userid' => $this->student->id, 'rawgrade' => 75);
+        $studentgrade = ['userid' => $this->student->id, 'rawgrade' => 75];
         zoom_grade_item_update($instance, $studentgrade);
         $gradebook = grade_get_grades($this->course->id, 'mod', 'zoom', $instance->id, $this->student->id);
 
@@ -101,7 +101,7 @@ class mod_zoom_grade_test extends advanced_testcase {
         $this->assertEquals(0, count($gradebook->items[0]->grades));
 
         // Insert grade for student.
-        $studentgrade = array('userid' => $this->student->id, 'rawgrade' => 100);
+        $studentgrade = ['userid' => $this->student->id, 'rawgrade' => 100];
         zoom_grade_item_update($instance, $studentgrade);
 
         // Gradebook should contain a grade for student.
@@ -132,7 +132,7 @@ class mod_zoom_grade_test extends advanced_testcase {
         $this->assertEquals(0, count($gradebook->items[0]->grades));
 
         // Insert grade for student.
-        $studentgrade = array('userid' => $this->student->id, 'rawgrade' => 100);
+        $studentgrade = ['userid' => $this->student->id, 'rawgrade' => 100];
         zoom_grade_item_update($instance, $studentgrade);
 
         // Gradebook should contain a grade for student.

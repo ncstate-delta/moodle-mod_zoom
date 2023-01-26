@@ -80,11 +80,12 @@ class advanced_passcode_test extends basic_testcase {
      * @covers ::zoom_create_default_passcode
      */
     public function test_settings_length() {
-        $data = array('length' => 8,
+        $data = [
+            'length' => 8,
             'have_letter' => false,
             'have_upper_and_lower_characters' => false,
-            'have_special_character' => false
-        );
+            'have_special_character' => false,
+        ];
         $this->zoomdata = (object) $data;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
@@ -97,12 +98,13 @@ class advanced_passcode_test extends basic_testcase {
      * @covers ::zoom_create_default_passcode
      */
     public function test_settings_only_numeric() {
-        $data = array('length' => 10,
+        $data = [
+            'length' => 10,
             'have_letter' => false,
             'have_upper_and_lower_characters' => false,
             'have_special_character' => false,
             'only_allow_numeric' => true,
-        );
+        ];
         $this->zoomdata = (object) $data;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
@@ -115,11 +117,12 @@ class advanced_passcode_test extends basic_testcase {
      * @covers ::zoom_create_default_passcode
      */
     public function test_settings_letter() {
-        $data = array('length' => null,
+        $data = [
+            'length' => null,
             'have_letter' => true,
             'have_upper_and_lower_characters' => false,
-            'have_special_character' => null
-        );
+            'have_special_character' => null,
+        ];
         $this->zoomdata = (object) $data;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
@@ -133,11 +136,12 @@ class advanced_passcode_test extends basic_testcase {
      * @covers ::zoom_create_default_passcode
      */
     public function test_settings_upper_and_lower_letters() {
-        $data = array('length' => null,
+        $data = [
+            'length' => null,
             'have_letter' => true,
             'have_upper_and_lower_characters' => true,
-            'have_special_character' => null
-        );
+            'have_special_character' => null,
+        ];
         $this->zoomdata = (object) $data;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
@@ -152,11 +156,12 @@ class advanced_passcode_test extends basic_testcase {
      * @covers ::zoom_create_default_passcode
      */
     public function test_settings_special_character() {
-        $data = array('length' => null,
+        $data = [
+            'length' => null,
             'have_letter' => null,
             'have_upper_and_lower_characters' => null,
-            'have_special_character' => true
-        );
+            'have_special_character' => true,
+        ];
         $this->zoomdata = (object) $data;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
@@ -170,11 +175,12 @@ class advanced_passcode_test extends basic_testcase {
      * @covers ::zoom_create_default_passcode
      */
     public function test_settings_all() {
-        $data = array('length' => 7,
+        $data = [
+            'length' => 7,
             'have_letter' => true,
             'have_upper_and_lower_characters' => true,
-            'have_special_character' => true
-        );
+            'have_special_character' => true,
+        ];
         $this->zoomdata = (object) $data;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
@@ -189,14 +195,15 @@ class advanced_passcode_test extends basic_testcase {
      * @covers ::zoom_create_passcode_description
      */
     public function test_pasword_description_all() {
-        $data = array('length' => 9,
+        $data = [
+            'length' => 9,
             'have_letter' => true,
             'have_number' => true,
             'have_upper_and_lower_characters' => true,
             'have_special_character' => true,
             'consecutive_characters_length' => 4,
             'only_allow_numeric' => false,
-        );
+        ];
         $this->zoomdata = (object) $data;
 
         $description = zoom_create_passcode_description($this->zoomdata);
@@ -211,14 +218,15 @@ class advanced_passcode_test extends basic_testcase {
      * @covers ::zoom_create_passcode_description
      */
     public function test_pasword_description_only_numeric() {
-        $data = array('length' => 8,
+        $data = [
+            'length' => 8,
             'have_letter' => false,
             'have_number' => true,
             'have_upper_and_lower_characters' => false,
             'have_special_character' => false,
             'consecutive_characters_length' => 0,
             'only_allow_numeric' => true,
-        );
+        ];
         $this->zoomdata = (object) $data;
 
         $description = zoom_create_passcode_description($this->zoomdata);

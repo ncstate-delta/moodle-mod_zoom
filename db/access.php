@@ -47,69 +47,69 @@
 defined('MOODLE_INTERNAL') || die();
 
 // Modify capabilities as needed and remove this comment.
-$capabilities = array(
-    'mod/zoom:addinstance' => array(
+$capabilities = [
+    'mod/zoom:addinstance' => [
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        ),
-        'clonepermissionsfrom' => 'moodle/course:manageactivities'
-    ),
+            'manager' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'moodle/course:manageactivities',
+    ],
 
-    'mod/zoom:view' => array(
+    'mod/zoom:view' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
+        'legacy' => [
             'guest' => CAP_ALLOW,
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 
-    'mod/zoom:refreshsessions' => array(
+    'mod/zoom:refreshsessions' => [
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
-            'manager' => CAP_ALLOW
-        ),
-    ),
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 
-    'mod/zoom:eligiblealternativehost' => array(
+    'mod/zoom:eligiblealternativehost' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW
-        )
-    ),
+            'editingteacher' => CAP_ALLOW,
+        ],
+    ],
 
-    'mod/zoom:viewjoinurl' => array(
+    'mod/zoom:viewjoinurl' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        )
-    ),
+        ],
+    ],
 
-    'mod/zoom:viewdialin' => array(
+    'mod/zoom:viewdialin' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        )
-    ),
-);
+        ],
+    ],
+];

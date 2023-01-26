@@ -201,7 +201,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
         if (!empty($participant->id)) {
             // Sometimes uuid is blank from Zoom.
             $participantmatches = $DB->get_records('zoom_meeting_participants',
-                    array('uuid' => $participant->id), null, 'id, userid, name');
+                    ['uuid' => $participant->id], null, 'id, userid, name');
 
             if (!empty($participantmatches)) {
                 // Found some previous matches. Find first one with userid set.
@@ -227,8 +227,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 $name = $names[$moodleuserid];
             } else if (!empty($participant->user_email) &&
                     ($moodleuser = $DB->get_record('user',
-                            array('email' => $participant->user_email,
-                            'deleted' => 0, 'suspended' => 0), '*', IGNORE_MULTIPLE))) {
+                            ['email' => $participant->user_email, 'deleted' => 0, 'suspended' => 0], '*', IGNORE_MULTIPLE))) {
                 // This is the case where someone attends the meeting, but is not enrolled in the class.
                 $moodleuserid = $moodleuser->id;
                 $name = strtoupper(fullname($moodleuser));
@@ -250,7 +249,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
             $participant->id = null;
         }
 
-        return array(
+        return [
             'name' => $name,
             'userid' => $moodleuserid,
             'detailsid' => $detailsid,
@@ -260,7 +259,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
             'join_time' => strtotime($participant->join_time),
             'leave_time' => strtotime($participant->leave_time),
             'duration' => $participant->duration,
-        );
+        ];
     }
 
     /**
@@ -273,14 +272,14 @@ class get_meeting_reports extends \core\task\scheduled_task {
         // Loop through each user to generate name->uids mapping.
         $coursecontext = \context_course::instance($courseid);
         $enrolled = get_enrolled_users($coursecontext);
-        $names = array();
-        $emails = array();
+        $names = [];
+        $emails = [];
         foreach ($enrolled as $user) {
             $name = strtoupper(fullname($user));
             $names[$user->id] = $name;
             $emails[$user->id] = strtoupper(zoom_get_api_identifier($user));
         }
-        return array($names, $emails);
+        return [$names, $emails];
     }
 
     /**

@@ -57,7 +57,7 @@ class mod_zoom_webservice {
      * Default meeting_password_requirement object.
      * @var array
      */
-    const DEFAULT_MEETING_PASSWORD_REQUIREMENT = array(
+    const DEFAULT_MEETING_PASSWORD_REQUIREMENT = [
         'length' => 0,
         'consecutive_characters_length' => 0,
         'have_letter' => false,
@@ -65,8 +65,8 @@ class mod_zoom_webservice {
         'have_upper_and_lower_characters' => false,
         'have_special_character' => false,
         'only_allow_numeric' => false,
-        'weak_enhance_detection' => false
-    );
+        'weak_enhance_detection' => false,
+    ];
 
     /**
      * Client ID
@@ -135,18 +135,18 @@ class mod_zoom_webservice {
     public function __construct() {
         $config = get_config('zoom');
 
-        $requiredfields = array(
+        $requiredfields = [
             'clientid',
             'clientsecret',
             'accountid',
-        );
+        ];
 
         // TODO: Remove when JWT is no longer supported in June 2023.
         if (empty($config->clientid) || empty($config->clientsecret) || empty($config->accountid)) {
-            $requiredfields = array(
+            $requiredfields = [
                 'apikey',
                 'apisecret',
-            );
+            ];
         }
 
         try {
@@ -210,7 +210,7 @@ class mod_zoom_webservice {
      * @return stdClass The call's result in JSON format.
      * @throws moodle_exception Moodle exception is thrown for curl errors.
      */
-    private function make_call($path, $data = array(), $method = 'get') {
+    private function make_call($path, $data = [], $method = 'get') {
         global $CFG;
         $url = $this->apiurl . $path;
         $method = strtolower($method);
@@ -245,10 +245,10 @@ class mod_zoom_webservice {
         if (isset($this->clientid) && isset($this->clientsecret) && isset($this->accountid)) {
             $token = $this->get_access_token();
         } else {
-            $payload = array(
+            $payload = [
                 'iss' => $this->apikey,
-                'exp' => time() + 40
-                );
+                'exp' => time() + 40,
+            ];
             $token = \Firebase\JWT\JWT::encode($payload, $this->apisecret, 'HS256');
         }
 
@@ -346,7 +346,7 @@ class mod_zoom_webservice {
      * @link https://zoom.github.io/api/#list-users
      */
     private function make_paginated_call($url, $data, $datatoget) {
-        $aggregatedata = array();
+        $aggregatedata = [];
         $data['page_size'] = ZOOM_MAX_RECORDS_PER_CALL;
         do {
             $callresult = null;
@@ -377,14 +377,14 @@ class mod_zoom_webservice {
      */
     public function autocreate_user($user) {
         $url = 'users';
-        $data = array('action' => 'autocreate');
-        $data['user_info'] = array(
+        $data = ['action' => 'autocreate'];
+        $data['user_info'] = [
             'email' => zoom_get_api_identifier($user),
             'type' => ZOOM_USER_TYPE_PRO,
             'first_name' => $user->firstname,
             'last_name' => $user->lastname,
-            'password' => base64_encode(random_bytes(16))
-        );
+            'password' => base64_encode(random_bytes(16)),
+        ];
 
         try {
             $this->make_call($url, $data, 'post');
@@ -437,7 +437,7 @@ class mod_zoom_webservice {
      * @return string|false If user is found, returns the User ID. Otherwise, returns false.
      */
     private function get_least_recently_active_paid_user_id() {
-        $usertimes = array();
+        $usertimes = [];
         $userslist = $this->list_users();
         foreach ($userslist as $user) {
             if ($user->type != ZOOM_USER_TYPE_BASIC && isset($user->last_login_time)) {
@@ -561,13 +561,13 @@ class mod_zoom_webservice {
     private function database_to_api($zoom) {
         global $CFG;
 
-        $data = array(
+        $data = [
             'topic' => $zoom->name,
-            'settings' => array(
+            'settings' => [
                 'host_video' => (bool) ($zoom->option_host_video),
-                'audio' => $zoom->option_audio
-            )
-        );
+                'audio' => $zoom->option_audio,
+            ],
+        ];
         if (isset($zoom->intro)) {
             $data['agenda'] = content_to_text($zoom->intro, FORMAT_MOODLE);
         }
@@ -676,7 +676,7 @@ class mod_zoom_webservice {
 
         // Add tracking field to data.
         $defaulttrackingfields = zoom_clean_tracking_fields();
-        $tfarray = array();
+        $tfarray = [];
         foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
             if (isset($zoom->$key)) {
                 $tf = new stdClass();
@@ -688,7 +688,7 @@ class mod_zoom_webservice {
         $data['tracking_fields'] = $tfarray;
 
         if (isset($zoom->breakoutrooms)) {
-            $breakoutroom = array('enable' => true, 'rooms' => $zoom->breakoutrooms);
+            $breakoutroom = ['enable' => true, 'rooms' => $zoom->breakoutrooms];
             $data['settings']['breakout_room'] = $breakoutroom;
         }
 
@@ -707,10 +707,10 @@ class mod_zoom_webservice {
             if ($this->paid_user_limit_reached()) {
                 $leastrecentlyactivepaiduserid = $this->get_least_recently_active_paid_user_id();
                 // Changes least_recently_active_user to a basic user so we can use their license.
-                $this->make_call("users/$leastrecentlyactivepaiduserid", array('type' => ZOOM_USER_TYPE_BASIC), 'patch');
+                $this->make_call("users/$leastrecentlyactivepaiduserid", ['type' => ZOOM_USER_TYPE_BASIC], 'patch');
             }
             // Changes current user to pro so they can make a meeting.
-            $this->make_call("users/$zoomuserid", array('type' => ZOOM_USER_TYPE_PRO), 'patch');
+            $this->make_call("users/$zoomuserid", ['type' => ZOOM_USER_TYPE_PRO], 'patch');
         }
     }
 
@@ -800,7 +800,7 @@ class mod_zoom_webservice {
      */
     public function get_user_report($userid, $from, $to) {
         $url = 'report/users/' . $userid . '/meetings';
-        $data = array('from' => $from, 'to' => $to, 'page_size' => ZOOM_MAX_RECORDS_PER_CALL);
+        $data = ['from' => $from, 'to' => $to, 'page_size' => ZOOM_MAX_RECORDS_PER_CALL];
         return $this->make_paginated_call($url, $data, 'meetings');
     }
 
@@ -839,8 +839,8 @@ class mod_zoom_webservice {
      * @return array An array of UUIDs.
      */
     public function get_active_hosts_uuids($from, $to) {
-        $users = $this->make_paginated_call('report/users', array('type' => 'active', 'from' => $from, 'to' => $to), 'users');
-        $uuids = array();
+        $users = $this->make_paginated_call('report/users', ['type' => 'active', 'from' => $from, 'to' => $to], 'users');
+        $uuids = [];
         foreach ($users as $user) {
             $uuids[] = $user->id;
         }
@@ -913,7 +913,7 @@ class mod_zoom_webservice {
         if (substr($uuid, 0, 1) === '/' || strpos($uuid, '//') !== false) {
             // Use similar function to JS encodeURIComponent, see https://stackoverflow.com/a/1734255/6001.
             $encodeuricomponent = function($str) {
-                $revert = array('%21' => '!', '%2A' => '*', '%27' => "'", '%28' => '(', '%29' => ')');
+                $revert = ['%21' => '!', '%2A' => '*', '%27' => "'", '%28' => '(', '%29' => ')'];
                 return strtr(rawurlencode($str), $revert);
             };
             $uuid = $encodeuricomponent($encodeuricomponent($uuid));
@@ -995,13 +995,13 @@ class mod_zoom_webservice {
         $curl->setHeader('Content-Type: application/json');
 
         // Force HTTP/1.1 to avoid HTTP/2 "stream not closed" issue.
-        $curl->setopt(array(
+        $curl->setopt([
             'CURLOPT_HTTP_VERSION' => CURL_HTTP_VERSION_1_1,
-        ));
+        ]);
 
         $timecalled = time();
         $response = $this->make_curl_call($curl, 'post',
-            'https://zoom.us/oauth/token?grant_type=account_credentials&account_id=' . $this->accountid, array());
+            'https://zoom.us/oauth/token?grant_type=account_credentials&account_id=' . $this->accountid, []);
 
         if ($curl->get_errno()) {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', $curl->error);

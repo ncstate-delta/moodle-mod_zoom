@@ -37,7 +37,7 @@ if (!get_config('zoom', 'viewrecordings')) {
 
 $context = context_module::instance($cm->id);
 // Set up the page.
-$params = array('id' => $cm->id);
+$params = ['id' => $cm->id];
 $url = new moodle_url('/mod/zoom/recordings.php', $params);
 $PAGE->set_url($url);
 

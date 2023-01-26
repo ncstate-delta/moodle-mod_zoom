@@ -51,7 +51,7 @@ class provider implements
             'user_email' => 'privacy:metadata:zoom_meeting_participants:user_email',
             'join_time' => 'privacy:metadata:zoom_meeting_participants:join_time',
             'leave_time' => 'privacy:metadata:zoom_meeting_participants:leave_time',
-            'duration' => 'privacy:metadata:zoom_meeting_participants:duration'
+            'duration' => 'privacy:metadata:zoom_meeting_participants:duration',
         ], 'privacy:metadata:zoom_meeting_participants');
 
         $coll->add_database_table('zoom_meeting_details',
@@ -191,7 +191,7 @@ class provider implements
         $params = [
             'modname' => 'zoom',
             'contextlevel' => CONTEXT_MODULE,
-            'userid' => $user->id
+            'userid' => $user->id,
         ] + $contextparams;
 
         $participantinstances = $DB->get_recordset_sql($sql, $params);
@@ -209,7 +209,7 @@ class provider implements
             ];
 
             $contextdata = (object) array_merge((array) $contextdata, $instancedata);
-            \core_privacy\local\request\writer::with_context($context)->export_data(array(), $contextdata);
+            \core_privacy\local\request\writer::with_context($context)->export_data([], $contextdata);
         }
 
         $participantinstances->close();
@@ -234,7 +234,7 @@ class provider implements
         $params = [
             'modname' => 'zoom',
             'contextlevel' => CONTEXT_MODULE,
-            'userid' => $user->id
+            'userid' => $user->id,
         ] + $contextparams;
 
         $recordingviewinstances = $DB->get_recordset_sql($sql, $params);
@@ -250,7 +250,7 @@ class provider implements
             ];
 
             $contextdata = (object) array_merge((array) $contextdata, $instancedata);
-            \core_privacy\local\request\writer::with_context($context)->export_data(array(), $contextdata);
+            \core_privacy\local\request\writer::with_context($context)->export_data([], $contextdata);
         }
 
         $recordingviewinstances->close();
@@ -270,23 +270,23 @@ class provider implements
 
         // We delete each participant entry manually because deletes do not cascade.
         if ($cm = get_coursemodule_from_id('zoom', $context->instanceid)) {
-            $meetingdetails = $DB->get_records('zoom_meeting_details', array('zoomid' => $cm->instance));
+            $meetingdetails = $DB->get_records('zoom_meeting_details', ['zoomid' => $cm->instance]);
             foreach ($meetingdetails as $meetingdetail) {
-                $DB->delete_records('zoom_meeting_participants', array('detailsid' => $meetingdetail->id));
+                $DB->delete_records('zoom_meeting_participants', ['detailsid' => $meetingdetail->id]);
             }
-            $DB->delete_records('zoom_meeting_details', array('zoomid' => $cm->instance));
+            $DB->delete_records('zoom_meeting_details', ['zoomid' => $cm->instance]);
 
-            $meetingrecordings = $DB->get_records('zoom_meeting_recordings', array('zoomid' => $cm->instance));
+            $meetingrecordings = $DB->get_records('zoom_meeting_recordings', ['zoomid' => $cm->instance]);
             foreach ($meetingrecordings as $recording) {
-                $DB->delete_records('zoom_meeting_recordings_view', array('recordingsid' => $recording->id));
+                $DB->delete_records('zoom_meeting_recordings_view', ['recordingsid' => $recording->id]);
             }
-            $DB->delete_records('zoom_meeting_recordings', array('zoomid' => $cm->instance));
+            $DB->delete_records('zoom_meeting_recordings', ['zoomid' => $cm->instance]);
 
-            $breakoutrooms = $DB->get_records('zoom_meeting_breakout_rooms', array('zoomid' => $cm->instance));
+            $breakoutrooms = $DB->get_records('zoom_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
             foreach ($breakoutrooms as $room) {
-                $DB->delete_records('zoom_breakout_participants', array('breakoutroomid' => $room->id));
+                $DB->delete_records('zoom_breakout_participants', ['breakoutroomid' => $room->id]);
             }
-            $DB->delete_records('zoom_meeting_breakout_rooms', array('zoomid' => $cm->instance));
+            $DB->delete_records('zoom_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
         }
     }
 
@@ -309,22 +309,19 @@ class provider implements
                 continue;
             }
             if ($cm = get_coursemodule_from_id('zoom', $context->instanceid)) {
-                $meetingdetails = $DB->get_records('zoom_meeting_details', array('zoomid' => $cm->instance));
+                $meetingdetails = $DB->get_records('zoom_meeting_details', ['zoomid' => $cm->instance]);
                 foreach ($meetingdetails as $meetingdetail) {
-                    $DB->delete_records('zoom_meeting_participants',
-                            array('detailsid' => $meetingdetail->id, 'userid' => $user->id));
+                    $DB->delete_records('zoom_meeting_participants', ['detailsid' => $meetingdetail->id, 'userid' => $user->id]);
                 }
 
-                $meetingrecordings = $DB->get_records('zoom_meeting_recordings', array('zoomid' => $cm->instance));
+                $meetingrecordings = $DB->get_records('zoom_meeting_recordings', ['zoomid' => $cm->instance]);
                 foreach ($meetingrecordings as $recording) {
-                    $DB->delete_records('zoom_meeting_recordings_view',
-                            array('recordingsid' => $recording->id, 'userid' => $user->id));
+                    $DB->delete_records('zoom_meeting_recordings_view', ['recordingsid' => $recording->id, 'userid' => $user->id]);
                 }
 
-                $breakoutrooms = $DB->get_records('zoom_meeting_breakout_rooms', array('zoomid' => $cm->instance));
+                $breakoutrooms = $DB->get_records('zoom_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
                 foreach ($breakoutrooms as $room) {
-                    $DB->delete_records('zoom_breakout_participants',
-                            array('breakoutroomid' => $room->id, 'userid' => $user->id));
+                    $DB->delete_records('zoom_breakout_participants', ['breakoutroomid' => $room->id, 'userid' => $user->id]);
                 }
             }
         }

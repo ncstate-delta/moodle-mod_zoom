@@ -34,14 +34,14 @@ $context = context_module::instance($cm->id);
 // This capability is for managing Zoom instances in general.
 require_capability('mod/zoom:addinstance', $context);
 
-$PAGE->set_url('/mod/zoom/recreate.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/zoom/recreate.php', ['id' => $cm->id]);
 
 // Create a new meeting with Zoom API to replace the missing one.
 // We will use the logged-in user's Zoom account to recreate,
 // in case the meeting's former owner no longer exists on Zoom.
 $zoom->host_id = zoom_get_user_id();
 
-$trackingfields = $DB->get_records('zoom_meeting_tracking_fields', array('meeting_id' => $zoom->id));
+$trackingfields = $DB->get_records('zoom_meeting_tracking_fields', ['meeting_id' => $zoom->id]);
 foreach ($trackingfields as $trackingfield) {
     $field = $trackingfield->tracking_field;
     $zoom->$field = $trackingfield->value;

@@ -33,7 +33,7 @@ $courseid = required_param('courseid', PARAM_INT);
 $startdate = optional_param('start', date('Y-m-d', strtotime('-3 days')), PARAM_ALPHANUMEXT);
 $enddate = optional_param('end', date('Y-m-d'), PARAM_ALPHANUMEXT);
 
-$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
 require_course_login($course);
 
