@@ -117,6 +117,11 @@ if ($ADMIN->fulltree) {
             get_string('lowlicenses', 'mod_zoom'), 0, 1);
     $settings->add($utmost);
 
+    $instanceusers = new admin_setting_configcheckbox('zoom/instanceusers',
+            get_string('instanceusers', 'mod_zoom'),
+            get_string('instanceusers_desc', 'mod_zoom'), 0, 1, 0);
+    $settings->add($instanceusers);
+
     $recycleonjoin = new admin_setting_configcheckbox('zoom/recycleonjoin',
             get_string('recycleonjoin', 'mod_zoom'),
             get_string('licenseonjoin', 'mod_zoom'), 0, 1);
