@@ -205,7 +205,35 @@ class mod_zoom_webservice {
      * @return curl The curl object used to make the API calls
      */
     protected function get_curl_object() {
-        return new curl();
+        global $CFG;
+        $proxyhost = get_config('zoom', 'proxyhost');
+        $cfg = new stdClass();
+        if (!empty($proxyhost)) {
+            $cfg->proxyhost = $CFG->proxyhost;
+            $cfg->proxyport = $CFG->proxyport;
+            $cfg->proxyuser = $CFG->proxyuser;
+            $cfg->proxypassword = $CFG->proxypassword;
+            $cfg->proxytype = $CFG->proxytype;
+            // Parse string as host:port, delimited by a colon (:).
+            list($host, $port) = explode(':', $proxyhost);
+            // Temporarily set new values on the global $CFG.
+            $CFG->proxyhost = $host;
+            $CFG->proxyport = $port;
+            $CFG->proxytype = 'HTTP';
+            $CFG->proxyuser = '';
+            $CFG->proxypassword = '';
+        }
+        $curl = new curl();
+        if (!empty($proxyhost)) {
+            // Restore the stored global proxy settings from above.
+            $CFG->proxyhost = $cfg->proxyhost;
+            $CFG->proxyport = $cfg->proxyport;
+            $CFG->proxyuser = $cfg->proxyuser;
+            $CFG->proxypassword = $cfg->proxypassword;
+            $CFG->proxytype = $cfg->proxytype;
+        }
+
+        return $curl;
     }
 
     /**
