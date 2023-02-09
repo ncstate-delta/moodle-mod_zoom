@@ -67,36 +67,23 @@ class delete_meeting_recordings extends \core\task\scheduled_task {
 
         mtrace('Checking if any meeting recordings in Moodle have been removed from Zoom...');
 
-        // Get all recordings stored in Moodle.
-        $zoomrecordings = zoom_get_meeting_recordings();
-        // Fetch all recordings for the unique meetinguuid.
-        $meetinguuidsfetched = [];
-        if (!empty($zoomrecordings)) {
-            foreach ($zoomrecordings as $zoomrecordingid => $recording) {
-                $meetinguuid = trim($recording->meetinguuid);
-                if (!isset($meetinguuidsfetched[$meetinguuid])) {
-                    $meetinguuidsfetched[$meetinguuid] = true;
-                    $recordinglist = $service->get_recording_url_list($meetinguuid);
-                    if (!empty($recordinglist)) {
-                        foreach ($recordinglist as $recordingstarttime => $recordingpair) {
-                            // The video recording and audio only recordings are grouped together by the recording start timestamp.
-                            foreach ($recordingpair as $recordinginfo) {
-                                if (isset($zoomrecordings[trim($recordinginfo->recordingid)])) {
-                                    mtrace('Recording id: ' . $recordinginfo->recordingid . ' exist(s)...skipping');
-                                    unset($zoomrecordings[trim($recordinginfo->recordingid)]);
-                                    continue;
-                                }
-                            }
-                        }
+        // Get all recordings stored in Moodle, grouped by meetinguuid.
+        $zoomrecordings = zoom_get_meeting_recordings_grouped();
+        foreach ($zoomrecordings as $meetinguuid => $recordings) {
+            // Now check which recordings still exist on Zoom.
+            $recordinglist = $service->get_recording_url_list($meetinguuid);
+            foreach ($recordinglist as $recordingpair) {
+                foreach ($recordingpair as $recordinginfo) {
+                    $zoomrecordingid = trim($recordinginfo->recordingid);
+                    if (isset($recordings[$zoomrecordingid])) {
+                        mtrace('Recording id: ' . $zoomrecordingid . ' exist(s)...skipping');
+                        unset($recordings[$zoomrecordingid]);
                     }
                 }
             }
-        }
 
-        // Now check if any recordings have been removed on zoom.
-        // We need to remove them from Moodle as well.
-        if (!empty($zoomrecordings)) {
-            foreach ($zoomrecordings as $zoomrecordingid => $recording) {
+            // If recordings are in Moodle but not in Zoom, we need to remove them from Moodle as well.
+            foreach ($recordings as $zoomrecordingid => $recording) {
                 mtrace('Deleting recording with id: ' . $zoomrecordingid .
                        ' as corresponding record on zoom has been removed.');
                 $DB->delete_records('zoom_meeting_recordings', ['zoomrecordingid' => $zoomrecordingid]);

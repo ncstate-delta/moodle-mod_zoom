@@ -81,7 +81,7 @@ if (empty($recordings)) {
     $row = new html_table_row([$cell]);
     $table->data = [$row];
 } else {
-    foreach ($recordings as $timestart => $grouping) {
+    foreach ($recordings as $grouping) {
         // Output the related recordings into the same row.
         $recordingdate = '';
         $recordinghtml = '';

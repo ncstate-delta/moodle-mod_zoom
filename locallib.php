@@ -1245,17 +1245,21 @@ function zoom_get_meeting_recordings($zoomid = null) {
 /**
  * Get all meeting recordings grouped together.
  *
- * @param int $zoomid The id of the zoom meeting.
+ * @param int $zoomid Optional. The id of the zoom meeting.
  *
  * @return array All recordings for the zoom meeting grouped together.
  */
-function zoom_get_meeting_recordings_grouped($zoomid) {
+function zoom_get_meeting_recordings_grouped($zoomid = null) {
     global $DB;
 
-    $records = $DB->get_records('zoom_meeting_recordings', ['zoomid' => $zoomid], 'recordingstart ASC');
+    $params = [];
+    if ($zoomid !== null) {
+        $params['zoomid'] = $zoomid;
+    }
+    $records = $DB->get_records('zoom_meeting_recordings', $params, 'recordingstart ASC');
     $recordings = [];
     foreach ($records as $recording) {
-        $recordings[$recording->meetinguuid][] = $recording;
+        $recordings[$recording->meetinguuid][$recording->zoomrecordingid] = $recording;
     }
     return $recordings;
 }
