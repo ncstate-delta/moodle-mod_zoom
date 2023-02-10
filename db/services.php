@@ -30,24 +30,24 @@ defined('MOODLE_INTERNAL') || die;
 $functions = [
 
     'mod_zoom_get_state' => [
-        'classname'     => 'mod_zoom_external',
-        'methodname'    => 'get_state',
-        'classpath'     => 'mod/zoom/classes/external.php',
-        'description'   => 'Determine if a zoom meeting is available, meeting '
+        'classname' => 'mod_zoom_external',
+        'methodname' => 'get_state',
+        'classpath' => 'mod/zoom/classes/external.php',
+        'description' => 'Determine if a zoom meeting is available, meeting '
         . 'status, and the start time, duration, and other meeting options.',
-        'type'          => 'read',
-        'capabilities'  => 'mod/zoom:view',
-        'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'],
+        'type' => 'read',
+        'capabilities' => 'mod/zoom:view',
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'],
     ],
 
     'mod_zoom_grade_item_update' => [
-        'classname'     => 'mod_zoom_external',
-        'methodname'    => 'grade_item_update',
-        'classpath'     => 'mod/zoom/classes/external.php',
-        'description'   => 'Creates or updates grade item for the given zoom instance and returns join url.',
-        'type'          => 'write',
-        'capabilities'  => 'mod/zoom:view',
-        'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'],
+        'classname' => 'mod_zoom_external',
+        'methodname' => 'grade_item_update',
+        'classpath' => 'mod/zoom/classes/external.php',
+        'description' => 'Creates or updates grade item for the given zoom instance and returns join url.',
+        'type' => 'write',
+        'capabilities' => 'mod/zoom:view',
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'],
     ],
 
 ];
