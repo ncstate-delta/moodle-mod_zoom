@@ -69,6 +69,14 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.10.0
+
+- Feature: Option for redefine licenses to only affect users on 'this' Moodle server #436 (thanks @KepaUrzelai)
+  - New setting `zoom/instanceusers`
+- Bugfix: Process recordings deletes one meeting at a time #439 (thanks @juanbrunetmf)
+- Code quality: Use short array syntax (MDLSITE-4776) #447
+- Code quality: One space around assignment operators (MDLSITE-6594) #457
+
 v4.9.2
 
 - Bugfix: New meetings did not know which user to check for security settings #438 (thanks @haietza)
@@ -86,7 +94,7 @@ v4.9.1
 v4.9.0
 
 - Feature: Allow Registration #412 (thanks @paulandm, @haietza, @MoleLR, @lcollong, @louisaoc)
-  - New settings `zoom/defaultregistration`
+  - New setting `zoom/defaultregistration`
   - New per activity setting `registration`
 - Bugfix: Update meetings task was throwing an exception #421 (thanks @lexxkoto)
 - Bugfix: Add missing cache definition language string #408 (thanks @aspark21)
