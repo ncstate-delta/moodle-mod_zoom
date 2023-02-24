@@ -637,7 +637,7 @@ function zoom_populate_calender_item(stdClass $zoom, stdClass $occurrence = null
  */
 function zoom_calendar_item_delete(stdClass $zoom) {
     global $CFG, $DB;
-    require_once($CFG->dirroot.'/calendar/lib.php');
+    require_once($CFG->dirroot . '/calendar/lib.php');
 
     $events = $DB->get_records('event', [
         'modulename' => 'zoom',
@@ -712,7 +712,7 @@ function zoom_scale_used_anywhere($scaleid) {
  */
 function zoom_grade_item_update(stdClass $zoom, $grades=null) {
     global $CFG;
-    require_once($CFG->libdir.'/gradelib.php');
+    require_once($CFG->libdir . '/gradelib.php');
 
     $item = [];
     $item['itemname'] = clean_param($zoom->name, PARAM_NOTAGS);
@@ -752,7 +752,7 @@ function zoom_grade_item_update(stdClass $zoom, $grades=null) {
  */
 function zoom_grade_item_delete($zoom) {
     global $CFG;
-    require_once($CFG->libdir.'/gradelib.php');
+    require_once($CFG->libdir . '/gradelib.php');
 
     return grade_update('mod/zoom', $zoom->course, 'mod', 'zoom',
             $zoom->id, 0, null, ['deleted' => 1]);
@@ -768,7 +768,7 @@ function zoom_grade_item_delete($zoom) {
  */
 function zoom_update_grades(stdClass $zoom, $userid = 0) {
     global $CFG;
-    require_once($CFG->libdir.'/gradelib.php');
+    require_once($CFG->libdir . '/gradelib.php');
 
     // Populate array of grade objects indexed by userid.
     if ($zoom->grade == 0) {

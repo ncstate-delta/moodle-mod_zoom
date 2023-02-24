@@ -31,7 +31,7 @@ class mod_zoom_generator extends testing_module_generator {
      */
     public function create_instance($record = null, array $options = null) {
         global $CFG;
-        require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
         set_config('clientid', 'test', 'zoom');
         set_config('clientsecret', 'test', 'zoom');

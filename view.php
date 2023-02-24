@@ -27,9 +27,9 @@
 // Login check require_login() is called in zoom_get_instance_setup();.
 // @codingStandardsIgnoreLine
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/lib.php');
-require_once(dirname(__FILE__).'/locallib.php');
-require_once(dirname(__FILE__).'/../../lib/moodlelib.php');
+require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(__FILE__) . '/locallib.php');
+require_once(dirname(__FILE__) . '/../../lib/moodlelib.php');
 
 $config = get_config('zoom');
 
@@ -185,7 +185,7 @@ if (!$showrecreate && $config->showcapacitywarning == true) {
             $meetingcapacityplaceholders = [
                 'meetingcapacity' => $meetingcapacity,
                 'eligiblemeetingparticipants' => $eligiblemeetingparticipants,
-                'zoomprofileurl' => $config->zoomurl.'/profile',
+                'zoomprofileurl' => $config->zoomurl . '/profile',
                 'courseparticipantsurl' => $participantspageurl->out(),
                 'hostname' => zoom_get_user_display_name($zoom->host_id),
             ];
@@ -348,7 +348,7 @@ if ($zoom->show_schedule) {
 
                 // Create a comma-separated string of the non-Moodle users' mail addresses.
                 foreach ($alternativehostnonusers as &$ah) {
-                    $ah .= ' ('.get_string('externaluser', 'mod_zoom').')';
+                    $ah .= ' (' . get_string('externaluser', 'mod_zoom') . ')';
                 }
 
                 $alternativehostnonusersstring = implode(', ', $alternativehostnonusers);
@@ -356,7 +356,7 @@ if ($zoom->show_schedule) {
                 // Concatenate both strings.
                 // If we have existing Moodle users and non-Moodle users.
                 if ($alternativehostusersstring != '' && $alternativehostnonusersstring != '') {
-                    $alternativehoststring = $alternativehostusersstring.', '.$alternativehostnonusersstring;
+                    $alternativehoststring = $alternativehostusersstring . ', ' . $alternativehostnonusersstring;
 
                     // If we just have existing Moodle users.
                 } else if ($alternativehostusersstring != '') {

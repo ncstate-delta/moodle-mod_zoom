@@ -27,9 +27,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
-require_once($CFG->dirroot.'/mod/zoom/lib.php');
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/mod/zoom/lib.php');
+require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
 /**
  * Module instance settings form

@@ -28,8 +28,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot.'/mod/zoom/lib.php');
-require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+require_once($CFG->dirroot . '/mod/zoom/lib.php');
+require_once($CFG->dirroot . '/mod/zoom/classes/webservice.php');
 
 // Constants.
 // Audio options.
@@ -252,15 +252,15 @@ function zoom_fatal_error($errorcode, $module='', $continuelink='', $a=null) {
         if (!empty($debuginfo)) {
             $debuginfo = s($debuginfo); // Removes all nasty JS.
             $debuginfo = str_replace("\n", '<br />', $debuginfo); // Keep newlines.
-            $output .= $OUTPUT->notification('<strong>Debug info:</strong> '.$debuginfo, 'notifytiny');
+            $output .= $OUTPUT->notification('<strong>Debug info:</strong> ' . $debuginfo, 'notifytiny');
         }
 
         if (!empty($backtrace)) {
-            $output .= $OUTPUT->notification('<strong>Stack trace:</strong> '.format_backtrace($backtrace), 'notifytiny');
+            $output .= $OUTPUT->notification('<strong>Stack trace:</strong> ' . format_backtrace($backtrace), 'notifytiny');
         }
 
         if ($obbuffer !== '') {
-            $output .= $OUTPUT->notification('<strong>Output buffer:</strong> '.s($obbuffer), 'notifytiny');
+            $output .= $OUTPUT->notification('<strong>Output buffer:</strong> ' . s($obbuffer), 'notifytiny');
         }
     }
 
@@ -316,7 +316,7 @@ function zoom_get_instance_setup() {
  * @return array information about the meeting
  */
 function zoom_get_sessions_for_display($zoomid) {
-    require_once(__DIR__.'/../../lib/moodlelib.php');
+    require_once(__DIR__ . '/../../lib/moodlelib.php');
     global $DB;
 
     $sessions = [];
@@ -726,7 +726,7 @@ function zoom_get_users_from_alternativehosts(array $alternativehosts) {
     list($insql, $inparams) = $DB->get_in_or_equal($alternativehosts);
     $sql = 'SELECT *
             FROM {user}
-            WHERE email '.$insql.'
+            WHERE email ' . $insql . '
             ORDER BY lastname ASC';
     $alternativehostusers = $DB->get_records_sql($sql, $inparams);
 
@@ -748,7 +748,7 @@ function zoom_get_nonusers_from_alternativehosts(array $alternativehosts) {
     list($insql, $inparams) = $DB->get_in_or_equal($alternativehosts);
     $sql = 'SELECT email
             FROM {user}
-            WHERE email '.$insql.'
+            WHERE email ' . $insql . '
             ORDER BY email ASC';
     $alternativehostusersmails = $DB->get_records_sql($sql, $inparams);
     foreach ($alternativehosts as $ah) {
@@ -862,7 +862,7 @@ function zoom_get_eligible_meeting_participants(context $context) {
     // Compose SQL query.
     $sqlsnippets = get_enrolled_with_capabilities_join($context, '', 'mod/zoom:view', 0, true);
     $sql = 'SELECT count(DISTINCT u.id)
-            FROM {user} u '.$sqlsnippets->joins.' WHERE '.$sqlsnippets->wheres;
+            FROM {user} u ' . $sqlsnippets->joins . ' WHERE ' . $sqlsnippets->wheres;
 
     // Run query and count records.
     $eligibleparticipantcount = $DB->count_records_sql($sql, $sqlsnippets->params);

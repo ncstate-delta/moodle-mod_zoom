@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
 /**
  * Structure step to restore one zoom activity

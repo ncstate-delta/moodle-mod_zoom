@@ -24,10 +24,10 @@
 // Login check require_login() is called in zoom_get_instance_setup();.
 // @codingStandardsIgnoreLine
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/lib.php');
-require_once(dirname(__FILE__).'/locallib.php');
-require_once(dirname(__FILE__).'/../../lib/accesslib.php');
-require_once(dirname(__FILE__).'/../../lib/moodlelib.php');
+require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(__FILE__) . '/locallib.php');
+require_once(dirname(__FILE__) . '/../../lib/accesslib.php');
+require_once(dirname(__FILE__) . '/../../lib/moodlelib.php');
 
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 
@@ -172,7 +172,7 @@ if ($export != 'xls') {
 
     echo $OUTPUT->footer();
 } else {
-    require_once(dirname(__FILE__).'/../../lib/excellib.class.php');
+    require_once(dirname(__FILE__) . '/../../lib/excellib.class.php');
 
     $workbook = new MoodleExcelWorkbook("zoom_participants_{$zoom->meeting_id}");
     $worksheet = $workbook->add_worksheet($strtitle);

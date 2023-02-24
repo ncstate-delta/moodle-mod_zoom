@@ -22,10 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/lib.php');
-require_once(dirname(__FILE__).'/locallib.php');
-require_once(dirname(__FILE__).'/../../lib/moodlelib.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(__FILE__) . '/locallib.php');
+require_once(dirname(__FILE__) . '/../../lib/moodlelib.php');
 
 $id = required_param('id', PARAM_INT); // Course.
 
@@ -89,7 +89,7 @@ $oldalign = ['left', 'left'];
 
 // Show section column if there are sections.
 if ($usesections) {
-    $strsectionname = get_string('sectionname', 'format_'.$course->format);
+    $strsectionname = get_string('sectionname', 'format_' . $course->format);
     array_unshift($newhead, $strsectionname);
     array_unshift($newalign, 'center');
     array_unshift($oldhead, $strsectionname);
@@ -136,7 +136,7 @@ foreach ($zooms as $z) {
         $displaytime = get_string('recurringmeeting', 'mod_zoom');
         $displaytime .= html_writer::empty_tag('br');
         if (($nextoccurrence = zoom_get_next_occurrence($z)) > 0) {
-            $displaytime .= get_string('nextoccurrence', 'mod_zoom').': '.userdate($nextoccurrence);
+            $displaytime .= get_string('nextoccurrence', 'mod_zoom') . ': ' . userdate($nextoccurrence);
         } else {
             $displaytime .= get_string('nooccurrenceleft', 'mod_zoom');
         }
@@ -191,7 +191,7 @@ if (has_capability('mod/zoom:refreshsessions', $context)) {
         'start' => date('Y-m-d', strtotime('-3 days')),
         'end' => date('Y-m-d'),
     ];
-    $url = new moodle_url($CFG->wwwroot. '/mod/zoom/console/get_meeting_report.php', $linkarguments);
+    $url = new moodle_url($CFG->wwwroot . '/mod/zoom/console/get_meeting_report.php', $linkarguments);
     echo html_writer::link($url, get_string('refreshreports', 'mod_zoom'), ['target' => '_blank', 'class' => 'pl-4']);
 }
 
