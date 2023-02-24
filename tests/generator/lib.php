@@ -66,6 +66,7 @@ class mod_zoom_generator extends testing_module_generator {
                 $record->{$name} = $value;
             }
         }
+
         return parent::create_instance($record, $options);
     }
 }

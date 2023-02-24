@@ -152,6 +152,7 @@ foreach ($participants as $p) {
     if ($durationremainder != 0) {
         $p->duration += 60 - $durationremainder;
     }
+
     $row[] = $p->duration / 60;
 
     $table->data[] = $row;
@@ -182,12 +183,14 @@ if ($export != 'xls') {
     foreach ($table->head as $colname) {
         $worksheet->write_string($row, $col++, $colname, $boldformat);
     }
+
     $row++; $col = 0;
 
     foreach ($table->data as $entry) {
         foreach ($entry as $value) {
             $worksheet->write_string($row, $col++, $value);
         }
+
         $row++; $col = 0;
     }
 

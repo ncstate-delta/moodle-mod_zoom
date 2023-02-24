@@ -76,7 +76,6 @@ if (!empty($sessions)) {
                          . get_string('participantdatanotavailable', 'mod_zoom')
                          . '] '
                          . $OUTPUT->help_icon('participantdatanotavailable', 'mod_zoom');
-
             } else {
                 $url = new moodle_url('/mod/zoom/participants.php', ['id' => $cm->id, 'uuid' => $uuid]);
                 $row[] = html_writer::link($url, $meet['count']);

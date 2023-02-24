@@ -222,6 +222,7 @@ class get_meeting_reports_test extends advanced_testcase {
         foreach ($users as $user) {
             $this->getDataGenerator()->enrol_user($user->id, $course->id);
         }
+
         list($names, $emails) = $this->meetingtask->get_enrollments($course->id);
 
         // 1) Make sure we match someone with middle name missing.

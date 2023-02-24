@@ -73,6 +73,7 @@ $descriptiontext = get_string('calendardescriptionURL', 'mod_zoom', $CFG->wwwroo
 if (!empty($convertedtext)) {
     $descriptiontext .= get_string('calendardescriptionintro', 'mod_zoom', $convertedtext);
 }
+
 if (!empty($meetinginvite)) {
     $descriptiontext .= "\n\n" . $meetinginvite;
 }

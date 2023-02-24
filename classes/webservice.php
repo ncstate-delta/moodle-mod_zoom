@@ -173,6 +173,7 @@ class mod_zoom_webservice {
                 $this->recyclelicenses = $config->utmost;
                 $this->instanceusers = !empty($config->instanceusers);
             }
+
             if ($this->recyclelicenses) {
                 if (!empty($config->licensesnumber)) {
                     $this->numlicenses = $config->licensesnumber;
@@ -238,6 +239,7 @@ class mod_zoom_webservice {
             $CFG->proxyuser = '';
             $CFG->proxypassword = '';
         }
+
         $curl = $this->get_curl_object(); // Create $curl, which implicitly uses the proxy settings from $CFG.
         if (!empty($proxyhost)) {
             // Restore the stored global proxy settings from above.
@@ -266,6 +268,7 @@ class mod_zoom_webservice {
             $curl->setHeader('Content-Type: application/json');
             $data = is_array($data) ? json_encode($data) : $data;
         }
+
         $rawresponse = $this->make_curl_call($curl, $method, $url, $data);
 
         if ($curl->get_errno()) {
@@ -293,6 +296,7 @@ class mod_zoom_webservice {
                     if ($this->makecallretries > self::MAX_RETRIES) {
                         throw new zoom_api_retry_failed_exception($response->message, $response->code);
                     }
+
                     $header = $curl->getResponse();
                     // Header can have mixed case, normalize it.
                     $header = array_change_key_case($header, CASE_LOWER);
@@ -336,6 +340,7 @@ class mod_zoom_webservice {
                     }
             }
         }
+
         $this->makecallretries = 0;
 
         return $response;
@@ -417,6 +422,7 @@ class mod_zoom_webservice {
         if (empty(self::$userslist)) {
             self::$userslist = $this->make_paginated_call('users', null, 'users');
         }
+
         return self::$userslist;
     }
 
@@ -441,6 +447,7 @@ class mod_zoom_webservice {
                 }
             }
         }
+
         return false;
     }
 
@@ -555,6 +562,7 @@ class mod_zoom_webservice {
             if (is_array($response->schedulers)) {
                 $schedulerswithoutkey = $response->schedulers;
             }
+
             foreach ($schedulerswithoutkey as $s) {
                 $schedulers[$s->id] = $s;
             }
@@ -562,6 +570,7 @@ class mod_zoom_webservice {
             // We don't care if this throws an exception.
             $schedulers = [];
         }
+
         return $schedulers;
     }
 
@@ -587,23 +596,29 @@ class mod_zoom_webservice {
         if (isset($zoom->intro)) {
             $data['agenda'] = content_to_text($zoom->intro, FORMAT_MOODLE);
         }
+
         if (isset($CFG->timezone) && !empty($CFG->timezone)) {
             $data['timezone'] = $CFG->timezone;
         } else {
             $data['timezone'] = date_default_timezone_get();
         }
+
         if (isset($zoom->password)) {
             $data['password'] = $zoom->password;
         }
+
         if (isset($zoom->schedule_for)) {
             $data['schedule_for'] = $zoom->schedule_for;
         }
+
         if (isset($zoom->alternative_hosts)) {
             $data['settings']['alternative_hosts'] = $zoom->alternative_hosts;
         }
+
         if (isset($zoom->option_authenticated_users)) {
             $data['settings']['meeting_authentication'] = (bool) $zoom->option_authenticated_users;
         }
+
         if (isset($zoom->registration)) {
             $data['settings']['approval_type'] = $zoom->registration;
         }
@@ -641,6 +656,7 @@ class mod_zoom_webservice {
                 } else {
                     $zoomuserid = zoom_get_user_id();
                 }
+
                 $autorecording = zoom_get_user_settings($zoomuserid)->recording->auto_recording;
                 $data['settings']['auto_recording'] = $autorecording;
             } else {
@@ -666,6 +682,7 @@ class mod_zoom_webservice {
             if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_WEEKLY) {
                 $data['recurrence']['weekly_days'] = $zoom->weekly_days;
             }
+
             if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_MONTHLY) {
                 if ($zoom->monthly_repeat_option == ZOOM_MONTHLY_REPEAT_OPTION_DAY) {
                     $data['recurrence']['monthly_day'] = (int) $zoom->monthly_day;
@@ -674,6 +691,7 @@ class mod_zoom_webservice {
                     $data['recurrence']['monthly_week_day'] = (int) $zoom->monthly_week_day;
                 }
             }
+
             if ($zoom->end_date_option == ZOOM_END_DATE_OPTION_AFTER) {
                 $data['recurrence']['end_times'] = (int) $zoom->end_times;
             } else {
@@ -701,6 +719,7 @@ class mod_zoom_webservice {
                 $tfarray[] = $tf;
             }
         }
+
         $data['tracking_fields'] = $tfarray;
 
         if (isset($zoom->breakoutrooms)) {
@@ -725,6 +744,7 @@ class mod_zoom_webservice {
                 // Changes least_recently_active_user to a basic user so we can use their license.
                 $this->make_call("users/$leastrecentlyactivepaiduserid", ['type' => ZOOM_USER_TYPE_BASIC], 'patch');
             }
+
             // Changes current user to pro so they can make a meeting.
             $this->make_call("users/$zoomuserid", ['type' => ZOOM_USER_TYPE_PRO], 'patch');
         }
@@ -795,6 +815,7 @@ class mod_zoom_webservice {
         if ($zoom->webinar) {
             return new \mod_zoom\invitation(null);
         }
+
         $url = 'meetings/' . $zoom->meeting_id . '/invitation';
         try {
             $response = $this->make_call($url);
@@ -802,6 +823,7 @@ class mod_zoom_webservice {
             debugging($error->getMessage());
             return new \mod_zoom\invitation(null);
         }
+
         return new \mod_zoom\invitation($response->invitation);
     }
 
@@ -860,6 +882,7 @@ class mod_zoom_webservice {
         foreach ($users as $user) {
             $uuids[] = $user->id;
         }
+
         return $uuids;
     }
 
@@ -914,6 +937,7 @@ class mod_zoom_webservice {
         } catch (moodle_exception $error) {
             debugging($error->getMessage());
         }
+
         return $response;
     }
 
@@ -973,12 +997,14 @@ class mod_zoom_webservice {
                         $recordings[strtotime($rec->recording_start)][] = $recordinginfo;
                     }
                 }
+
                 ksort($recordings);
             }
         } catch (moodle_exception $error) {
             // No recordings found for this meeting id.
             $recordings = [];
         }
+
         return $recordings;
     }
 
@@ -995,6 +1021,7 @@ class mod_zoom_webservice {
         if (empty($token) || empty($expires) || time() >= $expires) {
             $token = $this->oauth($cache);
         }
+
         return $token;
     }
 
@@ -1033,6 +1060,7 @@ class mod_zoom_webservice {
             } else {
                 $expires = 3599 + $timecalled;
             }
+
             $cache->set('expires', $expires);
 
             return $token;

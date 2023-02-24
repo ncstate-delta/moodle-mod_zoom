@@ -274,18 +274,21 @@ class provider implements
             foreach ($meetingdetails as $meetingdetail) {
                 $DB->delete_records('zoom_meeting_participants', ['detailsid' => $meetingdetail->id]);
             }
+
             $DB->delete_records('zoom_meeting_details', ['zoomid' => $cm->instance]);
 
             $meetingrecordings = $DB->get_records('zoom_meeting_recordings', ['zoomid' => $cm->instance]);
             foreach ($meetingrecordings as $recording) {
                 $DB->delete_records('zoom_meeting_recordings_view', ['recordingsid' => $recording->id]);
             }
+
             $DB->delete_records('zoom_meeting_recordings', ['zoomid' => $cm->instance]);
 
             $breakoutrooms = $DB->get_records('zoom_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
             foreach ($breakoutrooms as $room) {
                 $DB->delete_records('zoom_breakout_participants', ['breakoutroomid' => $room->id]);
             }
+
             $DB->delete_records('zoom_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
         }
     }
@@ -308,6 +311,7 @@ class provider implements
             if (!($context instanceof \context_module)) {
                 continue;
             }
+
             if ($cm = get_coursemodule_from_id('zoom', $context->instanceid)) {
                 $meetingdetails = $DB->get_records('zoom_meeting_details', ['zoomid' => $cm->instance]);
                 foreach ($meetingdetails as $meetingdetail) {

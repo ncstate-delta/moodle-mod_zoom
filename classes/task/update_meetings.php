@@ -92,6 +92,7 @@ class update_meetings extends \core\task\scheduled_task {
                 // Show trace message.
                 mtrace('  !! Error updating Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id . ': ' . $error);
             }
+
             if ($gotinfo) {
                 $changed = false;
                 $newzoom = populate_zoom_from_response($zoom, $response);

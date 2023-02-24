@@ -46,6 +46,7 @@ if ($ADMIN->fulltree) {
             $status = 'connectionfailed';
             $errormessage = $error->a;
         }
+
         $statusmessage = $OUTPUT->notification(get_string('connectionstatus', 'mod_zoom') .
                 ': ' . get_string($status, 'mod_zoom') . $errormessage, $notifyclass);
         $connectionstatus = new admin_setting_heading('zoom/connectionstatus', $statusmessage, '');
@@ -137,6 +138,7 @@ if ($ADMIN->fulltree) {
     foreach ($jointimechoices as $minutes) {
         $jointimeselect[$minutes] = $minutes . ' ' . get_string('mins');
     }
+
     $firstabletojoin = new admin_setting_configselect('zoom/firstabletojoin',
             get_string('firstjoin', 'mod_zoom'), get_string('firstjoin_desc', 'mod_zoom'),
             15, $jointimeselect);
@@ -386,6 +388,7 @@ if ($ADMIN->fulltree) {
         $invitationregexhelp .= "\n\n" . get_string('invitationregex_nohideif', 'mod_zoom',
                                                         get_string('invitationregexenabled', 'mod_zoom'));
     }
+
     $settings->add(new admin_setting_heading('zoom/invitationregex',
             get_string('invitationregex', 'mod_zoom'), $invitationregexhelp));
 

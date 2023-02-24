@@ -91,6 +91,7 @@ class get_meeting_recordings extends \core\task\scheduled_task {
                                 mtrace('Recording id: ' . $zoomrecordinginfo->recordingid . ' exist(s)...skipping');
                                 continue;
                             }
+
                             $rec = new \stdClass();
                             $rec->zoomid = $zoom->id;
                             $rec->meetinguuid = trim($zoomrecordinginfo->meetinguuid);

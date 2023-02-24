@@ -126,6 +126,7 @@ foreach ($zooms as $z) {
     if ($z->webinar) {
         $row[1] .= " ($strwebinar)";
     }
+
     // Get start time column information.
     if ($z->recurring && $z->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
         $displaytime = get_string('recurringmeeting', 'mod_zoom');
@@ -151,6 +152,7 @@ foreach ($zooms as $z) {
         if ($iszoommanager) {
             $row[3] = $sessions;
         }
+
         $oldtable->data[] = $row;
     } else {
         if ($inprogress) {
@@ -192,6 +194,7 @@ if (has_capability('mod/zoom:refreshsessions', $context)) {
     $url = new moodle_url($CFG->wwwroot. '/mod/zoom/console/get_meeting_report.php', $linkarguments);
     echo html_writer::link($url, get_string('refreshreports', 'mod_zoom'), ['target' => '_blank', 'class' => 'pl-4']);
 }
+
 echo html_writer::table($oldtable);
 
 echo $OUTPUT->footer();

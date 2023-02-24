@@ -254,10 +254,12 @@ function zoom_fatal_error($errorcode, $module='', $continuelink='', $a=null) {
             $debuginfo = str_replace("\n", '<br />', $debuginfo); // Keep newlines.
             $output .= $OUTPUT->notification('<strong>Debug info:</strong> '.$debuginfo, 'notifytiny');
         }
+
         if (!empty($backtrace)) {
             $output .= $OUTPUT->notification('<strong>Stack trace:</strong> '.format_backtrace($backtrace), 'notifytiny');
         }
-        if ($obbuffer !== '' ) {
+
+        if ($obbuffer !== '') {
             $output .= $OUTPUT->notification('<strong>Output buffer:</strong> '.s($obbuffer), 'notifytiny');
         }
     }
@@ -339,6 +341,7 @@ function zoom_get_sessions_for_display($zoomid) {
                     $uniquevalues[$participant->uuid] = true;
                 }
             }
+
             if ($participant->userid != null) {
                 if (!$unique || !array_key_exists($participant->userid, $uniquevalues)) {
                     $uniquevalues[$participant->userid] = true;
@@ -346,6 +349,7 @@ function zoom_get_sessions_for_display($zoomid) {
                     $unique = false;
                 }
             }
+
             if ($participant->user_email != null) {
                 if (!$unique || !array_key_exists($participant->user_email, $uniquevalues)) {
                     $uniquevalues[$participant->user_email] = true;
@@ -353,6 +357,7 @@ function zoom_get_sessions_for_display($zoomid) {
                     $unique = false;
                 }
             }
+
             $uniqueparticipantcount += $unique ? 1 : 0;
         }
 
@@ -362,6 +367,7 @@ function zoom_get_sessions_for_display($zoomid) {
         $sessions[$uuid]['starttime'] = userdate($instance->start_time, $format);
         $sessions[$uuid]['endtime'] = userdate($instance->start_time + $instance->duration * 60, $format);
     }
+
     return $sessions;
 }
 
@@ -937,6 +943,7 @@ function zoom_get_api_identifier($user) {
         // If one of the custom user fields.
         $identifier = $user->profile[$field];
     }
+
     if (empty($identifier)) {
         // Fallback to email if the field is not set.
         $identifier = $user->email;
@@ -1055,6 +1062,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
         if ($userisregistered) {
             $url = $registrantjoinurl;
         }
+
         $returns['nexturl'] = new moodle_url($url, ['uname' => fullname($USER)]);
     }
 
@@ -1181,6 +1189,7 @@ function zoom_sync_meeting_tracking_fields($zoomid, $trackingfields) {
     foreach ($tfrows as $tfrow) {
         $tfobjects[$tfrow->tracking_field] = $tfrow;
     }
+
     $defaulttrackingfields = zoom_clean_tracking_fields();
     foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
         $value = $tfvalues[$key] ?? '';
@@ -1234,11 +1243,13 @@ function zoom_get_meeting_recordings($zoomid = null) {
     if ($zoomid !== null) {
         $params['zoomid'] = $zoomid;
     }
+
     $records = $DB->get_records('zoom_meeting_recordings', $params);
     $recordings = [];
     foreach ($records as $recording) {
         $recordings[$recording->zoomrecordingid] = $recording;
     }
+
     return $recordings;
 }
 
@@ -1256,11 +1267,13 @@ function zoom_get_meeting_recordings_grouped($zoomid = null) {
     if ($zoomid !== null) {
         $params['zoomid'] = $zoomid;
     }
+
     $records = $DB->get_records('zoom_meeting_recordings', $params, 'recordingstart ASC');
     $recordings = [];
     foreach ($records as $recording) {
         $recordings[$recording->meetinguuid][$recording->zoomrecordingid] = $recording;
     }
+
     return $recordings;
 }
 
@@ -1353,5 +1366,6 @@ function zoom_get_registrant_join_url($useremail, $meetingid, $iswebinar) {
             }
         }
     }
+
     return false;
 }

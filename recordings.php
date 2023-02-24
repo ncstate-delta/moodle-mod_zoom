@@ -94,9 +94,11 @@ if (empty($recordings)) {
                 if (empty($recordingdate)) {
                     $recordingdate = date('F j, Y, g:i:s a \P\T', $recording->recordingstart);
                 }
+
                 if (empty($recordingpasscode)) {
                     $recordingpasscode = $recording->passcode;
                 }
+
                 if ($iszoommanager && empty($recordingshowhtml)) {
                     $isrecordinghidden = intval($recording->showrecording) === 0;
                     $urlparams = [
@@ -112,12 +114,14 @@ if (empty($recordings)) {
                     if ($isrecordinghidden) {
                         $recordingshowtext = get_string('recordingshow', 'mod_zoom');
                     }
+
                     $btnclass = 'btn btn-';
                     $btnclass .= $isrecordinghidden ? 'dark' : 'primary';
                     $recordingshowbutton = html_writer::div($recordingshowtext, $btnclass);
                     $recordingshowbuttonhtml = html_writer::link($recordingshowurl, $recordingshowbutton);
                     $recordingshowhtml = html_writer::div($recordingshowbuttonhtml);
                 }
+
                 $params = ['id' => $cm->id, 'recordingid' => $recording->id];
                 $recordingurl = new moodle_url('/mod/zoom/loadrecording.php', $params);
                 $recordinglink = html_writer::link($recordingurl, $recording->name);
@@ -125,6 +129,7 @@ if (empty($recordings)) {
                 $recordinghtml .= html_writer::div($recordinglinkhtml, 'recording', ['style' => 'margin-bottom:.5rem']);
             }
         }
+
         // Output only one row per grouping.
         $table->data[] = [$recordingdate, $recordinghtml, $recordingpasscode, $recordingshowhtml];
     }
