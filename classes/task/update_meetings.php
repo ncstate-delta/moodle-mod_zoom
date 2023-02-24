@@ -27,7 +27,7 @@ namespace mod_zoom\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/lib/modinfolib.php');
+require_once($CFG->libdir . '/modinfolib.php');
 require_once($CFG->dirroot . '/mod/zoom/lib.php');
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 

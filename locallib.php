@@ -316,8 +316,9 @@ function zoom_get_instance_setup() {
  * @return array information about the meeting
  */
 function zoom_get_sessions_for_display($zoomid) {
-    require_once(__DIR__ . '/../../lib/moodlelib.php');
-    global $DB;
+    global $DB, $CFG;
+
+    require_once($CFG->libdir . '/moodlelib.php');
 
     $sessions = [];
     $format = get_string('strftimedatetimeshort', 'langconfig');
