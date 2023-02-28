@@ -228,7 +228,7 @@ class zoom_api_limit_exception extends moodle_exception {
  *                             the site index page.
  * @param mixed $a Extra words and phrases that might be required in the error string
  */
-function zoom_fatal_error($errorcode, $module='', $continuelink='', $a=null) {
+function zoom_fatal_error($errorcode, $module = '', $continuelink = '', $a = null) {
     global $CFG, $COURSE, $OUTPUT, $PAGE;
 
     $output = '';

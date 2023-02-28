@@ -470,7 +470,7 @@ function zoom_print_recent_activity($course, $viewfullnames, $timestart) {
  * @param int $groupid check for a particular group's activity only, defaults to 0 (all groups)
  * @todo implement this function
  */
-function zoom_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid=0, $groupid=0) {
+function zoom_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid = 0, $groupid = 0) {
 }
 
 /**
@@ -710,7 +710,7 @@ function zoom_scale_used_anywhere($scaleid) {
  * @param array $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
  * @return void
  */
-function zoom_grade_item_update(stdClass $zoom, $grades=null) {
+function zoom_grade_item_update(stdClass $zoom, $grades = null) {
     global $CFG;
     require_once($CFG->libdir . '/gradelib.php');
 
@@ -937,7 +937,7 @@ function zoom_get_file_info($browser, $areas, $course, $cm, $context, $filearea,
  * @param bool $forcedownload whether or not force download
  * @param array $options additional options affecting the file serving
  */
-function zoom_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload, array $options=[]) {
+function zoom_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload, array $options = []) {
     if ($context->contextlevel != CONTEXT_MODULE) {
         send_file_not_found();
     }
@@ -973,7 +973,7 @@ function zoom_extend_navigation(navigation_node $navref, stdClass $course, stdCl
  * @param navigation_node $zoomnode zoom administration node
  * @todo implement this function
  */
-function zoom_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $zoomnode=null) {
+function zoom_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $zoomnode = null) {
 }
 
 /**
