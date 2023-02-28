@@ -184,14 +184,16 @@ if ($export != 'xls') {
         $worksheet->write_string($row, $col++, $colname, $boldformat);
     }
 
-    $row++; $col = 0;
+    $row++;
+    $col = 0;
 
     foreach ($table->data as $entry) {
         foreach ($entry as $value) {
             $worksheet->write_string($row, $col++, $value);
         }
 
-        $row++; $col = 0;
+        $row++;
+        $col = 0;
     }
 
     $workbook->close();
