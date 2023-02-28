@@ -50,13 +50,13 @@ class mod_zoom_webservice {
      * API calls: maximum number of retries.
      * @var int
      */
-    const MAX_RETRIES = 5;
+    public const MAX_RETRIES = 5;
 
     /**
      * Default meeting_password_requirement object.
      * @var array
      */
-    const DEFAULT_MEETING_PASSWORD_REQUIREMENT = [
+    public const DEFAULT_MEETING_PASSWORD_REQUIREMENT = [
         'length' => 0,
         'consecutive_characters_length' => 0,
         'have_letter' => false,

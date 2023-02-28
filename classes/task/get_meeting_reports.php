@@ -37,7 +37,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
      * Percentage in which we want similar_text to reach before we consider
      * using its results.
      */
-    const SIMILARNAME_THRESHOLD = 60;
+    private const SIMILARNAME_THRESHOLD = 60;
 
     /**
      * Used to determine if debugging is turned on or off for outputting messages.
