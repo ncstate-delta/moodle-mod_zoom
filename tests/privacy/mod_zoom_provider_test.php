@@ -73,8 +73,8 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
         $student = $generator->create_user();
         $student2 = $generator->create_user();
         $studentrole = $DB->get_record('role', ['shortname' => 'student']);
-        $generator->enrol_user($student->id,  $course->id, $studentrole->id);
-        $generator->enrol_user($student2->id,  $course->id, $studentrole->id);
+        $generator->enrol_user($student->id, $course->id, $studentrole->id);
+        $generator->enrol_user($student2->id, $course->id, $studentrole->id);
         // Fill all related data tables.
         $meeting = (object) [
             'id' => 12345,
