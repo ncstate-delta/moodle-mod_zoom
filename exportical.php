@@ -60,7 +60,7 @@ if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
 }
 
 // Start ical file.
-$ical = new iCalendar;
+$ical = new iCalendar();
 $ical->add_property('method', 'PUBLISH');
 $ical->add_property('prodid', '-//Moodle Pty Ltd//NONSGML Moodle Version ' . $CFG->version . '//EN');
 

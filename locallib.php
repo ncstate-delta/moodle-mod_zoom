@@ -969,7 +969,7 @@ function zoom_helper_icalendar_event($event, $description) {
     $hostaddress = str_replace('https://', '', $hostaddress);
     $uid = $event->id . '@' . $hostaddress;
 
-    $icalevent = new iCalendar_event;
+    $icalevent = new iCalendar_event();
     $icalevent->add_property('uid', $uid); // A unique identifier.
     $icalevent->add_property('summary', $event->name); // Title.
     $icalevent->add_property('dtstamp', Bennu::timestamp_to_datetime()); // Time of creation.
