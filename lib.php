@@ -43,7 +43,7 @@ function zoom_supports($feature) {
         return MOD_PURPOSE_COMMUNICATION;
     }
 
-    switch($feature) {
+    switch ($feature) {
         case FEATURE_BACKUP_MOODLE2:
         case FEATURE_COMPLETION_TRACKS_VIEWS:
         case FEATURE_GRADE_HAS_GRADE:
