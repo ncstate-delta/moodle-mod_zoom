@@ -28,7 +28,6 @@ namespace mod_zoom\analytics\indicator;
  * Social breadth indicator.
  */
 class social_breadth extends activity_base {
-
     /**
      * Returns the name.
      *

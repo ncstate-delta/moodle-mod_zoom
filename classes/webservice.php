@@ -46,7 +46,6 @@ if (!class_exists('Firebase\JWT\JWT')) {
  * Web service class.
  */
 class mod_zoom_webservice {
-
     /**
      * API calls: maximum number of retries.
      * @var int

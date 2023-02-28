@@ -31,7 +31,6 @@ require_once($CFG->dirroot . '/mod/zoom/locallib.php');
  * Structure step to restore one zoom activity
  */
 class restore_zoom_activity_structure_step extends restore_activity_structure_step {
-
     /**
      * Defines structure of path elements to be processed during the restore
      *

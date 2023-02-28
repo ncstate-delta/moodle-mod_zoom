@@ -28,7 +28,6 @@ namespace mod_zoom\search;
  * Search area for mod_zoom activities.
  */
 class activity extends \core_search\base_activity {
-
     /**
      * Returns true if this area uses file indexing.
      *

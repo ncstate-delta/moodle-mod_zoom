@@ -34,7 +34,6 @@ use zoom_api_retry_failed_exception;
  * @covers \mod_zoom_webservice
  */
 class mod_zoom_webservice_test extends advanced_testcase {
-
     /**
      * Setup to ensure that fixtures are loaded.
      */

@@ -33,7 +33,6 @@ require_once("$CFG->libdir/externallib.php");
  * Zoom external functions
  */
 class mod_zoom_external extends external_api {
-
     /**
      * Returns description of method parameters
      *

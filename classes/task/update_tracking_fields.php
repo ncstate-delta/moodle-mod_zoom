@@ -33,7 +33,6 @@ require_once($CFG->dirroot . '/mod/zoom/locallib.php');
  * Scheduled task to sychronize tracking field data.
  */
 class update_tracking_fields extends \core\task\scheduled_task {
-
     /**
      * Returns name of task.
      *

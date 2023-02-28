@@ -33,7 +33,6 @@ require_once($CFG->dirroot . '/mod/zoom/backup/moodle2/restore_zoom_stepslib.php
  * Provides all the settings and steps to perform complete restore of the activity.
  */
 class restore_zoom_activity_task extends restore_activity_task {
-
     /**
      * Define (add) particular settings this activity can have
      */
@@ -72,7 +71,6 @@ class restore_zoom_activity_task extends restore_activity_task {
         $rules[] = new restore_decode_rule('ZOOMINDEX', '/mod/zoom/index.php?id=$1', 'course_module');
 
         return $rules;
-
     }
 
     /**

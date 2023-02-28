@@ -28,7 +28,6 @@ namespace mod_zoom\analytics\indicator;
  * Cognitive depth indicator - zoom.
  */
 class cognitive_depth extends activity_base {
-
     /**
      * Returns the name.
      *

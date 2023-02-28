@@ -28,7 +28,6 @@ namespace mod_zoom\event;
  * Records when a join meeting button is clicked.
  */
 class join_meeting_button_clicked extends \core\event\base {
-
     /**
      * Initializes the event.
      */

@@ -1268,4 +1268,3 @@ function zoom_get_instance_breakout_rooms($zoomid) {
 
     return $breakoutrooms;
 }
-

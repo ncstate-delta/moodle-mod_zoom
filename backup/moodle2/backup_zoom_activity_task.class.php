@@ -31,7 +31,6 @@ require_once($CFG->dirroot . '/mod/zoom/backup/moodle2/backup_zoom_stepslib.php'
  * Provides the steps to perform one complete backup of the zoom instance
  */
 class backup_zoom_activity_task extends backup_activity_task {
-
     /**
      * No specific settings for this activity
      */

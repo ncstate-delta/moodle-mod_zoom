@@ -35,7 +35,6 @@ require_once($CFG->dirroot . '/mod/zoom/locallib.php');
  * Scheduled task to sychronize meeting data.
  */
 class update_meetings extends \core\task\scheduled_task {
-
     /**
      * Returns name of task.
      *

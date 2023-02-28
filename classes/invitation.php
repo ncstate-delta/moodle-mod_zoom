@@ -29,7 +29,6 @@ namespace mod_zoom;
  * Invitation class.
  */
 class invitation {
-
     /**
      * Invitation settings prefix.
      * @var string

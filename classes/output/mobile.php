@@ -31,7 +31,6 @@ use mod_zoom_external;
  * Mobile output class for zoom
  */
 class mobile {
-
     /**
      * Returns the zoom course view for the mobile app,
      *  including meeting details and launch button (if applicable).

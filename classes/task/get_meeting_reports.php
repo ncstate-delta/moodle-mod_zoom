@@ -33,7 +33,6 @@ require_once($CFG->dirroot . '/mod/zoom/locallib.php');
  * Scheduled task to get the meeting participants for each .
  */
 class get_meeting_reports extends \core\task\scheduled_task {
-
     /**
      * Percentage in which we want similar_text to reach before we consider
      * using its results.
