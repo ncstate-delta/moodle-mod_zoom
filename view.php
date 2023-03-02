@@ -24,16 +24,16 @@
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-// Login check require_login() is called in zoom_get_instance_setup();.
-// @codingStandardsIgnoreLine
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/lib.php');
-require_once(dirname(__FILE__).'/locallib.php');
-require_once(dirname(__FILE__).'/../../lib/moodlelib.php');
+require(__DIR__ . '/../../config.php');
+require_once(__DIR__ . '/lib.php');
+require_once(__DIR__ . '/locallib.php');
+require_once($CFG->libdir . '/moodlelib.php');
+
+require_login();
+// Additional access checks in zoom_get_instance_setup().
+list($course, $cm, $zoom) = zoom_get_instance_setup();
 
 $config = get_config('zoom');
-
-list($course, $cm, $zoom) = zoom_get_instance_setup();
 
 $context = context_module::instance($cm->id);
 $iszoommanager = has_capability('mod/zoom:addinstance', $context);
@@ -158,6 +158,7 @@ if ($showrecreate) {
         $message = get_string('zoomerr_meetingnotfound_info', 'mod_zoom');
         $style = \core\output\notification::NOTIFY_WARNING;
     }
+
     echo $OUTPUT->notification($message, $style);
 }
 
@@ -184,7 +185,7 @@ if (!$showrecreate && $config->showcapacitywarning == true) {
             $meetingcapacityplaceholders = [
                 'meetingcapacity' => $meetingcapacity,
                 'eligiblemeetingparticipants' => $eligiblemeetingparticipants,
-                'zoomprofileurl' => $config->zoomurl.'/profile',
+                'zoomprofileurl' => $config->zoomurl . '/profile',
                 'courseparticipantsurl' => $participantspageurl->out(),
                 'hostname' => zoom_get_user_display_name($zoom->host_id),
             ];
@@ -197,6 +198,7 @@ if (!$showrecreate && $config->showcapacitywarning == true) {
                 $meetingcapacitywarning .= get_string('meetingcapacitywarningbodyalthost', 'mod_zoom',
                         $meetingcapacityplaceholders);
             }
+
             $meetingcapacitywarning .= html_writer::empty_tag('br');
             if ($userisrealhost == true) {
                 $meetingcapacitywarning .= get_string('meetingcapacitywarningcontactrealhost', 'mod_zoom');
@@ -236,8 +238,10 @@ if (!$showrecreate) {
             if ($zoom->registration != ZOOM_REGISTRATION_OFF && !$userisregistered) {
                 $btntext = $strregister;
             }
+
             $buttonhtml = html_writer::tag('button', $btntext, ['type' => 'submit', 'class' => 'btn btn-primary']);
         }
+
         $aurl = new moodle_url('/mod/zoom/loadmeeting.php', ['id' => $cm->id]);
         $buttonhtml .= html_writer::input_hidden_params($aurl);
         $link = html_writer::tag('form', $buttonhtml, ['action' => $aurl->out_omit_querystring(), 'target' => '_blank']);
@@ -250,6 +254,7 @@ if (!$showrecreate) {
         // make sense here. So we build the notification manually.
         $link = html_writer::tag('div', $unavailabilitynote, ['class' => 'alert alert-primary']);
     }
+
     echo $OUTPUT->box_start('generalbox text-center');
     echo $link;
     echo $OUTPUT->box_end();
@@ -277,6 +282,7 @@ if ($zoom->show_schedule) {
         } else {
             $table->data[] = [get_string('nextoccurrence', 'mod_zoom'), get_string('nooccurrenceleft', 'mod_zoom')];
         }
+
         $table->data[] = [$strduration, format_time($zoom->duration)];
     } else {
         $table->data[] = [$strtime, userdate($zoom->start_time)];
@@ -315,6 +321,7 @@ if ($zoom->show_schedule) {
         } else {
             $status = get_string('meeting_not_started', 'mod_zoom');
         }
+
         $table->data[] = [$strstatus, $status];
     }
 
@@ -341,14 +348,15 @@ if ($zoom->show_schedule) {
 
                 // Create a comma-separated string of the non-Moodle users' mail addresses.
                 foreach ($alternativehostnonusers as &$ah) {
-                    $ah .= ' ('.get_string('externaluser', 'mod_zoom').')';
+                    $ah .= ' (' . get_string('externaluser', 'mod_zoom') . ')';
                 }
+
                 $alternativehostnonusersstring = implode(', ', $alternativehostnonusers);
 
                 // Concatenate both strings.
                 // If we have existing Moodle users and non-Moodle users.
                 if ($alternativehostusersstring != '' && $alternativehostnonusersstring != '') {
-                    $alternativehoststring = $alternativehostusersstring.', '.$alternativehostnonusersstring;
+                    $alternativehoststring = $alternativehostusersstring . ', ' . $alternativehostnonusersstring;
 
                     // If we just have existing Moodle users.
                 } else if ($alternativehostusersstring != '') {

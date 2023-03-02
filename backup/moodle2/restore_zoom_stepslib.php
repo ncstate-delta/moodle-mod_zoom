@@ -25,20 +25,18 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
 /**
  * Structure step to restore one zoom activity
  */
 class restore_zoom_activity_structure_step extends restore_activity_structure_step {
-
     /**
      * Defines structure of path elements to be processed during the restore
      *
      * @return array of restore_path_element
      */
     protected function define_structure() {
-
         $paths = [];
         $paths[] = new restore_path_element('zoom', '/activity/zoom');
         $paths[] = new restore_path_element('zoom_tracking_field', '/activity/zoom/trackingfields/trackingfield');

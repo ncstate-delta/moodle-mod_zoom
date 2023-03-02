@@ -33,7 +33,6 @@ require_once("$CFG->libdir/externallib.php");
  * Zoom external functions
  */
 class mod_zoom_external extends external_api {
-
     /**
      * Returns description of method parameters
      *
@@ -92,6 +91,7 @@ class mod_zoom_external extends external_api {
             $result['start_time'] = $zoom->start_time;
             $result['duration'] = $zoom->duration;
         }
+
         $result['haspassword'] = (isset($zoom->password) && $zoom->password !== '');
         $result['joinbeforehost'] = $zoom->option_jbh;
         $result['startvideohost'] = $zoom->option_host_video;
@@ -111,6 +111,7 @@ class mod_zoom_external extends external_api {
         } else {
             $status = get_string('recurringmeetinglong', 'mod_zoom');
         }
+
         $result['status'] = $status;
 
         $result['warnings'] = $warnings;
@@ -194,6 +195,7 @@ class mod_zoom_external extends external_api {
             $warningmsg = clean_param($meetinginfo['error'], PARAM_TEXT);
             throw new invalid_response_exception($warningmsg);
         }
+
         $result['warnings'] = $warnings;
         return $result;
     }

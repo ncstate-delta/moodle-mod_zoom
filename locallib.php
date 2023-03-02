@@ -28,8 +28,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot.'/mod/zoom/lib.php');
-require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+require_once($CFG->dirroot . '/mod/zoom/lib.php');
+require_once($CFG->dirroot . '/mod/zoom/classes/webservice.php');
 
 // Constants.
 // Audio options.
@@ -228,7 +228,7 @@ class zoom_api_limit_exception extends moodle_exception {
  *                             the site index page.
  * @param mixed $a Extra words and phrases that might be required in the error string
  */
-function zoom_fatal_error($errorcode, $module='', $continuelink='', $a=null) {
+function zoom_fatal_error($errorcode, $module = '', $continuelink = '', $a = null) {
     global $CFG, $COURSE, $OUTPUT, $PAGE;
 
     $output = '';
@@ -252,13 +252,15 @@ function zoom_fatal_error($errorcode, $module='', $continuelink='', $a=null) {
         if (!empty($debuginfo)) {
             $debuginfo = s($debuginfo); // Removes all nasty JS.
             $debuginfo = str_replace("\n", '<br />', $debuginfo); // Keep newlines.
-            $output .= $OUTPUT->notification('<strong>Debug info:</strong> '.$debuginfo, 'notifytiny');
+            $output .= $OUTPUT->notification('<strong>Debug info:</strong> ' . $debuginfo, 'notifytiny');
         }
+
         if (!empty($backtrace)) {
-            $output .= $OUTPUT->notification('<strong>Stack trace:</strong> '.format_backtrace($backtrace), 'notifytiny');
+            $output .= $OUTPUT->notification('<strong>Stack trace:</strong> ' . format_backtrace($backtrace), 'notifytiny');
         }
-        if ($obbuffer !== '' ) {
-            $output .= $OUTPUT->notification('<strong>Output buffer:</strong> '.s($obbuffer), 'notifytiny');
+
+        if ($obbuffer !== '') {
+            $output .= $OUTPUT->notification('<strong>Output buffer:</strong> ' . s($obbuffer), 'notifytiny');
         }
     }
 
@@ -314,8 +316,9 @@ function zoom_get_instance_setup() {
  * @return array information about the meeting
  */
 function zoom_get_sessions_for_display($zoomid) {
-    require_once(__DIR__.'/../../lib/moodlelib.php');
-    global $DB;
+    global $DB, $CFG;
+
+    require_once($CFG->libdir . '/moodlelib.php');
 
     $sessions = [];
     $format = get_string('strftimedatetimeshort', 'langconfig');
@@ -339,6 +342,7 @@ function zoom_get_sessions_for_display($zoomid) {
                     $uniquevalues[$participant->uuid] = true;
                 }
             }
+
             if ($participant->userid != null) {
                 if (!$unique || !array_key_exists($participant->userid, $uniquevalues)) {
                     $uniquevalues[$participant->userid] = true;
@@ -346,6 +350,7 @@ function zoom_get_sessions_for_display($zoomid) {
                     $unique = false;
                 }
             }
+
             if ($participant->user_email != null) {
                 if (!$unique || !array_key_exists($participant->user_email, $uniquevalues)) {
                     $uniquevalues[$participant->user_email] = true;
@@ -353,6 +358,7 @@ function zoom_get_sessions_for_display($zoomid) {
                     $unique = false;
                 }
             }
+
             $uniqueparticipantcount += $unique ? 1 : 0;
         }
 
@@ -362,6 +368,7 @@ function zoom_get_sessions_for_display($zoomid) {
         $sessions[$uuid]['starttime'] = userdate($instance->start_time, $format);
         $sessions[$uuid]['endtime'] = userdate($instance->start_time + $instance->duration * 60, $format);
     }
+
     return $sessions;
 }
 
@@ -720,7 +727,7 @@ function zoom_get_users_from_alternativehosts(array $alternativehosts) {
     list($insql, $inparams) = $DB->get_in_or_equal($alternativehosts);
     $sql = 'SELECT *
             FROM {user}
-            WHERE email '.$insql.'
+            WHERE email ' . $insql . '
             ORDER BY lastname ASC';
     $alternativehostusers = $DB->get_records_sql($sql, $inparams);
 
@@ -742,7 +749,7 @@ function zoom_get_nonusers_from_alternativehosts(array $alternativehosts) {
     list($insql, $inparams) = $DB->get_in_or_equal($alternativehosts);
     $sql = 'SELECT email
             FROM {user}
-            WHERE email '.$insql.'
+            WHERE email ' . $insql . '
             ORDER BY email ASC';
     $alternativehostusersmails = $DB->get_records_sql($sql, $inparams);
     foreach ($alternativehosts as $ah) {
@@ -856,7 +863,7 @@ function zoom_get_eligible_meeting_participants(context $context) {
     // Compose SQL query.
     $sqlsnippets = get_enrolled_with_capabilities_join($context, '', 'mod/zoom:view', 0, true);
     $sql = 'SELECT count(DISTINCT u.id)
-            FROM {user} u '.$sqlsnippets->joins.' WHERE '.$sqlsnippets->wheres;
+            FROM {user} u ' . $sqlsnippets->joins . ' WHERE ' . $sqlsnippets->wheres;
 
     // Run query and count records.
     $eligibleparticipantcount = $DB->count_records_sql($sql, $sqlsnippets->params);
@@ -937,6 +944,7 @@ function zoom_get_api_identifier($user) {
         // If one of the custom user fields.
         $identifier = $user->profile[$field];
     }
+
     if (empty($identifier)) {
         // Fallback to email if the field is not set.
         $identifier = $user->email;
@@ -961,7 +969,7 @@ function zoom_helper_icalendar_event($event, $description) {
     $hostaddress = str_replace('https://', '', $hostaddress);
     $uid = $event->id . '@' . $hostaddress;
 
-    $icalevent = new iCalendar_event;
+    $icalevent = new iCalendar_event();
     $icalevent->add_property('uid', $uid); // A unique identifier.
     $icalevent->add_property('summary', $event->name); // Title.
     $icalevent->add_property('dtstamp', Bennu::timestamp_to_datetime()); // Time of creation.
@@ -1055,6 +1063,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
         if ($userisregistered) {
             $url = $registrantjoinurl;
         }
+
         $returns['nexturl'] = new moodle_url($url, ['uname' => fullname($USER)]);
     }
 
@@ -1181,6 +1190,7 @@ function zoom_sync_meeting_tracking_fields($zoomid, $trackingfields) {
     foreach ($tfrows as $tfrow) {
         $tfobjects[$tfrow->tracking_field] = $tfrow;
     }
+
     $defaulttrackingfields = zoom_clean_tracking_fields();
     foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
         $value = $tfvalues[$key] ?? '';
@@ -1234,11 +1244,13 @@ function zoom_get_meeting_recordings($zoomid = null) {
     if ($zoomid !== null) {
         $params['zoomid'] = $zoomid;
     }
+
     $records = $DB->get_records('zoom_meeting_recordings', $params);
     $recordings = [];
     foreach ($records as $recording) {
         $recordings[$recording->zoomrecordingid] = $recording;
     }
+
     return $recordings;
 }
 
@@ -1256,11 +1268,13 @@ function zoom_get_meeting_recordings_grouped($zoomid = null) {
     if ($zoomid !== null) {
         $params['zoomid'] = $zoomid;
     }
+
     $records = $DB->get_records('zoom_meeting_recordings', $params, 'recordingstart ASC');
     $recordings = [];
     foreach ($records as $recording) {
         $recordings[$recording->meetinguuid][$recording->zoomrecordingid] = $recording;
     }
+
     return $recordings;
 }
 
@@ -1353,5 +1367,6 @@ function zoom_get_registrant_join_url($useremail, $meetingid, $iswebinar) {
             }
         }
     }
+
     return false;
 }

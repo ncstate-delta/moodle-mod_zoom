@@ -31,7 +31,6 @@ require_once($CFG->dirroot . '/mod/zoom/backup/moodle2/backup_zoom_stepslib.php'
  * Provides the steps to perform one complete backup of the zoom instance
  */
 class backup_zoom_activity_task extends backup_activity_task {
-
     /**
      * No specific settings for this activity
      */
@@ -57,11 +56,11 @@ class backup_zoom_activity_task extends backup_activity_task {
         $base = preg_quote($CFG->wwwroot, '/');
 
         // Link to the list of zooms.
-        $search = '/('.$base.'\/mod\/zoom\/index.php\?id\=)([0-9]+)/';
+        $search = '/(' . $base . '\/mod\/zoom\/index.php\?id\=)([0-9]+)/';
         $content = preg_replace($search, '$@ZOOMINDEX*$2@$', $content);
 
         // Link to zoom view by moduleid.
-        $search = '/('.$base.'\/mod\/zoom\/view.php\?id\=)([0-9]+)/';
+        $search = '/(' . $base . '\/mod\/zoom\/view.php\?id\=)([0-9]+)/';
         $content = preg_replace($search, '$@ZOOMVIEWBYID*$2@$', $content);
 
         return $content;

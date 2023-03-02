@@ -33,12 +33,11 @@ require_once($CFG->dirroot . '/mod/zoom/locallib.php');
  * Scheduled task to get the meeting participants for each .
  */
 class get_meeting_reports extends \core\task\scheduled_task {
-
     /**
      * Percentage in which we want similar_text to reach before we consider
      * using its results.
      */
-    const SIMILARNAME_THRESHOLD = 60;
+    private const SIMILARNAME_THRESHOLD = 60;
 
     /**
      * Used to determine if debugging is turned on or off for outputting messages.
@@ -62,6 +61,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
         if ($a->end_time == $b->end_time) {
             return 0;
         }
+
         return ($a->end_time < $b->end_time) ? -1 : 1;
     }
 
@@ -107,6 +107,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
             $endtime = time();
             $end = gmdate('Y-m-d', $endtime) . 'T' . gmdate('H:i:s', $endtime) . 'Z';
         }
+
         if (!empty($paramstart)) {
             $start = $paramstart;
         } else {
@@ -129,6 +130,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 // exception to skip Dashboard API.
                 throw new \Exception('Querying $hostuuids; need to use Report API');
             }
+
             $allmeetings = $this->get_meetings_via_dashboard($start, $end);
         } catch (\Exception $e) {
             mtrace($e->getMessage());
@@ -173,6 +175,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 }
             }
         }
+
         if ($recordedallmeetings && $runningastask) {
             // All finished, so save the time that we set end time for the initial query.
             set_config('last_call_made_at', $endtime, 'zoom');
@@ -245,6 +248,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
         if ($participant->user_email == '') {
             $participant->user_email = null;
         }
+
         if ($participant->id == '') {
             $participant->id = null;
         }
@@ -279,6 +283,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
             $names[$user->id] = $name;
             $emails[$user->id] = strtoupper(zoom_get_api_identifier($user));
         }
+
         return [$names, $emails];
     }
 
@@ -311,6 +316,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
             // Else we just want a specific hosts.
             $activehostsuuids = $hostuuids;
         }
+
         $allmeetings = [];
         $localhosts = $DB->get_records_menu('zoom', null, '', 'id, host_id');
 
@@ -338,6 +344,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 // Ignore hosts who hosted meetings outside of integration.
                 continue;
             }
+
             $this->debugmsg(sprintf('Found %d meetings for user', count($usersmeetings)));
             foreach ($usersmeetings as $usermeeting) {
                 $allmeetings[] = $usermeeting;
@@ -454,6 +461,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
             mtrace('Meeting does not exist locally; skipping');
             return true;
         }
+
         $meeting->zoomid = $zoomrecord->id;
 
         // Insert or update meeting details.

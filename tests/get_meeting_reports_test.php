@@ -33,7 +33,6 @@ use stdClass;
  * @covers \mod_zoom\task\get_meeting_reports
  */
 class get_meeting_reports_test extends advanced_testcase {
-
     /**
      * Scheduled task object.
      * @var \mod_zoom\task\get_meeting_reports
@@ -99,7 +98,8 @@ class get_meeting_reports_test extends advanced_testcase {
      * Make sure that format_participant() can match Moodle users.
      */
     public function test_format_participant_matching() {
-        global $DB;return;
+        global $DB;
+        return;
 
         // 1) If user does not match, verify that we are using data from Zoom.
         $participant = $this->meetingtask->format_participant($this->zoomdata,
@@ -222,6 +222,7 @@ class get_meeting_reports_test extends advanced_testcase {
         foreach ($users as $user) {
             $this->getDataGenerator()->enrol_user($user->id, $course->id);
         }
+
         list($names, $emails) = $this->meetingtask->get_enrollments($course->id);
 
         // 1) Make sure we match someone with middle name missing.

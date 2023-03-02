@@ -35,7 +35,6 @@ use moodle_url;
  * @covers \mod_zoom\invitation
  */
 class mod_zoom_invitation_test extends advanced_testcase {
-
     /**
      * Setup to ensure that fixtures are loaded.
      */

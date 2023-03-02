@@ -28,7 +28,6 @@ namespace mod_zoom\analytics\indicator;
  * Social breadth indicator.
  */
 class social_breadth extends activity_base {
-
     /**
      * Returns the name.
      *
@@ -36,7 +35,7 @@ class social_breadth extends activity_base {
      *
      * @return object
      */
-    public static function get_name() : \lang_string {
+    public static function get_name(): \lang_string {
         return new \lang_string('indicator:socialbreadth', 'mod_zoom');
     }
 

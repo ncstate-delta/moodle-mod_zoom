@@ -31,7 +31,6 @@ use zoom_not_found_exception;
  * PHPunit testcase class.
  */
 class error_handling_test extends basic_testcase {
-
     /**
      * Exception for when the meeting isn't found on Zoom.
      * @var zoom_not_found_exception
