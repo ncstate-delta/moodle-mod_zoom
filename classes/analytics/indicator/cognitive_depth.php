@@ -28,13 +28,12 @@ namespace mod_zoom\analytics\indicator;
  * Cognitive depth indicator - zoom.
  */
 class cognitive_depth extends activity_base {
-
     /**
      * Returns the name.
      *
      * @return object
      */
-    public static function get_name() : \lang_string {
+    public static function get_name(): \lang_string {
         return new \lang_string('indicator:cognitivedepth', 'mod_zoom');
     }
 

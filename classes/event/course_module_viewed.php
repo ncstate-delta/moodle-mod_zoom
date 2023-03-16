@@ -31,7 +31,6 @@ namespace mod_zoom\event;
  * override methods get_url() and get_legacy_log_data(), too.
  */
 class course_module_viewed extends \core\event\course_module_viewed {
-
     /**
      * Initialize the event
      */

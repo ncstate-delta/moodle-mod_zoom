@@ -27,7 +27,6 @@
  * Define the complete zoom structure for backup, with file and id annotations.
  */
 class backup_zoom_activity_structure_step extends backup_activity_structure_step {
-
     /**
      * Defines the backup structure of the module.
      *

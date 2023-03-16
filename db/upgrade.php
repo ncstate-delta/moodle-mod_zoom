@@ -81,6 +81,7 @@ function xmldb_zoom_upgrade($oldversion) {
             $time->start_time = strtotime($time->start_time);
             $DB->update_record('zoom', $time);
         }
+
         $starttimes->close();
         $dbman->change_field_type($table, $field);
 
@@ -267,7 +268,6 @@ function xmldb_zoom_upgrade($oldversion) {
     }
 
     if ($oldversion < 2018092201) {
-
         // Changing type of field userid on table zoom_meeting_participants to int.
         $table = new xmldb_table('zoom_meeting_participants');
 
@@ -301,6 +301,7 @@ function xmldb_zoom_upgrade($oldversion) {
         if ($dbman->field_exists($table, $field)) {
             $dbman->change_field_notnull($table, $field);
         }
+
         // Zoom savepoint reached.
         upgrade_mod_savepoint(true, 2019061800, 'zoom');
     }
@@ -715,7 +716,6 @@ function xmldb_zoom_upgrade($oldversion) {
     }
 
     if ($oldversion < 2022022400) {
-
         // Change the recordings_visible_default field in the zoom table.
         $table = new xmldb_table('zoom');
         $field = new xmldb_field('recordings_visible_default', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1',
@@ -732,7 +732,6 @@ function xmldb_zoom_upgrade($oldversion) {
     }
 
     if ($oldversion < 2022031600) {
-
         $table = new xmldb_table('zoom');
 
         // Define and conditionally add field show_schedule.

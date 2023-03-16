@@ -33,7 +33,6 @@ require_once($CFG->dirroot . '/mod/zoom/locallib.php');
  * Scheduled task to get the meeting recordings.
  */
 class get_meeting_recordings extends \core\task\scheduled_task {
-
     /**
      * Returns name of task.
      *
@@ -91,6 +90,7 @@ class get_meeting_recordings extends \core\task\scheduled_task {
                                 mtrace('Recording id: ' . $zoomrecordinginfo->recordingid . ' exist(s)...skipping');
                                 continue;
                             }
+
                             $rec = new \stdClass();
                             $rec->zoomid = $zoom->id;
                             $rec->meetinguuid = trim($zoomrecordinginfo->meetinguuid);

@@ -28,7 +28,6 @@ namespace mod_zoom\analytics\indicator;
  * Activity base class.
  */
 abstract class activity_base extends \core_analytics\local\indicator\community_of_inquiry_activity {
-
     /**
      * Grading not implemented.
      *

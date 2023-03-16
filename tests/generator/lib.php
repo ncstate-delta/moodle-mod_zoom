@@ -22,7 +22,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_zoom_generator extends testing_module_generator {
-
     /**
      * Creates new Zoom module instance.
      * @param array|stdClass $record
@@ -31,7 +30,7 @@ class mod_zoom_generator extends testing_module_generator {
      */
     public function create_instance($record = null, array $options = null) {
         global $CFG;
-        require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
         set_config('clientid', 'test', 'zoom');
         set_config('clientsecret', 'test', 'zoom');
@@ -66,6 +65,7 @@ class mod_zoom_generator extends testing_module_generator {
                 $record->{$name} = $value;
             }
         }
+
         return parent::create_instance($record, $options);
     }
 }

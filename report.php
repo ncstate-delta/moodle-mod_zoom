@@ -21,14 +21,14 @@
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-// Login check require_login() is called in zoom_get_instance_setup();.
-// @codingStandardsIgnoreLine
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/lib.php');
-require_once(dirname(__FILE__).'/locallib.php');
-require_once(dirname(__FILE__).'/mod_form.php');
-require_once(dirname(__FILE__).'/../../lib/moodlelib.php');
+require(__DIR__ . '/../../config.php');
+require_once(__DIR__ . '/lib.php');
+require_once(__DIR__ . '/locallib.php');
+require_once(__DIR__ . '/mod_form.php');
+require_once($CFG->libdir . '/moodlelib.php');
 
+require_login();
+// Additional access checks in zoom_get_instance_setup().
 list($course, $cm, $zoom) = zoom_get_instance_setup();
 
 // Check capability.
@@ -76,7 +76,6 @@ if (!empty($sessions)) {
                          . get_string('participantdatanotavailable', 'mod_zoom')
                          . '] '
                          . $OUTPUT->help_icon('participantdatanotavailable', 'mod_zoom');
-
             } else {
                 $url = new moodle_url('/mod/zoom/participants.php', ['id' => $cm->id, 'uuid' => $uuid]);
                 $row[] = html_writer::link($url, $meet['count']);

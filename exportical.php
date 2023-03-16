@@ -22,10 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/moodlelib.php');
-require_once(dirname(__FILE__).'/locallib.php');
-require_once($CFG->libdir.'/bennu/bennu.inc.php');
+require_once(__DIR__ . '/locallib.php');
+require_once($CFG->libdir . '/bennu/bennu.inc.php');
 
 // Course_module ID.
 $id = required_param('id', PARAM_INT);
@@ -60,7 +60,7 @@ if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
 }
 
 // Start ical file.
-$ical = new iCalendar;
+$ical = new iCalendar();
 $ical->add_property('method', 'PUBLISH');
 $ical->add_property('prodid', '-//Moodle Pty Ltd//NONSGML Moodle Version ' . $CFG->version . '//EN');
 
@@ -73,6 +73,7 @@ $descriptiontext = get_string('calendardescriptionURL', 'mod_zoom', $CFG->wwwroo
 if (!empty($convertedtext)) {
     $descriptiontext .= get_string('calendardescriptionintro', 'mod_zoom', $convertedtext);
 }
+
 if (!empty($meetinginvite)) {
     $descriptiontext .= "\n\n" . $meetinginvite;
 }

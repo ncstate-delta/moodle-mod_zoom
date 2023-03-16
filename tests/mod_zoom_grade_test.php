@@ -30,7 +30,6 @@ use advanced_testcase;
  * PHPunit testcase class.
  */
 class mod_zoom_grade_test extends advanced_testcase {
-
     /**
      * Setup to ensure that fixtures are loaded.
      */

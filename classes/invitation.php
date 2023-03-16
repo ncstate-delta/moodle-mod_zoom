@@ -29,12 +29,11 @@ namespace mod_zoom;
  * Invitation class.
  */
 class invitation {
-
     /**
      * Invitation settings prefix.
      * @var string
      */
-    const PREFIX = 'invitation_';
+    public const PREFIX = 'invitation_';
 
     /** @var string|null $invitation The unaltered zoom invitation text. */
     private $invitation;
@@ -63,24 +62,29 @@ class invitation {
         if (empty($this->invitation)) {
             return null;
         }
+
         // If regex patterns are disabled, return the raw zoom meeting invitation.
         if (!get_config('zoom', 'invitationregexenabled')) {
             return $this->invitation;
         }
+
         $displaystring = $this->invitation;
         try {
             // If setting enabled, strip the invite message.
             if (get_config('zoom', 'invitationremoveinvite')) {
                 $displaystring = $this->remove_element($displaystring, 'invite');
             }
+
             // If setting enabled, strip the iCal link.
             if (get_config('zoom', 'invitationremoveicallink')) {
                 $displaystring = $this->remove_element($displaystring, 'icallink');
             }
+
             // Check user capabilities, and remove parts of the invitation they don't have permission to view.
             if (!has_capability('mod/zoom:viewjoinurl', \context_module::instance($coursemoduleid), $userid)) {
                 $displaystring = $this->remove_element($displaystring, 'joinurl');
             }
+
             if (!has_capability('mod/zoom:viewdialin', \context_module::instance($coursemoduleid), $userid)) {
                 $displaystring = $this->remove_element($displaystring, 'onetapmobile');
                 $displaystring = $this->remove_element($displaystring, 'dialin');
@@ -95,6 +99,7 @@ class invitation {
             debugging($e->getMessage(), DEBUG_DEVELOPER);
             return $this->invitation;
         }
+
         $displaystring = trim($this->clean_paragraphs($displaystring));
         return $displaystring;
     }
@@ -160,6 +165,7 @@ class invitation {
         if (empty($configregex[$element])) {
             return $invitation;
         }
+
         $result = preg_match($configregex[$element], $invitation, $matches, PREG_OFFSET_CAPTURE);
         // If error occurred in preg_match, show debugging message to help site administrator.
         if ($result === false) {
@@ -167,10 +173,12 @@ class invitation {
                     ['element' => $element, 'pattern' => $configregex[$element]]),
                     DEBUG_DEVELOPER);
         }
+
         // No match found, so return invitation string unaltered.
         if (empty($matches)) {
             return $invitation;
         }
+
         // Get the position of the element in the full invitation string.
         $pos = $matches[0][1];
         // Inject a paragraph break above element. Use $this->clean_paragraphs() to fix uneven breaks between paragraphs.
@@ -201,6 +209,7 @@ class invitation {
         if ($this->configregex !== null) {
             return $this->configregex;
         }
+
         $config = get_config('zoom');
         $this->configregex = [];
         // Get the regex defined in the plugin settings for each element.
@@ -208,6 +217,7 @@ class invitation {
             $settingname = self::PREFIX . $element;
             $this->configregex[$element] = $config->$settingname;
         }
+
         return $this->configregex;
     }
 

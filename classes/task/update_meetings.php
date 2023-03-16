@@ -27,7 +27,7 @@ namespace mod_zoom\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/lib/modinfolib.php');
+require_once($CFG->libdir . '/modinfolib.php');
 require_once($CFG->dirroot . '/mod/zoom/lib.php');
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
@@ -35,7 +35,6 @@ require_once($CFG->dirroot . '/mod/zoom/locallib.php');
  * Scheduled task to sychronize meeting data.
  */
 class update_meetings extends \core\task\scheduled_task {
-
     /**
      * Returns name of task.
      *
@@ -72,10 +71,10 @@ class update_meetings extends \core\task\scheduled_task {
             // Show trace message.
             mtrace('Processing next Zoom meeting activity ...');
             mtrace('  Zoom meeting ID: ' . $zoom->meeting_id);
-            mtrace('  Zoom meeting title: '. $zoom->name);
+            mtrace('  Zoom meeting title: ' . $zoom->name);
             $zoomactivityurl = new \moodle_url('/mod/zoom/view.php', ['n' => $zoom->id]);
-            mtrace('  Zoom meeting activity URL: '. $zoomactivityurl->out());
-            mtrace('  Moodle course ID: '. $zoom->course);
+            mtrace('  Zoom meeting activity URL: ' . $zoomactivityurl->out());
+            mtrace('  Moodle course ID: ' . $zoom->course);
 
             $gotinfo = false;
             try {
@@ -92,6 +91,7 @@ class update_meetings extends \core\task\scheduled_task {
                 // Show trace message.
                 mtrace('  !! Error updating Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id . ': ' . $error);
             }
+
             if ($gotinfo) {
                 $changed = false;
                 $newzoom = populate_zoom_from_response($zoom, $response);
