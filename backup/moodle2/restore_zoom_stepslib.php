@@ -70,6 +70,7 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
             $data->join_url = '';
             $data->meeting_id = 0;
             $data->exists_on_zoom = ZOOM_MEETING_EXPIRED;
+            $data->option_auto_recording = 'none';
         }
 
         $data->course = $this->get_courseid();
