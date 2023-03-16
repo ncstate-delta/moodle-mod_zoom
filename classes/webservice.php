@@ -268,7 +268,16 @@ class mod_zoom_webservice {
             $data = is_array($data) ? json_encode($data) : $data;
         }
 
-        $rawresponse = $this->make_curl_call($curl, $method, $url, $data);
+        $attempts = 0;
+        do {
+            if ($attempts > 0) {
+                sleep(1);
+                debugging('retrying after curl error 35, retry attempt ' . $attempts);
+            }
+
+            $rawresponse = $this->make_curl_call($curl, $method, $url, $data);
+            $attempts++;
+        } while ($curl->get_errno() === 35 && $attempts <= self::MAX_RETRIES);
 
         if ($curl->get_errno()) {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', $curl->error);
