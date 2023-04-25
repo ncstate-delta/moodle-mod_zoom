@@ -171,6 +171,11 @@ class send_ical_notifications extends \core\task\scheduled_task {
             }
 
             foreach ($users as $user) {
+                // Check if user has "Disable notifications" set
+                if ($user->emailstop) {
+                    continue;
+                }
+                
                 // If registration is required - then a unique registration link per user is required.
                 if ($zoom->registration != ZOOM_REGISTRATION_OFF) {
                     $ical = $this->create_ical_object($zoom, $zoomevent, $calevent, $description, $user);
