@@ -1043,7 +1043,7 @@ class mod_zoom_webservice {
     private function oauth($cache) {
         $curl = $this->get_curl_object();
         $curl->setHeader('Authorization: Basic ' . base64_encode($this->clientid . ':' . $this->clientsecret));
-        $curl->setHeader('Content-Type: application/json');
+        $curl->setHeader('Accept: application/json');
 
         // Force HTTP/1.1 to avoid HTTP/2 "stream not closed" issue.
         $curl->setopt([
@@ -1051,30 +1051,50 @@ class mod_zoom_webservice {
         ]);
 
         $timecalled = time();
-        $response = $this->make_curl_call($curl, 'post',
-            'https://zoom.us/oauth/token?grant_type=account_credentials&account_id=' . $this->accountid, []);
+        $data = [
+            'grant_type' => 'account_credentials',
+            'account_id' => $this->accountid,
+        ];
+        $response = $this->make_curl_call($curl, 'post', 'https://zoom.us/oauth/token', $data);
 
         if ($curl->get_errno()) {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', $curl->error);
         }
 
         $response = json_decode($response);
-        if (isset($response->access_token)) {
-            $token = $response->access_token;
-            $cache->set('accesstoken', $token);
 
-            if (isset($response->expires_in)) {
-                $expires = $response->expires_in + $timecalled;
-            } else {
-                $expires = 3599 + $timecalled;
-            }
-
-            $cache->set('expires', $expires);
-
-            return $token;
-        } else {
-            throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_no_access_token', 'zoom'));
+        if (empty($response->access_token)) {
+            throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_no_access_token', 'mod_zoom'));
         }
+
+        $requiredscopes = [
+            'meeting:read:admin',
+            'meeting:write:admin',
+            'user:read:admin',
+        ];
+        $scopes = explode(' ', $response->scopes);
+        $missingscopes = array_diff($requiredscopes, $scopes);
+
+        if (!empty($missingscopes)) {
+            $missingscopes = implode(', ', $missingscopes);
+            throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_scopes', 'mod_zoom', $missingscopes));
+        }
+
+        $token = $response->access_token;
+
+        if (isset($response->expires_in)) {
+            $expires = $response->expires_in + $timecalled;
+        } else {
+            $expires = 3599 + $timecalled;
+        }
+
+        $cache->set_many([
+            'accesstoken' => $token,
+            'expires' => $expires,
+            'scopes' => $scopes,
+        ]);
+
+        return $token;
     }
 
     /**
