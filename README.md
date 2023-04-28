@@ -69,6 +69,16 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.10.1
+
+- Bugfix: Stop showing finished events in My Overview block #451 (thanks @nstefanski)
+- Bugfix: Automatically retry on TLS connection error #466 (thanks @lcollong)
+- Bugfix: Allow restoring activiting that are missing `option_auto_recording` #470 (thanks @lexxkoto)
+- Bugfix: Document that each Moodle install needs its own OAuth app #475 (thanks @DLM-unipd, @haietza)
+- Bugfix: Check required scopes before caching OAuth token #475 (thanks @tbeachy)
+- Code quality: Align with Moodle-compatible PSR-1 and PSR-12 rules #465
+- Special thanks to @rickbeasley for his contributions to this plugin and to the team.
+
 v4.10.0
 
 - Feature: Option for redefine licenses to only affect users on 'this' Moodle server #436 (thanks @KepaUrzelai)
