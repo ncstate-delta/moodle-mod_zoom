@@ -1072,7 +1072,7 @@ class mod_zoom_webservice {
             'meeting:write:admin',
             'user:read:admin',
         ];
-        $scopes = explode(' ', $response->scopes);
+        $scopes = explode(' ', $response->scope);
         $missingscopes = array_diff($requiredscopes, $scopes);
 
         if (!empty($missingscopes)) {
