@@ -12,8 +12,8 @@ To connect to the Zoom APIs, this plugin requires an account-level app to be
 created.
 
 ### Server-to-Server OAuth
-To [create an account-level Server-to-Server OAuth app](https://marketplace.zoom.us/docs/guides/build/server-to-server-oauth-app), the `Server-to-server OAuth app`
-permission is required.
+To [create an account-level Server-to-Server OAuth app](https://developers.zoom.us/docs/internal-apps/create/), the `Server-to-server OAuth app`
+permission is required. You should create a separate Server-to-Server OAuth app for each Moodle install.
 
 The Server-to-Server OAuth app will generate a client ID, client secret and account ID.
 
@@ -23,7 +23,7 @@ At a minimum, the following scopes are required by this plugin:
 - meeting:write:admin (Create/Update meetings)
 - user:read:admin (Read user details)
 
-Additional scopes are required for certain functionality:
+Optional functionality can be enabled by granting additional scopes:
 
 - Reports for meetings / webinars
     - dashboard_meetings:read:admin (Business accounts and higher)
@@ -43,13 +43,12 @@ Additional scopes are required for certain functionality:
 JWT will be deprecated in June 2023. To create an account-level JWT app the 'JWT' permission is
 required.
 
-See https://marketplace.zoom.us/docs/guides/build/jwt-app. You will need to
-create a JWT app and that will generate the API key and secret.
+You will need to [create a JWT app](https://developers.zoom.us/docs/platform/build/jwt-app/) and that will generate the API key and secret.
 
 ## Installation
 
-1. Install plugin to mod/zoom. More details at https://docs.moodle.org/en/Installing_plugins#Installing_a_plugin
-2. Once you install the plugin you need to set the following settings to enable the plugin:
+1. [Install plugin](https://docs.moodle.org/en/Installing_plugins#Installing_a_plugin) to the /mod/zoom folder in Moodle.
+2. After installing the plugin, the following settings need to be configured to use the plugin:
 
 - Zoom account ID (mod_zoom | accountid)
 - Zoom client ID (mod_zoom | clientid)
@@ -60,12 +59,10 @@ JWT will be deprecated in June 2023. For a JWT app, you need to set the followin
 - Zoom API key (mod_zoom | apikey)
 - Zoom API secret (mod_zoom | apisecret)
 
-Please note that the API key and secret is not the same as the LTI key/secret.
+Please note that the API key and secret are not the same as the LTI key/secret.
 
 If you get "Access token is expired" errors, make sure the date/time on your
 server is properly synchronized with the time servers.
-
-- Zoom home page URL (mod_zoom | zoomurl), Link to your organization's custom Zoom landing page.
 
 ## Changelog
 
@@ -113,7 +110,7 @@ v4.8.0
 
 - Feature: Support Server-to-Server OAuth app #387 (thanks @haietza, @mhughes2k)
   - New settings `zoom/accountid`, `zoom/clientid`, `zoom/clientsecret`
-  - Reminder: You must [switch from JWT to Server-to-Server OAuth by June 2023](https://marketplace.zoom.us/docs/guides/build/jwt-app/jwt-faq/).
+  - Reminder: You must [switch from JWT to Server-to-Server OAuth by June 2023](https://developers.zoom.us/docs/internal-apps/jwt-faq/).
 - Regression: Locked settings were not being applied #407 (thanks @krab-stik)
   - Introduced in v4.7.0 while adding support for automatic recording.
 
