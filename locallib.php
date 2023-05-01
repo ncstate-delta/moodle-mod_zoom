@@ -1064,7 +1064,8 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
             $url = $registrantjoinurl;
         }
 
-        $returns['nexturl'] = new moodle_url($url, ['uname' => fullname($USER)]);
+        // Try to send the user email (not grantee) but also set the user id with the uname.
+        $returns['nexturl'] = new moodle_url($url, ['uname' => '('.$USER->id.')'.fullname($USER), 'uemail'=>$USER->email]);
     }
 
     // Record user's clicking join.
@@ -1085,20 +1086,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
     // Check whether user has a grade. If not, then assign full credit to them.
     $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
 
-    // Assign full credits for user who has no grade yet, if this meeting is gradable (i.e. the grade type is not "None").
-    if (!empty($gradelist->items) && empty($gradelist->items[0]->grades[$USER->id]->grade)) {
-        $grademax = $gradelist->items[0]->grademax;
-        $grades = [
-            'rawgrade' => $grademax,
-            'userid' => $USER->id,
-            'usermodified' => $USER->id,
-            'dategraded' => '',
-            'feedbackformat' => '',
-            'feedback' => '',
-        ];
-
-        zoom_grade_item_update($zoom, $grades);
-    }
+    // Transfere grading code to get_meeting_report.
 
     // Upgrade host upon joining meeting, if host is not Licensed.
     if ($userishost) {

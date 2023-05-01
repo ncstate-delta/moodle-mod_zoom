@@ -200,6 +200,14 @@ class get_meeting_reports extends \core\task\scheduled_task {
         // Cleanup the name. For some reason # gets into the name instead of a comma.
         $participant->name = str_replace('#', ',', $participant->name);
 
+        // Extract the ID and name from the participant's name if it is in the format "(id)Name".
+        if (preg_match('/^\((\d+)\)(.+)$/', $participant->name, $matches)) {
+            $moodleuserid = $matches[1];
+            $name = trim($matches[2]);
+        } else {
+            $name = $participant->name;
+        }
+
         // Try to see if we successfully queried for this user and found a Moodle id before.
         if (!empty($participant->id)) {
             // Sometimes uuid is blank from Zoom.
@@ -246,7 +254,12 @@ class get_meeting_reports extends \core\task\scheduled_task {
         }
 
         if ($participant->user_email == '') {
-            $participant->user_email = null;
+            if (!empty($moodleuserid)) {
+                $participant->user_email = $DB->get_record('user',
+                                        ['id' => $moodleuserid], '*', IGNORE_MULTIPLE)->email;
+            } else {
+                $participant->user_email = null;
+            }
         }
 
         if ($participant->id == '') {
@@ -337,7 +350,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                     continue;
                 } catch (\zoom_api_retry_failed_exception $e) {
                     // Hit API limit, so cannot continue.
-                    mtrace($ex->response . ': ' . $ex->zoomerrorcode);
+                    mtrace($e->response . ': ' . $e->zoomerrorcode);
                     return;
                 }
             } else {
@@ -445,11 +458,11 @@ class get_meeting_reports extends \core\task\scheduled_task {
     /**
      * Saves meeting details and participants for reporting.
      *
-     * @param array $meeting    Normalized meeting object
+     * @param object $meeting    Normalized meeting object
      * @return boolean
      */
     public function process_meeting_reports($meeting) {
-        global $DB;
+        global $DB, $CFG;
 
         $this->debugmsg(sprintf('Processing meeting %s|%s that occurred at %s',
                 $meeting->meeting_id, $meeting->uuid, $meeting->start_time));
@@ -463,7 +476,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
         }
 
         $meeting->zoomid = $zoomrecord->id;
-
+        $courseid = $zoomrecord->course;
         // Insert or update meeting details.
         if (!($DB->record_exists('zoom_meeting_details', ['uuid' => $meeting->uuid]))) {
             $this->debugmsg('Inserting zoom_meeting_details');
@@ -497,7 +510,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         // Now try to insert participants, first drop any records for given
         // meeting and then add. There is no unique key that we can use for
-        // knowing what users existed before.
+        // knowing what users existed before. (trying to fik this using userid).
         try {
             $transaction = $DB->start_delegated_transaction();
 
@@ -506,13 +519,54 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 $this->debugmsg(sprintf('Dropping previous records of %d participants', $count));
                 $DB->delete_records('zoom_meeting_participants', ['detailsid' => $detailsid]);
             }
-
+            $meetingtime = $DB->get_record('zoom_meeting_details', ['id'=>$detailsid], 'start_time, end_time');
+            $meetingduration = $meetingtime->end_time - $meetingtime->start_time;
             foreach ($participants as $rawparticipant) {
                 $this->debugmsg(sprintf('Working on %s (user_id: %d, uuid: %s)',
                         $rawparticipant->name, $rawparticipant->user_id, $rawparticipant->id));
                 $participant = $this->format_participant($rawparticipant, $detailsid, $names, $emails);
-                $recordid = $DB->insert_record('zoom_meeting_participants', $participant, true);
-                $this->debugmsg('Inserted record ' . $recordid);
+                $userid = $participant['userid'];
+                $upart = array('userid'=>$userid, 
+                                'detailsid'=>$participant['detailsid']);
+                // if the record is already exist as the user left the meeting and returned back;
+                if ($DB->record_exists('zoom_meeting_participants', $upart)) {
+                    $dataobject = new \stdClass;
+                    $dataobject->leavetime = $participant['leave_time'];
+                    $record = $DB->get_record('zoom_meeting_participants',$upart,'id, duration');
+                    $dataobject->duration = $participant['duration'] + $record->duration;
+                    $userduration = $dataobject->duration;
+                    $dataobject->id = $record->id;
+                    $recordid = $record->id;
+                    $DB->update_record('zoom_meeting_participants', $dataobject);
+                    $this->debugmsg('Updated record ' . $recordid);
+                } else {
+                    $userduration = $participant['duration'];
+                    $recordid = $DB->insert_record('zoom_meeting_participants', $participant, true);
+                    $this->debugmsg('Inserted record ' . $recordid);
+                }
+                require_once($CFG->libdir.'/gradelib.php');
+                // Check whether user has a grade. If not, then assign full credit to them.
+                $gradelist = grade_get_grades($courseid, 'mod', 'zoom', $zoomrecord->id, $userid);
+                $gradelistitems = $gradelist->items;
+                // Assign full credits for user who has no grade yet, if this meeting is gradable (i.e. the grade type is not "None").
+                if (!empty($gradelistitems)) {
+                    $grademax = $gradelistitems[0]->grademax;
+                    // Setup the grade according to the duration.
+                    $grades = [
+                        'rawgrade' => ($userduration * $grademax /$meetingduration),
+                        'userid' => $userid,
+                        'usermodified' => $userid,
+                        'dategraded' => '',
+                        'feedbackformat' => '',
+                        'feedback' => '',
+                    ];
+
+                    zoom_grade_item_update($zoomrecord, $grades);
+                    $this->debugmsg('grades updated , duration =' . $userduration
+                                                    .', maxgrade ='.$grademax
+                                                .', meeting duration ='.$meetingduration
+                                                .'User grade:'.($userduration * $grademax /$meetingduration));
+                }
             }
 
             $transaction->allow_commit();
