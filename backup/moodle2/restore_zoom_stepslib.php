@@ -58,7 +58,7 @@ class restore_activity_structure_step extends \restore_activity_structure_step {
     protected function process_zoom($data) {
         global $DB;
 
-        $data = (object)$data;
+        $data = (object) $data;
 
         // Update start_time before attempting to create a new meeting.
         $data->start_time = $this->apply_date_offset($data->start_time);

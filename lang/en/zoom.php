@@ -90,6 +90,10 @@ $string['defaultsettings'] = 'Default Zoom settings';
 $string['defaultsettings_help'] = 'These settings define the defaults for all new Zoom meetings and webinars.';
 $string['deletemeetingrecordings'] = 'Delete meeting recordings from Moodle';
 $string['deleteroom'] = 'Delete room';
+$string['displayfullname'] = 'Full name';
+$string['displayfirstname'] = 'First name only';
+$string['displayidfullname'] = '(user id) followed by fullname';
+$string['displayid'] = '(user id) only';
 $string['displayleadtime'] = 'Display lead time';
 $string['displayleadtime_desc'] = 'If enabled, the leadtime will be displayed to the users. This way, users are informed that / when they can join the meeting before the scheduled start time. This might keep users from constantly reloading the page until they can join.';
 $string['displayleadtime_nohideif'] = 'Please note: This setting is only processed if the \'{$a}\' setting is set to a value greater than zero.';
@@ -138,6 +142,40 @@ $string['getmeetingreports'] = 'Get meeting report from Zoom';
 $string['getmeetingrecordings'] = 'Get meeting recordings from Zoom';
 $string['globalsettings'] = 'Global settings';
 $string['globalsettings_desc'] = 'These settings apply to the Zoom plugin as a whole.';
+$string['grading_needgrade'] = "The following users need to be graded manually as they could not be identified:\n";
+$string['grading_notenrolled'] = "The following users joined the meeting but were not recognized as enroled users:\n";
+$string['grading_notfound'] = "List of users who clicked to join the meeting, but were not recognized in the participant report:\n";
+$string['gradinglink'] = 'Review or update grades';
+$string['gradingmessagesubject'] = 'User grades for Zoom meeting: {$a->name}';
+$string['gradingmessagebody'] = 'For Zoom Meeting session: {$a->zoomurl};
+<br>
+Number of users that have been automatically graded according to their duration in the meeting: {$a->graded}.
+<br>
+Number of users that were already graded: {$a->alreadygraded}.
+<br>
+{$a->needgrade}<br>
+Review or update users grades here: {$a->gradeurl}
+<br>
+{$a->notfound}
+<br>
+{$a->notenrolled}';
+$string['gradingsmallmeassage'] = 'User grades quick report for {$a->name}:
+<br>
+Need manual grading: {$a->number}
+<br>
+Graded users: {$a->graded + $a->alreadygraded}';
+$string['gradingmethod_heading'] = 'Options for grading method';
+$string['gradingmethod_heading_help'] = 'Decide which method to use when grading Zoom participation.';
+$string['gradingmethod'] = 'Grading method';
+$string['gradingmethod_help'] = 'Choose the method to use when grading student participation.<br>
+Upon entry: the student receives full marks (max grade) when they click to join the meeting in Moodle.<br>
+Attendance duration: the student receives a score based on the percentage of their meeting attendance compared to the total meeting duration.<br>
+Notes regarding Attendance duration method:<br>
+- This method requires the display name to contain id or fullname.<br>
+- It is recommended to set the setting \'zoom | defaultjoinbeforehost\' to (No) so the meeting duration is accurate.<br>
+- Some students who are already signed in to the Zoom client with details not matching those in Moodle must be graded manually after reviewing the meeting report.';
+$string['gradingentry'] = 'Upon entry';
+$string['gradingperiod'] = 'Attendance Duration';
 $string['host'] = 'Host';
 $string['hostintro'] = '<a target="_blank" href="https://support.zoom.us/hc/en-us/articles/208220166">Alternative Hosts</a> can start Zoom meetings and manage the Waiting Room.';
 $string['indicator:cognitivedepth'] = 'Zoom cognitive';
@@ -207,6 +245,7 @@ $string['meetingcapacitywarningcontactrealhost'] = 'Please turn to the Zoom acco
 $string['meetingcapacitywarningcontactalthost'] = 'Please ask the host to turn to the Zoom account owner to obtain a larger Zoom license if all of these course participants need to join the meeting.';
 $string['meetingparticipantsdeleted'] = 'Meeting participant user data deleted.';
 $string['meetingrecordingviewsdeleted'] = 'Meeting recording user view data deleted.';
+$string['messageprovider:teacher_notification'] = 'Notify teachers about user grades (according to duration) in a Zoom session';
 $string['modulename'] = 'Zoom meeting';
 $string['modulenameplural'] = 'Zoom Meetings';
 $string['modulename_help'] = 'Zoom is a video and web conferencing platform that gives authorized users the ability to host online meetings.';
@@ -215,6 +254,7 @@ $string['month_day_text'] = 'of the month';
 $string['nextoccurrence'] = 'Next occurrence';
 $string['newmeetings'] = 'New Meetings';
 $string['nomeetinginstances'] = 'No sessions found for this meeting.';
+$string['nonrecognizedusergrade'] = '(Name: {$a->userid}, grade: {$a->grade})';
 $string['nooccurrenceleft'] = 'The last occurrence is already over';
 $string['noparticipants'] = 'No participants found for this session at this time.';
 $string['norecordings'] = 'No recordings found for this meeting at this time.';
@@ -365,6 +405,8 @@ $string['topic'] = 'Topic';
 $string['trackingfields'] = 'Tracking fields';
 $string['trackingfields_help'] = 'Enter the tracking field name(s)/label(s), separated by commas, to enable for Zoom activities.';
 $string['trackingfields_recommendedvalues'] = 'Recommended values: ';
+$string['unamedisplay'] = 'User display name';
+$string['unamedisplay_help'] = 'How the name of a user should be displayed in meetings (only works for users who are not logged in to the Zoom client).';
 $string['unavailable'] = 'You are unable to join at this time.';
 $string['unavailablefirstjoin'] = 'You can join {$a->mins} minutes before the scheduled start time at the earliest.';
 $string['unavailablefinished'] = 'The meeting has finished already.';
