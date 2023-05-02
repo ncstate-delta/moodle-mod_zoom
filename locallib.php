@@ -1065,7 +1065,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
         }
 
         // Try to send the user email (not grantee) but also set the user id with the uname.
-        $returns['nexturl'] = new moodle_url($url, ['uname' => '('.$USER->id.')'.fullname($USER), 'uemail'=>$USER->email]);
+        $returns['nexturl'] = new moodle_url($url, ['uname' => '('.$USER->id.')'.fullname($USER), 'uemail' => $USER->email]);
     }
 
     // Record user's clicking join.

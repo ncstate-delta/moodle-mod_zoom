@@ -519,20 +519,20 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 $this->debugmsg(sprintf('Dropping previous records of %d participants', $count));
                 $DB->delete_records('zoom_meeting_participants', ['detailsid' => $detailsid]);
             }
-            $meetingtime = $DB->get_record('zoom_meeting_details', ['id'=>$detailsid], 'start_time, end_time');
+            $meetingtime = $DB->get_record('zoom_meeting_details', ['id' => $detailsid], 'start_time, end_time');
             $meetingduration = $meetingtime->end_time - $meetingtime->start_time;
             foreach ($participants as $rawparticipant) {
                 $this->debugmsg(sprintf('Working on %s (user_id: %d, uuid: %s)',
                         $rawparticipant->name, $rawparticipant->user_id, $rawparticipant->id));
                 $participant = $this->format_participant($rawparticipant, $detailsid, $names, $emails);
                 $userid = $participant['userid'];
-                $upart = array('userid'=>$userid, 
-                                'detailsid'=>$participant['detailsid']);
-                // if the record is already exist as the user left the meeting and returned back;
+                $upart = array('userid' => $userid, 
+                                'detailsid' => $participant['detailsid']);
+                // If the record is already exist as the user left the meeting and returned back.
                 if ($DB->record_exists('zoom_meeting_participants', $upart)) {
                     $dataobject = new \stdClass;
                     $dataobject->leavetime = $participant['leave_time'];
-                    $record = $DB->get_record('zoom_meeting_participants',$upart,'id, duration');
+                    $record = $DB->get_record('zoom_meeting_participants', $upart, 'id, duration');
                     $dataobject->duration = $participant['duration'] + $record->duration;
                     $userduration = $dataobject->duration;
                     $dataobject->id = $record->id;
@@ -548,12 +548,13 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 // Check whether user has a grade. If not, then assign full credit to them.
                 $gradelist = grade_get_grades($courseid, 'mod', 'zoom', $zoomrecord->id, $userid);
                 $gradelistitems = $gradelist->items;
-                // Assign full credits for user who has no grade yet, if this meeting is gradable (i.e. the grade type is not "None").
+                // Assign full credits for user who has no grade yet.
+                // If this meeting is gradable (i.e. the grade type is not "None").
                 if (!empty($gradelistitems)) {
                     $grademax = $gradelistitems[0]->grademax;
                     // Setup the grade according to the duration.
                     $grades = [
-                        'rawgrade' => ($userduration * $grademax /$meetingduration),
+                        'rawgrade' => ($userduration * $grademax / $meetingduration),
                         'userid' => $userid,
                         'usermodified' => $userid,
                         'dategraded' => '',
@@ -565,7 +566,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                     $this->debugmsg('grades updated , duration =' . $userduration
                                                     .', maxgrade ='.$grademax
                                                 .', meeting duration ='.$meetingduration
-                                                .'User grade:'.($userduration * $grademax /$meetingduration));
+                                                .'User grade:'.$grades['rawgrade']);
                 }
             }
 
