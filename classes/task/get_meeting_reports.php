@@ -526,7 +526,8 @@ class get_meeting_reports extends \core\task\scheduled_task {
                         $rawparticipant->name, $rawparticipant->user_id, $rawparticipant->id));
                 $participant = $this->format_participant($rawparticipant, $detailsid, $names, $emails);
                 $userid = $participant['userid'];
-                $upart = array('userid' => $userid, 
+                $upart = array( 'userid' => $userid,
+                                'name' => $participant['name'],
                                 'detailsid' => $participant['detailsid']);
                 // If the record is already exist as the user left the meeting and returned back.
                 if ($DB->record_exists('zoom_meeting_participants', $upart)) {

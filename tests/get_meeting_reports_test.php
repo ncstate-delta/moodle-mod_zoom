@@ -285,8 +285,8 @@ class get_meeting_reports_test extends advanced_testcase {
         $participant1->name = 'John Smith';
         $participant1->user_email = 'john@test.com';
         $participant1->join_time = '2020-04-01T15:02:01Z';
-        $participant1->leave_time = '2020-04-01T15:07:01Z';
-        $participant1->duration = 5;
+        $participant1->leave_time = '2020-04-01T15:02:01Z';
+        $participant1->duration = 0;
         $this->mockparticipantsdata['someuuid'][] = $participant1;
         // Have another participant with normal data.
         $participant2 = new stdClass();
