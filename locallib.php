@@ -1064,8 +1064,23 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
             $url = $registrantjoinurl;
         }
 
+        $unamesetting = get_config('zoom', 'unamedisplay');
+        if (isset($unamesetting)) {
+            if ($unamesetting == 'fullname') {
+                $unamedisplay = fullname($USER);
+            } else if ($unamesetting == 'firstname') {
+                $unamedisplay = $USER->firstname;
+            } else if ($unamesetting == 'idfullname') {
+                $unamedisplay = '('.$USER->id.')'.fullname($USER);
+            } else if ($unamesetting == 'id') {
+                $unamedisplay = '('.$USER->id.')';
+            }
+        } else {
+            // The default setting.
+            $unamedisplay = fullname($USER);
+        }
         // Try to send the user email (not grantee) but also set the user id with the uname.
-        $returns['nexturl'] = new moodle_url($url, ['uname' => '('.$USER->id.')'.fullname($USER), 'uemail' => $USER->email]);
+        $returns['nexturl'] = new moodle_url($url, ['uname' => $unamedisplay, 'uemail' => $USER->email]);
     }
 
     // Record user's clicking join.
@@ -1083,10 +1098,32 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
     $completion = new completion_info($course);
     $completion->set_module_viewed($cm);
 
-    // Check whether user has a grade. If not, then assign full credit to them.
-    $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
+    // Check the grading method settings.
+    $gradingmethod = get_config('zoom', 'gradingmethod');
+    if (!isset($gradingmethod) || empty($gradingmethod)) {
+        $gradingmethod = 'entry';
+        // Because this is the default grading method.
+    }
 
-    // Transfere grading code to get_meeting_report.
+    if ($gradingmethod == 'entry') {
+        // Check whether user has a grade. If not, then assign full credit to them.
+        $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
+
+        // Assign full credits for user who has no grade yet, if this meeting is gradable (i.e. the grade type is not "None").
+        if (!empty($gradelist->items) && empty($gradelist->items[0]->grades[$USER->id]->grade)) {
+            $grademax = $gradelist->items[0]->grademax;
+            $grades = [
+                'rawgrade' => $grademax,
+                'userid' => $USER->id,
+                'usermodified' => $USER->id,
+                'dategraded' => '',
+                'feedbackformat' => '',
+                'feedback' => '',
+            ];
+
+            zoom_grade_item_update($zoom, $grades);
+        }
+    } // Else the grading code goes to get_meetings_report to calculate the grade according duration.
 
     // Upgrade host upon joining meeting, if host is not Licensed.
     if ($userishost) {

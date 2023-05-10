@@ -174,6 +174,14 @@ if ($ADMIN->fulltree) {
             '', 0, 1, 0);
     $settings->add($viewrecordings);
 
+    // Adding options for the display name using uname parameter in zoom join_url.
+    $options = ['fullname' => get_string('displayfullname', 'mod_zoom'),
+        'firstname' => get_string('displayfirstname', 'mod_zoom'),
+        'idfullname' => get_string('displayidfullname', 'mod_zoom'),
+        'id' => get_string('displayid', 'mod_zoom')];
+    $settings->add(new admin_setting_configselect('zoom/unamedisplay', get_string('unamedisplay', 'mod_zoom'),
+                                        get_string('unamedisplay_help', 'mod_zoom'), 'fullname', $options));
+
     // Supplementary features settings.
     $settings->add(new admin_setting_heading('zoom/supplementaryfeaturessettings',
             get_string('supplementaryfeaturessettings', 'mod_zoom'),
@@ -430,4 +438,16 @@ if ($ADMIN->fulltree) {
         $settings->hide_if('zoom/invitation_invite', 'zoom/invitationremoveinvite', 'eq', 0);
         $settings->hide_if('zoom/invitation_icallink', 'zoom/invitationremoveicallink', 'eq', 0);
     }
+
+    // Adding options for grading methods.
+    $settings->add(new admin_setting_heading('zoom/gradingmethod',
+                get_string('gradingmethod_heading', 'mod_zoom'),
+                get_string('gradingmethod_heading_help', 'mod_zoom')));
+
+    // Grading method upon entry: the user gets the fullmark when enter the session.
+    // Grading method upon period: the user graded for how long of the total actual session duration attended.
+    $options = ['entry' => get_string('gradingentry', 'mod_zoom'),
+                'period' => get_string('gradingperiod', 'mod_zoom')];
+    $settings->add(new admin_setting_configselect('zoom/gradingmethod', get_string('gradingmethod', 'mod_zoom'),
+                                        get_string('gradingmethod_help', 'mod_zoom'), 'entry', $options));
 }

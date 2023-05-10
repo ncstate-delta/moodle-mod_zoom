@@ -510,17 +510,20 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         // Now try to insert participants, first drop any records for given
         // meeting and then add. There is no unique key that we can use for
-        // knowing what users existed before. (trying to fik this using userid).
+        // knowing what users existed before. (trying to fix this using userid).
         try {
             $transaction = $DB->start_delegated_transaction();
 
             $count = $DB->count_records('zoom_meeting_participants', ['detailsid' => $detailsid]);
             if (!empty($count)) {
-                $this->debugmsg(sprintf('Dropping previous records of %d participants', $count));
-                $DB->delete_records('zoom_meeting_participants', ['detailsid' => $detailsid]);
+                $this->debugmsg(sprintf('There is exist previous records of %d participants', $count));
+                // No need to delete old records, because we update the old ones.
             }
             $meetingtime = $DB->get_record('zoom_meeting_details', ['id' => $detailsid], 'start_time, end_time');
             $meetingduration = $meetingtime->end_time - $meetingtime->start_time;
+            // After check and testing, these timings are the actual meeting timings returned from zoom
+            // ... (i.e.when the host start and end the meeting).
+            // Not like those on 'zoom' table which represent the settings from zoom activity.
             foreach ($participants as $rawparticipant) {
                 $this->debugmsg(sprintf('Working on %s (user_id: %d, uuid: %s)',
                         $rawparticipant->name, $rawparticipant->user_id, $rawparticipant->id));
@@ -530,11 +533,16 @@ class get_meeting_reports extends \core\task\scheduled_task {
                                 'name' => $participant['name'],
                                 'detailsid' => $participant['detailsid']);
                 // If the record is already exist as the user left the meeting and returned back.
-                if ($DB->record_exists('zoom_meeting_participants', $upart)) {
+                if ($record = $DB->get_record('zoom_meeting_participants', $upart, 'id, duration, leave_time')) {
+                    // Check for overlaping time.
+                    if ($participant['join_time'] < $record->leave_time) {
+                        $overlap = $record->leave_time - $participant['join_time'];
+                    } else {
+                        $overlap = 0;
+                    }
                     $dataobject = new \stdClass;
                     $dataobject->leavetime = $participant['leave_time'];
-                    $record = $DB->get_record('zoom_meeting_participants', $upart, 'id, duration');
-                    $dataobject->duration = $participant['duration'] + $record->duration;
+                    $dataobject->duration = $participant['duration'] + $record->duration - $overlap;
                     $userduration = $dataobject->duration;
                     $dataobject->id = $record->id;
                     $recordid = $record->id;
@@ -545,30 +553,35 @@ class get_meeting_reports extends \core\task\scheduled_task {
                     $recordid = $DB->insert_record('zoom_meeting_participants', $participant, true);
                     $this->debugmsg('Inserted record ' . $recordid);
                 }
-                require_once($CFG->libdir.'/gradelib.php');
-                // Check whether user has a grade. If not, then assign full credit to them.
-                $gradelist = grade_get_grades($courseid, 'mod', 'zoom', $zoomrecord->id, $userid);
-                $gradelistitems = $gradelist->items;
-                // Assign full credits for user who has no grade yet.
-                // If this meeting is gradable (i.e. the grade type is not "None").
-                if (!empty($gradelistitems)) {
-                    $grademax = $gradelistitems[0]->grademax;
-                    // Setup the grade according to the duration.
-                    $grades = [
-                        'rawgrade' => ($userduration * $grademax / $meetingduration),
-                        'userid' => $userid,
-                        'usermodified' => $userid,
-                        'dategraded' => '',
-                        'feedbackformat' => '',
-                        'feedback' => '',
-                    ];
 
-                    zoom_grade_item_update($zoomrecord, $grades);
-                    $this->debugmsg('grades updated , duration =' . $userduration
-                                                    .', maxgrade ='.$grademax
-                                                .', meeting duration ='.$meetingduration
-                                                .'User grade:'.$grades['rawgrade']);
+                // Check if grading method is according attendance duration.
+                if (get_config('zoom', 'gradingmethod') == 'period') {
+                    require_once($CFG->libdir.'/gradelib.php');
+                    // Check whether user has a grade. If not, then assign credit acording duration to them.
+                    $gradelist = grade_get_grades($courseid, 'mod', 'zoom', $zoomrecord->id, $userid);
+                    $gradelistitems = $gradelist->items;
+                    // Assign full credits for user who has no grade yet.
+                    // If this meeting is gradable (i.e. the grade type is not "None").
+                    if (!empty($gradelistitems)) {
+                        $grademax = $gradelistitems[0]->grademax;
+                        // Setup the grade according to the duration.
+                        $grades = [
+                            'rawgrade' => ($userduration * $grademax / $meetingduration),
+                            'userid' => $userid,
+                            'usermodified' => $userid,
+                            'dategraded' => '',
+                            'feedbackformat' => '',
+                            'feedback' => '',
+                        ];
+
+                        zoom_grade_item_update($zoomrecord, $grades);
+                        $this->debugmsg('grades updated , duration =' . $userduration
+                                                        .', maxgrade ='.$grademax
+                                                    .', meeting duration ='.$meetingduration
+                                                    .'User grade:'.$grades['rawgrade']);
+                    }
                 }
+
             }
 
             $transaction->allow_commit();

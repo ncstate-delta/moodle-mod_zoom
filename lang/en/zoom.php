@@ -94,6 +94,10 @@ $string['deleteroom'] = 'Delete room';
 $string['displayleadtime'] = 'Display lead time';
 $string['displayleadtime_desc'] = 'If enabled, the leadtime will be displayed to the users. This way, users are informed that / when they can join the meeting before the scheduled start time. This might keep users from constantly reloading the page until they can join.';
 $string['displayleadtime_nohideif'] = 'Please note: This setting is only processed if the \'{$a}\' setting is set to a value greater than zero.';
+$string['displayfullname'] = 'Full name';
+$string['displayfirstname'] = 'First name only';
+$string['displayidfullname'] = '(user id) followed by fullname';
+$string['displayid'] = '(user id) only';
 $string['displaypassword'] = 'Display passcode';
 $string['displaypassword_help'] = 'If enabled the meeting passcode will always be displayed to non-hosts.';
 $string['downloadical'] = 'Download iCal';
@@ -139,6 +143,18 @@ $string['getmeetingreports'] = 'Get meeting report from Zoom';
 $string['getmeetingrecordings'] = 'Get meeting recordings from Zoom';
 $string['globalsettings'] = 'Global settings';
 $string['globalsettings_desc'] = 'These settings apply to the Zoom plugin as a whole.';
+$string['gradingmethod_heading'] = 'Options for grading method';
+$string['gradingmethod_heading_help'] = 'Decide the way for how students get graded in zoom course module.';
+$string['gradingmethod'] = 'Grading method';
+$string['gradingmethod_help'] = 'Choose the way of how student get graded. <br>
+Upon entry: the student get the full mark (max grade) when he click join meeting. <br>
+Attendance duration: the student get marked for percentage of his attendance duration in the meeting with respect to the meeting duration. <br>
+Notes regarding Attendance duration method:<br>
+- This method required the display name to contain id or fullname. <br>
+- It is prefered to set the setting \'zoom | defaultjoinbeforehost\' to (No) to get the accurate meeting duration.
+- Some students which are already signed in as zoom client with details not matching those in moodle must be graded manually after review the meeting report.';
+$string['gradingentry'] = 'Upon entry';
+$string['gradingperiod'] = 'Attendance Duration';
 $string['host'] = 'Host';
 $string['hostintro'] = '<a target="_blank" href="https://support.zoom.us/hc/en-us/articles/208220166">Alternative Hosts</a> can start Zoom meetings and manage the Waiting Room.';
 $string['indicator:cognitivedepth'] = 'Zoom cognitive';
@@ -372,6 +388,8 @@ $string['unavailablefinished'] = 'The meeting has finished already.';
 $string['unavailablenotstartedyet'] = 'The meeting has not started yet.';
 $string['updatemeetings'] = 'Update meeting settings from Zoom';
 $string['updatetrackingfields'] = 'Update tracking field settings from Zoom';
+$string['unamedisplay'] = 'User display name';
+$string['unamedisplay_help'] = 'How the name of a user displayed in meetings (only for non-zoom clinets). You can enhance privacy or the performance of meeting reports';
 $string['usepersonalmeeting'] = 'Use personal meeting ID {$a}';
 $string['waitingroom'] = 'Waiting room';
 $string['waitingroomenable'] = 'Enable waiting room';
