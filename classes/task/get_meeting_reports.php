@@ -255,8 +255,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         if ($participant->user_email == '') {
             if (!empty($moodleuserid)) {
-                $participant->user_email = $DB->get_record('user',
-                                        ['id' => $moodleuserid], '*', IGNORE_MULTIPLE)->email;
+                $participant->user_email = $DB->get_record('user', ['id' => $moodleuserid])->email;
             } else {
                 $participant->user_email = null;
             }
