@@ -144,7 +144,7 @@ $string['getmeetingrecordings'] = 'Get meeting recordings from Zoom';
 $string['globalsettings'] = 'Global settings';
 $string['globalsettings_desc'] = 'These settings apply to the Zoom plugin as a whole.';
 $string['gradingmethod_heading'] = 'Options for grading method';
-$string['gradingmethod_heading_help'] = 'Decide the way for how students get graded in zoom course module.';
+$string['gradingmethod_heading_help'] = 'Decide which method to use when grading Zoom participation.';
 $string['gradingmethod'] = 'Grading method';
 $string['gradingmethod_help'] = 'Choose the way of how student get graded. <br>
 Upon entry: the student get the full mark (max grade) when he click join meeting. <br>
