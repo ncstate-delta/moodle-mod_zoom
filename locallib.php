@@ -1110,7 +1110,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
         // Because this is the default grading method.
     }
 
-    if ($gradingmethod == 'entry') {
+    if ($gradingmethod === 'entry') {
         // Check whether user has a grade. If not, then assign full credit to them.
         $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
 
