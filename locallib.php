@@ -1100,7 +1100,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
 
     // Check the grading method settings.
     $gradingmethod = get_config('zoom', 'gradingmethod');
-    if (!isset($gradingmethod) || empty($gradingmethod)) {
+    if (empty($gradingmethod)) {
         $gradingmethod = 'entry';
         // Because this is the default grading method.
     }
