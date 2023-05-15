@@ -1065,21 +1065,26 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
         }
 
         $unamesetting = get_config('zoom', 'unamedisplay');
-        if (isset($unamesetting)) {
-            if ($unamesetting == 'fullname') {
+        switch ($unamesetting) {
+            case 'fullname':
+            default:
                 $unamedisplay = fullname($USER);
-            } else if ($unamesetting == 'firstname') {
+                break;
+
+            case 'firstname':
                 $unamedisplay = $USER->firstname;
-            } else if ($unamesetting == 'idfullname') {
-                $unamedisplay = '('.$USER->id.')'.fullname($USER);
-            } else if ($unamesetting == 'id') {
-                $unamedisplay = '('.$USER->id.')';
-            }
-        } else {
-            // The default setting.
-            $unamedisplay = fullname($USER);
+                break;
+
+            case 'idfullname':
+                $unamedisplay = '(' . $USER->id . ') ' . fullname($USER);
+                break;
+
+            case 'id':
+                $unamedisplay = '(' . $USER->id . ')';
+                break;
         }
-        // Try to send the user email (not grantee) but also set the user id with the uname.
+
+        // Try to send the user email (not guaranteed).
         $returns['nexturl'] = new moodle_url($url, ['uname' => $unamedisplay, 'uemail' => $USER->email]);
     }
 
