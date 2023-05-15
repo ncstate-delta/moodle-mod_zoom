@@ -175,10 +175,12 @@ if ($ADMIN->fulltree) {
     $settings->add($viewrecordings);
 
     // Adding options for the display name using uname parameter in zoom join_url.
-    $options = ['fullname' => get_string('displayfullname', 'mod_zoom'),
+    $options = [
+        'fullname' => get_string('displayfullname', 'mod_zoom'),
         'firstname' => get_string('displayfirstname', 'mod_zoom'),
         'idfullname' => get_string('displayidfullname', 'mod_zoom'),
-        'id' => get_string('displayid', 'mod_zoom')];
+        'id' => get_string('displayid', 'mod_zoom'),
+    ];
     $settings->add(new admin_setting_configselect('zoom/unamedisplay', get_string('unamedisplay', 'mod_zoom'),
                                         get_string('unamedisplay_help', 'mod_zoom'), 'fullname', $options));
 
