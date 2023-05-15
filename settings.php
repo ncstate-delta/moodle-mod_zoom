@@ -448,8 +448,10 @@ if ($ADMIN->fulltree) {
 
     // Grading method upon entry: the user gets the fullmark when enter the session.
     // Grading method upon period: the user graded for how long of the total actual session duration attended.
-    $options = ['entry' => get_string('gradingentry', 'mod_zoom'),
-                'period' => get_string('gradingperiod', 'mod_zoom')];
+    $options = [
+        'entry' => get_string('gradingentry', 'mod_zoom'),
+        'period' => get_string('gradingperiod', 'mod_zoom'),
+    ];
     $settings->add(new admin_setting_configselect('zoom/gradingmethod', get_string('gradingmethod', 'mod_zoom'),
                                         get_string('gradingmethod_help', 'mod_zoom'), 'entry', $options));
 }
