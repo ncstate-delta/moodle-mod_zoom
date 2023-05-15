@@ -146,13 +146,13 @@ $string['globalsettings_desc'] = 'These settings apply to the Zoom plugin as a w
 $string['gradingmethod_heading'] = 'Options for grading method';
 $string['gradingmethod_heading_help'] = 'Decide which method to use when grading Zoom participation.';
 $string['gradingmethod'] = 'Grading method';
-$string['gradingmethod_help'] = 'Choose the way of how student get graded. <br>
-Upon entry: the student get the full mark (max grade) when he click join meeting. <br>
-Attendance duration: the student get marked for percentage of his attendance duration in the meeting with respect to the meeting duration. <br>
+$string['gradingmethod_help'] = 'Choose the method used to grade student participant.<br>
+Upon entry: the student receives full marks (max grade) when they click to join the meeting in Moodle.<br>
+Attendance duration: the student receives a score based on the percentage of their meeting attendance compared to the total meeting duration.<br>
 Notes regarding Attendance duration method:<br>
-- This method required the display name to contain id or fullname. <br>
-- It is prefered to set the setting \'zoom | defaultjoinbeforehost\' to (No) to get the accurate meeting duration.
-- Some students which are already signed in as zoom client with details not matching those in moodle must be graded manually after review the meeting report.';
+- This method requires the display name to contain id or fullname.<br>
+- It is preferred to set the setting \'zoom | defaultjoinbeforehost\' to (No) so the meeting duration is accurate.<br>
+- Some students who are already signed in to the Zoom client with details not matching those in Moodle must be graded manually after reviewing the meeting report.';
 $string['gradingentry'] = 'Upon entry';
 $string['gradingperiod'] = 'Attendance Duration';
 $string['host'] = 'Host';
