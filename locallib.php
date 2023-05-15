@@ -1128,7 +1128,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
 
             zoom_grade_item_update($zoom, $grades);
         }
-    } // Else the grading code goes to get_meetings_report to calculate the grade according duration.
+    } // Otherwise, the get_meetings_report task calculates the grades according to duration.
 
     // Upgrade host upon joining meeting, if host is not Licensed.
     if ($userishost) {
