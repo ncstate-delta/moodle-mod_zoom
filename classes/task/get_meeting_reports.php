@@ -537,7 +537,8 @@ class get_meeting_reports extends \core\task\scheduled_task {
                     $overlap = $this->get_participant_overlap_time($record, $participant);
 
                     $dataobject = new \stdClass;
-                    $dataobject->leavetime = $participant['leave_time'];
+                    $dataobject->leavetime = max($participant['leave_time'], $record->leave_time);
+                    $dataobject->join_time = min($participant['join_time'], $record->join_time);
                     $dataobject->duration = $participant['duration'] + $record->duration - $overlap;
                     $userduration = $dataobject->duration;
                     $dataobject->id = $record->id;
