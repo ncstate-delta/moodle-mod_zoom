@@ -534,11 +534,8 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 // If the record is already exist as the user left the meeting and returned back.
                 if ($record = $DB->get_record('zoom_meeting_participants', $upart, 'id, duration, leave_time')) {
                     // Check for overlaping time.
-                    if ($participant['join_time'] < $record->leave_time) {
-                        $overlap = $record->leave_time - $participant['join_time'];
-                    } else {
-                        $overlap = 0;
-                    }
+                    $overlap = $this->get_participant_overlap_time($record, $participant);
+
                     $dataobject = new \stdClass;
                     $dataobject->leavetime = $participant['leave_time'];
                     $dataobject->duration = $participant['duration'] + $record->duration - $overlap;
@@ -593,6 +590,60 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         $this->debugmsg('Finished updating meeting report');
         return true;
+    }
+
+    /**
+     * Calculate the ovelap time for a participant.
+     * @param object $old existance record data.
+     * @param array $new new participant data from zoom.
+     * @return int the overlap time
+     */
+    public function get_participant_overlap_time($old, $new) {
+        $oldjoin = $old->join_time;
+        $oldleave = $old->leave_time;
+        $newjoin = $new['join_time'];
+        $newleave = $new['leave_time'];
+        // TODO create a phpunit test for this function.
+        // There is mainly two possibilities each with three included cases.
+        if ($newjoin > $oldjoin) {
+
+            if ($newjoin < $oldleave && $newleave > $oldleave) {
+                // Case 1: normal overlapping.
+                // Example: old(join: 15:00 leave: 15:30), new(join: 15:15 leave: 15:45).
+                // 15 min overlap.
+                $overlap = $newjoin - $oldleave;
+            } else if ($newjoin <= $oldleave && $newleave <= $oldjoin) {
+                // Case 2: second peroid is completely included within the first.
+                // Example: old(join: 15:00 leave: 15:30), new(join: 15:15 leave: 15:29).
+                // 14 min overlap (new duration).
+                $overlap = $new['duration'];
+            } else {
+                // Case 3: the two periods are apart from each other.
+                // Example: old(join: 15:00 leave: 15:30), new(join: 15:35 leave: 15:50).
+                // No overlap.
+                $overlap = 0;
+            }
+        } else {
+            // This means the data from zoom not in order of joining time.
+            // Also there is three cases.
+            if ($newleave > $oldjoin && $oldleave > $newleave) {
+                // Case 1: normal overlap.
+                // Example: old(join: 15:30 leave: 16:30), new(join: 15:15 leave: 15:35).
+                // 5 min overlap.
+                $overlap = $newleave - $oldjoin;
+            } else if ($newleave >= $oldjoin && $newleave >= $oldleave) {
+                // Case 2: first period completely within the second.
+                // Example: old(join: 15:15 leave: 15:30), new(join: 15:00 leave: 16:00).
+                // 15 min overlap (old duration).
+                $overlap = $old->duration;
+            } else {
+                // Case 3: they are apart from each other.
+                // Example: old(join: 15:00 leave: 15:30), new(join: 14:15 leave: 14:45).
+                // No overlap.
+                $overlap = 0;
+            }
+        }
+        return $overlap;
     }
 
     /**
