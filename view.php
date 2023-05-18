@@ -72,7 +72,7 @@ if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
 } else {
     try {
         zoom_webservice()->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
-    } catch (moodle_exception $error) {
+    } catch (\mod_zoom\webservice_exception $error) {
         $showrecreate = zoom_is_meeting_gone_error($error);
 
         if ($showrecreate) {
@@ -84,6 +84,9 @@ if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
 
             $zoom->exists_on_zoom = ZOOM_MEETING_EXPIRED;
         }
+    } catch (moodle_exception $error) {
+        // Ignore other exceptions.
+        debugging($error->getMessage());
     }
 }
 

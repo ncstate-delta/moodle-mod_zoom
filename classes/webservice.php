@@ -297,8 +297,10 @@ class mod_zoom_webservice {
                         }
                     }
                     throw new zoom_bad_request_exception($response->message . $errorstring, $response->code);
+
                 case 404:
                     throw new zoom_not_found_exception($response->message, $response->code);
+
                 case 429:
                     $this->makecallretries += 1;
                     if ($this->makecallretries > self::MAX_RETRIES) {
@@ -337,12 +339,17 @@ class mod_zoom_webservice {
                         sleep($timediff);
                     }
                     return $this->make_call($path, $data, $method);
+
                 default:
                     if ($response) {
-                        $exception = new moodle_exception('errorwebservice', 'mod_zoom', '', $response->message);
-                        $exception->response = $response->message;
-                        $exception->zoomerrorcode = $response->code;
-                        throw $exception;
+                        throw new \mod_zoom\webservice_exception(
+                            $response->message,
+                            $response->code,
+                            'errorwebservice',
+                            'mod_zoom',
+                            '',
+                            $response->message
+                        );
                     } else {
                         throw new moodle_exception('errorwebservice', 'mod_zoom', '', "HTTP Status $httpstatus");
                     }
@@ -510,7 +517,7 @@ class mod_zoom_webservice {
             // Only available for Paid account, return default settings.
             $meetingsecurity = new stdClass();
             // If some other error, show debug message.
-            if ($error->zoomerrorcode != 200) {
+            if (isset($error->zoomerrorcode) && $error->zoomerrorcode != 200) {
                 debugging($error->getMessage());
             }
         }
@@ -542,7 +549,7 @@ class mod_zoom_webservice {
 
         try {
             $founduser = $this->make_call($url);
-        } catch (moodle_exception $error) {
+        } catch (\mod_zoom\webservice_exception $error) {
             if (zoom_is_user_not_found_error($error)) {
                 return false;
             } else {

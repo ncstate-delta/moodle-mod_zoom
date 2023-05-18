@@ -378,9 +378,6 @@ function zoom_delete_instance($id) {
         } catch (zoom_not_found_exception $error) {
             // Meeting not on Zoom, so continue.
             mtrace('Meeting not on Zoom; continuing');
-        } catch (moodle_exception $error) {
-            // Some other error, so throw error.
-            throw $error;
         }
     }
 
