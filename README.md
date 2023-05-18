@@ -39,12 +39,6 @@ Optional functionality can be enabled by granting additional scopes:
     - webinar:read:admin
     - webinar:write:admin
 
-### JWT
-JWT will be deprecated in June 2023. To create an account-level JWT app the 'JWT' permission is
-required.
-
-You will need to [create a JWT app](https://developers.zoom.us/docs/platform/build/jwt-app/) and that will generate the API key and secret.
-
 ## Installation
 
 1. [Install plugin](https://docs.moodle.org/en/Installing_plugins#Installing_a_plugin) to the /mod/zoom folder in Moodle.
@@ -53,13 +47,6 @@ You will need to [create a JWT app](https://developers.zoom.us/docs/platform/bui
 - Zoom account ID (mod_zoom | accountid)
 - Zoom client ID (mod_zoom | clientid)
 - Zoom client secret (mod_zoom | clientsecret)
-
-JWT will be deprecated in June 2023. For a JWT app, you need to set the following settings to enable the plugin:
-
-- Zoom API key (mod_zoom | apikey)
-- Zoom API secret (mod_zoom | apisecret)
-
-Please note that the API key and secret are not the same as the LTI key/secret.
 
 If you get "Access token is expired" errors, make sure the date/time on your
 server is properly synchronized with the time servers.

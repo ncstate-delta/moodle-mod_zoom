@@ -51,9 +51,6 @@ class mod_zoom_webservice_test extends advanced_testcase {
         set_config('clientid', 'test', 'zoom');
         set_config('clientsecret', 'test', 'zoom');
         set_config('accountid', 'test', 'zoom');
-        // TODO: Remove with JWT deprecation June 2023.
-        set_config('apikey', 'test', 'zoom');
-        set_config('apisecret', 'test', 'zoom');
 
         $this->notfoundmockcurl = new class {
             // @codingStandardsIgnoreStart
