@@ -47,6 +47,12 @@ class mod_zoom_mod_form extends moodleform_mod {
      */
     public function definition() {
         global $PAGE, $USER, $OUTPUT;
+
+        // We don't do anything custom with completion data, so avoid doing any unnecessary work.
+        if ($PAGE->pagetype === 'course-editbulkcompletion' || $PAGE->pagetype === 'course-editdefaultcompletion') {
+            return;
+        }
+
         $config = get_config('zoom');
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
 
