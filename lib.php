@@ -843,28 +843,30 @@ function zoom_reset_userdata($data) {
     $componentstr = get_string('modulenameplural', 'zoom');
     $status = [];
 
-    // Reset tables that record user data.
-    $DB->delete_records_select('zoom_meeting_participants',
-        'detailsid IN (SELECT zmd.id
-                         FROM {zoom_meeting_details} zmd
-                         JOIN {zoom} z ON z.id = zmd.zoomid
-                        WHERE z.course = ?)', [$data->courseid]);
-    $status[] = [
-        'component' => $componentstr,
-        'item' => get_string('meetingparticipantsdeleted', 'zoom'),
-        'error' => false,
-    ];
+    if (!empty($data->reset_zoom_all)) {
+        // Reset tables that record user data.
+        $DB->delete_records_select('zoom_meeting_participants',
+            'detailsid IN (SELECT zmd.id
+                             FROM {zoom_meeting_details} zmd
+                             JOIN {zoom} z ON z.id = zmd.zoomid
+                            WHERE z.course = ?)', [$data->courseid]);
+        $status[] = [
+            'component' => $componentstr,
+            'item' => get_string('meetingparticipantsdeleted', 'zoom'),
+            'error' => false,
+        ];
 
-    $DB->delete_records_select('zoom_meeting_recordings_view',
-        'recordingsid IN (SELECT zmr.id
-                         FROM {zoom_meeting_recordings} zmr
-                         JOIN {zoom} z ON z.id = zmr.zoomid
-                        WHERE z.course = ?)', [$data->courseid]);
-    $status[] = [
-        'component' => $componentstr,
-        'item' => get_string('meetingrecordingviewsdeleted', 'zoom'),
-        'error' => false,
-    ];
+        $DB->delete_records_select('zoom_meeting_recordings_view',
+            'recordingsid IN (SELECT zmr.id
+                             FROM {zoom_meeting_recordings} zmr
+                             JOIN {zoom} z ON z.id = zmr.zoomid
+                            WHERE z.course = ?)', [$data->courseid]);
+        $status[] = [
+            'component' => $componentstr,
+            'item' => get_string('meetingrecordingviewsdeleted', 'zoom'),
+            'error' => false,
+        ];
+    }
 
     return $status;
 }
