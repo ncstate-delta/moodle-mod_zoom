@@ -66,6 +66,12 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.10.2
+
+- Regression: Instructors were unable to edit Zoom activity completion defaults #479 (thanks @phette23)
+  - Introduced in v4.6.0 when adding breakout room support.
+- Bugfix: Course reset now verifies that the Zoom checkbox is checked #483 (thanks @carlosalal)
+
 v4.10.1
 
 - Bugfix: Stop showing finished events in My Overview block #451 (thanks @nstefanski)
