@@ -65,8 +65,17 @@ jobs:
           coverage: none
 
       - name: Initialise moodle-plugin-ci
+        if: ${{ matrix.php >= '7.4' }}
+        run: |
+          composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^4
+
+      - name: Initialise moodle-plugin-ci v3
+        if: ${{ matrix.php < '7.4' }}
         run: |
           composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^3
+
+      - name: Set up environment
+        run: |
           echo $(cd ci/bin; pwd) >> $GITHUB_PATH
           echo $(cd ci/vendor/bin; pwd) >> $GITHUB_PATH
           sudo locale-gen en_AU.UTF-8
