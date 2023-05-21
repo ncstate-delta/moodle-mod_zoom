@@ -48,7 +48,6 @@ class mod_zoom_mod_form extends moodleform_mod {
     public function definition() {
         global $PAGE, $USER, $OUTPUT;
         $config = get_config('zoom');
-        $PAGE->requires->css(new moodle_url('/mod/zoom/styles.css'));
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
 
         $isnew = empty($this->_cm);
