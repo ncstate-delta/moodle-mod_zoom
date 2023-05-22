@@ -532,7 +532,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                                 'name' => $participant['name'],
                                 'detailsid' => $participant['detailsid']);
                 // If the record is already exist as the user left the meeting and returned back.
-                if ($record = $DB->get_record('zoom_meeting_participants', $upart, 'id, duration, leave_time')) {
+                if ($record = $DB->get_record('zoom_meeting_participants', $upart)) {
                     // Check for overlaping time.
                     $overlap = $this->get_participant_overlap_time($record, $participant);
 
