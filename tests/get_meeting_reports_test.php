@@ -603,6 +603,8 @@ class get_meeting_reports_test extends advanced_testcase {
 
         // Now let's test the grads.
         set_config('gradingmethod', 'period', 'zoom');
+        // Process meeting reports should call the function grading_participant_upon_duration
+        // and insert grades.
         $this->assertTrue($this->meetingtask->process_meeting_reports($meeting));
         $this->assertEquals(1, $DB->count_records('zoom_meeting_details'));
         $this->assertEquals(7, $DB->count_records('zoom_meeting_participants'));
@@ -611,19 +613,21 @@ class get_meeting_reports_test extends advanced_testcase {
         foreach ($users as $user) {
             $usersids[] = $user->id;
         }
+        // Get the gradelist for all users created.
         $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $zoomrecord->id, $usersids);
 
         $gradelistitems = $gradelist->items;
         $grades = $gradelistitems[0]->grades;
+        // Check grades of first user.
         $grade = $grades[$users[0]->id]->grade;
         $this->assertEquals(17.5, $grade);
-
+        // Check grades of second user.
         $grade = $grades[$users[1]->id]->grade;
         $this->assertEquals(30, $grade);
-
+        // Check grades of third user.
         $grade = $grades[$users[2]->id]->grade;
         $this->assertEquals(30, $grade);
-
+        // Check grades for fourth user.
         $grade = $grades[$users[3]->id]->grade;
         $this->assertEquals(45, $grade);
         // This user didn't enter the meeting.
