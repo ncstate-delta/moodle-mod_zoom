@@ -604,6 +604,11 @@ class get_meeting_reports_test extends advanced_testcase {
         $this->assertTrue($this->meetingtask->process_meeting_reports($meeting));
         $this->assertEquals(1, $DB->count_records('zoom_meeting_details'));
         $this->assertEquals(7, $DB->count_records('zoom_meeting_participants'));
+        echo '<pre>';
+        var_dump($DB->get_records('zoom_meeting_participants'));
+        echo '</pre>';
+        $participant1id = $DB->get_field('zoom_meeting_participants', 'userid', ['name' => 'Oitaa Arytis'], IGNORE_MULTIPLE);
+        $this->assertEqual($users[0]->id, $participant1id);
 
         $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $zoomrecord->id, $users[0]->id);
         echo '<pre>';
