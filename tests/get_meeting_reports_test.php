@@ -413,7 +413,7 @@ class get_meeting_reports_test extends advanced_testcase {
         $this->assertEquals($reportmeeting['total_minutes'], $meeting->total_minutes);
     }
 
-        /**
+    /**
      * Testing the grading method according to users duration in a meeting.
      * @return void
      */
@@ -437,7 +437,7 @@ class get_meeting_reports_test extends advanced_testcase {
 
         // Make get_meeting_participants() return our results array.
         $mockwwebservice->method('get_meeting_participants')
-                ->will($this->returnCallback([$this, 'mock_get_meeting_participants']));
+            ->will($this->returnCallback([$this, 'mock_get_meeting_participants']));
 
         // Generate fake course.
         $course = $this->getDataGenerator()->create_course();
@@ -451,16 +451,19 @@ class get_meeting_reports_test extends advanced_testcase {
         $meeting->uuid = 'someuuid123';
         $meeting->duration = 120;
         $meeting->participants = 4;
+
+        // Insert stub data for zoom table.
+        $id = $DB->insert_record('zoom', ['course' => $course->id,
+                'meeting_id' => $meeting->id,
+                'grade' => 60,
+                'name' => 'Zoom',
+                'exists_on_zoom' => ZOOM_MEETING_EXISTS]);
+        $meeting->zoomid = $id;
         // Normalize the meeting.
         $meeting = $this->meetingtask->normalize_meeting($meeting);
 
         $detailsid = $DB->insert_record('zoom_meeting_details', $meeting);
-        // Insert stub data for zoom table.
-        $id = $DB->insert_record('zoom', ['course' => $course->id,
-                                        'meeting_id' => $meeting->id,
-                                        'grade' => 60,
-                                        'name' => 'Zoom',
-                                        'exists_on_zoom' => ZOOM_MEETING_EXISTS]);
+
         $zoomrecord = $DB->get_record('zoom', ['id' => $id]);
         // Create users and corresponding meeting participants.
         $rawparticipants = [];
