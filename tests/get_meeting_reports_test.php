@@ -469,28 +469,23 @@ class get_meeting_reports_test extends advanced_testcase {
         $users[0] = $this->getDataGenerator()->create_user([
             'lastname' => 'Oitaa',
             'firstname' => 'Arytis',
-            'id' => 531
         ]);
 
         $users[1] = $this->getDataGenerator()->create_user([
             'lastname' => 'Chouxuong',
             'firstname' => 'Khah',
-            'id' => 532,
         ]);
         $users[2] = $this->getDataGenerator()->create_user([
             'lastname' => 'Spialdiouniem',
             'firstname' => 'Basem',
-            'id' => 533,
         ]);
         $users[3] = $this->getDataGenerator()->create_user([
             'lastname' => 'Padhzinnuj',
             'firstname' => 'Nibba',
-            'id' => 534,
         ]);
         $users[4] = $this->getDataGenerator()->create_user([
             'lastname' => 'Apea',
             'firstname' => 'Ziqit',
-            'id' => 535,
         ]);
 
         foreach ($users as $user) {
@@ -611,6 +606,9 @@ class get_meeting_reports_test extends advanced_testcase {
         $this->assertEquals(7, $DB->count_records('zoom_meeting_participants'));
 
         $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $zoomrecord->id, $users[0]->id);
+        echo '<pre>';
+        var_dump($gradelist);
+        echo '</pre>';
         $gradelistitems = $gradelist->items;
         $grades = $gradelistitems[0]->grades;
         $grade = $grades[$users[0]->id]->grade;
