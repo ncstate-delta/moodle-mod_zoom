@@ -604,7 +604,7 @@ class get_meeting_reports_test extends advanced_testcase {
         set_config('gradingmethod', 'period', 'zoom');
         $this->assertTrue($this->meetingtask->process_meeting_reports($meeting));
         $this->assertEquals(1, $DB->count_records('zoom_meeting_details'));
-        $this->assertEquals(4, $DB->count_records('zoom_meeting_participants'));
+        $this->assertEquals(7, $DB->count_records('zoom_meeting_participants'));
 
         $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $zoomrecord->id, $users[0]->id);
         $gradelistitems = $gradelist->items;
