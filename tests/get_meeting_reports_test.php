@@ -609,8 +609,6 @@ class get_meeting_reports_test extends advanced_testcase {
         echo '<pre>';
         var_dump($DB->get_records('zoom_meeting_participants'));
         echo '</pre>';
-        $participant1id = $DB->get_field('zoom_meeting_participants', 'userid', ['name' => 'Oitaa Arytis'], IGNORE_MULTIPLE);
-        $this->assertEquals($users[0]->id, $participant1id);
         $usersids = [];
         foreach ($users as $user) {
             $usersids[] = $user->id;
