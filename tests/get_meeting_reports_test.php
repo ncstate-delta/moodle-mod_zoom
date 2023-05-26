@@ -442,13 +442,14 @@ class get_meeting_reports_test extends advanced_testcase {
         $meeting->duration = 120;
         $meeting->participants = 4;
 
-        // Insert stub data for zoom table.
-        $id = $DB->insert_record('zoom', ['course' => $course->id,
+        // Create a new zoom instance.
+        $params = ['course' => $course->id,
                 'meeting_id' => $meeting->id,
                 'grade' => 60,
                 'name' => 'Zoom',
-                'exists_on_zoom' => ZOOM_MEETING_EXISTS]);
-
+                'exists_on_zoom' => ZOOM_MEETING_EXISTS];
+        $instance = $this->generator->create_instance($params);
+        $id = $instance->id;
         // Normalize the meeting.
         $meeting = $this->meetingtask->normalize_meeting($meeting);
         $meeting->zoomid = $id;
