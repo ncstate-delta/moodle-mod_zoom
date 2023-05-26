@@ -458,9 +458,10 @@ class get_meeting_reports_test extends advanced_testcase {
                 'grade' => 60,
                 'name' => 'Zoom',
                 'exists_on_zoom' => ZOOM_MEETING_EXISTS]);
-        $meeting->zoomid = $id;
+
         // Normalize the meeting.
         $meeting = $this->meetingtask->normalize_meeting($meeting);
+        $meeting->zoomid = $id;
 
         $detailsid = $DB->insert_record('zoom_meeting_details', $meeting);
 
