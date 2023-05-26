@@ -512,7 +512,7 @@ class get_meeting_reports_test extends advanced_testcase {
             'user_email' => '',
             'join_time' => '2023-05-01T15:05:00Z',
             'leave_time' => '2023-05-01T15:35:00Z',
-            'duration' => 30
+            'duration' => 30 * 60
         ];
         $participants[1] = (object)$this->meetingtask->format_participant($rawparticipants[1], $detailsid, $names, $emails);
         $rawparticipants[2] = (object)[
@@ -522,14 +522,14 @@ class get_meeting_reports_test extends advanced_testcase {
             'user_email' => '',
             'join_time' => '2023-05-01T15:30:00Z',
             'leave_time' => '2023-05-01T15:40:00Z',
-            'duration' => 10
+            'duration' => 10 * 60
         ];
         $participants[2] = (object)$this->meetingtask->format_participant($rawparticipants[2], $detailsid, $names, $emails);
         $overlap = $this->meetingtask->get_participant_overlap_time($participants[1], $participants[2]);
-        $this->assertEquals(5, $overlap);
+        $this->assertEquals(5 * 60, $overlap);
         // Also check for the same result if the data inverted.
         $overlap = $this->meetingtask->get_participant_overlap_time($participants[2], $participants[1]);
-        $this->assertEquals(5, $overlap);
+        $this->assertEquals(5 * 60, $overlap);
 
         // Create a participant with 30 min overlap.
         $rawparticipants[3] = (object)[
@@ -539,7 +539,7 @@ class get_meeting_reports_test extends advanced_testcase {
             'user_email' => '',
             'join_time' => '2023-05-01T15:00:00Z',
             'leave_time' => '2023-05-01T16:00:00Z',
-            'duration' => 60
+            'duration' => 60 * 60
         ];
         $participants[3] = (object)$this->meetingtask->format_participant($rawparticipants[3], $detailsid, $names, $emails);
         $rawparticipants[4] = (object)[
@@ -549,14 +549,14 @@ class get_meeting_reports_test extends advanced_testcase {
             'user_email' => '',
             'join_time' => '2023-05-01T15:30:00Z',
             'leave_time' => '2023-05-01T16:00:00Z',
-            'duration' => 30
+            'duration' => 30 * 60
         ];
         $participants[4] = (object)$this->meetingtask->format_participant($rawparticipants[4], $detailsid, $names, $emails);
         $overlap = $this->meetingtask->get_participant_overlap_time($participants[3], $participants[4]);
-        $this->assertEquals(30, $overlap);
+        $this->assertEquals(30 * 60, $overlap);
         // Also check for the same result if the data inverted.
         $overlap = $this->meetingtask->get_participant_overlap_time($participants[4], $participants[3]);
-        $this->assertEquals(30, $overlap);
+        $this->assertEquals(30 * 60, $overlap);
 
         // Another user with no overlaping.
         // Create a participant with 30 min overlap.
@@ -567,7 +567,7 @@ class get_meeting_reports_test extends advanced_testcase {
             'user_email' => '',
             'join_time' => '2023-05-01T15:10:00Z',
             'leave_time' => '2023-05-01T16:00:00Z',
-            'duration' => 50
+            'duration' => 50 * 60
         ];
         $participants[5] = (object)$this->meetingtask->format_participant($rawparticipants[5], $detailsid, $names, $emails);
         $rawparticipants[6] = (object)[
@@ -577,7 +577,7 @@ class get_meeting_reports_test extends advanced_testcase {
             'user_email' => '',
             'join_time' => '2023-05-01T16:30:00Z',
             'leave_time' => '2023-05-01T16:40:00Z',
-            'duration' => 10
+            'duration' => 10 * 60
         ];
         $participants[6] = (object)$this->meetingtask->format_participant($rawparticipants[6], $detailsid, $names, $emails);
 
