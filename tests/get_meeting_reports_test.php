@@ -505,6 +505,7 @@ class get_meeting_reports_test extends advanced_testcase {
         list($names, $emails) = $this->meetingtask->get_enrollments($course->id);
 
         // Create a participant with 5 min overlap.
+        // Total time 35 min, total grade 17.5.
         $rawparticipants[1] = (object)[
             'id' => 32132165,
             'user_id' => 4456,
@@ -586,5 +587,28 @@ class get_meeting_reports_test extends advanced_testcase {
         // Also check for the same result if the data inverted.
         $overlap = $this->meetingtask->get_participant_overlap_time($participants[6], $participants[5]);
         $this->assertEquals(0, $overlap);
+
+        // Adding another participant.
+        $rawparticipants[7] = (object)[
+            'id' => '',
+            'user_id' => 789453,
+            'name' => 'Padhzinnuj Nibba',
+            'user_email' => '',
+            'join_time' => '2023-05-01T15:30:00Z',
+            'leave_time' => '2023-05-01T17:00:00Z',
+            'duration' => 90 * 60
+        ];
+        $this->mockparticipantsdata['someuuid123'] = $rawparticipants;
+        // Now let's test the grads.
+        set_config('gradingmethod', 'period', 'zoom');
+        $this->assertTrue($this->meetingtask->process_meeting_reports($meeting));
+        $this->assertEquals(1, $DB->count_records('zoom_meeting_details'));
+        $this->assertEquals(4, $DB->count_records('zoom_meeting_participants'));
+
+        $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $zoomrecord->id, $users[0]->id);
+        $gradelistitems = $gradelist->items;
+        $grades = $gradelistitems[0]->grades;
+        $grade = $grades[$users[0]->id]->grade;
+        $this->assertEquals(17.5, $grade);
     }
 }
