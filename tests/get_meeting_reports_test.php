@@ -429,16 +429,6 @@ class get_meeting_reports_test extends advanced_testcase {
             $DB->delete_records('zoom_meeting_participants');
         }
 
-        $this->mockparticipantsdata = [];
-
-        // First mock the webservice object, so we can inject the return values
-        // for get_meeting_participants.
-        $mockwwebservice = $this->createMock('\mod_zoom_webservice');
-
-        // Make get_meeting_participants() return our results array.
-        $mockwwebservice->method('get_meeting_participants')
-            ->will($this->returnCallback([$this, 'mock_get_meeting_participants']));
-
         // Generate fake course.
         $course = $this->getDataGenerator()->create_course();
 
@@ -599,6 +589,17 @@ class get_meeting_reports_test extends advanced_testcase {
             'duration' => 90 * 60
         ];
         $this->mockparticipantsdata['someuuid123'] = $rawparticipants;
+        // First mock the webservice object, so we can inject the return values
+        // for get_meeting_participants.
+        $mockwwebservice = $this->createMock('\mod_zoom_webservice');
+        $this->meetingtask->service = $mockwwebservice;
+        // Make get_meeting_participants() return our results array.
+        $mockwwebservice->method('get_meeting_participants')
+            ->will($this->returnCallback([$this, 'mock_get_meeting_participants']));
+
+        $this->assertEquals($this->mockparticipantsdata['someuuid123'],
+            $mockwwebservice->get_meeting_participants('someuuid123', false));
+
         // Now let's test the grads.
         set_config('gradingmethod', 'period', 'zoom');
         $this->assertTrue($this->meetingtask->process_meeting_reports($meeting));
