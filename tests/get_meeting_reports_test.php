@@ -419,6 +419,7 @@ class get_meeting_reports_test extends advanced_testcase {
      */
     public function test_grading_method() {
         global $DB;
+        $this->setAdminUser();
         // Make sure we start with nothing.
         // Deleting all records from previous tests.
         if ($DB->count_records('zoom_meeting_details') > 0) {
@@ -431,7 +432,7 @@ class get_meeting_reports_test extends advanced_testcase {
 
         // Generate fake course.
         $course = $this->getDataGenerator()->create_course();
-
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'teacher');
         // Now fake the meeting details.
         $meeting = new stdClass();
         $meeting->id = 456123;
