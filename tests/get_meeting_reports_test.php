@@ -467,8 +467,8 @@ class get_meeting_reports_test extends advanced_testcase {
         // https://www.behindthename.com/random/ and any similarity to anyone
         // real or fictional is coincidence and not intentional.
         $users[0] = $this->getDataGenerator()->create_user([
-            'lastname' => 'Oitaa',
-            'firstname' => 'Arytis',
+            'lastname' => 'Arytis',
+            'firstname' => 'Oitaa',
         ]);
 
         $users[1] = $this->getDataGenerator()->create_user([
@@ -494,7 +494,7 @@ class get_meeting_reports_test extends advanced_testcase {
         list($names, $emails) = $this->meetingtask->get_enrollments($course->id);
 
         // Create a participant with 5 min overlap.
-        // Total time 35 min, total grade 17.5.
+        // Total time 35 min, total grade 17.5
         $rawparticipants[1] = (object)[
             'id' => 32132165,
             'user_id' => 4456,
@@ -522,6 +522,7 @@ class get_meeting_reports_test extends advanced_testcase {
         $this->assertEquals(5 * 60, $overlap);
 
         // Create a participant with 30 min overlap.
+        // Total duration 60 min. expect a mark of 30
         $rawparticipants[3] = (object)[
             'id' => '',
             'user_id' => 1234,
@@ -549,7 +550,7 @@ class get_meeting_reports_test extends advanced_testcase {
         $this->assertEquals(30 * 60, $overlap);
 
         // Another user with no overlaping.
-        // Create a participant with 30 min overlap.
+        // Total duration 60 min. Expect mark 30
         $rawparticipants[5] = (object)[
             'id' => '',
             'user_id' => 564312,
@@ -578,6 +579,7 @@ class get_meeting_reports_test extends advanced_testcase {
         $this->assertEquals(0, $overlap);
 
         // Adding another participant.
+        // Total duration 90 min, expect mark 45
         $rawparticipants[7] = (object)[
             'id' => '',
             'user_id' => 789453,
@@ -608,9 +610,12 @@ class get_meeting_reports_test extends advanced_testcase {
         var_dump($DB->get_records('zoom_meeting_participants'));
         echo '</pre>';
         $participant1id = $DB->get_field('zoom_meeting_participants', 'userid', ['name' => 'Oitaa Arytis'], IGNORE_MULTIPLE);
-        $this->assertEqual($users[0]->id, $participant1id);
-
-        $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $zoomrecord->id, $users[0]->id);
+        $this->assertEquals($users[0]->id, $participant1id);
+        $usersids = [];
+        foreach ($users as $user) {
+            $usersids[] = $user->id;
+        }
+        $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $zoomrecord->id, $usersids);
         echo '<pre>';
         var_dump($gradelist);
         echo '</pre>';
@@ -618,5 +623,17 @@ class get_meeting_reports_test extends advanced_testcase {
         $grades = $gradelistitems[0]->grades;
         $grade = $grades[$users[0]->id]->grade;
         $this->assertEquals(17.5, $grade);
+
+        $grade = $grades[$users[1]->id]->grade;
+        $this->assertEquals(30, $grade);
+
+        $grade = $grades[$users[2]->id]->grade;
+        $this->assertEquals(30, $grade);
+
+        $grade = $grades[$users[3]->id]->grade;
+        $this->assertEquals(45, $grade);
+        // This user didn't enter the meeting.
+        $grade = $grades[$users[4]->id]->grade;
+        $this->assertEquals(null, $grade);
     }
 }
