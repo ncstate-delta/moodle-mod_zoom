@@ -576,7 +576,6 @@ class get_meeting_reports extends \core\task\scheduled_task {
      */
     public function grading_participant_upon_duration($zoomrecord, $detailsid, $meetingduration) {
         global $CFG, $DB;
-        // TODO create a phpunit test for this function.
         require_once($CFG->libdir.'/gradelib.php');
         // Check if grading method is according attendance duration.
         if (get_config('zoom', 'gradingmethod') !== 'period') {
@@ -665,7 +664,6 @@ class get_meeting_reports extends \core\task\scheduled_task {
         $oldleave = (int)$old->leave_time;
         $newjoin = (int)$new->join_time;
         $newleave = (int)$new->leave_time;
-        // TODO create a phpunit test for this function.
         // There is mainly two possibilities each with three included cases.
         if ($newjoin > $oldjoin) {
 
