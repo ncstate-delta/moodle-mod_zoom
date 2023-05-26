@@ -475,7 +475,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
         }
 
         $meeting->zoomid = $zoomrecord->id;
-        $courseid = $zoomrecord->course;
+
         // Insert or update meeting details.
         if (!($DB->record_exists('zoom_meeting_details', ['uuid' => $meeting->uuid]))) {
             $this->debugmsg('Inserting zoom_meeting_details');
@@ -507,79 +507,53 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         $this->debugmsg(sprintf('Processing %d participants', count($participants)));
 
-        // Now try to insert participants, first drop any records for given
-        // meeting and then add. There is no unique key that we can use for
-        // knowing what users existed before. (trying to fix this using userid).
+        // Now try to insert participants.
+        // There is no unique key that we can use for knowing what users existed before.
+        // (trying to fix this using userid but not gruntee).
         try {
             $transaction = $DB->start_delegated_transaction();
 
             $count = $DB->count_records('zoom_meeting_participants', ['detailsid' => $detailsid]);
             if (!empty($count)) {
                 $this->debugmsg(sprintf('There is exist previous records of %d participants', $count));
-                // No need to delete old records, because we update the old ones.
+                // No need to delete old records, we don't insert matching records.
             }
-            $meetingtime = $DB->get_record('zoom_meeting_details', ['id' => $detailsid], 'start_time, end_time');
-            $meetingduration = $meetingtime->end_time - $meetingtime->start_time;
-            // After check and testing, these timings are the actual meeting timings returned from zoom
-            // ... (i.e.when the host start and end the meeting).
-            // Not like those on 'zoom' table which represent the settings from zoom activity.
+
             foreach ($participants as $rawparticipant) {
                 $this->debugmsg(sprintf('Working on %s (user_id: %d, uuid: %s)',
                         $rawparticipant->name, $rawparticipant->user_id, $rawparticipant->id));
                 $participant = $this->format_participant($rawparticipant, $detailsid, $names, $emails);
-                $userid = $participant['userid'];
-                $upart = array( 'userid' => $userid,
-                                'name' => $participant['name'],
-                                'detailsid' => $participant['detailsid']);
-                // If the record is already exist as the user left the meeting and returned back.
-                if ($record = $DB->get_record('zoom_meeting_participants', $upart)) {
-                    // Check for overlaping time.
-                    $overlap = $this->get_participant_overlap_time($record, $participant);
 
-                    $dataobject = new \stdClass;
-                    $dataobject->leavetime = max($participant['leave_time'], $record->leave_time);
-                    $dataobject->join_time = min($participant['join_time'], $record->join_time);
-                    $dataobject->duration = $participant['duration'] + $record->duration - $overlap;
-                    $userduration = $dataobject->duration;
-                    $dataobject->id = $record->id;
-                    $recordid = $record->id;
-                    $DB->update_record('zoom_meeting_participants', $dataobject);
-                    $this->debugmsg('Updated record ' . $recordid);
+                // These conditions are enough.
+                $conditions = [
+                    'name' => $participant['name'],
+                    'userid' => $participant['userid'],
+                    'detailsid' => $participant['detailsid'],
+                    'zoomuserid' => $participant['zoomuserid'],
+                    'join_time' => $participant['join_time'],
+                    'leave_time' => $participant['leave_time']
+                ];
+
+                // If the record is already exist as the user left the meeting and returned back.
+                if ($record = $DB->get_record('zoom_meeting_participants', $conditions)) {
+                    // The exact record existed, so do nothing.
+                    $this->debugmsg('Record existed ' . $record->id);
                 } else {
-                    $userduration = $participant['duration'];
+                    // Insert all new records.
                     $recordid = $DB->insert_record('zoom_meeting_participants', $participant, true);
                     $this->debugmsg('Inserted record ' . $recordid);
                 }
 
-                // Check if grading method is according attendance duration.
-                if (get_config('zoom', 'gradingmethod') == 'period') {
-                    require_once($CFG->libdir.'/gradelib.php');
-                    // Check whether user has a grade. If not, then assign credit acording duration to them.
-                    $gradelist = grade_get_grades($courseid, 'mod', 'zoom', $zoomrecord->id, $userid);
-                    $gradelistitems = $gradelist->items;
-                    // Assign full credits for user who has no grade yet.
-                    // If this meeting is gradable (i.e. the grade type is not "None").
-                    if (!empty($gradelistitems)) {
-                        $grademax = $gradelistitems[0]->grademax;
-                        // Setup the grade according to the duration.
-                        $grades = [
-                            'rawgrade' => ($userduration * $grademax / $meetingduration),
-                            'userid' => $userid,
-                            'usermodified' => $userid,
-                            'dategraded' => '',
-                            'feedbackformat' => '',
-                            'feedback' => '',
-                        ];
-
-                        zoom_grade_item_update($zoomrecord, $grades);
-                        $this->debugmsg('grades updated , duration =' . $userduration
-                                                        .', maxgrade ='.$grademax
-                                                    .', meeting duration ='.$meetingduration
-                                                    .'User grade:'.$grades['rawgrade']);
-                    }
-                }
-
             }
+            // After check and testing, these timings are the actual meeting timings returned from zoom
+            // ... (i.e.when the host start and end the meeting).
+            // Not like those on 'zoom' table which represent the settings from zoom activity.
+            $meetingtime = $DB->get_record('zoom_meeting_details', ['id' => $detailsid], 'start_time, end_time');
+            $meetingduration = $meetingtime->end_time - $meetingtime->start_time;
+
+            // Grading users according to their duration in the meeting.
+            // This function return nothing if the settings for grading not set to duration.
+            $this->grading_participant_upon_duration($zoomrecord, $detailsid, $meetingduration);
 
             $transaction->allow_commit();
         } catch (\dml_exception $exception) {
@@ -594,30 +568,117 @@ class get_meeting_reports extends \core\task\scheduled_task {
     }
 
     /**
+     * Update the grades of users according to their duration in the meeting.
+     * @param object $zoomrecord
+     * @param int $detailsid
+     * @param int $meetingduration
+     * @return void
+     */
+    public function grading_participant_upon_duration($zoomrecord, $detailsid, $meetingduration) {
+        global $CFG, $DB;
+        // TODO create a phpunit test for this function.
+        require_once($CFG->libdir.'/gradelib.php');
+        // Check if grading method is according attendance duration.
+        if (get_config('zoom', 'gradingmethod') !== 'period') {
+            return;
+        }
+
+        $courseid = $zoomrecord->course;
+        // Get the required records again.
+        $records = $DB->get_records('zoom_meeting_participants', ['detailsid' => $detailsid], 'join_time ASC');
+        // Initialize the data arrays, indexing them later with userids.
+        $durations = [];
+        $join = [];
+        $leave = [];
+        // Looping the data to calculate the duration of each user.
+        foreach ($records as $record) {
+            $userid = $record->userid;
+            if ($userid == null) {
+                continue;
+            }
+            // Check if there is old duration stored for this user.
+            if (!empty($durations[$userid])) {
+                $old = new \stdClass;
+                $old->duration = $durations[$userid];
+                $old->join = $join[$userid];
+                $old->leave = $leave[$userid];
+                // Calculating the overlap time.
+                $overlap = $this->get_participant_overlap_time($old, $record);
+
+                // Set the new data for next use.
+                $leave[$userid] = max($old->leave, $record->leave_time);
+                $join[$userid] = min($old->join, $record->join_time);
+                $durations[$userid] = $old->duration + $record->duration - $overlap;
+            } else {
+                $leave[$userid] = $record->leave_time;
+                $join[$userid] = $record->join_time;
+                $durations[$userid] = $record->duration;
+            }
+        }
+        // Now check the duration for each user and grade them according to it.
+        foreach ($durations as $userid => $userduration) {
+            // Check whether user has a grade. If not, then assign credit acording duration to them.
+            $gradelist = grade_get_grades($courseid, 'mod', 'zoom', $zoomrecord->id, $userid);
+            $gradelistitems = $gradelist->items;
+
+            // Is this meeting is gradable (i.e. the grade type is not "None")?
+            if (!empty($gradelistitems)) {
+                $grademax = $gradelistitems[0]->grademax;
+                $oldgrades = $gradelistitems[0]->grades;
+                $oldgrade = $oldgrades[$userid]->grade;
+
+                // Setup the grade according to the duration.
+                $grades = [
+                    'rawgrade' => ($userduration * $grademax / $meetingduration),
+                    'userid' => $userid,
+                    'usermodified' => $userid,
+                    'dategraded' => '',
+                    'feedbackformat' => '',
+                    'feedback' => '',
+                ];
+                // Check for old grades, update it only in case the new one is higher.
+                // Using number_format because the old stored grade only contains 5 decimals.
+                if (empty($oldgrade) || $oldgrade < number_format($grades['rawgrade'], 5)) {
+                    zoom_grade_item_update($zoomrecord, $grades);
+                    $this->debugmsg('grades updated for user with id: '.$userid
+                                                .', duration =' . $userduration
+                                                .', maxgrade ='.$grademax
+                                                .', meeting duration ='.$meetingduration
+                                                .', User grade:'.$grades['rawgrade']);
+                } else {
+                    $this->debugmsg('User already has a higher grade existed, Users old grade: '. $oldgrade
+                                    .', User\'s new grade: '.$grades['rawgrade']);
+                }
+            }
+        }
+
+    }
+
+    /**
      * Calculate the ovelap time for a participant.
      * @param object $old existance record data.
-     * @param array $new new participant data from zoom.
+     * @param object $new new participant data from zoom.
      * @return int the overlap time
      */
     public function get_participant_overlap_time($old, $new) {
-        $oldjoin = $old->join_time;
-        $oldleave = $old->leave_time;
-        $newjoin = $new['join_time'];
-        $newleave = $new['leave_time'];
+        $oldjoin = (int)$old->join;
+        $oldleave = (int)$old->leave;
+        $newjoin = (int)$new->join_time;
+        $newleave = (int)$new->leave_time;
         // TODO create a phpunit test for this function.
         // There is mainly two possibilities each with three included cases.
         if ($newjoin > $oldjoin) {
 
             if ($newjoin < $oldleave && $newleave > $oldleave) {
                 // Case 1 - normal overlapping.
-                // Example: old(join: 15:00 leave: 15:30), new(join: 15:15 leave: 15:45).
+                // Example: new(join: 15:15 leave: 15:45), old(join: 15:00 leave: 15:30).
                 // 15 min overlap.
-                $overlap = $newjoin - $oldleave;
-            } else if ($newjoin <= $oldleave && $newleave <= $oldjoin) {
+                $overlap = $oldleave - $newjoin;
+            } else if ($newjoin <= $oldleave && $newleave <= $oldleave) {
                 // Case 2 - second peroid is completely included within the first.
-                // Example: old(join: 15:00 leave: 15:30), new(join: 15:15 leave: 15:29).
+                // Example:  new(join: 15:15 leave: 15:29), old(join: 15:00 leave: 15:30).
                 // 14 min overlap (new duration).
-                $overlap = $new['duration'];
+                $overlap = $new->duration;
             } else {
                 // Case 3 - the two periods are apart from each other.
                 // Example: old(join: 15:00 leave: 15:30), new(join: 15:35 leave: 15:50).
@@ -644,6 +705,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 $overlap = 0;
             }
         }
+
         return $overlap;
     }
 
