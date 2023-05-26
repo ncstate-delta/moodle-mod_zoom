@@ -448,7 +448,9 @@ class get_meeting_reports_test extends advanced_testcase {
                 'grade' => 60,
                 'name' => 'Zoom',
                 'exists_on_zoom' => ZOOM_MEETING_EXISTS];
-        $instance = $this->generator->create_instance($params);
+
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_zoom');
+        $instance = $generator->create_instance($params);
         $id = $instance->id;
         // Normalize the meeting.
         $meeting = $this->meetingtask->normalize_meeting($meeting);
