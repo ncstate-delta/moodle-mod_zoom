@@ -206,16 +206,20 @@ class mod_zoom_webservice {
      */
     protected function get_curl_object() {
         global $CFG;
+
         $proxyhost = get_config('zoom', 'proxyhost');
-        $cfg = new stdClass();
+
         if (!empty($proxyhost)) {
+            $cfg = new stdClass();
             $cfg->proxyhost = $CFG->proxyhost;
             $cfg->proxyport = $CFG->proxyport;
             $cfg->proxyuser = $CFG->proxyuser;
             $cfg->proxypassword = $CFG->proxypassword;
             $cfg->proxytype = $CFG->proxytype;
+
             // Parse string as host:port, delimited by a colon (:).
             list($host, $port) = explode(':', $proxyhost);
+
             // Temporarily set new values on the global $CFG.
             $CFG->proxyhost = $host;
             $CFG->proxyport = $port;
@@ -223,7 +227,10 @@ class mod_zoom_webservice {
             $CFG->proxyuser = '';
             $CFG->proxypassword = '';
         }
+
+        // Create $curl, which implicitly uses the proxy settings from $CFG.
         $curl = new curl();
+
         if (!empty($proxyhost)) {
             // Restore the stored global proxy settings from above.
             $CFG->proxyhost = $cfg->proxyhost;
@@ -246,10 +253,8 @@ class mod_zoom_webservice {
      * @throws moodle_exception Moodle exception is thrown for curl errors.
      */
     private function make_call($path, $data = [], $method = 'get') {
-        global $CFG;
         $url = $this->apiurl . $path;
         $method = strtolower($method);
-        $curl = $this->get_curl_object(); // Create $curl, which implicitly uses the proxy settings from $CFG.
 
         // TODO: Remove JWT auth when deprecated in June 2023.
         if (isset($this->clientid) && isset($this->clientsecret) && isset($this->accountid)) {
@@ -262,6 +267,7 @@ class mod_zoom_webservice {
             $token = \Firebase\JWT\JWT::encode($payload, $this->apisecret, 'HS256');
         }
 
+        $curl = $this->get_curl_object();
         $curl->setHeader('Authorization: Bearer ' . $token);
         $curl->setHeader('Accept: application/json');
 
