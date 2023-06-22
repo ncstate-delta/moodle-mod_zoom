@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/zoom/lib.php');
+require_once($CFG->dirroot . '/mod/zoom/classes/webservice_exception.php');
 require_once($CFG->dirroot . '/mod/zoom/classes/webservice.php');
 
 // Constants.
@@ -114,82 +115,52 @@ define('ZOOM_REGISTRATION_OFF', 2);
 /**
  * Entry not found on Zoom.
  */
-class zoom_not_found_exception extends moodle_exception {
-    /**
-     * Web service response.
-     * @var string
-     */
-    public $response = null;
-
+class zoom_not_found_exception extends \mod_zoom\webservice_exception {
     /**
      * Constructor
      * @param string $response      Web service response message
      * @param int $errorcode     Web service response error code
      */
     public function __construct($response, $errorcode) {
-        $this->response = $response;
-        $this->zoomerrorcode = $errorcode;
-        parent::__construct('errorwebservice_notfound', 'zoom');
+        parent::__construct($response, $errorcode, 'errorwebservice_notfound', 'mod_zoom');
     }
 }
 
 /**
  * Bad request received by Zoom.
  */
-class zoom_bad_request_exception extends moodle_exception {
-    /**
-     * Web service response.
-     * @var string
-     */
-    public $response = null;
-
+class zoom_bad_request_exception extends \mod_zoom\webservice_exception {
     /**
      * Constructor
      * @param string $response      Web service response message
      * @param int $errorcode     Web service response error code
      */
     public function __construct($response, $errorcode) {
-        $this->response = $response;
-        $this->zoomerrorcode = $errorcode;
-        parent::__construct('errorwebservice_badrequest', 'zoom', '', $response);
+        parent::__construct($response, $errorcode, 'errorwebservice_badrequest', 'mod_zoom', '', $response);
     }
 }
 
 /**
  * Couldn't succeed within the allowed number of retries.
  */
-class zoom_api_retry_failed_exception extends moodle_exception {
-    /**
-     * Web service response.
-     * @var string
-     */
-    public $response = null;
-
+class zoom_api_retry_failed_exception extends \mod_zoom\webservice_exception {
     /**
      * Constructor
      * @param string $response      Web service response
      * @param int $errorcode     Web service response error code
      */
     public function __construct($response, $errorcode) {
-        $this->response = $response;
-        $this->zoomerrorcode = $errorcode;
         $a = new stdClass();
         $a->response = $response;
         $a->maxretries = mod_zoom_webservice::MAX_RETRIES;
-        parent::__construct('zoomerr_maxretries', 'zoom', '', $a);
+        parent::__construct($response, $errorcode, 'zoomerr_maxretries', 'mod_zoom', '', $a);
     }
 }
 
 /**
  * Exceeded daily API limit.
  */
-class zoom_api_limit_exception extends moodle_exception {
-    /**
-     * Web service response.
-     * @var string
-     */
-    public $response = null;
-
+class zoom_api_limit_exception extends \mod_zoom\webservice_exception {
     /**
      * Unix timestamp of next time to API can be called.
      * @var int
@@ -203,12 +174,11 @@ class zoom_api_limit_exception extends moodle_exception {
      * @param int $retryafter   Unix timestamp of next time to API can be called.
      */
     public function __construct($response, $errorcode, $retryafter) {
-        $this->response = $response;
-        $this->zoomerrorcode = $errorcode;
         $this->retryafter = $retryafter;
+
         $a = new stdClass();
         $a->response = $response;
-        parent::__construct('zoomerr_apilimit', 'zoom', '',
+        parent::__construct($response, $errorcode, 'zoomerr_apilimit', 'mod_zoom', '',
                 userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig')));
     }
 }

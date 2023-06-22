@@ -125,7 +125,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         if (!$isnew) {
             try {
                 zoom_webservice()->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
-            } catch (moodle_exception $error) {
+            } catch (\mod_zoom\webservice_exception $error) {
                 // If the meeting can't be found, offer to recreate the meeting on Zoom.
                 if (zoom_is_meeting_gone_error($error)) {
                     $errstring = 'zoomerr_meetingnotfound';
