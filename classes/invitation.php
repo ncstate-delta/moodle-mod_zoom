@@ -33,7 +33,7 @@ class invitation {
      * Invitation settings prefix.
      * @var string
      */
-    public const PREFIX = 'invitation_';
+    const PREFIX = 'invitation_';
 
     /** @var string|null $invitation The unaltered zoom invitation text. */
     private $invitation;
