@@ -70,14 +70,6 @@ if ($ADMIN->fulltree) {
             get_string('clientsecret_desc', 'mod_zoom'), '');
     $settings->add($clientsecret);
 
-    $apikey = new admin_setting_configtext('zoom/apikey', get_string('apikey', 'mod_zoom'),
-            get_string('apikey_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
-    $settings->add($apikey);
-
-    $apisecret = new admin_setting_configpasswordunmask('zoom/apisecret', get_string('apisecret', 'mod_zoom'),
-            get_string('apisecret_desc', 'mod_zoom'), '');
-    $settings->add($apisecret);
-
     $zoomurl = new admin_setting_configtext('zoom/zoomurl', get_string('zoomurl', 'mod_zoom'),
             get_string('zoomurl_desc', 'mod_zoom'), '', PARAM_URL);
     $settings->add($zoomurl);

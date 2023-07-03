@@ -27,21 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 require_once($CFG->libdir . '/filelib.php');
 
-// Some plugins already might include this library, like mod_bigbluebuttonbn.
-// Hacky, but need to create list of plugins that might have JWT library.
-// NOTE: Remove file_exists checks and the JWT library in mod when versions prior to Moodle 3.7 is no longer supported.
-if (!class_exists('Firebase\JWT\JWT')) {
-    if (file_exists($CFG->libdir . '/php-jwt/src/JWT.php')) {
-        require_once($CFG->libdir . '/php-jwt/src/JWT.php');
-    } else {
-        if (file_exists($CFG->dirroot . '/mod/bigbluebuttonbn/vendor/firebase/php-jwt/src/JWT.php')) {
-            require_once($CFG->dirroot . '/mod/bigbluebuttonbn/vendor/firebase/php-jwt/src/JWT.php');
-        } else {
-            require_once($CFG->dirroot . '/mod/zoom/jwt/JWT.php');
-        }
-    }
-}
-
 /**
  * Web service class.
  */
@@ -84,18 +69,6 @@ class mod_zoom_webservice {
      * @var string
      */
     protected $accountid;
-
-    /**
-     * API key
-     * @var string
-     */
-    protected $apikey;
-
-    /**
-     * API secret
-     * @var string
-     */
-    protected $apisecret;
 
     /**
      * API base URL.
@@ -145,14 +118,6 @@ class mod_zoom_webservice {
             'clientsecret',
             'accountid',
         ];
-
-        // TODO: Remove when JWT is no longer supported in June 2023.
-        if (empty($config->clientid) || empty($config->clientsecret) || empty($config->accountid)) {
-            $requiredfields = [
-                'apikey',
-                'apisecret',
-            ];
-        }
 
         try {
             // Get and remember each required field.
@@ -256,16 +221,7 @@ class mod_zoom_webservice {
         $url = $this->apiurl . $path;
         $method = strtolower($method);
 
-        // TODO: Remove JWT auth when deprecated in June 2023.
-        if (isset($this->clientid) && isset($this->clientsecret) && isset($this->accountid)) {
-            $token = $this->get_access_token();
-        } else {
-            $payload = [
-                'iss' => $this->apikey,
-                'exp' => time() + 40,
-            ];
-            $token = \Firebase\JWT\JWT::encode($payload, $this->apisecret, 'HS256');
-        }
+        $token = $this->get_access_token();
 
         $curl = $this->get_curl_object();
         $curl->setHeader('Authorization: Bearer ' . $token);
