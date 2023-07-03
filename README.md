@@ -66,6 +66,13 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.10.3
+- Bugfix: Also use proxy settings for OAuth token request #494 (thanks @adnbes)
+- Bugfix: Clean up exception handling to avoid notice #482 (thanks @andremenrath)
+- Bugfix: Avoid course/activity completion form overhead #481 (thanks @phette23)
+- Regression: PHP 7.0 class constant visibility errors #495 (thanks @rlaneIT)
+  - Introduced in v4.10.1 when aligning with PSR-12 coding standards.
+
 v4.10.2
 
 - Regression: Instructors were unable to edit Zoom activity completion defaults #479 (thanks @phette23)
