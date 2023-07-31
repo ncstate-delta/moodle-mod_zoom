@@ -36,14 +36,16 @@ if ($ADMIN->fulltree) {
 
     // Test whether connection works and display result to user.
     if (!CLI_SCRIPT && $PAGE->url == $CFG->wwwroot . '/' . $CFG->admin . '/settings.php?section=modsettingzoom') {
-        $status = 'connectionok';
-        $notifyclass = 'notifysuccess';
+        $status = 'connectionfailed';
+        $notifyclass = 'notifyproblem';
         $errormessage = '';
         try {
             zoom_get_user(zoom_get_api_identifier($USER));
+            $status = 'connectionok';
+            $notifyclass = 'notifysuccess';
+        } catch (\mod_zoom\webservice_exception $error) {
+            $errormessage = $error->response;
         } catch (moodle_exception $error) {
-            $notifyclass = 'notifyproblem';
-            $status = 'connectionfailed';
             $errormessage = $error->a;
         }
 
