@@ -735,19 +735,19 @@ function xmldb_zoom_upgrade($oldversion) {
         $table = new xmldb_table('zoom');
 
         // Define and conditionally add field show_schedule.
-        $field = new xmldb_field('show_schedule', XMLDB_TYPE_INTEGER, '1', null, null, null, '1', 'recordings_visible_default');
+        $field = new xmldb_field('show_schedule', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'recordings_visible_default');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
 
         // Define and conditionally add field show_security.
-        $field = new xmldb_field('show_security', XMLDB_TYPE_INTEGER, '1', null, null, null, '1', 'show_schedule');
+        $field = new xmldb_field('show_security', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'show_schedule');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
 
         // Define and conditionally add field show_media.
-        $field = new xmldb_field('show_media', XMLDB_TYPE_INTEGER, '1', null, null, null, '1', 'show_security');
+        $field = new xmldb_field('show_media', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'show_security');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -817,7 +817,7 @@ function xmldb_zoom_upgrade($oldversion) {
         $table = new xmldb_table('zoom');
 
         // Define and conditionally add field option_auto_recording.
-        $field = new xmldb_field('option_auto_recording', XMLDB_TYPE_CHAR, '5', null, null, null, null, 'show_media');
+        $field = new xmldb_field('option_auto_recording', XMLDB_TYPE_CHAR, '5', null, XMLDB_NOTNULL, null, 'none', 'show_media');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -837,6 +837,29 @@ function xmldb_zoom_upgrade($oldversion) {
 
         // Zoom savepoint reached.
         upgrade_mod_savepoint(true, 2022102700, 'zoom');
+    }
+
+    if ($oldversion < 2023080202) {
+        // Issue #432: Inconsistency between the DB and schema, this is to verify everything matches.
+        // Verify show_schedule, show_security, and show_media are all set to NOTNULL.
+        // Verify option_auto_record is set to NOTNULL and defaults to "none"
+        $table = new xmldb_table('zoom');
+
+        // Launch change of nullability for show schedule
+        $field = new xmldb_field('show_schedule', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'recordings_visible_default');
+        $dbman->change_field_notnull($table, $field);
+
+        $field = new xmldb_field('show_security', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'show_schedule');
+        $dbman->change_field_notnull($table, $field);
+
+        $field = new xmldb_field('show_media', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'show_security');
+        $dbman->change_field_notnull($table, $field);
+
+        $field = new xmldb_field('option_auto_recording', XMLDB_TYPE_CHAR, '5', null, XMLDB_NOTNULL, null, 'none', 'show_media');
+        $dbman->change_field_type($table, $field);
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2023080202, 'zoom');
     }
 
     return true;
