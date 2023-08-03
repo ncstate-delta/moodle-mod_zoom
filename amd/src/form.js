@@ -270,7 +270,9 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
         // Add room event.
         this.init = function() {
             var stringkeys = [{key: 'room', component: 'zoom'}];
-            str.get_strings(stringkeys).then().fail(notification.exception);
+            str.get_strings(stringkeys).then(function() {
+                return null;
+            }).fail(notification.exception);
 
             this.addRoomEvent();
             this.deleteRoomEvent();
