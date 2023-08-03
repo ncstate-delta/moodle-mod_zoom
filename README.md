@@ -53,13 +53,23 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v5.0.1
+
+- Regression: Auto recording was forced off by default #505 (thanks @emmarichardson)
+  - Introduced in v4.7.0 when adding automatic recording settings.
+- Bugfix: Resolve database inconsistencies #505 (thanks @fabianbatioja, @foxlapinou)
+- Bugfix: Correct error message handling #503 (thanks @jwalits)
+- Bugfix: Provide prescribed Promise parameters #499 (thanks @fmido88)
+
 v5.0.0
+
 - Backward incompatible: Drop support for JWT authentication (thanks @aspark21)
   - Zoom requires everyone to use Server-to-Server OAuth by September 1, 2023
 - Backward incompatible: Require PHP 7.1+ (Moodle 3.7+) (thanks @rlaneIT)
 - Backward incompatible: Drop Moodle 3.4 mobile support
 
 v4.10.3
+
 - Bugfix: Also use proxy settings for OAuth token request #494 (thanks @adnbes)
 - Bugfix: Clean up exception handling to avoid notice #482 (thanks @andremenrath)
 - Bugfix: Avoid course/activity completion form overhead #481 (thanks @phette23)
