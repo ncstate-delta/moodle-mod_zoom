@@ -355,7 +355,7 @@ if ($ADMIN->fulltree) {
     $recordingoption = new admin_setting_configselect('zoom/recordingoption',
         get_string('option_auto_recording', 'mod_zoom'),
         get_string('option_auto_recording_help', 'mod_zoom'),
-        ZOOM_AUTORECORDING_NONE, $autorecordingchoices);
+        ZOOM_AUTORECORDING_USERDEFAULT, $autorecordingchoices);
     $settings->add($recordingoption);
 
     $allowrecordingchangeoption = new admin_setting_configcheckbox('zoom/allowrecordingchangeoption',
