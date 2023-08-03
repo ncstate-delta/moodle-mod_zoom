@@ -1001,6 +1001,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
     list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
     $userisregistered = false;
+    $userisregistering = false;
     if ($zoom->registration != ZOOM_REGISTRATION_OFF) {
         // Check if user already registered.
         $registrantjoinurl = zoom_get_registrant_join_url($USER->email, $zoom->meeting_id, $zoom->webinar);
@@ -1008,12 +1009,12 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
 
         // Allow unregistered users to register.
         if (!$userisregistered) {
-            $available = true;
+            $userisregistering = true;
         }
     }
 
     // If the meeting is not yet available, deny access.
-    if ($available !== true) {
+    if (!$available && !$userisregistering) {
         // Get unavailability note.
         $returns['error'] = zoom_get_unavailability_note($zoom, $finished);
         return $returns;
@@ -1035,6 +1036,11 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
         }
 
         $returns['nexturl'] = new moodle_url($url, ['uname' => fullname($USER)]);
+    }
+
+    // If the user is pre-registering, skip grading/completion.
+    if (!$available && $userisregistering) {
+        return $returns;
     }
 
     // Record user's clicking join.
