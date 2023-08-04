@@ -735,7 +735,8 @@ function xmldb_zoom_upgrade($oldversion) {
         $table = new xmldb_table('zoom');
 
         // Define and conditionally add field show_schedule.
-        $field = new xmldb_field('show_schedule', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'recordings_visible_default');
+        $field = new xmldb_field('show_schedule', XMLDB_TYPE_INTEGER, '1',
+            null, XMLDB_NOTNULL, null, '1', 'recordings_visible_default');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -842,10 +843,10 @@ function xmldb_zoom_upgrade($oldversion) {
     if ($oldversion < 2023080202) {
         // Issue #432: Inconsistency between the DB and schema, this is to verify everything matches.
         // Verify show_schedule, show_security, and show_media are all set to NOTNULL.
-        // Verify option_auto_record is set to NOTNULL and defaults to "none"
+        // Verify option_auto_record is set to NOTNULL and defaults to "none".
         $table = new xmldb_table('zoom');
 
-        // Launch change of nullability for show schedule
+        // Launch change of nullability for show schedule.
         $field = new xmldb_field('show_schedule', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'recordings_visible_default');
         $dbman->change_field_notnull($table, $field);
 
