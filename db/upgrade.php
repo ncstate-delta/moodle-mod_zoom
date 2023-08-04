@@ -847,7 +847,8 @@ function xmldb_zoom_upgrade($oldversion) {
         $table = new xmldb_table('zoom');
 
         // Launch change of nullability for show schedule.
-        $field = new xmldb_field('show_schedule', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'recordings_visible_default');
+        $field = new xmldb_field('show_schedule', XMLDB_TYPE_INTEGER, '1',
+            null, XMLDB_NOTNULL, null, '1', 'recordings_visible_default');
         $dbman->change_field_notnull($table, $field);
 
         $field = new xmldb_field('show_security', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'show_schedule');
