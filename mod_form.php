@@ -590,7 +590,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
 
             if ($config->recordingoption === ZOOM_AUTORECORDING_USERDEFAULT) {
-                $defaultsetting = $recordingsettings;
+                $defaultsetting = $recordingsettings->auto_recording;
             } else {
                 $defaultsetting = $config->recordingoption;
             }
