@@ -1288,13 +1288,12 @@ function zoom_get_coursemodule_info($coursemodule) {
     global $DB;
 
     $dbparams = array('id' => $coursemodule->instance);
-    $fields = 'id, name, intro, introformat, start_time, end_date_time, duration, recurring, recurrence_type';
+    $fields = 'id, intro, introformat, start_time, duration';
     if (!$zoom = $DB->get_record('zoom', $dbparams, $fields)) {
         return false;
     }
 
     $result = new cached_cm_info();
-    $result->name = $zoom->name;
 
     if ($coursemodule->showdescription) {
         // Convert intro to html. Do not filter cached version, filters run at display time.
@@ -1325,12 +1324,12 @@ function zoom_cm_info_dynamic(cm_info $cm) {
 
     require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
-    $moduleinstance = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
-
-    // Get meeting state from Zoom.
-    list($inprogress, $available, $finished) = zoom_get_state($moduleinstance);
-
     if (method_exists($cm, 'override_customdata')) {
+        $moduleinstance = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
+
+        // Get meeting state from Zoom.
+        list($inprogress, $available, $finished) = zoom_get_state($moduleinstance);
+
         // For unfinished meetings, override start_time with the next occurrence.
         // If this is a recurring meeting without fixed time, do not override - it will set start_time = 0.
         if (!$finished && $moduleinstance->recurrence_type != 0) {

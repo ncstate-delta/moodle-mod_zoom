@@ -41,10 +41,6 @@ class dates extends activity_dates {
      * @return array
      */
     protected function get_dates(): array {
-        global $CFG;
-
-        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
-
         $starttime = $this->cm->customdata['start_time'] ?? null;
         $duration = $this->cm->customdata['duration'] ?? null;
         $now = time();
