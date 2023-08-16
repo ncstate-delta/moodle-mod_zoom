@@ -1282,10 +1282,8 @@ function zoom_get_instance_breakout_rooms($zoomid) {
  * when printing this activity in a course listing. See get_array_of_activities() in course/lib.php.
  *
  * @param stdClass $coursemodule The coursemodule object
- *
  * @return cached_cm_info An object on information that the courses will know about
  */
-
 function zoom_get_coursemodule_info($coursemodule) {
     global $DB;
 
@@ -1307,6 +1305,7 @@ function zoom_get_coursemodule_info($coursemodule) {
     if ($zoom->start_time) {
         $result->customdata['start_time'] = $zoom->start_time;
     }
+
     if ($zoom->duration) {
         $result->customdata['duration'] = $zoom->duration;
     }
