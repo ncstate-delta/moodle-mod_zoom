@@ -818,7 +818,7 @@ function xmldb_zoom_upgrade($oldversion) {
         $table = new xmldb_table('zoom');
 
         // Define and conditionally add field option_auto_recording.
-        $field = new xmldb_field('option_auto_recording', XMLDB_TYPE_CHAR, '5', null, XMLDB_NOTNULL, null, 'none', 'show_media');
+        $field = new xmldb_field('option_auto_recording', XMLDB_TYPE_CHAR, '5', null, null, null, null, 'show_media');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
