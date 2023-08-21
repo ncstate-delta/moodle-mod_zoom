@@ -346,9 +346,6 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->settings->auto_recording)) {
         $newzoom->option_auto_recording = $response->settings->auto_recording;
     }
-    if (!isset($newzoom->option_auto_recording)) {
-        $newzoom->option_auto_recording = 'none';
-    }
 
     return $newzoom;
 }

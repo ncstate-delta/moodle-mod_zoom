@@ -589,8 +589,14 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $options[ZOOM_AUTORECORDING_CLOUD] = get_string('autorecording_cloud', 'mod_zoom');
             }
 
+            if ($config->recordingoption === ZOOM_AUTORECORDING_USERDEFAULT) {
+                $defaultsetting = $recordingsettings->auto_recording;
+            } else {
+                $defaultsetting = $config->recordingoption;
+            }
+
             $mform->addElement('select', 'option_auto_recording', get_string('option_auto_recording', 'mod_zoom'), $options);
-            $mform->setDefault('option_auto_recording', $config->recordingoption);
+            $mform->setDefault('option_auto_recording', $defaultsetting);
             $mform->addHelpButton('option_auto_recording', 'option_auto_recording', 'mod_zoom');
         }
 
