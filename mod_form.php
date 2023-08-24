@@ -168,7 +168,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addElement('text', 'name', get_string('title', 'zoom'), ['size' => '64']);
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
-        $mform->addRule('name', get_string('maximumchars', '', 300), 'maxlength', 300, 'client');
+        $mform->addRule('name', get_string('maximumchars', '', 200), 'maxlength', 200, 'client');
 
         // Add description 'intro' and 'introformat'.
         $this->standard_intro_elements();
