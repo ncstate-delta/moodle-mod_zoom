@@ -92,34 +92,40 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         $this->debuggingenabled = debugging();
 
-        $starttime = get_config('zoom', 'last_call_made_at');
+        // If running as a task, then record when we last left off if
+        // interrupted or finish.
+        $runningastask = true;
+
+        if (!empty($hostuuids)) {
+            $runningastask = false;
+        }
+
+        if (!empty($paramstart)) {
+            $starttime = strtotime($paramstart);
+            $runningastask = false;
+        } else {
+            $starttime = get_config('zoom', 'last_call_made_at');
+        }
+
         if (empty($starttime)) {
             // Zoom only provides data from 30 days ago.
             $starttime = strtotime('-30 days');
         }
 
+        if (!empty($paramend)) {
+            $endtime = strtotime($paramend);
+            $runningastask = false;
+        }
+
+        if (empty($endtime)) {
+            $endtime = time();
+        }
+
         // Zoom requires this format when passing the to and from arguments.
         // Zoom just returns all the meetings from the day range instead of
         // actual time range specified.
-        if (!empty($paramend)) {
-            $end = $paramend;
-        } else {
-            $endtime = time();
-            $end = gmdate('Y-m-d', $endtime) . 'T' . gmdate('H:i:s', $endtime) . 'Z';
-        }
-
-        if (!empty($paramstart)) {
-            $start = $paramstart;
-        } else {
-            $start = gmdate('Y-m-d', $starttime) . 'T' . gmdate('H:i:s', $starttime) . 'Z';
-        }
-
-        // If running as a task, then record when we last left off if
-        // interrupted or finish.
-        $runningastask = true;
-        if (!empty($paramstart) || !empty($paramend) || !empty($hostuuids)) {
-            $runningastask = false;
-        }
+        $start = gmdate('Y-m-d', $starttime);
+        $end = gmdate('Y-m-d', $endtime);
 
         mtrace(sprintf('Finding meetings between %s to %s', $start, $end));
 
@@ -159,10 +165,10 @@ class get_meeting_reports extends \core\task\scheduled_task {
                     // unrecoverable error. Try to pick up where we left off.
                     if ($runningastask) {
                         // Only want to resume if we were processing all reports.
+                        $recordedallmeetings = false;
                         set_config('last_call_made_at', $meetingtime - 1, 'zoom');
                     }
 
-                    $recordedallmeetings = false;
                     break;
                 }
             } catch (\Exception $e) {
@@ -171,7 +177,9 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 // Some unknown error, need to handle it so we can record
                 // where we left off.
                 if ($runningastask) {
+                    $recordedallmeetings = false;
                     set_config('last_call_made_at', $meetingtime - 1, 'zoom');
+                    break;
                 }
             }
         }

@@ -870,7 +870,7 @@ class mod_zoom_webservice {
      *
      * Ignores meetings that were attended only by one user.
      *
-     * See https://marketplace.zoom.us/docs/api-reference/zoom-api/dashboards/dashboardmeetings
+     * See https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/dashboardMeetings
      *
      * NOTE: Requires Business or a higher plan and have "Dashboard" feature
      * enabled. This query is rated "Resource-intensive"
@@ -880,8 +880,16 @@ class mod_zoom_webservice {
      * @return array An array of meeting objects.
      */
     public function get_meetings($from, $to) {
-        return $this->make_paginated_call('metrics/meetings',
-                ['type' => 'past', 'from' => $from, 'to' => $to], 'meetings');
+        return $this->make_paginated_call(
+            'metrics/meetings',
+            [
+                'type' => 'past',
+                'from' => $from,
+                'to' => $to,
+                'query_date_type' => 'end_time',
+            ],
+            'meetings'
+        );
     }
 
     /**
