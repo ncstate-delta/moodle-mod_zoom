@@ -962,6 +962,8 @@ class mod_zoom_webservice {
                 $settingsresponse = $this->make_call($settingsurl);
                 foreach ($response->recording_files as $rec) {
                     if (!empty($rec->play_url) && in_array($rec->file_type, $allowedrecordingtypes, true)) {
+                        $type = (!empty($rec->recording_type) && $rec->recording_type === 'audio_only') ? 'audio' : 'video';
+
                         // Only pick the video recording and audio only recordings.
                         // The transcript is available in both of these, so the extra file is unnecessary.
                         $recordinginfo = new stdClass();
@@ -969,9 +971,7 @@ class mod_zoom_webservice {
                         $recordinginfo->meetinguuid = $rec->meeting_id;
                         $recordinginfo->url = $rec->play_url;
                         $recordinginfo->filetype = $rec->file_type;
-                        $recordinginfo->recordingtype = (!empty($rec->recording_type) && $rec->recording_type === 'audio_only') ?
-                            get_string('recordingtypeaudio', 'mod_zoom') :
-                            get_string('recordingtypevideo', 'mod_zoom');
+                        $recordinginfo->recordingtype = $recordingtype;
                         $recordinginfo->passcode = $settingsresponse->password;
                         $recordings[strtotime($rec->recording_start)][] = $recordinginfo;
                     }
