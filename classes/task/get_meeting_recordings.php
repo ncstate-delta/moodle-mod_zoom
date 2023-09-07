@@ -74,8 +74,8 @@ class get_meeting_recordings extends \core\task\scheduled_task {
         mtrace('Finding meeting recordings for this account...');
 
         $recordingtypestrings = [
-            'audio' => trim(get_string('recordingtypeaudio', 'mod_zoom')),
-            'video' => trim(get_string('recordingtypevideo', 'mod_zoom')),
+            'audio' => get_string('recordingtypeaudio', 'mod_zoom'),
+            'video' => get_string('recordingtypevideo', 'mod_zoom'),
         ];
 
         $zoommeetings = zoom_get_all_meeting_records();
