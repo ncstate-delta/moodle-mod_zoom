@@ -73,6 +73,11 @@ class get_meeting_recordings extends \core\task\scheduled_task {
 
         mtrace('Finding meeting recordings for this account...');
 
+        $recordingtypestrings = [
+            'audio' => get_string('recordingtypeaudio', 'mod_zoom'),
+            'video' => get_string('recordingtypevideo', 'mod_zoom'),
+        ];
+
         $zoommeetings = zoom_get_all_meeting_records();
         foreach ($zoommeetings as $zoom) {
             // Only get recordings for this meeting if its recurring or already finished.
@@ -91,14 +96,16 @@ class get_meeting_recordings extends \core\task\scheduled_task {
                                 continue;
                             }
 
+                            $recordingtypestring = $recordingtypestrings[$zoomrecordinginfo->recordingtype];
+
                             $rec = new \stdClass();
                             $rec->zoomid = $zoom->id;
                             $rec->meetinguuid = trim($zoomrecordinginfo->meetinguuid);
                             $rec->zoomrecordingid = trim($zoomrecordinginfo->recordingid);
-                            $rec->name = trim($zoom->name) . ' (' . trim($zoomrecordinginfo->recordingtype) . ')';
+                            $rec->name = trim($zoom->name) . ' (' . $recordingtypestring . ')';
                             $rec->externalurl = $zoomrecordinginfo->url;
                             $rec->passcode = trim($zoomrecordinginfo->passcode);
-                            $rec->recordingtype = trim($zoomrecordinginfo->recordingtype);
+                            $rec->recordingtype = $zoomrecordinginfo->recordingtype;
                             $rec->recordingstart = $recordingstarttime;
                             $rec->showrecording = $zoom->recordings_visible_default;
                             $rec->timecreated = $now;
