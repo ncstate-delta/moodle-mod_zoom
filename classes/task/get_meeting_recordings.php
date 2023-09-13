@@ -78,44 +78,75 @@ class get_meeting_recordings extends \core\task\scheduled_task {
             'video' => get_string('recordingtypevideo', 'mod_zoom'),
         ];
 
-        $zoommeetings = zoom_get_all_meeting_records();
-        foreach ($zoommeetings as $zoom) {
+        $localmeetings = zoom_get_all_meeting_records();
+
+        $now = time();
+        $from = gmdate('Y-m-d', strtotime('-1 day', $now));
+        $to = gmdate('Y-m-d', strtotime('+1 day', $now));
+
+        $hostmeetings = [];
+
+        foreach ($localmeetings as $zoom) {
             // Only get recordings for this meeting if its recurring or already finished.
-            $now = time();
             if ($zoom->recurring || $now > (intval($zoom->start_time) + intval($zoom->duration))) {
-                // Get all existing recordings for this meeting.
-                $recordings = zoom_get_meeting_recordings($zoom->id);
-                // Fetch all recordings for this meeting.
-                $zoomrecordingpairlist = $service->get_recording_url_list($zoom->meeting_id);
-                if (!empty($zoomrecordingpairlist)) {
-                    foreach ($zoomrecordingpairlist as $recordingstarttime => $zoomrecordingpair) {
-                        // The video recording and audio only recordings are grouped together by their recording start timestamp.
-                        foreach ($zoomrecordingpair as $zoomrecordinginfo) {
-                            if (isset($recordings[trim($zoomrecordinginfo->recordingid)])) {
-                                mtrace('Recording id: ' . $zoomrecordinginfo->recordingid . ' exist(s)...skipping');
-                                continue;
-                            }
+                $hostmeetings[$zoom->host_id][$zoom->meeting_id] = $zoom;
+            }
+        }
 
-                            $recordingtypestring = $recordingtypestrings[$zoomrecordinginfo->recordingtype];
+        if (empty($hostmeetings)) {
+            mtrace('No meetings need to be processed.');
+            return;
+        }
 
-                            $rec = new \stdClass();
-                            $rec->zoomid = $zoom->id;
-                            $rec->meetinguuid = trim($zoomrecordinginfo->meetinguuid);
-                            $rec->zoomrecordingid = trim($zoomrecordinginfo->recordingid);
-                            $rec->name = trim($zoom->name) . ' (' . $recordingtypestring . ')';
-                            $rec->externalurl = $zoomrecordinginfo->url;
-                            $rec->passcode = trim($zoomrecordinginfo->passcode);
-                            $rec->recordingtype = $zoomrecordinginfo->recordingtype;
-                            $rec->recordingstart = $recordingstarttime;
-                            $rec->showrecording = $zoom->recordings_visible_default;
-                            $rec->timecreated = $now;
-                            $rec->timemodified = $now;
-                            $rec->id = $DB->insert_record('zoom_meeting_recordings', $rec);
-                            mtrace('Recording id: ' . $zoomrecordinginfo->recordingid . ' (' . $zoomrecordinginfo->recordingtype .
-                                   ') added to the database');
-                        }
+        $meetingpasscodes = [];
+        $localrecordings = zoom_get_meeting_recordings_grouped();
+
+        foreach ($hostmeetings as $hostid => $meetings) {
+            // Fetch all recordings for this user.
+            $zoomrecordings = $service->get_user_recordings($hostid, $from, $to);
+
+            foreach ($zoomrecordings as $recordingid => $recording) {
+                if (isset($localrecordings[$recording->meetinguuid][$recordingid])) {
+                    mtrace('Recording id: ' . $recordingid . ' exists...skipping');
+                    continue;
+                }
+
+                if (empty($meetings[$recording->meetingid])) {
+                    // Skip meetings that are not in Moodle.
+                    mtrace('Meeting id: ' . $recordingid . ' does not exist...skipping');
+                    continue;
+                }
+
+                // As of 2023-09-24, 'password' is not present in the user recordings API response.
+                if (empty($meetingpasscodes[$recording->meetinguuid])) {
+                    try {
+                        $settings = $service->get_recording_settings($recording->meetinguuid);
+                        $meetingpasscodes[$recording->meetinguuid] = $settings->password;
+                    } catch (moodle_exception $error) {
+                        continue;
                     }
                 }
+
+                $zoom = $meetings[$recording->meetingid];
+
+                $recordingtype = $recording->recordingtype;
+                $recordingtypestring = $recordingtypestrings[$recordingtype];
+
+                $record = new \stdClass();
+                $record->zoomid = $zoom->id;
+                $record->meetinguuid = $recording->meetinguuid;
+                $record->zoomrecordingid = $recordingid;
+                $record->name = trim($zoom->name) . ' (' . $recordingtypestring . ')';
+                $record->externalurl = $recording->url;
+                $record->passcode = $meetingpasscodes[$recording->meetinguuid];
+                $record->recordingtype = $recordingtype;
+                $record->recordingstart = $recording->recordingstart;
+                $record->showrecording = $zoom->recordings_visible_default;
+                $record->timecreated = $now;
+                $record->timemodified = $now;
+
+                $record->id = $DB->insert_record('zoom_meeting_recordings', $record);
+                mtrace('Recording id: ' . $recordingid . ' (' . $recordingtype . ') added to the database');
             }
         }
     }
