@@ -27,6 +27,8 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/zoom/backup/moodle2/restore_zoom_stepslib.php');
 
+use mod_zoom\restore_activity_structure_step;
+
 /**
  * Restore task for the zoom activity module
  *
@@ -45,7 +47,7 @@ class restore_zoom_activity_task extends restore_activity_task {
      */
     protected function define_my_steps() {
         // We have just one structure step here.
-        $this->add_step(new restore_zoom_activity_structure_step('zoom_structure', 'zoom.xml'));
+        $this->add_step(new restore_activity_structure_step('zoom_structure', 'zoom.xml'));
     }
 
     /**

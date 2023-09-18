@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines backup_zoom_activity_structure_step class.
+ * Defines backup_activity_structure_step class.
  *
  * @package   mod_zoom
  * @category  backup
@@ -23,10 +23,15 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_zoom;
+
+use backup;
+use backup_nested_element;
+
 /**
  * Define the complete zoom structure for backup, with file and id annotations.
  */
-class backup_zoom_activity_structure_step extends backup_activity_structure_step {
+class backup_activity_structure_step extends \backup_activity_structure_step {
     /**
      * Defines the backup structure of the module.
      *

@@ -23,14 +23,18 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_zoom;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
+use restore_path_element;
+
 /**
  * Structure step to restore one zoom activity
  */
-class restore_zoom_activity_structure_step extends restore_activity_structure_step {
+class restore_activity_structure_step extends \restore_activity_structure_step {
     /**
      * Defines structure of path elements to be processed during the restore
      *
