@@ -93,5 +93,4 @@ class mobile {
             'files' => '',
         ];
     }
-
 }

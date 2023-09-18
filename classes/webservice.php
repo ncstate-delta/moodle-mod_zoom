@@ -183,7 +183,7 @@ class mod_zoom_webservice {
             $cfg->proxytype = $CFG->proxytype;
 
             // Parse string as host:port, delimited by a colon (:).
-            list($host, $port) = explode(':', $proxyhost);
+            [$host, $port] = explode(':', $proxyhost);
 
             // Temporarily set new values on the global $CFG.
             $CFG->proxyhost = $host;
@@ -279,9 +279,11 @@ class mod_zoom_webservice {
                     $timediff = 1;
 
                     // Check if we hit the max requests per minute (only for Dashboard API).
-                    if (array_key_exists('x-ratelimit-type', $header) &&
-                            $header['x-ratelimit-type'] == 'QPS' &&
-                            strpos($path, 'metrics') !== false) {
+                    if (
+                        array_key_exists('x-ratelimit-type', $header) &&
+                        $header['x-ratelimit-type'] == 'QPS' &&
+                        strpos($path, 'metrics') !== false
+                    ) {
                         $timediff = 60; // Try the next minute.
                     } else if (array_key_exists('retry-after', $header)) {
                         $retryafter = strtotime($header['retry-after']);
@@ -289,8 +291,7 @@ class mod_zoom_webservice {
                         // If we have no API calls remaining, save retry-after.
                         if ($header['x-ratelimit-remaining'] == 0 && !empty($retryafter)) {
                             set_config('retry-after', $retryafter, 'zoom');
-                            throw new zoom_api_limit_exception($response->message,
-                                    $response->code, $retryafter);
+                            throw new zoom_api_limit_exception($response->message, $response->code, $retryafter);
                         } else if (!(defined('PHPUNIT_TEST') && PHPUNIT_TEST)) {
                             // When running CLI we might want to know how many calls remaining.
                             debugging('x-ratelimit-remaining = ' . $header['x-ratelimit-remaining']);
@@ -678,10 +679,12 @@ class mod_zoom_webservice {
             }
         }
 
-        if ($data['type'] === ZOOM_SCHEDULED_MEETING ||
+        if (
+            $data['type'] === ZOOM_SCHEDULED_MEETING ||
             $data['type'] === ZOOM_RECURRING_FIXED_MEETING ||
             $data['type'] === ZOOM_SCHEDULED_WEBINAR ||
-            $data['type'] === ZOOM_RECURRING_FIXED_WEBINAR) {
+            $data['type'] === ZOOM_RECURRING_FIXED_WEBINAR
+        ) {
             // Convert timestamp to ISO-8601. The API seems to insist that it end with 'Z' to indicate UTC.
             $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->start_time);
             $data['duration'] = (int) ceil($zoom->duration / 60);
@@ -907,8 +910,7 @@ class mod_zoom_webservice {
      * @return array An array of meeting objects.
      */
     public function get_webinars($from, $to) {
-        return $this->make_paginated_call('metrics/webinars',
-                ['type' => 'past', 'from' => $from, 'to' => $to], 'webinars');
+        return $this->make_paginated_call('metrics/webinars', ['type' => 'past', 'from' => $from, 'to' => $to], 'webinars');
     }
 
     /**
@@ -939,7 +941,7 @@ class mod_zoom_webservice {
     public function encode_uuid($uuid) {
         if (substr($uuid, 0, 1) === '/' || strpos($uuid, '//') !== false) {
             // Use similar function to JS encodeURIComponent, see https://stackoverflow.com/a/1734255/6001.
-            $encodeuricomponent = function($str) {
+            $encodeuricomponent = function ($str) {
                 $revert = ['%21' => '!', '%2A' => '*', '%27' => "'", '%28' => '(', '%29' => ')'];
                 return strtr(rawurlencode($str), $revert);
             };

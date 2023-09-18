@@ -79,7 +79,7 @@ class mod_zoom_external extends external_api {
         require_capability('mod/zoom:view', $context);
 
         // Call the zoom/locallib API.
-        list($inprogress, $available, $finished) = zoom_get_state($zoom);
+        [$inprogress, $available, $finished] = zoom_get_state($zoom);
 
         $result = [];
         $result['available'] = $available;
@@ -215,5 +215,4 @@ class mod_zoom_external extends external_api {
             ]
         );
     }
-
 }

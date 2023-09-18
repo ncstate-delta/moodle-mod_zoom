@@ -178,8 +178,14 @@ class zoom_api_limit_exception extends \mod_zoom\webservice_exception {
 
         $a = new stdClass();
         $a->response = $response;
-        parent::__construct($response, $errorcode, 'zoomerr_apilimit', 'mod_zoom', '',
-                userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig')));
+        parent::__construct(
+            $response,
+            $errorcode,
+            'zoomerr_apilimit',
+            'mod_zoom',
+            '',
+            userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig'))
+        );
     }
 }
 
@@ -620,10 +626,12 @@ function zoom_create_passcode_description($meetingpasswordrequirement) {
         $description .= get_string('password_length', 'mod_zoom', $meetingpasswordrequirement->length) . ' ';
     }
 
-    if ($meetingpasswordrequirement->consecutive_characters_length &&
-        $meetingpasswordrequirement->consecutive_characters_length > 0) {
-        $description .= get_string('password_consecutive', 'mod_zoom',
-            $meetingpasswordrequirement->consecutive_characters_length - 1) . ' ';
+    if ($meetingpasswordrequirement->consecutive_characters_length > 0) {
+        $description .= get_string(
+            'password_consecutive',
+            'mod_zoom',
+            $meetingpasswordrequirement->consecutive_characters_length - 1
+        ) . ' ';
     }
 
     $description .= get_string('password_max_length', 'mod_zoom');
@@ -694,7 +702,7 @@ function zoom_get_users_from_alternativehosts(array $alternativehosts) {
     global $DB;
 
     // Get the existing Moodle user objects from the DB.
-    list($insql, $inparams) = $DB->get_in_or_equal($alternativehosts);
+    [$insql, $inparams] = $DB->get_in_or_equal($alternativehosts);
     $sql = 'SELECT *
             FROM {user}
             WHERE email ' . $insql . '
@@ -716,7 +724,7 @@ function zoom_get_nonusers_from_alternativehosts(array $alternativehosts) {
 
     // Get the non-Moodle user mail addresses by checking which one does not exist in the DB.
     $alternativehostnonusers = [];
-    list($insql, $inparams) = $DB->get_in_or_equal($alternativehosts);
+    [$insql, $inparams] = $DB->get_in_or_equal($alternativehosts);
     $sql = 'SELECT email
             FROM {user}
             WHERE email ' . $insql . '
@@ -756,7 +764,7 @@ function zoom_get_unavailability_note($zoom, $finished = null) {
     } else {
         // If we don't have the finished information yet, get it with a small overhead.
         if ($finished === null) {
-            list($inprogress, $available, $finished) = zoom_get_state($zoom);
+            [$inprogress, $available, $finished] = zoom_get_state($zoom);
         }
 
         // If this meeting is still pending.
@@ -998,7 +1006,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
 
     $returns = ['nexturl' => null, 'error' => null];
 
-    list($inprogress, $available, $finished) = zoom_get_state($zoom);
+    [$inprogress, $available, $finished] = zoom_get_state($zoom);
 
     $userisregistered = false;
     $userisregistering = false;

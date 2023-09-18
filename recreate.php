@@ -27,7 +27,7 @@ require_once(__DIR__ . '/locallib.php');
 
 require_login();
 // Additional access checks in zoom_get_instance_setup().
-list($course, $cm, $zoom) = zoom_get_instance_setup();
+[$course, $cm, $zoom] = zoom_get_instance_setup();
 
 require_sesskey();
 $context = context_module::instance($cm->id);
@@ -55,5 +55,7 @@ $zoom->timemodified = time();
 $DB->update_record('zoom', $zoom);
 
 // Return to Zoom page.
-redirect(new moodle_url('/mod/zoom/view.php', ['id' => $cm->id]),
-        get_string('recreatesuccessful', 'mod_zoom'));
+redirect(
+    new moodle_url('/mod/zoom/view.php', ['id' => $cm->id]),
+    get_string('recreatesuccessful', 'mod_zoom')
+);

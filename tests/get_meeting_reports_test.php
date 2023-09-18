@@ -89,8 +89,7 @@ class get_meeting_reports_test extends advanced_testcase {
     public function test_format_participant_filtering() {
         // Sometimes Zoom has a # instead of comma in the name.
         $this->zoomdata->name = 'SMITH# JOE';
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, [], []);
+        $participant = $this->meetingtask->format_participant($this->zoomdata, 1, [], []);
         $this->assertEquals('SMITH, JOE', $participant['name']);
     }
 
@@ -102,8 +101,7 @@ class get_meeting_reports_test extends advanced_testcase {
         return;
 
         // 1) If user does not match, verify that we are using data from Zoom.
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, [], []);
+        $participant = $this->meetingtask->format_participant($this->zoomdata, 1, [], []);
         $this->assertEquals($this->zoomdata->name, $participant['name']);
         $this->assertEquals($this->zoomdata->user_email, $participant['user_email']);
         $this->assertNull($participant['userid']);
@@ -112,10 +110,10 @@ class get_meeting_reports_test extends advanced_testcase {
 
         // Add user's email to Moodle system.
         $user = $this->getDataGenerator()->create_user(
-                ['email' => $this->zoomdata->user_email]);
+            ['email' => $this->zoomdata->user_email]
+        );
 
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, [], []);
+        $participant = $this->meetingtask->format_participant($this->zoomdata, 1, [], []);
         $this->assertEquals($user->id, $participant['userid']);
         $this->assertEquals(strtoupper(fullname($user)), $participant['name']);
         $this->assertEquals($user->email, $participant['user_email']);
@@ -132,17 +130,15 @@ class get_meeting_reports_test extends advanced_testcase {
         // Create course and enroll user.
         $course = $this->getDataGenerator()->create_course();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
-        list($names, $emails) = $this->meetingtask->get_enrollments($course->id);
+        [$names, $emails] = $this->meetingtask->get_enrollments($course->id);
 
         // Before Zoom data is changed, should return nothing.
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, $names, $emails);
+        $participant = $this->meetingtask->format_participant($this->zoomdata, 1, $names, $emails);
         $this->assertNull($participant['userid']);
 
         // Change Zoom data and now user should be found.
         $this->zoomdata->name = strtoupper(fullname($user));
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, $names, $emails);
+        $participant = $this->meetingtask->format_participant($this->zoomdata, 1, $names, $emails);
         $this->assertEquals($user->id, $participant['userid']);
         $this->assertEquals($names[$participant['userid']], $participant['name']);
         // Email should match what Zoom gives us.
@@ -156,17 +152,15 @@ class get_meeting_reports_test extends advanced_testcase {
         // Change name so previous test does not trigger.
         $this->zoomdata->name = 'Something Else';
         // Since email changed, update enrolled user data.
-        list($names, $emails) = $this->meetingtask->get_enrollments($course->id);
+        [$names, $emails] = $this->meetingtask->get_enrollments($course->id);
 
         // Before Zoom data is changed, should return nothing.
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, $names, $emails);
+        $participant = $this->meetingtask->format_participant($this->zoomdata, 1, $names, $emails);
         $this->assertNull($participant['userid']);
 
         // Change Zoom data and now user should be found.
         $this->zoomdata->user_email = $user->email;
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, $names, $emails);
+        $participant = $this->meetingtask->format_participant($this->zoomdata, 1, $names, $emails);
         $this->assertEquals($user->id, $participant['userid']);
         $this->assertEquals($names[$participant['userid']], $participant['name']);
         // Email should match what Zoom gives us.
@@ -181,8 +175,7 @@ class get_meeting_reports_test extends advanced_testcase {
         $recordid = $DB->insert_record('zoom_meeting_participants', $participant);
 
         // Should return the found entry in zoom_meeting_participants.
-        $newparticipant = $this->meetingtask->format_participant($this->zoomdata,
-                1, $names, $emails);
+        $newparticipant = $this->meetingtask->format_participant($this->zoomdata, 1, $names, $emails);
         $this->assertEquals($participant['uuid'], $newparticipant['uuid']);
         $this->assertEquals(999, $newparticipant['userid']);
         $this->assertEquals($participant['name'], $newparticipant['name']);
@@ -223,41 +216,36 @@ class get_meeting_reports_test extends advanced_testcase {
             $this->getDataGenerator()->enrol_user($user->id, $course->id);
         }
 
-        list($names, $emails) = $this->meetingtask->get_enrollments($course->id);
+        [$names, $emails] = $this->meetingtask->get_enrollments($course->id);
 
         // 1) Make sure we match someone with middle name missing.
         $users[0]->firstname = 'LORETO';
         $this->zoomdata->name = fullname($users[0]);
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, $names, $emails);
+        $participant = $this->meetingtask->format_participant($this->zoomdata, 1, $names, $emails);
         $this->assertEquals($users[0]->id, $participant['userid']);
 
         // 2) Make sure that name matches even if there are no spaces.
         $users[1]->firstname = str_replace(' ', '', $users[1]->firstname);
         $this->zoomdata->name = fullname($users[1]);
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, $names, $emails);
+        $participant = $this->meetingtask->format_participant($this->zoomdata, 1, $names, $emails);
         $this->assertEquals($users[1]->id, $participant['userid']);
 
         // 3) Make sure that name matches even if we have different ordering.
         $this->zoomdata->name = 'MUTTON, RADOVAN BRIANNA';
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, $names, $emails);
+        $participant = $this->meetingtask->format_participant($this->zoomdata, 1, $names, $emails);
         $this->assertEquals($users[3]->id, $participant['userid']);
 
         // 4) Make sure we do not match users if just last name is the same.
         $users[2]->firstname = 'JOSH';
         $this->zoomdata->name = fullname($users[2]);
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, $names, $emails);
+        $participant = $this->meetingtask->format_participant($this->zoomdata, 1, $names, $emails);
         $this->assertEmpty($participant['userid']);
 
         // 5) Make sure we do not match users if name is not similar to anything.
         $users[4]->firstname = 'JOSH';
         $users[4]->lastname = 'SMITH';
         $this->zoomdata->name = fullname($users[4]);
-        $participant = $this->meetingtask->format_participant($this->zoomdata,
-                1, $names, $emails);
+        $participant = $this->meetingtask->format_participant($this->zoomdata, 1, $names, $emails);
         $this->assertEmpty($participant['userid']);
     }
 
@@ -303,8 +291,10 @@ class get_meeting_reports_test extends advanced_testcase {
         $mockwwebservice->method('get_meeting_participants')
             ->will($this->returnCallback([$this, 'mock_get_meeting_participants']));
 
-        $this->assertEquals($this->mockparticipantsdata['someuuid'],
-                $mockwwebservice->get_meeting_participants('someuuid', false));
+        $this->assertEquals(
+            $this->mockparticipantsdata['someuuid'],
+            $mockwwebservice->get_meeting_participants('someuuid', false)
+        );
 
         // Now fake the meeting details.
         $meeting = new stdClass();

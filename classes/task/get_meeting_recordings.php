@@ -66,8 +66,7 @@ class get_meeting_recordings extends \core\task\scheduled_task {
         // See if we cannot make anymore API calls.
         $retryafter = get_config('zoom', 'retry-after');
         if (!empty($retryafter) && time() < $retryafter) {
-            mtrace('Out of API calls, retry after ' . userdate($retryafter,
-                    get_string('strftimedaydatetime', 'core_langconfig')));
+            mtrace('Out of API calls, retry after ' . userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig')));
             return;
         }
 

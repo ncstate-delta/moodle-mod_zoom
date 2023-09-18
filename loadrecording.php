@@ -33,7 +33,7 @@ if (!get_config('zoom', 'viewrecordings')) {
     throw new moodle_exception('recordingnotvisible', 'mod_zoom', get_string('recordingnotvisible', 'zoom'));
 }
 
-list($course, $cm, $zoom) = zoom_get_instance_setup();
+[$course, $cm, $zoom] = zoom_get_instance_setup();
 require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);

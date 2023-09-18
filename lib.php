@@ -656,8 +656,11 @@ function zoom_calendar_item_delete(stdClass $zoom) {
  * @param int $userid User id override
  * @return \core_calendar\local\event\entities\action_interface|null
  */
-function mod_zoom_core_calendar_provide_event_action(calendar_event $event,
-                                                      \core_calendar\action_factory $factory, $userid = null) {
+function mod_zoom_core_calendar_provide_event_action(
+    calendar_event $event,
+    \core_calendar\action_factory $factory,
+    $userid = null
+) {
     global $CFG, $DB, $USER;
 
     require_once($CFG->dirroot . '/mod/zoom/locallib.php');
@@ -668,7 +671,7 @@ function mod_zoom_core_calendar_provide_event_action(calendar_event $event,
 
     $cm = get_fast_modinfo($event->courseid, $userid)->instances['zoom'][$event->instance];
     $zoom = $DB->get_record('zoom', ['id' => $cm->instance], '*');
-    list($inprogress, $available, $finished) = zoom_get_state($zoom);
+    [$inprogress, $available, $finished] = zoom_get_state($zoom);
 
     if ($finished) {
         return null; // No point to showing finished meetings in overview.
@@ -741,8 +744,7 @@ function zoom_grade_item_update(stdClass $zoom, $grades = null) {
         $grades = null;
     }
 
-    grade_update('mod/zoom', $zoom->course, 'mod', 'zoom',
-            $zoom->id, 0, $grades, $item);
+    grade_update('mod/zoom', $zoom->course, 'mod', 'zoom', $zoom->id, 0, $grades, $item);
 }
 
 /**
@@ -755,8 +757,7 @@ function zoom_grade_item_delete($zoom) {
     global $CFG;
     require_once($CFG->libdir . '/gradelib.php');
 
-    return grade_update('mod/zoom', $zoom->course, 'mod', 'zoom',
-            $zoom->id, 0, null, ['deleted' => 1]);
+    return grade_update('mod/zoom', $zoom->course, 'mod', 'zoom', $zoom->id, 0, null, ['deleted' => 1]);
 }
 
 /**
@@ -839,22 +840,28 @@ function zoom_reset_userdata($data) {
 
     if (!empty($data->reset_zoom_all)) {
         // Reset tables that record user data.
-        $DB->delete_records_select('zoom_meeting_participants',
+        $DB->delete_records_select(
+            'zoom_meeting_participants',
             'detailsid IN (SELECT zmd.id
                              FROM {zoom_meeting_details} zmd
                              JOIN {zoom} z ON z.id = zmd.zoomid
-                            WHERE z.course = ?)', [$data->courseid]);
+                            WHERE z.course = ?)',
+            [$data->courseid]
+        );
         $status[] = [
             'component' => $componentstr,
             'item' => get_string('meetingparticipantsdeleted', 'zoom'),
             'error' => false,
         ];
 
-        $DB->delete_records_select('zoom_meeting_recordings_view',
+        $DB->delete_records_select(
+            'zoom_meeting_recordings_view',
             'recordingsid IN (SELECT zmr.id
                              FROM {zoom_meeting_recordings} zmr
                              JOIN {zoom} z ON z.id = zmr.zoomid
-                            WHERE z.course = ?)', [$data->courseid]);
+                            WHERE z.course = ?)',
+            [$data->courseid]
+        );
         $status[] = [
             'component' => $componentstr,
             'item' => get_string('meetingrecordingviewsdeleted', 'zoom'),
@@ -1180,7 +1187,7 @@ function zoom_build_instance_breakout_rooms_array_for_view($zoomid, $courseparti
             $roomparticipants = $courseparticipants;
             if (!empty($breakoutroom['participants'])) {
                 $participants = $breakoutroom['participants'];
-                $roomparticipants = array_map(function($roomparticipant) use ($participants) {
+                $roomparticipants = array_map(function ($roomparticipant) use ($participants) {
                     if (isset($participants[$roomparticipant['participantid']])) {
                         $roomparticipant['selected'] = true;
                     }
@@ -1192,7 +1199,7 @@ function zoom_build_instance_breakout_rooms_array_for_view($zoomid, $courseparti
             $roomgroups = $coursegroups;
             if (!empty($breakoutroom['groups'])) {
                 $groups = $breakoutroom['groups'];
-                $roomgroups = array_map(function($roomgroup) use ($groups) {
+                $roomgroups = array_map(function ($roomgroup) use ($groups) {
                     if (isset($groups[$roomgroup['groupid']])) {
                         $roomgroup['selected'] = true;
                     }
@@ -1325,7 +1332,7 @@ function zoom_cm_info_dynamic(cm_info $cm) {
         $moduleinstance = $DB->get_record('zoom', ['id' => $cm->instance], '*', MUST_EXIST);
 
         // Get meeting state from Zoom.
-        list($inprogress, $available, $finished) = zoom_get_state($moduleinstance);
+        [$inprogress, $available, $finished] = zoom_get_state($moduleinstance);
 
         // For unfinished meetings, override start_time with the next occurrence.
         // If this is a recurring meeting without fixed time, do not override - it will set start_time = 0.

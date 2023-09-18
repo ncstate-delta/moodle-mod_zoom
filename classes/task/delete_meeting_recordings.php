@@ -60,8 +60,7 @@ class delete_meeting_recordings extends \core\task\scheduled_task {
         // See if we cannot make anymore API calls.
         $retryafter = get_config('zoom', 'retry-after');
         if (!empty($retryafter) && time() < $retryafter) {
-            mtrace('Out of API calls, retry after ' . userdate($retryafter,
-                    get_string('strftimedaydatetime', 'core_langconfig')));
+            mtrace('Out of API calls, retry after ' . userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig')));
             return;
         }
 
@@ -84,8 +83,7 @@ class delete_meeting_recordings extends \core\task\scheduled_task {
 
             // If recordings are in Moodle but not in Zoom, we need to remove them from Moodle as well.
             foreach ($recordings as $zoomrecordingid => $recording) {
-                mtrace('Deleting recording with id: ' . $zoomrecordingid .
-                       ' as corresponding record on zoom has been removed.');
+                mtrace('Deleting recording with id: ' . $zoomrecordingid . ' as corresponding record on zoom has been removed.');
                 $DB->delete_records('zoom_meeting_recordings', ['zoomrecordingid' => $zoomrecordingid]);
             }
         }
