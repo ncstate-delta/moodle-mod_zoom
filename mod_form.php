@@ -1139,21 +1139,3 @@ class mod_zoom_mod_form extends moodleform_mod {
         return $errors;
     }
 }
-
-/**
- * Form to search for meeting reports.
- */
-class mod_zoom_report_form extends moodleform {
-    /**
-     * Define form elements.
-     */
-    public function definition() {
-        $mform = $this->_form;
-
-        $mform->addElement('date_selector', 'from', get_string('from'));
-
-        $mform->addElement('date_selector', 'to', get_string('to'));
-
-        $mform->addElement('submit', 'submit', get_string('go'));
-    }
-}
