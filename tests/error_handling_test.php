@@ -25,7 +25,6 @@
 namespace mod_zoom;
 
 use basic_testcase;
-use zoom_not_found_exception;
 
 /**
  * PHPunit testcase class.
@@ -33,13 +32,13 @@ use zoom_not_found_exception;
 class error_handling_test extends basic_testcase {
     /**
      * Exception for when the meeting isn't found on Zoom.
-     * @var zoom_not_found_exception
+     * @var not_found_exception
      */
     private $meetingnotfoundexception;
 
     /**
      * Exception for when the user isn't found on Zoom.
-     * @var zoom_not_found_exception
+     * @var not_found_exception
      */
     private $usernotfoundexception;
 
@@ -47,13 +46,13 @@ class error_handling_test extends basic_testcase {
      * Exception for when the user is found in the system but they haven't
      * accepted their invite, so they don't have permissions to do what was
      * requested.
-     * @var zoom_not_found_exception
+     * @var not_found_exception
      */
     private $invaliduserexception;
 
     /**
      * Exception for when the meeting isn't found on Zoom.
-     * @var zoom_not_found_exception
+     * @var not_found_exception
      */
     private $othererrorcodeexception;
 
@@ -69,10 +68,10 @@ class error_handling_test extends basic_testcase {
      * Setup before every test.
      */
     public function setUp(): void {
-        $this->meetingnotfoundexception = new zoom_not_found_exception('meeting not found', 3001);
-        $this->usernotfoundexception = new zoom_not_found_exception('user not found', 1001);
-        $this->invaliduserexception = new zoom_not_found_exception('invalid user found', 1120);
-        $this->othererrorcodeexception = new zoom_not_found_exception('other exception', -1);
+        $this->meetingnotfoundexception = new not_found_exception('meeting not found', 3001);
+        $this->usernotfoundexception = new not_found_exception('user not found', 1001);
+        $this->invaliduserexception = new not_found_exception('invalid user found', 1120);
+        $this->othererrorcodeexception = new not_found_exception('other exception', -1);
     }
 
     /**

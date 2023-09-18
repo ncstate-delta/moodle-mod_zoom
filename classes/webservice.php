@@ -22,15 +22,20 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_zoom;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 require_once($CFG->libdir . '/filelib.php');
 
+use moodle_exception;
+use stdClass;
+
 /**
  * Web service class.
  */
-class mod_zoom_webservice {
+class webservice {
     /**
      * API calls: maximum number of retries.
      * @var int
@@ -194,7 +199,7 @@ class mod_zoom_webservice {
         }
 
         // Create $curl, which implicitly uses the proxy settings from $CFG.
-        $curl = new curl();
+        $curl = new \curl();
 
         if (!empty($proxyhost)) {
             // Restore the stored global proxy settings from above.
@@ -260,15 +265,15 @@ class mod_zoom_webservice {
                             $errorstring .= ' ' . $error->message;
                         }
                     }
-                    throw new zoom_bad_request_exception($response->message . $errorstring, $response->code);
+                    throw new bad_request_exception($response->message . $errorstring, $response->code);
 
                 case 404:
-                    throw new zoom_not_found_exception($response->message, $response->code);
+                    throw new not_found_exception($response->message, $response->code);
 
                 case 429:
                     $this->makecallretries += 1;
                     if ($this->makecallretries > self::MAX_RETRIES) {
-                        throw new zoom_api_retry_failed_exception($response->message, $response->code);
+                        throw new retry_failed_exception($response->message, $response->code);
                     }
 
                     $header = $curl->getResponse();
@@ -291,7 +296,7 @@ class mod_zoom_webservice {
                         // If we have no API calls remaining, save retry-after.
                         if ($header['x-ratelimit-remaining'] == 0 && !empty($retryafter)) {
                             set_config('retry-after', $retryafter, 'zoom');
-                            throw new zoom_api_limit_exception($response->message, $response->code, $retryafter);
+                            throw new api_limit_exception($response->message, $response->code, $retryafter);
                         } else if (!(defined('PHPUNIT_TEST') && PHPUNIT_TEST)) {
                             // When running CLI we might want to know how many calls remaining.
                             debugging('x-ratelimit-remaining = ' . $header['x-ratelimit-remaining']);
@@ -307,7 +312,7 @@ class mod_zoom_webservice {
 
                 default:
                     if ($response) {
-                        throw new \mod_zoom\webservice_exception(
+                        throw new webservice_exception(
                             $response->message,
                             $response->code,
                             'errorwebservice',
@@ -419,7 +424,7 @@ class mod_zoom_webservice {
         foreach ($userslist as $user) {
             if ($user->type != ZOOM_USER_TYPE_BASIC) {
                 // Count the user if we're including all users or if the user is on this instance.
-                if (!$this->instanceusers || core_user::get_user_by_email($user->email)) {
+                if (!$this->instanceusers || \core_user::get_user_by_email($user->email)) {
                     $numusers++;
                     if ($numusers >= $this->numlicenses) {
                         return true;
@@ -442,7 +447,7 @@ class mod_zoom_webservice {
         foreach ($userslist as $user) {
             if ($user->type != ZOOM_USER_TYPE_BASIC && isset($user->last_login_time)) {
                 // Count the user if we're including all users or if the user is on this instance.
-                if (!$this->instanceusers || core_user::get_user_by_email($user->email)) {
+                if (!$this->instanceusers || \core_user::get_user_by_email($user->email)) {
                     $usertimes[$user->id] = strtotime($user->last_login_time);
                 }
             }
@@ -514,7 +519,7 @@ class mod_zoom_webservice {
 
         try {
             $founduser = $this->make_call($url);
-        } catch (\mod_zoom\webservice_exception $error) {
+        } catch (webservice_exception $error) {
             if (zoom_is_user_not_found_error($error)) {
                 return false;
             } else {
@@ -795,7 +800,7 @@ class mod_zoom_webservice {
 
         // Webinar does not have meeting invite info.
         if ($zoom->webinar) {
-            return new \mod_zoom\invitation(null);
+            return new invitation(null);
         }
 
         $url = 'meetings/' . $zoom->meeting_id . '/invitation';
@@ -803,10 +808,10 @@ class mod_zoom_webservice {
             $response = $this->make_call($url);
         } catch (moodle_exception $error) {
             debugging($error->getMessage());
-            return new \mod_zoom\invitation(null);
+            return new invitation(null);
         }
 
-        return new \mod_zoom\invitation($response->invitation);
+        return new invitation($response->invitation);
     }
 
     /**
@@ -1004,7 +1009,7 @@ class mod_zoom_webservice {
      * @return string access token
      */
     protected function get_access_token() {
-        $cache = cache::make('mod_zoom', 'oauth');
+        $cache = \cache::make('mod_zoom', 'oauth');
         $token = $cache->get('accesstoken');
         $expires = $cache->get('expires');
         if (empty($token) || empty($expires) || time() >= $expires) {
@@ -1028,7 +1033,7 @@ class mod_zoom_webservice {
 
         // Force HTTP/1.1 to avoid HTTP/2 "stream not closed" issue.
         $curl->setopt([
-            'CURLOPT_HTTP_VERSION' => CURL_HTTP_VERSION_1_1,
+            'CURLOPT_HTTP_VERSION' => \CURL_HTTP_VERSION_1_1,
         ]);
 
         $timecalled = time();

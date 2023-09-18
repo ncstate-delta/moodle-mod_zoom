@@ -372,7 +372,7 @@ function zoom_delete_instance($id) {
     if ($zoom->exists_on_zoom == ZOOM_MEETING_EXISTS) {
         try {
             zoom_webservice()->delete_meeting($zoom->meeting_id, $zoom->webinar);
-        } catch (zoom_not_found_exception $error) {
+        } catch (\mod_zoom\not_found_exception $error) {
             // Meeting not on Zoom, so continue.
             mtrace('Meeting not on Zoom; continuing');
         }

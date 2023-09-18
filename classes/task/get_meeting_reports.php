@@ -46,9 +46,9 @@ class get_meeting_reports extends \core\task\scheduled_task {
     public $debuggingenabled = false;
 
     /**
-     * The mod_zoom_webservice instance used to query for data. Can be stubbed
+     * The mod_zoom\webservice instance used to query for data. Can be stubbed
      * for unit testing.
-     * @var mod_zoom_webservice
+     * @var mod_zoom\webservice
      */
     public $service = null;
 
@@ -343,14 +343,14 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 $this->debugmsg('Getting meetings for host uuid ' . $activehostsuuid);
                 try {
                     $usersmeetings = $this->service->get_user_report($activehostsuuid, $start, $end);
-                } catch (\zoom_not_found_exception $e) {
+                } catch (\mod_zoom\not_found_exception $e) {
                     // Zoom API returned user not found for a user it said had,
                     // meetings. Have to skip user.
                     $this->debugmsg("Skipping $activehostsuuid because user does not exist on Zoom");
                     continue;
-                } catch (\zoom_api_retry_failed_exception $e) {
+                } catch (\mod_zoom\retry_failed_exception $e) {
                     // Hit API limit, so cannot continue.
-                    mtrace($ex->response . ': ' . $ex->zoomerrorcode);
+                    mtrace($e->response . ': ' . $e->zoomerrorcode);
                     return;
                 }
             } else {
@@ -494,13 +494,10 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         try {
             $participants = $this->service->get_meeting_participants($meeting->uuid, $zoomrecord->webinar);
-        } catch (\zoom_not_found_exception $e) {
+        } catch (\mod_zoom\not_found_exception $e) {
             mtrace(sprintf('Warning: Cannot find meeting %s|%s; skipping', $meeting->meeting_id, $meeting->uuid));
             return true;    // Not really a show stopping error.
-        } catch (\zoom_api_retry_failed_exception $e) {
-            mtrace($e->response . ': ' . $e->zoomerrorcode);
-            return false;
-        } catch (\zoom_api_limit_exception $e) {
+        } catch (\mod_zoom\webservice_exception $e) {
             mtrace($e->response . ': ' . $e->zoomerrorcode);
             return false;
         }

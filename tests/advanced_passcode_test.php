@@ -25,7 +25,6 @@
 namespace mod_zoom;
 
 use basic_testcase;
-use mod_zoom_webservice;
 
 /**
  * PHPunit testcase class.
@@ -67,7 +66,7 @@ class advanced_passcode_test extends basic_testcase {
      * @covers ::zoom_create_default_passcode
      */
     public function test_settings_default() {
-        $this->zoomdata = (object) mod_zoom_webservice::DEFAULT_MEETING_PASSWORD_REQUIREMENT;
+        $this->zoomdata = (object) webservice::DEFAULT_MEETING_PASSWORD_REQUIREMENT;
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
         $this->assertEquals(strlen($passcode), 6);
@@ -239,7 +238,7 @@ class advanced_passcode_test extends basic_testcase {
      * @covers ::zoom_create_passcode_description
      */
     public function test_pasword_description_default() {
-        $this->zoomdata = (object) mod_zoom_webservice::DEFAULT_MEETING_PASSWORD_REQUIREMENT;
+        $this->zoomdata = (object) webservice::DEFAULT_MEETING_PASSWORD_REQUIREMENT;
 
         $description = zoom_create_passcode_description($this->zoomdata);
         $expected = 'Passcode may only contain the following characters: [a-z A-Z 0-9 @ - _ *]. Maximum of 10 characters.';

@@ -25,7 +25,6 @@
 namespace mod_zoom;
 
 use advanced_testcase;
-use mod_zoom_webservice;
 use stdClass;
 
 /**
@@ -52,7 +51,7 @@ class get_meeting_reports_test extends advanced_testcase {
     private $zoomdata;
 
     /**
-     * Mocks the mod_zoom_webservice->get_meeting_participants() call, so we
+     * Mocks the mod_zoom\webservice->get_meeting_participants() call, so we
      * don't actually call the real Zoom API.
      *
      * @param string $meetinguuid The meeting or webinar's UUID.
@@ -263,7 +262,7 @@ class get_meeting_reports_test extends advanced_testcase {
 
         // First mock the webservice object, so we can inject the return values
         // for get_meeting_participants.
-        $mockwwebservice = $this->createMock('\mod_zoom_webservice');
+        $mockwwebservice = $this->createMock('\mod_zoom\webservice');
 
         // What we want get_meeting_participants to return.
         $participant1 = new stdClass();
