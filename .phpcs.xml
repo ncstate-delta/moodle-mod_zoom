@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="MoodleCore">
+  <rule ref="./phpcs.xml"/>
+  <rule ref="moodle-extra">
+  </rule>
+</ruleset>
