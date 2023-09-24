@@ -107,6 +107,12 @@ class mod_zoom_webservice {
     protected $makecallretries = 0;
 
     /**
+     * Granted OAuth scopes
+     * @var array
+     */
+    protected $scopes;
+
+    /**
      * The constructor for the webservice class.
      * @throws moodle_exception Moodle exception is thrown for missing config settings.
      */
@@ -844,8 +850,20 @@ class mod_zoom_webservice {
      */
     public function get_meeting_participants($meetinguuid, $webinar) {
         $meetinguuid = $this->encode_uuid($meetinguuid);
-        return $this->make_paginated_call('report/' . ($webinar ? 'webinars' : 'meetings') . '/'
-                                           . $meetinguuid . '/participants', null, 'participants');
+
+        $meetingtype = ($webinar ? 'webinars' : 'meetings');
+
+        if ($this->has_scope('report:read:admin')) {
+            $apitype = 'report';
+        } else if ($this->has_scope('dashboard_' . $meetingtype . ':read:admin')) {
+            $apitype = 'metrics';
+        } else {
+            mtrace('Missing required OAuth scope: report:read:admin or dashboard_' . $meetingtype . ':read:admin');
+            return [];
+        }
+
+        $url = $apitype . '/' . $meetingtype . '/' . $meetinguuid . '/participants';
+        return $this->make_paginated_call($url, [], 'participants');
     }
 
     /**
@@ -1013,6 +1031,22 @@ class mod_zoom_webservice {
     }
 
     /**
+     * Has the request OAuth scope been granted?
+     *
+     * @param string $scope OAuth scope.
+     * @throws moodle_exception
+     * @return bool
+     */
+    public function has_scope($scope) {
+        if (!isset($this->scopes)) {
+            $this->get_access_token();
+        }
+
+        mtrace('checking has_scope(' . $scope . ')');
+        return \in_array($scope, $this->scopes, true);
+    }
+
+    /**
      * Stores token and expiration in cache, returns token from OAuth call.
      *
      * @param cache $cache
@@ -1053,6 +1087,9 @@ class mod_zoom_webservice {
         ];
         $scopes = explode(' ', $response->scope);
         $missingscopes = array_diff($requiredscopes, $scopes);
+
+        // Keep the scope information in memory.
+        $this->scopes = $scopes;
 
         if (!empty($missingscopes)) {
             $missingscopes = implode(', ', $missingscopes);

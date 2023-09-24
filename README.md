@@ -28,7 +28,7 @@ Optional functionality can be enabled by granting additional scopes:
 - Reports for meetings / webinars
     - dashboard_meetings:read:admin (Business accounts and higher)
     - dashboard_webinars:read:admin  (Business accounts and higher)
-    - report:read:admin (Pro user and up)
+    - report:read:admin (Pro accounts and higher)
 - Allow recordings to be viewed (zoom | viewrecordings)
     - recording:read:admin
 - Tracking fields (zoom | defaulttrackingfields)

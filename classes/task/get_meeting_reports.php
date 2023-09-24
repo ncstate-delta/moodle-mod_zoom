@@ -130,19 +130,16 @@ class get_meeting_reports extends \core\task\scheduled_task {
         mtrace(sprintf('Finding meetings between %s to %s', $start, $end));
 
         $recordedallmeetings = true;
-        try {
-            if (!empty($hostuuids)) {
-                // Can only query on $hostuuids using Report API. So throw
-                // exception to skip Dashboard API.
-                throw new \Exception('Querying $hostuuids; need to use Report API');
-            }
 
+        // Can only query on $hostuuids using Report API.
+        if (empty($hostuuids) && $this->service->has_scope('dashboard_meetings:read:admin')) {
             $allmeetings = $this->get_meetings_via_dashboard($start, $end);
-        } catch (\Exception $e) {
-            mtrace($e->getMessage());
-            // If ran into exception, then Dashboard API must have failed. Try
-            // using Report API.
+        } else if ($this->service->has_scope('report:read:admin')) {
             $allmeetings = $this->get_meetings_via_reports($start, $end, $hostuuids);
+        } else {
+            $requiredscope = !empty($hostuuids) ? 'report:read:admin' : 'dashboard_meetings:read:admin or report:read:admin';
+            mtrace('Skipping task - missing required OAuth scope: ' . $requiredscope);
+            return;
         }
 
         // Sort all meetings based on end_time so that we know where to pick
@@ -204,6 +201,11 @@ class get_meeting_reports extends \core\task\scheduled_task {
         $moodleuser = null;
         $moodleuserid = null;
         $name = null;
+
+        // Consolidate fields.
+        $participant->name = $participant->name ?? $participant->user_name ?? '';
+        $participant->id = $participant->id ?? $participant->participant_user_id ?? '';
+        $participant->user_email = $participant->user_email ?? $participant->email ?? '';
 
         // Cleanup the name. For some reason # gets into the name instead of a comma.
         $participant->name = str_replace('#', ',', $participant->name);
@@ -373,8 +375,16 @@ class get_meeting_reports extends \core\task\scheduled_task {
     public function get_meetings_via_dashboard($start, $end) {
         mtrace('Using Dashboard API');
 
-        $meetings = $this->service->get_meetings($start, $end);
-        $webinars = $this->service->get_webinars($start, $end);
+        $meetings = [];
+        if ($this->service->has_scope('dashboard_meetings:read:admin')) {
+            $meetings = $this->service->get_meetings($start, $end);
+        }
+
+        $webinars = [];
+        if ($this->service->has_scope('dashboard_webinars:read:admin')) {
+            $webinars = $this->service->get_webinars($start, $end);
+        }
+
         $allmeetings = array_merge($meetings, $webinars);
 
         return $allmeetings;
