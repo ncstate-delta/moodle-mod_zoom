@@ -71,13 +71,11 @@ class delete_meeting_recordings extends \core\task\scheduled_task {
         foreach ($zoomrecordings as $meetinguuid => $recordings) {
             // Now check which recordings still exist on Zoom.
             $recordinglist = $service->get_recording_url_list($meetinguuid);
-            foreach ($recordinglist as $recordingpair) {
-                foreach ($recordingpair as $recordinginfo) {
-                    $zoomrecordingid = trim($recordinginfo->recordingid);
-                    if (isset($recordings[$zoomrecordingid])) {
-                        mtrace('Recording id: ' . $zoomrecordingid . ' exist(s)...skipping');
-                        unset($recordings[$zoomrecordingid]);
-                    }
+            foreach ($recordinglist as $recordinginfo) {
+                $zoomrecordingid = trim($recordinginfo->recordingid);
+                if (isset($recordings[$zoomrecordingid])) {
+                    mtrace('Recording id: ' . $zoomrecordingid . ' exist(s)...skipping');
+                    unset($recordings[$zoomrecordingid]);
                 }
             }
 

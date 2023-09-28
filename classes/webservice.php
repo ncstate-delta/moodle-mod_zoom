@@ -342,7 +342,7 @@ class webservice {
      * Makes a call like make_call() but specifically for GETs with paginated results.
      *
      * @param string $url The URL to append to the API URL
-     * @param array|string $data The data to attach to the call.
+     * @param array $data The data to attach to the call.
      * @param string $datatoget The name of the array of the data to get.
      * @return array The retrieved data.
      * @see make_call()
@@ -411,7 +411,7 @@ class webservice {
      */
     public function list_users() {
         if (empty(self::$userslist)) {
-            self::$userslist = $this->make_paginated_call('users', null, 'users');
+            self::$userslist = $this->make_paginated_call('users', [], 'users');
         }
 
         return self::$userslist;
@@ -823,7 +823,7 @@ class webservice {
     /**
      * Retrieve ended meetings report for a specified user and period. Handles multiple pages.
      *
-     * @param int $userid Id of user of interest
+     * @param string $userid Id of user of interest
      * @param string $from Start date of period in the form YYYY-MM-DD
      * @param string $to End date of period in the form YYYY-MM-DD
      * @return array The retrieved meetings.
@@ -831,7 +831,7 @@ class webservice {
      */
     public function get_user_report($userid, $from, $to) {
         $url = 'report/users/' . $userid . '/meetings';
-        $data = ['from' => $from, 'to' => $to, 'page_size' => ZOOM_MAX_RECORDS_PER_CALL];
+        $data = ['from' => $from, 'to' => $to];
         return $this->make_paginated_call($url, $data, 'meetings');
     }
 
@@ -846,7 +846,7 @@ class webservice {
      */
     public function list_meetings($userid, $webinar) {
         $url = 'users/' . $userid . ($webinar ? '/webinars' : '/meetings');
-        $instances = $this->make_paginated_call($url, null, ($webinar ? 'webinars' : 'meetings'));
+        $instances = $this->make_paginated_call($url, [], ($webinar ? 'webinars' : 'meetings'));
         return $instances;
     }
 
@@ -980,40 +980,89 @@ class webservice {
      * of the meeting and then starts recording again without ending the meeting.
      *
      * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/cloud-recording/recordingget
-     * @param string $meetingid The string meeting ID.
+     * @param string $meetingid The string meeting UUID.
      * @return array Returns the list of recording URLs and the type of recording that is being sent back.
      */
     public function get_recording_url_list($meetingid) {
-        $meetingid = $this->encode_uuid($meetingid);
-        $url = 'meetings/' . $meetingid . '/recordings';
-        $settingsurl = 'meetings/' . $meetingid . '/recordings/settings';
-        $allowedrecordingtypes = ['MP4', 'M4A'];
         $recordings = [];
-        try {
-            $response = $this->make_call($url);
-            if (!empty($response->recording_files)) {
-                $settingsresponse = $this->make_call($settingsurl);
-                foreach ($response->recording_files as $rec) {
-                    if (!empty($rec->play_url) && in_array($rec->file_type, $allowedrecordingtypes, true)) {
-                        $type = (!empty($rec->recording_type) && $rec->recording_type === 'audio_only') ? 'audio' : 'video';
 
-                        // Only pick the video recording and audio only recordings.
-                        // The transcript is available in both of these, so the extra file is unnecessary.
+        // Only pick the video recording and audio only recordings.
+        // The transcript is available in both of these, so the extra file is unnecessary.
+        $allowedrecordingtypes = [
+            'MP4' => 'video',
+            'M4A' => 'audio',
+        ];
+
+        try {
+            $url = 'meetings/' . $this->encode_uuid($meetingid) . '/recordings';
+            $response = $this->make_call($url);
+
+            if (!empty($response->recording_files)) {
+                foreach ($response->recording_files as $recording) {
+                    if (!empty($recording->play_url) && isset($allowedrecordingtypes[$recording->file_type])) {
                         $recordinginfo = new stdClass();
-                        $recordinginfo->recordingid = $rec->id;
-                        $recordinginfo->meetinguuid = $rec->meeting_id;
-                        $recordinginfo->url = $rec->play_url;
-                        $recordinginfo->filetype = $rec->file_type;
-                        $recordinginfo->recordingtype = $recordingtype;
-                        $recordinginfo->passcode = $settingsresponse->password;
-                        $recordings[strtotime($rec->recording_start)][] = $recordinginfo;
+                        $recordinginfo->recordingid = $recording->id;
+                        $recordinginfo->meetinguuid = $response->uuid;
+                        $recordinginfo->url = $recording->play_url;
+                        $recordinginfo->filetype = $recording->file_type;
+                        $recordinginfo->recordingtype = $allowedrecordingtypes[$recording->file_type];
+                        $recordinginfo->passcode = $response->password;
+                        $recordinginfo->recordingstart = strtotime($recording->recording_start);
+
+                        $recordings[$recording->id] = $recordinginfo;
                     }
                 }
-
-                ksort($recordings);
             }
         } catch (moodle_exception $error) {
             // No recordings found for this meeting id.
+            $recordings = [];
+        }
+
+        return $recordings;
+    }
+
+    /**
+     * Retrieve recordings for a specified user and period. Handles multiple pages.
+     *
+     * @param string $userid User ID.
+     * @param string $from Start date of period in the form YYYY-MM-DD
+     * @param string $to End date of period in the form YYYY-MM-DD
+     * @return array
+     * @link https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/recordingsList
+     */
+    public function get_user_recordings($userid, $from, $to) {
+        $recordings = [];
+
+        // Only pick the video recording and audio only recordings.
+        // The transcript is available in both of these, so the extra file is unnecessary.
+        $allowedrecordingtypes = [
+            'MP4' => 'video',
+            'M4A' => 'audio',
+        ];
+
+        try {
+            $url = 'users/' . $userid . '/recordings';
+            $data = ['from' => $from, 'to' => $to];
+            $response = $this->make_paginated_call($url, $data, 'meetings');
+
+            foreach ($response as $meeting) {
+                foreach ($meeting->recording_files as $recording) {
+                    if (!empty($recording->play_url) && isset($allowedrecordingtypes[$recording->file_type])) {
+                        $recordinginfo = new stdClass();
+                        $recordinginfo->recordingid = $recording->id;
+                        $recordinginfo->meetingid = $meeting->id;
+                        $recordinginfo->meetinguuid = $meeting->uuid;
+                        $recordinginfo->url = $recording->play_url;
+                        $recordinginfo->filetype = $recording->file_type;
+                        $recordinginfo->recordingtype = $allowedrecordingtypes[$recording->file_type];
+                        $recordinginfo->recordingstart = strtotime($recording->recording_start);
+
+                        $recordings[$recording->id] = $recordinginfo;
+                    }
+                }
+            }
+        } catch (moodle_exception $error) {
+            // No recordings found for this user.
             $recordings = [];
         }
 
@@ -1123,12 +1172,24 @@ class webservice {
     /**
      * List the meeting or webinar registrants from Zoom.
      *
-     * @param int $id The meeting_id or webinar_id of the meeting or webinar to retrieve.
+     * @param string $id The meeting_id or webinar_id of the meeting or webinar to retrieve.
      * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
      * @return stdClass The meeting's or webinar's information.
      */
     public function get_meeting_registrants($id, $webinar) {
         $url = ($webinar ? 'webinars/' : 'meetings/') . $id . '/registrants';
+        $response = $this->make_call($url);
+        return $response;
+    }
+
+    /**
+     * Get the recording settings for a meeting.
+     *
+     * @param string $meetinguuid The UUID of a meeting with recordings.
+     * @return stdClass The meeting's recording settings.
+     */
+    public function get_recording_settings($meetinguuid) {
+        $url = 'meetings/' . $this->encode_uuid($meetinguuid) . '/recordings/settings';
         $response = $this->make_call($url);
         return $response;
     }
