@@ -334,7 +334,7 @@ if ($ADMIN->fulltree) {
     $audiochoices = [
         ZOOM_AUDIO_TELEPHONY => get_string('audio_telephony', 'mod_zoom'),
         ZOOM_AUDIO_VOIP => get_string('audio_voip', 'mod_zoom'),
-        ZOOM_AUDIO_BOTH => get_string('audio_both', 'mod_zoom')
+        ZOOM_AUDIO_BOTH => get_string('audio_both', 'mod_zoom'),
     ];
     $defaultaudiooption = new admin_setting_configselect('zoom/defaultaudiooption',
             get_string('option_audio', 'mod_zoom'),

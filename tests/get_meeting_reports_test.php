@@ -317,9 +317,12 @@ class get_meeting_reports_test extends advanced_testcase {
         $meeting->participants = 3;
 
         // Insert stub data for zoom table.
-        $DB->insert_record('zoom', ['course' => $SITE->id,
-                'meeting_id' => $meeting->id, 'name' => 'Zoom',
-                'exists_on_zoom' => ZOOM_MEETING_EXISTS]);
+        $DB->insert_record('zoom', [
+            'course' => $SITE->id,
+            'meeting_id' => $meeting->id,
+            'name' => 'Zoom',
+            'exists_on_zoom' => ZOOM_MEETING_EXISTS,
+        ]);
 
         // Run task process_meeting_reports() and should insert participants.
         $this->meetingtask->service = $mockwwebservice;

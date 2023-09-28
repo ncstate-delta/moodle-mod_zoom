@@ -488,12 +488,22 @@ class mod_zoom_mod_form extends moodleform_mod {
                 }
 
                 $mform->addGroup([
-                        $mform->createElement('radio', 'option_encryption_type', '',
-                                get_string('option_encryption_type_enhancedencryption', 'zoom'),
-                                ZOOM_ENCRYPTION_TYPE_ENHANCED, $encryptionattr),
-                        $mform->createElement('radio', 'option_encryption_type', '',
-                                get_string('option_encryption_type_endtoendencryption', 'zoom'),
-                                ZOOM_ENCRYPTION_TYPE_E2EE, $encryptionattr)
+                    $mform->createElement(
+                        'radio',
+                        'option_encryption_type',
+                        '',
+                        get_string('option_encryption_type_enhancedencryption', 'zoom'),
+                        ZOOM_ENCRYPTION_TYPE_ENHANCED,
+                        $encryptionattr
+                    ),
+                    $mform->createElement(
+                        'radio',
+                        'option_encryption_type',
+                        '',
+                        get_string('option_encryption_type_endtoendencryption', 'zoom'),
+                        ZOOM_ENCRYPTION_TYPE_E2EE,
+                        $encryptionattr
+                    ),
                 ], 'option_encryption_type_group', get_string('option_encryption_type', 'zoom'), null, false);
                 $mform->setDefault('option_encryption_type', $defaultencryptiontype);
                 $mform->addHelpButton('option_encryption_type_group', 'option_encryption_type', 'zoom');
@@ -535,7 +545,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Add host/participants video options.
         $mform->addGroup([
             $mform->createElement('radio', 'option_host_video', '', get_string('on', 'zoom'), true),
-            $mform->createElement('radio', 'option_host_video', '', get_string('off', 'zoom'), false)
+            $mform->createElement('radio', 'option_host_video', '', get_string('off', 'zoom'), false),
         ], 'option_host_video_group', get_string('option_host_video', 'zoom'), null, false);
         $mform->setDefault('option_host_video', $config->defaulthostvideo);
         $mform->addHelpButton('option_host_video_group', 'option_host_video', 'zoom');
@@ -543,7 +553,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         $mform->addGroup([
             $mform->createElement('radio', 'option_participants_video', '', get_string('on', 'zoom'), true),
-            $mform->createElement('radio', 'option_participants_video', '', get_string('off', 'zoom'), false)
+            $mform->createElement('radio', 'option_participants_video', '', get_string('off', 'zoom'), false),
         ], 'option_participants_video_group', get_string('option_participants_video', 'zoom'), null, false);
         $mform->setDefault('option_participants_video', $config->defaultparticipantsvideo);
         $mform->addHelpButton('option_participants_video_group', 'option_participants_video', 'zoom');
@@ -553,7 +563,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addGroup([
             $mform->createElement('radio', 'option_audio', '', get_string('audio_telephony', 'zoom'), ZOOM_AUDIO_TELEPHONY),
             $mform->createElement('radio', 'option_audio', '', get_string('audio_voip', 'zoom'), ZOOM_AUDIO_VOIP),
-            $mform->createElement('radio', 'option_audio', '', get_string('audio_both', 'zoom'), ZOOM_AUDIO_BOTH)
+            $mform->createElement('radio', 'option_audio', '', get_string('audio_both', 'zoom'), ZOOM_AUDIO_BOTH),
         ], 'option_audio_group', get_string('option_audio', 'zoom'), null, false);
         $mform->addHelpButton('option_audio_group', 'option_audio', 'zoom');
         $mform->setDefault('option_audio', $config->defaultaudiooption);

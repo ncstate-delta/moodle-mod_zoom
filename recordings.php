@@ -60,14 +60,14 @@ if ($iszoommanager) {
         get_string('recordingdate', 'mod_zoom'),
         get_string('recordinglink', 'mod_zoom'),
         get_string('recordingpasscode', 'mod_zoom'),
-        get_string('recordingshowtoggle', 'mod_zoom')
+        get_string('recordingshowtoggle', 'mod_zoom'),
     ];
 } else {
     $table->align = ['left', 'left', 'left'];
     $table->head = [
         get_string('recordingdate', 'mod_zoom'),
         get_string('recordinglink', 'mod_zoom'),
-        get_string('recordingpasscode', 'mod_zoom')
+        get_string('recordingpasscode', 'mod_zoom'),
     ];
 }
 
