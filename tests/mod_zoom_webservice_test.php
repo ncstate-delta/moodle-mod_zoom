@@ -35,6 +35,11 @@ use zoom_api_retry_failed_exception;
  */
 class mod_zoom_webservice_test extends advanced_testcase {
     /**
+     * @var object Anonymous class to mock \curl.
+     */
+    private $notfoundmockcurl;
+
+    /**
      * Setup to ensure that fixtures are loaded.
      */
     public static function setUpBeforeClass(): void {
