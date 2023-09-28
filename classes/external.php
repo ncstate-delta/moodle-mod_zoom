@@ -25,14 +25,22 @@
  * @since      Moodle 3.1
  */
 
+namespace mod_zoom;
+
 defined('MOODLE_INTERNAL') || die;
 
 require_once("$CFG->libdir/externallib.php");
 
+use external_api;
+use external_function_parameters;
+use external_single_structure;
+use external_value;
+use external_warnings;
+
 /**
  * Zoom external functions
  */
-class mod_zoom_external extends external_api {
+class external extends external_api {
     /**
      * Returns description of method parameters
      *
@@ -79,7 +87,7 @@ class mod_zoom_external extends external_api {
         require_capability('mod/zoom:view', $context);
 
         // Call the zoom/locallib API.
-        list($inprogress, $available, $finished) = zoom_get_state($zoom);
+        [$inprogress, $available, $finished] = zoom_get_state($zoom);
 
         $result = [];
         $result['available'] = $available;
@@ -215,5 +223,4 @@ class mod_zoom_external extends external_api {
             ]
         );
     }
-
 }

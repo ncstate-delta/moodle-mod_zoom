@@ -46,9 +46,9 @@ class get_meeting_reports extends \core\task\scheduled_task {
     public $debuggingenabled = false;
 
     /**
-     * The mod_zoom_webservice instance used to query for data. Can be stubbed
+     * The mod_zoom\webservice instance used to query for data. Can be stubbed
      * for unit testing.
-     * @var mod_zoom_webservice
+     * @var mod_zoom\webservice
      */
     public $service = null;
 
@@ -85,8 +85,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
         // See if we cannot make anymore API calls.
         $retryafter = get_config('zoom', 'retry-after');
         if (!empty($retryafter) && time() < $retryafter) {
-            mtrace('Out of API calls, retry after ' . userdate($retryafter,
-                    get_string('strftimedaydatetime', 'core_langconfig')));
+            mtrace('Out of API calls, retry after ' . userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig')));
             return;
         }
 
@@ -213,8 +212,12 @@ class get_meeting_reports extends \core\task\scheduled_task {
         // Try to see if we successfully queried for this user and found a Moodle id before.
         if (!empty($participant->id)) {
             // Sometimes uuid is blank from Zoom.
-            $participantmatches = $DB->get_records('zoom_meeting_participants',
-                    ['uuid' => $participant->id], null, 'id, userid, name');
+            $participantmatches = $DB->get_records(
+                'zoom_meeting_participants',
+                ['uuid' => $participant->id],
+                null,
+                'id, userid, name'
+            );
 
             if (!empty($participantmatches)) {
                 // Found some previous matches. Find first one with userid set.
@@ -230,22 +233,24 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         // Did not find a previous match.
         if (empty($moodleuserid)) {
-            if (!empty($participant->user_email) && ($moodleuserid =
-                    array_search(strtoupper($participant->user_email), $emails))) {
+            if (!empty($participant->user_email) && ($moodleuserid = array_search(strtoupper($participant->user_email), $emails))) {
                 // Found email from list of enrolled users.
                 $name = $names[$moodleuserid];
-            } else if (!empty($participant->name) && ($moodleuserid =
-                    array_search(strtoupper($participant->name), $names))) {
+            } else if (!empty($participant->name) && ($moodleuserid = array_search(strtoupper($participant->name), $names))) {
                 // Found name from list of enrolled users.
                 $name = $names[$moodleuserid];
-            } else if (!empty($participant->user_email) &&
-                    ($moodleuser = $DB->get_record('user',
-                            ['email' => $participant->user_email, 'deleted' => 0, 'suspended' => 0], '*', IGNORE_MULTIPLE))) {
+            } else if (
+                !empty($participant->user_email)
+                && ($moodleuser = $DB->get_record('user', [
+                    'email' => $participant->user_email,
+                    'deleted' => 0,
+                    'suspended' => 0,
+                ], '*', IGNORE_MULTIPLE))
+            ) {
                 // This is the case where someone attends the meeting, but is not enrolled in the class.
                 $moodleuserid = $moodleuser->id;
                 $name = strtoupper(fullname($moodleuser));
-            } else if (!empty($participant->name) && ($moodleuserid =
-                    $this->match_name($participant->name, $names))) {
+            } else if (!empty($participant->name) && ($moodleuserid = $this->match_name($participant->name, $names))) {
                 // Found name by using fuzzy text search.
                 $name = $names[$moodleuserid];
             } else {
@@ -340,14 +345,14 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 $this->debugmsg('Getting meetings for host uuid ' . $activehostsuuid);
                 try {
                     $usersmeetings = $this->service->get_user_report($activehostsuuid, $start, $end);
-                } catch (\zoom_not_found_exception $e) {
+                } catch (\mod_zoom\not_found_exception $e) {
                     // Zoom API returned user not found for a user it said had,
                     // meetings. Have to skip user.
                     $this->debugmsg("Skipping $activehostsuuid because user does not exist on Zoom");
                     continue;
-                } catch (\zoom_api_retry_failed_exception $e) {
+                } catch (\mod_zoom\retry_failed_exception $e) {
                     // Hit API limit, so cannot continue.
-                    mtrace($ex->response . ': ' . $ex->zoomerrorcode);
+                    mtrace($e->response . ': ' . $e->zoomerrorcode);
                     return;
                 }
             } else {
@@ -469,13 +474,16 @@ class get_meeting_reports extends \core\task\scheduled_task {
     public function process_meeting_reports($meeting) {
         global $DB;
 
-        $this->debugmsg(sprintf('Processing meeting %s|%s that occurred at %s',
-                $meeting->meeting_id, $meeting->uuid, $meeting->start_time));
+        $this->debugmsg(sprintf(
+            'Processing meeting %s|%s that occurred at %s',
+            $meeting->meeting_id,
+            $meeting->uuid,
+            $meeting->start_time
+        ));
 
         // If meeting doesn't exist in the zoom database, the instance is
         // deleted, and we don't need reports for these.
-        if (!($zoomrecord = $DB->get_record('zoom',
-                ['meeting_id' => $meeting->meeting_id], '*', IGNORE_MULTIPLE))) {
+        if (!($zoomrecord = $DB->get_record('zoom', ['meeting_id' => $meeting->meeting_id], '*', IGNORE_MULTIPLE))) {
             mtrace('Meeting does not exist locally; skipping');
             return true;
         }
@@ -496,20 +504,16 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         try {
             $participants = $this->service->get_meeting_participants($meeting->uuid, $zoomrecord->webinar);
-        } catch (\zoom_not_found_exception $e) {
-            mtrace(sprintf('Warning: Cannot find meeting %s|%s; skipping',
-                    $meeting->meeting_id, $meeting->uuid));
+        } catch (\mod_zoom\not_found_exception $e) {
+            mtrace(sprintf('Warning: Cannot find meeting %s|%s; skipping', $meeting->meeting_id, $meeting->uuid));
             return true;    // Not really a show stopping error.
-        } catch (\zoom_api_retry_failed_exception $e) {
-            mtrace($e->response . ': ' . $e->zoomerrorcode);
-            return false;
-        } catch (\zoom_api_limit_exception $e) {
+        } catch (\mod_zoom\webservice_exception $e) {
             mtrace($e->response . ': ' . $e->zoomerrorcode);
             return false;
         }
 
         // Loop through each user to generate name->uids mapping.
-        list($names, $emails) = $this->get_enrollments($zoomrecord->course);
+        [$names, $emails] = $this->get_enrollments($zoomrecord->course);
 
         $this->debugmsg(sprintf('Processing %d participants', count($participants)));
 
@@ -526,8 +530,12 @@ class get_meeting_reports extends \core\task\scheduled_task {
             }
 
             foreach ($participants as $rawparticipant) {
-                $this->debugmsg(sprintf('Working on %s (user_id: %d, uuid: %s)',
-                        $rawparticipant->name, $rawparticipant->user_id, $rawparticipant->id));
+                $this->debugmsg(sprintf(
+                    'Working on %s (user_id: %d, uuid: %s)',
+                    $rawparticipant->name,
+                    $rawparticipant->user_id,
+                    $rawparticipant->id
+                ));
                 $participant = $this->format_participant($rawparticipant, $detailsid, $names, $emails);
                 $recordid = $DB->insert_record('zoom_meeting_participants', $participant, true);
                 $this->debugmsg('Inserted record ' . $recordid);
@@ -536,8 +544,7 @@ class get_meeting_reports extends \core\task\scheduled_task {
             $transaction->allow_commit();
         } catch (\dml_exception $exception) {
             $transaction->rollback($exception);
-            mtrace('ERROR: Cannot insert zoom_meeting_participants: ' .
-                    $exception->getMessage());
+            mtrace('ERROR: Cannot insert zoom_meeting_participants: ' . $exception->getMessage());
             return false;
         }
 
@@ -584,12 +591,10 @@ class get_meeting_reports extends \core\task\scheduled_task {
         }
 
         // Copy values that are named differently.
-        $normalizedmeeting->participants_count = isset($meeting->participants) ?
-                $meeting->participants : $meeting->participants_count;
+        $normalizedmeeting->participants_count = $meeting->participants ?? $meeting->participants_count;
 
         // Dashboard API does not have total_minutes.
-        $normalizedmeeting->total_minutes = isset($meeting->total_minutes) ?
-                $meeting->total_minutes : null;
+        $normalizedmeeting->total_minutes = $meeting->total_minutes ?? null;
 
         return $normalizedmeeting;
     }

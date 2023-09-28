@@ -134,15 +134,24 @@ class invitation {
 
         // If invitation is null, an error occurred in preg_replace.
         if ($invitation === null) {
-            throw new \moodle_exception('invitationmodificationfailed', 'mod_zoom', $PAGE->url,
-                    ['element' => $element, 'pattern' => $configregex[$element]]);
+            throw new \moodle_exception(
+                'invitationmodificationfailed',
+                'mod_zoom',
+                $PAGE->url,
+                ['element' => $element, 'pattern' => $configregex[$element]]
+            );
         }
 
         // Add debugging message to assist site administrator in testing regex patterns if no match is found.
         if (empty($count)) {
-            debugging(get_string('invitationmatchnotfound', 'mod_zoom',
-                    ['element' => $element, 'pattern' => $configregex[$element]]),
-                    DEBUG_DEVELOPER);
+            debugging(
+                get_string(
+                    'invitationmatchnotfound',
+                    'mod_zoom',
+                    ['element' => $element, 'pattern' => $configregex[$element]]
+                ),
+                DEBUG_DEVELOPER
+            );
         }
 
         return $invitation;
@@ -169,9 +178,14 @@ class invitation {
         $result = preg_match($configregex[$element], $invitation, $matches, PREG_OFFSET_CAPTURE);
         // If error occurred in preg_match, show debugging message to help site administrator.
         if ($result === false) {
-            debugging(get_string('invitationmodificationfailed', 'mod_zoom',
-                    ['element' => $element, 'pattern' => $configregex[$element]]),
-                    DEBUG_DEVELOPER);
+            debugging(
+                get_string(
+                    'invitationmodificationfailed',
+                    'mod_zoom',
+                    ['element' => $element, 'pattern' => $configregex[$element]]
+                ),
+                DEBUG_DEVELOPER
+            );
         }
 
         // No match found, so return invitation string unaltered.

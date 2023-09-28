@@ -114,7 +114,7 @@ $modinfo = get_fast_modinfo($course);
 $cms = $modinfo->instances['zoom'];
 foreach ($zooms as $z) {
     $row = [];
-    list($inprogress, $available, $finished) = zoom_get_state($z);
+    [$inprogress, $available, $finished] = zoom_get_state($z);
 
     $cm = $cms[$z->id];
     if ($usesections && isset($cm->sectionnum)) {

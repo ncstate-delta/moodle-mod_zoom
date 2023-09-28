@@ -27,6 +27,8 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . '/mod/zoom/backup/moodle2/backup_zoom_stepslib.php');
 
+use mod_zoom\backup_activity_structure_step;
+
 /**
  * Provides the steps to perform one complete backup of the zoom instance
  */
@@ -41,7 +43,7 @@ class backup_zoom_activity_task extends backup_activity_task {
      * Defines a backup step to store the instance data in the zoom.xml file
      */
     protected function define_my_steps() {
-        $this->add_step(new backup_zoom_activity_structure_step('zoom_structure', 'zoom.xml'));
+        $this->add_step(new backup_activity_structure_step('zoom_structure', 'zoom.xml'));
     }
 
     /**

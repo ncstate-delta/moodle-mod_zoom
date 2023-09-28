@@ -29,12 +29,8 @@ namespace mod_zoom\privacy;
  * Ad hoc task that performs the actions for approved data privacy requests.
  */
 class provider implements
-    // This plugin has data.
-    \core_privacy\local\metadata\provider,
-
     \core_privacy\local\request\core_userlist_provider,
-
-    // This plugin currently implements the original plugin_provider interface.
+    \core_privacy\local\metadata\provider,
     \core_privacy\local\request\plugin\provider {
     /**
      * Returns meta data about this system.
@@ -53,17 +49,23 @@ class provider implements
             'duration' => 'privacy:metadata:zoom_meeting_participants:duration',
         ], 'privacy:metadata:zoom_meeting_participants');
 
-        $coll->add_database_table('zoom_meeting_details',
-                                        ['topic' => 'privacy:metadata:zoom_meeting_details:topic'],
-                                        'privacy:metadata:zoom_meeting_details');
+        $coll->add_database_table(
+            'zoom_meeting_details',
+            ['topic' => 'privacy:metadata:zoom_meeting_details:topic'],
+            'privacy:metadata:zoom_meeting_details'
+        );
 
-        $coll->add_database_table('zoom_meeting_recordings_view',
+        $coll->add_database_table(
+            'zoom_meeting_recordings_view',
             ['userid' => 'privacy:metadata:zoom_meeting_view:userid'],
-            'privacy:metadata:zoom_meeting_view');
+            'privacy:metadata:zoom_meeting_view'
+        );
 
-        $coll->add_database_table('zoom_breakout_participants',
+        $coll->add_database_table(
+            'zoom_breakout_participants',
             ['userid' => 'privacy:metadata:zoom_breakout_participants:userid'],
-            'privacy:metadata:zoom_breakout_participants');
+            'privacy:metadata:zoom_breakout_participants'
+        );
 
         return $coll;
     }
@@ -166,7 +168,7 @@ class provider implements
 
         $user = $contextlist->get_user();
 
-        list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+        [$contextsql, $contextparams] = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
 
         $sql = "SELECT zmp.id,
                        zmd.topic,
@@ -345,7 +347,7 @@ class provider implements
 
         // Prepare SQL to gather all completed IDs.
         $userids = $userlist->get_userids();
-        list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
         $params = array_merge($inparams, ['contextid' => $context->id, 'modlevel' => CONTEXT_MODULE]);
 
         $sql = "SELECT zmd.id

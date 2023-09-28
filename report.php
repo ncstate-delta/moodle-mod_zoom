@@ -29,7 +29,7 @@ require_once($CFG->libdir . '/moodlelib.php');
 
 require_login();
 // Additional access checks in zoom_get_instance_setup().
-list($course, $cm, $zoom) = zoom_get_instance_setup();
+[$course, $cm, $zoom] = zoom_get_instance_setup();
 
 // Check capability.
 $context = context_module::instance($cm->id);

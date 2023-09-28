@@ -29,7 +29,7 @@ require_once($CFG->libdir . '/moodlelib.php');
 
 require_login();
 // Additional access checks in zoom_get_instance_setup().
-list($course, $cm, $zoom) = zoom_get_instance_setup();
+[$course, $cm, $zoom] = zoom_get_instance_setup();
 
 global $DB;
 
@@ -70,8 +70,7 @@ if (empty($export) || empty($participants)) {
 
     // Stop if there is no data.
     if (empty($participants)) {
-        notice(get_string('noparticipants', 'mod_zoom'),
-                new moodle_url('/mod/zoom/report.php', ['id' => $cm->id]));
+        notice(get_string('noparticipants', 'mod_zoom'), new moodle_url('/mod/zoom/report.php', ['id' => $cm->id]));
         echo $OUTPUT->footer();
         exit();
     }

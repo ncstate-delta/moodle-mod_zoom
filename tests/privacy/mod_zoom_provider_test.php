@@ -305,8 +305,11 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
         $this->assertEquals(2, $zmrecordingviewcount);
         // Delete data based on specific context.
         $context = context_module::instance($this->cm->id);
-        $approveduserlist = new approved_userlist($context, 'zoom',
-                [$this->student->id, $this->student2->id]);
+        $approveduserlist = new approved_userlist(
+            $context,
+            'zoom',
+            [$this->student->id, $this->student2->id]
+        );
         provider::delete_data_for_users($approveduserlist);
 
         $newzmparticipants = $DB->count_records('zoom_meeting_participants');

@@ -80,7 +80,7 @@ class update_meetings extends \core\task\scheduled_task {
             try {
                 $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
                 $gotinfo = true;
-            } catch (\zoom_not_found_exception $error) {
+            } catch (\mod_zoom\not_found_exception $error) {
                 $zoom->exists_on_zoom = ZOOM_MEETING_EXPIRED;
                 $DB->update_record('zoom', $zoom);
 

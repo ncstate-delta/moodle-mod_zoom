@@ -31,7 +31,7 @@ require_once($CFG->libdir . '/moodlelib.php');
 
 require_login();
 // Additional access checks in zoom_get_instance_setup().
-list($course, $cm, $zoom) = zoom_get_instance_setup();
+[$course, $cm, $zoom] = zoom_get_instance_setup();
 
 $config = get_config('zoom');
 
@@ -195,11 +195,17 @@ if (!$showrecreate && $config->showcapacitywarning == true) {
             $meetingcapacitywarning = get_string('meetingcapacitywarningheading', 'mod_zoom');
             $meetingcapacitywarning .= html_writer::empty_tag('br');
             if ($userisrealhost == true) {
-                $meetingcapacitywarning .= get_string('meetingcapacitywarningbodyrealhost', 'mod_zoom',
-                        $meetingcapacityplaceholders);
+                $meetingcapacitywarning .= get_string(
+                    'meetingcapacitywarningbodyrealhost',
+                    'mod_zoom',
+                    $meetingcapacityplaceholders
+                );
             } else {
-                $meetingcapacitywarning .= get_string('meetingcapacitywarningbodyalthost', 'mod_zoom',
-                        $meetingcapacityplaceholders);
+                $meetingcapacitywarning .= get_string(
+                    'meetingcapacitywarningbodyalthost',
+                    'mod_zoom',
+                    $meetingcapacityplaceholders
+                );
             }
 
             $meetingcapacitywarning .= html_writer::empty_tag('br');
@@ -217,7 +223,7 @@ if (!$showrecreate && $config->showcapacitywarning == true) {
 }
 
 // Get meeting state from Zoom.
-list($inprogress, $available, $finished) = zoom_get_state($zoom);
+[$inprogress, $available, $finished] = zoom_get_state($zoom);
 
 // Show join meeting button or unavailability note.
 if (!$showrecreate) {
@@ -479,18 +485,26 @@ if ($zoom->show_media) {
     $table->data[] = [$strmuteuponentry, ($zoom->option_mute_upon_entry) ? $stryes : $strno];
 
     // Show dial-in information.
-    if (!$showrecreate
-            && ($zoom->option_audio === ZOOM_AUDIO_BOTH || $zoom->option_audio === ZOOM_AUDIO_TELEPHONY)
-            && ($userishost || has_capability('mod/zoom:viewdialin', $context))) {
+    if (
+        !$showrecreate
+        && ($zoom->option_audio === ZOOM_AUDIO_BOTH || $zoom->option_audio === ZOOM_AUDIO_TELEPHONY)
+        && ($userishost || has_capability('mod/zoom:viewdialin', $context))
+    ) {
         // Get meeting invitation from Zoom.
         $meetinginvite = zoom_webservice()->get_meeting_invitation($zoom)->get_display_string($cm->id);
         // Show meeting invitation if there is any.
         if (!empty($meetinginvite)) {
             $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);
-            $showbutton = html_writer::tag('button', $strmeetinginviteshow,
-                    ['id' => 'show-more-button', 'class' => 'btn btn-link pt-0 pl-0']);
-            $meetinginvitebody = html_writer::div($meetinginvitetext, '',
-                    ['id' => 'show-more-body', 'style' => 'display: none;']);
+            $showbutton = html_writer::tag(
+                'button',
+                $strmeetinginviteshow,
+                ['id' => 'show-more-button', 'class' => 'btn btn-link pt-0 pl-0']
+            );
+            $meetinginvitebody = html_writer::div(
+                $meetinginvitetext,
+                '',
+                ['id' => 'show-more-body', 'style' => 'display: none;']
+            );
             $table->data[] = [$strmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, '')];
         }
     }

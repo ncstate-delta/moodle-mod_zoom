@@ -30,6 +30,10 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot . '/mod/zoom/lib.php');
 require_once($CFG->dirroot . '/mod/zoom/classes/webservice_exception.php');
+require_once($CFG->dirroot . '/mod/zoom/classes/api_limit_exception.php');
+require_once($CFG->dirroot . '/mod/zoom/classes/bad_request_exception.php');
+require_once($CFG->dirroot . '/mod/zoom/classes/not_found_exception.php');
+require_once($CFG->dirroot . '/mod/zoom/classes/retry_failed_exception.php');
 require_once($CFG->dirroot . '/mod/zoom/classes/webservice.php');
 
 // Constants.
@@ -111,77 +115,6 @@ define('ZOOM_AUTORECORDING_CLOUD', 'cloud');
 define('ZOOM_REGISTRATION_AUTOMATIC', 0);
 define('ZOOM_REGISTRATION_MANUAL', 1);
 define('ZOOM_REGISTRATION_OFF', 2);
-
-/**
- * Entry not found on Zoom.
- */
-class zoom_not_found_exception extends \mod_zoom\webservice_exception {
-    /**
-     * Constructor
-     * @param string $response      Web service response message
-     * @param int $errorcode     Web service response error code
-     */
-    public function __construct($response, $errorcode) {
-        parent::__construct($response, $errorcode, 'errorwebservice_notfound', 'mod_zoom');
-    }
-}
-
-/**
- * Bad request received by Zoom.
- */
-class zoom_bad_request_exception extends \mod_zoom\webservice_exception {
-    /**
-     * Constructor
-     * @param string $response      Web service response message
-     * @param int $errorcode     Web service response error code
-     */
-    public function __construct($response, $errorcode) {
-        parent::__construct($response, $errorcode, 'errorwebservice_badrequest', 'mod_zoom', '', $response);
-    }
-}
-
-/**
- * Couldn't succeed within the allowed number of retries.
- */
-class zoom_api_retry_failed_exception extends \mod_zoom\webservice_exception {
-    /**
-     * Constructor
-     * @param string $response      Web service response
-     * @param int $errorcode     Web service response error code
-     */
-    public function __construct($response, $errorcode) {
-        $a = new stdClass();
-        $a->response = $response;
-        $a->maxretries = mod_zoom_webservice::MAX_RETRIES;
-        parent::__construct($response, $errorcode, 'zoomerr_maxretries', 'mod_zoom', '', $a);
-    }
-}
-
-/**
- * Exceeded daily API limit.
- */
-class zoom_api_limit_exception extends \mod_zoom\webservice_exception {
-    /**
-     * Unix timestamp of next time to API can be called.
-     * @var int
-     */
-    public $retryafter = null;
-
-    /**
-     * Constructor
-     * @param string $response  Web service response
-     * @param int $errorcode    Web service response error code
-     * @param int $retryafter   Unix timestamp of next time to API can be called.
-     */
-    public function __construct($response, $errorcode, $retryafter) {
-        $this->retryafter = $retryafter;
-
-        $a = new stdClass();
-        $a->response = $response;
-        parent::__construct($response, $errorcode, 'zoomerr_apilimit', 'mod_zoom', '',
-                userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig')));
-    }
-}
 
 /**
  * Terminate the current script with a fatal error.
@@ -620,10 +553,12 @@ function zoom_create_passcode_description($meetingpasswordrequirement) {
         $description .= get_string('password_length', 'mod_zoom', $meetingpasswordrequirement->length) . ' ';
     }
 
-    if ($meetingpasswordrequirement->consecutive_characters_length &&
-        $meetingpasswordrequirement->consecutive_characters_length > 0) {
-        $description .= get_string('password_consecutive', 'mod_zoom',
-            $meetingpasswordrequirement->consecutive_characters_length - 1) . ' ';
+    if ($meetingpasswordrequirement->consecutive_characters_length > 0) {
+        $description .= get_string(
+            'password_consecutive',
+            'mod_zoom',
+            $meetingpasswordrequirement->consecutive_characters_length - 1
+        ) . ' ';
     }
 
     $description .= get_string('password_max_length', 'mod_zoom');
@@ -694,7 +629,7 @@ function zoom_get_users_from_alternativehosts(array $alternativehosts) {
     global $DB;
 
     // Get the existing Moodle user objects from the DB.
-    list($insql, $inparams) = $DB->get_in_or_equal($alternativehosts);
+    [$insql, $inparams] = $DB->get_in_or_equal($alternativehosts);
     $sql = 'SELECT *
             FROM {user}
             WHERE email ' . $insql . '
@@ -716,7 +651,7 @@ function zoom_get_nonusers_from_alternativehosts(array $alternativehosts) {
 
     // Get the non-Moodle user mail addresses by checking which one does not exist in the DB.
     $alternativehostnonusers = [];
-    list($insql, $inparams) = $DB->get_in_or_equal($alternativehosts);
+    [$insql, $inparams] = $DB->get_in_or_equal($alternativehosts);
     $sql = 'SELECT email
             FROM {user}
             WHERE email ' . $insql . '
@@ -756,7 +691,7 @@ function zoom_get_unavailability_note($zoom, $finished = null) {
     } else {
         // If we don't have the finished information yet, get it with a small overhead.
         if ($finished === null) {
-            list($inprogress, $available, $finished) = zoom_get_state($zoom);
+            [$inprogress, $available, $finished] = zoom_get_state($zoom);
         }
 
         // If this meeting is still pending.
@@ -998,7 +933,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
 
     $returns = ['nexturl' => null, 'error' => null];
 
-    list($inprogress, $available, $finished) = zoom_get_state($zoom);
+    [$inprogress, $available, $finished] = zoom_get_state($zoom);
 
     $userisregistered = false;
     $userisregistering = false;
@@ -1257,13 +1192,13 @@ function zoom_get_meeting_recordings_grouped($zoomid = null) {
 /**
  * Singleton for Zoom webservice class.
  *
- * @return \mod_zoom_webservice
+ * @return \mod_zoom\webservice
  */
 function zoom_webservice() {
     static $service;
 
     if (empty($service)) {
-        $service = new mod_zoom_webservice();
+        $service = new \mod_zoom\webservice();
     }
 
     return $service;
