@@ -113,7 +113,7 @@ class get_meeting_recordings extends \core\task\scheduled_task {
 
                 if (empty($meetings[$recording->meetingid])) {
                     // Skip meetings that are not in Moodle.
-                    mtrace('Meeting id: ' . $recordingid . ' does not exist...skipping');
+                    mtrace('Meeting id: ' . $recording->meetingid . ' does not exist...skipping');
                     continue;
                 }
 
