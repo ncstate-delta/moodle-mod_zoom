@@ -39,7 +39,7 @@ $addons = [
                 'offlinefunctions' => [
                     'mobile_course_view' => [],
                 ],
-            ]
+            ],
         ],
         'lang' => [
             ['pluginname', 'zoom'],
@@ -55,7 +55,7 @@ $addons = [
             ['startpartjoins', 'zoom'],
             ['option_audio', 'zoom'],
             ['status', 'zoom'],
-            ['recurringmeetinglong', 'zoom']
+            ['recurringmeetinglong', 'zoom'],
         ],
     ],
 ];

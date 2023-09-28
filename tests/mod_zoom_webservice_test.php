@@ -268,9 +268,11 @@ class mod_zoom_webservice_test extends advanced_testcase {
             // @codingStandardsIgnoreEnd
                 // Set retry time to be 1 second. Format is 2020-05-31T00:00:00Z.
                 $retrytime = time() + 1;
-                return ['X-RateLimit-Type' => 'Daily',
-                        'X-RateLimit-Remaining' => 100,
-                        'Retry-After' => gmdate('Y-m-d\TH:i:s\Z', $retrytime)];
+                return [
+                    'X-RateLimit-Type' => 'Daily',
+                    'X-RateLimit-Remaining' => 100,
+                    'Retry-After' => gmdate('Y-m-d\TH:i:s\Z', $retrytime),
+                ];
             }
         };
 
@@ -423,9 +425,11 @@ class mod_zoom_webservice_test extends advanced_testcase {
             // @codingStandardsIgnoreEnd
                 // Set retry time after 1 second. Format is 2020-05-31T00:00:00Z.
                 $retrytime = time() + 1;
-                return ['X-RateLimit-Type' => 'Daily',
-                        'X-RateLimit-Remaining' => 100,
-                        'Retry-After' => gmdate('Y-m-d\TH:i:s\Z', $retrytime)];
+                return [
+                    'X-RateLimit-Type' => 'Daily',
+                    'X-RateLimit-Remaining' => 100,
+                    'Retry-After' => gmdate('Y-m-d\TH:i:s\Z', $retrytime),
+                ];
             }
         };
 

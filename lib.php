@@ -1284,7 +1284,7 @@ function zoom_get_instance_breakout_rooms($zoomid) {
 function zoom_get_coursemodule_info($coursemodule) {
     global $DB;
 
-    $dbparams = array('id' => $coursemodule->instance);
+    $dbparams = ['id' => $coursemodule->instance];
     $fields = 'id, intro, introformat, start_time, duration';
     if (!$zoom = $DB->get_record('zoom', $dbparams, $fields)) {
         return false;
@@ -1322,7 +1322,7 @@ function zoom_cm_info_dynamic(cm_info $cm) {
     require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
     if (method_exists($cm, 'override_customdata')) {
-        $moduleinstance = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
+        $moduleinstance = $DB->get_record('zoom', ['id' => $cm->instance], '*', MUST_EXIST);
 
         // Get meeting state from Zoom.
         list($inprogress, $available, $finished) = zoom_get_state($moduleinstance);
