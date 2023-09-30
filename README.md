@@ -53,6 +53,19 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v5.1.1
+
+- Bugfix: Get all meeting recordings, not just the last occurrence #517 (thanks @LGPoly)
+- Bugfix: Choose meeting reports API based on OAuth permissions #525 (thanks @xmontana)
+- Bugfix: Get meeting reports based on end time #514 (thanks @xmontana)
+- Bugfix: Stop showing dates for 'No Fixed Time' meetings #529 (thanks @Melle-Amu)
+- Bugfix: Fix external class namespace #530 (thanks @danmarsden)
+- Bugfix: Store recording types as language keys, not translated strings #516
+- Bugfix: Define testcase class properties (PHP 8.2) #522
+- Code quality: Align with Moodle's new moodle-extra ruleset #521
+- Code quality: Array syntax updates in moodle-cs v3.3.7 #524
+- Code quality: Test against Moodle 4.3 and PHP 8.2 #531
+
 v5.1.0
 
 - Feature: Show activity date/time directly on course page #509 (thanks @cdipe)
