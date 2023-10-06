@@ -1292,7 +1292,7 @@ function zoom_get_coursemodule_info($coursemodule) {
     global $DB;
 
     $dbparams = ['id' => $coursemodule->instance];
-    $fields = 'id, intro, introformat, start_time, duration';
+    $fields = 'id, intro, introformat, start_time, recurring, recurrence_type, duration';
     if (!$zoom = $DB->get_record('zoom', $dbparams, $fields)) {
         return false;
     }
@@ -1312,6 +1312,11 @@ function zoom_get_coursemodule_info($coursemodule) {
     if ($zoom->duration) {
         $result->customdata['duration'] = $zoom->duration;
     }
+
+    // Skip the if condition for recurring and recurrence_type, the values of NULL and 0 are needed in other functions.
+    $result->customdata['recurring'] = $zoom->recurring;
+
+    $result->customdata['recurrence_type'] = $zoom->recurrence_type;
 
     return $result;
 }
