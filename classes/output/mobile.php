@@ -25,7 +25,7 @@
 namespace mod_zoom\output;
 
 use context_module;
-use mod_zoom_external;
+use mod_zoom\external;
 
 /**
  * Mobile output class for zoom
@@ -57,7 +57,7 @@ class mobile {
 
         // WS to get zoom state.
         try {
-            $zoomstate = mod_zoom_external::get_state($cm->id);
+            $zoomstate = external::get_state($cm->id);
         } catch (\Exception $e) {
             $zoomstate = [];
         }
