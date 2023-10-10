@@ -1315,7 +1315,6 @@ function zoom_get_coursemodule_info($coursemodule) {
 
     // Skip the if condition for recurring and recurrence_type, the values of NULL and 0 are needed in other functions.
     $result->customdata['recurring'] = $zoom->recurring;
-
     $result->customdata['recurrence_type'] = $zoom->recurrence_type;
 
     return $result;
@@ -1341,7 +1340,7 @@ function zoom_cm_info_dynamic(cm_info $cm) {
 
         // For unfinished meetings, override start_time with the next occurrence.
         // If this is a recurring meeting without fixed time, do not override - it will set start_time = 0.
-        if (!$finished && $moduleinstance->recurrence_type != 0) {
+        if (!$finished && $moduleinstance->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
             $cm->override_customdata('start_time', zoom_get_next_occurrence($moduleinstance));
         }
     }

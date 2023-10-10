@@ -45,30 +45,33 @@ class dates extends activity_dates {
         $duration = $this->cm->customdata['duration'] ?? null;
         $recurring = $this->cm->customdata['recurring'] ?? null;
         $recurrencetype = $this->cm->customdata['recurrence_type'] ?? null;
-        $now = time();
+
+        // For meeting with no fixed time, no time info needed on course page.
+        if ($recurring && $recurrencetype == \ZOOM_RECURRINGTYPE_NOTIME) {
+            return [];
+        }
+
         $dates = [];
 
         if ($starttime) {
-            // For meeting with no fixed time, no time info needed on course page.
-            if (!($recurring == 1 && $recurrencetype == 0)) {
-                if ($duration && $starttime + $duration < $now) {
-                    // Meeting has ended.
-                    $dataid = 'end_date_time';
-                    $labelid = 'activitydate:ended';
-                    $meetimgtimestamp = $starttime + $duration;
-                } else {
-                    // Meeting hasn't started / in progress, or without fixed time (doesn't have an end date or time).
-                    $dataid = 'start_time';
-                    $labelid = $starttime > $now ? 'activitydate:starts' : 'activitydate:started';
-                    $meetimgtimestamp = $starttime;
-                }
-
-                $dates[] = [
-                    'dataid' => $dataid,
-                    'label' => get_string($labelid, 'mod_zoom'),
-                    'timestamp' => $meetimgtimestamp,
-                ];
+            $now = time();
+            if ($duration && $starttime + $duration < $now) {
+                // Meeting has ended.
+                $dataid = 'end_date_time';
+                $labelid = 'activitydate:ended';
+                $meetimgtimestamp = $starttime + $duration;
+            } else {
+                // Meeting hasn't started / in progress.
+                $dataid = 'start_time';
+                $labelid = $starttime > $now ? 'activitydate:starts' : 'activitydate:started';
+                $meetimgtimestamp = $starttime;
             }
+
+            $dates[] = [
+                'dataid' => $dataid,
+                'label' => get_string($labelid, 'mod_zoom'),
+                'timestamp' => $meetimgtimestamp,
+            ];
         }
 
         return $dates;
