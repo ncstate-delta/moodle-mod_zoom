@@ -43,17 +43,25 @@ class dates extends activity_dates {
     protected function get_dates(): array {
         $starttime = $this->cm->customdata['start_time'] ?? null;
         $duration = $this->cm->customdata['duration'] ?? null;
-        $now = time();
+        $recurring = $this->cm->customdata['recurring'] ?? null;
+        $recurrencetype = $this->cm->customdata['recurrence_type'] ?? null;
+
+        // For meeting with no fixed time, no time info needed on course page.
+        if ($recurring && $recurrencetype == \ZOOM_RECURRINGTYPE_NOTIME) {
+            return [];
+        }
+
         $dates = [];
 
         if ($starttime) {
+            $now = time();
             if ($duration && $starttime + $duration < $now) {
                 // Meeting has ended.
                 $dataid = 'end_date_time';
                 $labelid = 'activitydate:ended';
                 $meetimgtimestamp = $starttime + $duration;
             } else {
-                // Meeting hasn't started / in progress, or without fixed time (doesn't have an end date or time).
+                // Meeting hasn't started / in progress.
                 $dataid = 'start_time';
                 $labelid = $starttime > $now ? 'activitydate:starts' : 'activitydate:started';
                 $meetimgtimestamp = $starttime;
