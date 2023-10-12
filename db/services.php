@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die;
 $functions = [
 
     'mod_zoom_get_state' => [
-        'classname' => 'mod_zoom_external',
+        'classname' => 'mod_zoom\external',
         'methodname' => 'get_state',
         'classpath' => 'mod/zoom/classes/external.php',
         'description' => 'Determine if a zoom meeting is available, meeting '
@@ -41,7 +41,7 @@ $functions = [
     ],
 
     'mod_zoom_grade_item_update' => [
-        'classname' => 'mod_zoom_external',
+        'classname' => 'mod_zoom\external',
         'methodname' => 'grade_item_update',
         'classpath' => 'mod/zoom/classes/external.php',
         'description' => 'Creates or updates grade item for the given zoom instance and returns join url.',
