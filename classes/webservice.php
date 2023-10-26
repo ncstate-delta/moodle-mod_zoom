@@ -29,6 +29,9 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 require_once($CFG->libdir . '/filelib.php');
 
+use cache;
+use core_user;
+use curl;
 use moodle_exception;
 use stdClass;
 
@@ -205,7 +208,7 @@ class webservice {
         }
 
         // Create $curl, which implicitly uses the proxy settings from $CFG.
-        $curl = new \curl();
+        $curl = new curl();
 
         if (!empty($proxyhost)) {
             // Restore the stored global proxy settings from above.
@@ -430,7 +433,7 @@ class webservice {
         foreach ($userslist as $user) {
             if ($user->type != ZOOM_USER_TYPE_BASIC) {
                 // Count the user if we're including all users or if the user is on this instance.
-                if (!$this->instanceusers || \core_user::get_user_by_email($user->email)) {
+                if (!$this->instanceusers || core_user::get_user_by_email($user->email)) {
                     $numusers++;
                     if ($numusers >= $this->numlicenses) {
                         return true;
@@ -453,7 +456,7 @@ class webservice {
         foreach ($userslist as $user) {
             if ($user->type != ZOOM_USER_TYPE_BASIC && isset($user->last_login_time)) {
                 // Count the user if we're including all users or if the user is on this instance.
-                if (!$this->instanceusers || \core_user::get_user_by_email($user->email)) {
+                if (!$this->instanceusers || core_user::get_user_by_email($user->email)) {
                     $usertimes[$user->id] = strtotime($user->last_login_time);
                 }
             }
@@ -1076,7 +1079,7 @@ class webservice {
      * @return string access token
      */
     protected function get_access_token() {
-        $cache = \cache::make('mod_zoom', 'oauth');
+        $cache = cache::make('mod_zoom', 'oauth');
         $token = $cache->get('accesstoken');
         $expires = $cache->get('expires');
         if (empty($token) || empty($expires) || time() >= $expires) {

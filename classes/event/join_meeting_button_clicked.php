@@ -24,6 +24,9 @@
 
 namespace mod_zoom\event;
 
+use coding_exception;
+use moodle_url;
+
 /**
  * Records when a join meeting button is clicked.
  */
@@ -44,9 +47,9 @@ class join_meeting_button_clicked extends \core\event\base {
         $fieldstovalidate = ['cmid' => "integer", 'meetingid' => "integer", 'userishost' => "boolean"];
         foreach ($fieldstovalidate as $field => $shouldbe) {
             if (is_null($this->other[$field])) {
-                throw new \coding_exception("The $field value must be set in other.");
+                throw new coding_exception("The $field value must be set in other.");
             } else if (gettype($this->other[$field]) != $shouldbe) {
-                throw new \coding_exception("The $field value must be an $shouldbe.");
+                throw new coding_exception("The $field value must be an $shouldbe.");
             }
         }
     }
@@ -76,6 +79,6 @@ class join_meeting_button_clicked extends \core\event\base {
      * @return moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/zoom/view.php', ['id' => $this->other['cmid']]);
+        return new moodle_url('/mod/zoom/view.php', ['id' => $this->other['cmid']]);
     }
 }

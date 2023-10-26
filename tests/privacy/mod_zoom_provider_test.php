@@ -23,6 +23,7 @@ use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\deletion_criteria;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
+use core_privacy\tests\provider_testcase;
 use mod_zoom\privacy\provider;
 
 /**
@@ -34,7 +35,7 @@ use mod_zoom\privacy\provider;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \mod_zoom\privacy\provider
  */
-class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
+class mod_zoom_provider_test extends provider_testcase {
     /** @var object The zoom instance object. */
     protected $zoominstance;
 

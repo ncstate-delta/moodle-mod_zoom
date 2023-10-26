@@ -24,6 +24,8 @@
 
 namespace mod_zoom;
 
+use stdClass;
+
 /**
  * Couldn't succeed within the allowed number of retries.
  */
@@ -34,7 +36,7 @@ class retry_failed_exception extends webservice_exception {
      * @param int $errorcode     Web service response error code
      */
     public function __construct($response, $errorcode) {
-        $a = new \stdClass();
+        $a = new stdClass();
         $a->response = $response;
         $a->maxretries = webservice::MAX_RETRIES;
         parent::__construct($response, $errorcode, 'zoomerr_maxretries', 'mod_zoom', '', $a);

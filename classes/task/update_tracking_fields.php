@@ -29,10 +29,13 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/zoom/lib.php');
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
+use core\task\scheduled_task;
+use moodle_exception;
+
 /**
  * Scheduled task to sychronize tracking field data.
  */
-class update_tracking_fields extends \core\task\scheduled_task {
+class update_tracking_fields extends scheduled_task {
     /**
      * Returns name of task.
      *
@@ -50,7 +53,7 @@ class update_tracking_fields extends \core\task\scheduled_task {
     public function execute() {
         try {
             zoom_webservice();
-        } catch (\moodle_exception $exception) {
+        } catch (moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
         }

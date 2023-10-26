@@ -31,10 +31,15 @@ require_once($CFG->libdir . '/modinfolib.php');
 require_once($CFG->dirroot . '/mod/zoom/lib.php');
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
+use core\task\scheduled_task;
+use mod_zoom\not_found_exception;
+use moodle_exception;
+use moodle_url;
+
 /**
  * Scheduled task to sychronize meeting data.
  */
-class update_meetings extends \core\task\scheduled_task {
+class update_meetings extends scheduled_task {
     /**
      * Returns name of task.
      *
@@ -54,7 +59,7 @@ class update_meetings extends \core\task\scheduled_task {
 
         try {
             $service = zoom_webservice();
-        } catch (\moodle_exception $exception) {
+        } catch (moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
         }
@@ -72,7 +77,7 @@ class update_meetings extends \core\task\scheduled_task {
             mtrace('Processing next Zoom meeting activity ...');
             mtrace('  Zoom meeting ID: ' . $zoom->meeting_id);
             mtrace('  Zoom meeting title: ' . $zoom->name);
-            $zoomactivityurl = new \moodle_url('/mod/zoom/view.php', ['n' => $zoom->id]);
+            $zoomactivityurl = new moodle_url('/mod/zoom/view.php', ['n' => $zoom->id]);
             mtrace('  Zoom meeting activity URL: ' . $zoomactivityurl->out());
             mtrace('  Moodle course ID: ' . $zoom->course);
 
@@ -80,14 +85,14 @@ class update_meetings extends \core\task\scheduled_task {
             try {
                 $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
                 $gotinfo = true;
-            } catch (\mod_zoom\not_found_exception $error) {
+            } catch (not_found_exception $error) {
                 $zoom->exists_on_zoom = ZOOM_MEETING_EXPIRED;
                 $DB->update_record('zoom', $zoom);
 
                 // Show trace message.
                 mtrace('  => Marked Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id .
                         ' as not existing anymore on Zoom');
-            } catch (\moodle_exception $error) {
+            } catch (moodle_exception $error) {
                 // Show trace message.
                 mtrace('  !! Error updating Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id . ': ' . $error);
             }

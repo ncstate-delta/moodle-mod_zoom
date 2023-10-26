@@ -29,6 +29,12 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
+use core\task\scheduled_task;
+use mod_zoom\not_found_exception;
+use mod_zoom\retry_failed_exception;
+use mod_zoom\webservice_exception;
+use moodle_exception;
+
 /**
  * Scheduled task to get the meeting participants for each .
  */
@@ -345,12 +351,12 @@ class get_meeting_reports extends \core\task\scheduled_task {
                 $this->debugmsg('Getting meetings for host uuid ' . $activehostsuuid);
                 try {
                     $usersmeetings = $this->service->get_user_report($activehostsuuid, $start, $end);
-                } catch (\mod_zoom\not_found_exception $e) {
+                } catch (not_found_exception $e) {
                     // Zoom API returned user not found for a user it said had,
                     // meetings. Have to skip user.
                     $this->debugmsg("Skipping $activehostsuuid because user does not exist on Zoom");
                     continue;
-                } catch (\mod_zoom\retry_failed_exception $e) {
+                } catch (retry_failed_exception $e) {
                     // Hit API limit, so cannot continue.
                     mtrace($e->response . ': ' . $e->zoomerrorcode);
                     return;
@@ -504,10 +510,10 @@ class get_meeting_reports extends \core\task\scheduled_task {
 
         try {
             $participants = $this->service->get_meeting_participants($meeting->uuid, $zoomrecord->webinar);
-        } catch (\mod_zoom\not_found_exception $e) {
+        } catch (not_found_exception $e) {
             mtrace(sprintf('Warning: Cannot find meeting %s|%s; skipping', $meeting->meeting_id, $meeting->uuid));
             return true;    // Not really a show stopping error.
-        } catch (\mod_zoom\webservice_exception $e) {
+        } catch (webservice_exception $e) {
             mtrace($e->response . ': ' . $e->zoomerrorcode);
             return false;
         }

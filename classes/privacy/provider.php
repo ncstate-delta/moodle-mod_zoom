@@ -25,20 +25,22 @@
 
 namespace mod_zoom\privacy;
 
+use core_privacy\local\metadata\collection;
+use core_privacy\local\metadata\provider as metadata_provider;
+use core_privacy\local\request\core_userlist_provider;
+use core_privacy\local\request\plugin\provider as request_plugin_provider;
+
 /**
  * Ad hoc task that performs the actions for approved data privacy requests.
  */
-class provider implements
-    \core_privacy\local\request\core_userlist_provider,
-    \core_privacy\local\metadata\provider,
-    \core_privacy\local\request\plugin\provider {
+class provider implements core_userlist_provider, metadata_provider, request_plugin_provider {
     /**
      * Returns meta data about this system.
      *
      * @param   collection $coll The collection to add metadata to.
      * @return  collection  The array of metadata
      */
-    public static function get_metadata(\core_privacy\local\metadata\collection $coll): \core_privacy\local\metadata\collection {
+    public static function get_metadata(collection $coll): collection {
         // Add all user data fields to the collection.
 
         $coll->add_database_table('zoom_meeting_participants', [
