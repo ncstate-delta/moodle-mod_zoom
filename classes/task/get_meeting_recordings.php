@@ -29,6 +29,8 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
+use moodle_exception;
+
 /**
  * Scheduled task to get the meeting recordings.
  */
@@ -52,7 +54,7 @@ class get_meeting_recordings extends \core\task\scheduled_task {
 
         try {
             $service = zoom_webservice();
-        } catch (\moodle_exception $exception) {
+        } catch (moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
         }
