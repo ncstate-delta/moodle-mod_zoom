@@ -550,7 +550,7 @@ function zoom_calendar_item_update(stdClass $zoom) {
 
     // Any remaining events in the array don't exist on Moodle, so create a new event.
     foreach ($newevents as $uuid => $newevent) {
-        calendar_event::create($newevent);
+        calendar_event::create($newevent, false);
     }
 }
 
