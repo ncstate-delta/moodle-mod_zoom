@@ -79,7 +79,7 @@ class error_handling_test extends basic_testcase {
      * @covers ::zoom_is_meeting_gone_error
      * @covers ::zoom_is_user_not_found_error
      */
-    public function test_correct_error_recognition() {
+    public function test_correct_error_recognition(): void {
         // Check meeting not found behavior.
         $this->assertTrue(zoom_is_meeting_gone_error($this->meetingnotfoundexception));
         $this->assertTrue(zoom_is_meeting_gone_error($this->usernotfoundexception));

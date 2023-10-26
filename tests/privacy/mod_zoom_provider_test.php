@@ -146,7 +146,7 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
      * Test for provider::get_metadata().
      * @covers ::get_metadata
      */
-    public function test_get_metadata() {
+    public function test_get_metadata(): void {
         $collection = new collection('mod_zoom');
         $newcollection = provider::get_metadata($collection);
         $itemcollection = $newcollection->get_collection();
@@ -190,7 +190,7 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
      * Test for provider::get_contexts_for_userid().
      * @covers ::get_contexts_for_userid
      */
-    public function test_get_contexts_for_userid() {
+    public function test_get_contexts_for_userid(): void {
         $contextlist = provider::get_contexts_for_userid($this->student->id);
         $this->assertCount(1, $contextlist);
         $contextforuser = $contextlist->current();
@@ -208,7 +208,7 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
      * Test for provider::get_users_in_context().
      * @covers ::get_users_in_context
      */
-    public function test_get_users_in_context() {
+    public function test_get_users_in_context(): void {
         $cmcontext = context_module::instance($this->cm->id);
 
         $userlist = new userlist($cmcontext, 'mod_zoom');
@@ -221,7 +221,7 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
      * Test for provider::export_user_data().
      * @covers ::export_user_data
      */
-    public function test_export_user_data() {
+    public function test_export_user_data(): void {
         $cmcontext = context_module::instance($this->cm->id);
 
         // Export all of the data for the context.
@@ -234,7 +234,7 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
      * Test for provider::delete_data_for_all_users_in_context().
      * @covers ::delete_data_for_all_users_in_context
      */
-    public function test_delete_data_for_all_users_in_context() {
+    public function test_delete_data_for_all_users_in_context(): void {
         global $DB;
 
         $zoommeetingcount = $DB->count_records('zoom_meeting_details');
@@ -270,7 +270,7 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
      * Test for provider::delete_data_for_user().
      * @covers ::delete_data_for_user
      */
-    public function test_delete_data_for_user() {
+    public function test_delete_data_for_user(): void {
         global $DB;
 
         $zmparticipants = $DB->count_records('zoom_meeting_participants');
@@ -295,7 +295,7 @@ class mod_zoom_provider_test extends \core_privacy\tests\provider_testcase {
      * Test for provider::delete_data_for_users().
      * @covers ::delete_data_for_users
      */
-    public function test_delete_data_for_users() {
+    public function test_delete_data_for_users(): void {
         global $DB;
 
         $zmparticipants = $DB->count_records('zoom_meeting_participants');
