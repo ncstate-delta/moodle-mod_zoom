@@ -85,7 +85,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
     /**
      * Tests that uuid are encoded properly for use in web service calls.
      */
-    public function test_encode_uuid() {
+    public function test_encode_uuid(): void {
         $service = zoom_webservice();
 
         // If uuid includes / or // it needs to be double encoded.
@@ -103,7 +103,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
     /**
      * Tests whether the meeting not found errors are properly parsed.
      */
-    public function test_meeting_not_found_exception() {
+    public function test_meeting_not_found_exception(): void {
         $mockservice = $this->getMockBuilder('\mod_zoom\webservice')
             ->setMethods(['make_curl_call', 'get_curl_object', 'get_access_token'])
             ->getMock();
@@ -135,7 +135,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
     /**
      * Tests whether user not found errors are properly parsed.
      */
-    public function test_user_not_found_exception() {
+    public function test_user_not_found_exception(): void {
         $mockservice = $this->getMockBuilder('\mod_zoom\webservice')
             ->setMethods(['make_curl_call', 'get_curl_object', 'get_access_token'])
             ->getMock();
@@ -168,7 +168,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
     /**
      * Tests whether invalid user errors are parsed properly
      */
-    public function test_invalid_user_exception() {
+    public function test_invalid_user_exception(): void {
         $invalidmockcurl = new class {
             // @codingStandardsIgnoreStart
             /**
@@ -229,7 +229,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
      * Tests whether the retry on a 429 works properly when the Retry-After header
      * is in the curl response to specify the time that the retry should be sent.
      */
-    public function test_retry_with_header() {
+    public function test_retry_with_header(): void {
         $retrywithheadermockcurl = new class {
             public $numgetinfocalls = 0;
             // @codingStandardsIgnoreStart
@@ -308,7 +308,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
      * Tests whether the retry on a 429 response works when the Retry-After
      * header is not sent in the curl response.
      */
-    public function test_retry_without_header() {
+    public function test_retry_without_header(): void {
         $retrynoheadermockcurl = new class {
             public $numgetinfocalls = 0;
             // @codingStandardsIgnoreStart
@@ -376,7 +376,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
     /**
      * Tests that we throw error if we tried more than max retries.
      */
-    public function test_retry_exception() {
+    public function test_retry_exception(): void {
         $retryfailuremockcurl = new class {
             public $urlpath = null;
             // @codingStandardsIgnoreStart
@@ -463,7 +463,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
     /**
      * Tests that we are waiting 1 minute for QPS rate limit types.
      */
-    public function test_retryqps_exception() {
+    public function test_retryqps_exception(): void {
         $retryqpsmockcurl = new class {
             public $urlpath = null;
             // @codingStandardsIgnoreStart
