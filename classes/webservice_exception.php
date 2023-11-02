@@ -24,10 +24,12 @@
 
 namespace mod_zoom;
 
+use moodle_exception;
+
 /**
  * Webservice exception class.
  */
-class webservice_exception extends \moodle_exception {
+class webservice_exception extends moodle_exception {
     /**
      * Web service response.
      * @var string

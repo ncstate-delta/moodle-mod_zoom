@@ -25,20 +25,31 @@
 
 namespace mod_zoom\privacy;
 
+use context;
+use context_module;
+use core_privacy\local\metadata\collection;
+use core_privacy\local\metadata\provider as metadata_provider;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\contextlist;
+use core_privacy\local\request\core_userlist_provider;
+use core_privacy\local\request\helper;
+use core_privacy\local\request\plugin\provider as request_plugin_provider;
+use core_privacy\local\request\transform;
+use core_privacy\local\request\userlist;
+use core_privacy\local\request\writer;
+
 /**
  * Ad hoc task that performs the actions for approved data privacy requests.
  */
-class provider implements
-    \core_privacy\local\request\core_userlist_provider,
-    \core_privacy\local\metadata\provider,
-    \core_privacy\local\request\plugin\provider {
+class provider implements core_userlist_provider, metadata_provider, request_plugin_provider {
     /**
      * Returns meta data about this system.
      *
      * @param   collection $coll The collection to add metadata to.
      * @return  collection  The array of metadata
      */
-    public static function get_metadata(\core_privacy\local\metadata\collection $coll): \core_privacy\local\metadata\collection {
+    public static function get_metadata(collection $coll): collection {
         // Add all user data fields to the collection.
 
         $coll->add_database_table('zoom_meeting_participants', [
@@ -76,10 +87,10 @@ class provider implements
      * @param   int $userid The user to search.
      * @return  contextlist   $contextlist  The list of contexts used in this plugin.
      */
-    public static function get_contexts_for_userid(int $userid): \core_privacy\local\request\contextlist {
+    public static function get_contexts_for_userid(int $userid): contextlist {
         // Query the database for context IDs give a specific user ID and return these to the user.
 
-        $contextlist = new \core_privacy\local\request\contextlist();
+        $contextlist = new contextlist();
 
         $sql = 'SELECT c.id
                   FROM {context} c
@@ -110,10 +121,10 @@ class provider implements
      *
      * @param   userlist    $userlist   The userlist containing the list of users who have data in this context/plugin combination.
      */
-    public static function get_users_in_context(\core_privacy\local\request\userlist $userlist) {
+    public static function get_users_in_context(userlist $userlist) {
         $context = $userlist->get_context();
 
-        if (!($context instanceof \context_module)) {
+        if (!($context instanceof context_module)) {
             return;
         }
 
@@ -159,7 +170,7 @@ class provider implements
      * @param   approved_contextlist    $contextlist    The approved contexts to export information for.
      * @link http://tandl.churchward.ca/2018/06/implementing-moodles-privacy-api-in.html
      */
-    public static function export_user_data(\core_privacy\local\request\approved_contextlist $contextlist) {
+    public static function export_user_data(approved_contextlist $contextlist) {
         global $DB;
 
         if (empty($contextlist->count())) {
@@ -197,20 +208,20 @@ class provider implements
 
         $participantinstances = $DB->get_recordset_sql($sql, $params);
         foreach ($participantinstances as $participantinstance) {
-            $context = \context_module::instance($participantinstance->cmid);
-            $contextdata = \core_privacy\local\request\helper::get_context_data($context, $user);
+            $context = context_module::instance($participantinstance->cmid);
+            $contextdata = helper::get_context_data($context, $user);
 
             $instancedata = [
                 'topic' => $participantinstance->topic,
                 'participant_name' => $participantinstance->name,
                 'user_email' => $participantinstance->user_email,
-                'join_time' => \core_privacy\local\request\transform::datetime($participantinstance->join_time),
-                'leave_time' => \core_privacy\local\request\transform::datetime($participantinstance->leave_time),
+                'join_time' => transform::datetime($participantinstance->join_time),
+                'leave_time' => transform::datetime($participantinstance->leave_time),
                 'duration' => $participantinstance->duration,
             ];
 
             $contextdata = (object) array_merge((array) $contextdata, $instancedata);
-            \core_privacy\local\request\writer::with_context($context)->export_data([], $contextdata);
+            writer::with_context($context)->export_data([], $contextdata);
         }
 
         $participantinstances->close();
@@ -240,18 +251,18 @@ class provider implements
 
         $recordingviewinstances = $DB->get_recordset_sql($sql, $params);
         foreach ($recordingviewinstances as $recordingviewinstance) {
-            $context = \context_module::instance($recordingviewinstance->cmid);
-            $contextdata = \core_privacy\local\request\helper::get_context_data($context, $user);
+            $context = context_module::instance($recordingviewinstance->cmid);
+            $contextdata = helper::get_context_data($context, $user);
 
             $instancedata = [
                 'recording_name' => $recordingviewinstance->name,
                 'userid' => $recordingviewinstance->userid,
                 'viewed' => $recordingviewinstance->viewed,
-                'timemodified' => \core_privacy\local\request\transform::datetime($recordingviewinstance->timemodified),
+                'timemodified' => transform::datetime($recordingviewinstance->timemodified),
             ];
 
             $contextdata = (object) array_merge((array) $contextdata, $instancedata);
-            \core_privacy\local\request\writer::with_context($context)->export_data([], $contextdata);
+            writer::with_context($context)->export_data([], $contextdata);
         }
 
         $recordingviewinstances->close();
@@ -262,10 +273,10 @@ class provider implements
      *
      * @param context $context Context to delete data from.
      */
-    public static function delete_data_for_all_users_in_context(\context $context) {
+    public static function delete_data_for_all_users_in_context(context $context) {
         global $DB;
 
-        if (!($context instanceof \context_module)) {
+        if (!($context instanceof context_module)) {
             return;
         }
 
@@ -299,7 +310,7 @@ class provider implements
      *
      * @param   approved_contextlist    $contextlist    The approved contexts and user information to delete information for.
      */
-    public static function delete_data_for_user(\core_privacy\local\request\approved_contextlist $contextlist) {
+    public static function delete_data_for_user(approved_contextlist $contextlist) {
         global $DB;
 
         if (empty($contextlist->count())) {
@@ -309,7 +320,7 @@ class provider implements
         $user = $contextlist->get_user();
 
         foreach ($contextlist->get_contexts() as $context) {
-            if (!($context instanceof \context_module)) {
+            if (!($context instanceof context_module)) {
                 continue;
             }
 
@@ -337,11 +348,11 @@ class provider implements
      *
      * @param   approved_userlist       $userlist The approved context and user information to delete information for.
      */
-    public static function delete_data_for_users(\core_privacy\local\request\approved_userlist $userlist) {
+    public static function delete_data_for_users(approved_userlist $userlist) {
         global $DB;
         $context = $userlist->get_context();
 
-        if (!($context instanceof \context_module)) {
+        if (!($context instanceof context_module)) {
             return;
         }
 

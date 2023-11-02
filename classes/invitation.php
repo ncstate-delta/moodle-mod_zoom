@@ -25,6 +25,10 @@
 
 namespace mod_zoom;
 
+use coding_exception;
+use context_module;
+use moodle_exception;
+
 /**
  * Invitation class.
  */
@@ -81,11 +85,11 @@ class invitation {
             }
 
             // Check user capabilities, and remove parts of the invitation they don't have permission to view.
-            if (!has_capability('mod/zoom:viewjoinurl', \context_module::instance($coursemoduleid), $userid)) {
+            if (!has_capability('mod/zoom:viewjoinurl', context_module::instance($coursemoduleid), $userid)) {
                 $displaystring = $this->remove_element($displaystring, 'joinurl');
             }
 
-            if (!has_capability('mod/zoom:viewdialin', \context_module::instance($coursemoduleid), $userid)) {
+            if (!has_capability('mod/zoom:viewdialin', context_module::instance($coursemoduleid), $userid)) {
                 $displaystring = $this->remove_element($displaystring, 'onetapmobile');
                 $displaystring = $this->remove_element($displaystring, 'dialin');
                 $displaystring = $this->remove_element($displaystring, 'sip');
@@ -94,7 +98,7 @@ class invitation {
                 // Fix the formatting of the onetapmobile section if it exists.
                 $displaystring = $this->add_paragraph_break_above_element($displaystring, 'onetapmobile');
             }
-        } catch (\moodle_exception $e) {
+        } catch (moodle_exception $e) {
             // If the regex parsing fails, log a debugging message and return the whole invitation.
             debugging($e->getMessage(), DEBUG_DEVELOPER);
             return $this->invitation;
@@ -120,7 +124,7 @@ class invitation {
 
         $configregex = $this->get_config_invitation_regex();
         if (!array_key_exists($element, $configregex)) {
-            throw new \coding_exception('Cannot remove element: ' . $element
+            throw new coding_exception('Cannot remove element: ' . $element
                     . '. See mod/zoom/classes/invitation.php:get_default_invitation_regex for valid elements.');
         }
 
@@ -134,7 +138,7 @@ class invitation {
 
         // If invitation is null, an error occurred in preg_replace.
         if ($invitation === null) {
-            throw new \moodle_exception(
+            throw new moodle_exception(
                 'invitationmodificationfailed',
                 'mod_zoom',
                 $PAGE->url,

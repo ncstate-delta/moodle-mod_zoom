@@ -24,6 +24,9 @@
 
 namespace mod_zoom\analytics\indicator;
 
+use cm_info;
+use lang_string;
+
 /**
  * Social breadth indicator.
  */
@@ -35,8 +38,8 @@ class social_breadth extends activity_base {
      *
      * @return object
      */
-    public static function get_name(): \lang_string {
-        return new \lang_string('indicator:socialbreadth', 'mod_zoom');
+    public static function get_name(): lang_string {
+        return new lang_string('indicator:socialbreadth', 'mod_zoom');
     }
 
     /**
@@ -55,7 +58,7 @@ class social_breadth extends activity_base {
      *
      * @return integer
      */
-    public function get_social_breadth_level(\cm_info $cm) {
+    public function get_social_breadth_level(cm_info $cm) {
         return self::SOCIAL_LEVEL_2;
     }
 }

@@ -24,6 +24,8 @@
 
 namespace mod_zoom;
 
+use stdClass;
+
 /**
  * Exceeded daily API limit.
  */
@@ -43,7 +45,7 @@ class api_limit_exception extends webservice_exception {
     public function __construct($response, $errorcode, $retryafter) {
         $this->retryafter = $retryafter;
 
-        $a = new \stdClass();
+        $a = new stdClass();
         $a->response = $response;
         parent::__construct(
             $response,

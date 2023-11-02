@@ -24,6 +24,9 @@
 
 namespace mod_zoom\analytics\indicator;
 
+use cm_info;
+use lang_string;
+
 /**
  * Cognitive depth indicator - zoom.
  */
@@ -33,8 +36,8 @@ class cognitive_depth extends activity_base {
      *
      * @return object
      */
-    public static function get_name(): \lang_string {
-        return new \lang_string('indicator:cognitivedepth', 'mod_zoom');
+    public static function get_name(): lang_string {
+        return new lang_string('indicator:cognitivedepth', 'mod_zoom');
     }
 
     /**
@@ -53,7 +56,7 @@ class cognitive_depth extends activity_base {
      *
      * @return integer
      */
-    public function get_cognitive_depth_level(\cm_info $cm) {
+    public function get_cognitive_depth_level(cm_info $cm) {
         return self::COGNITIVE_LEVEL_1;
     }
 }

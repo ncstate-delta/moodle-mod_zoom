@@ -29,10 +29,13 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
+use core\task\scheduled_task;
+use moodle_exception;
+
 /**
  * Scheduled task to delete meeting recordings from Moodle.
  */
-class delete_meeting_recordings extends \core\task\scheduled_task {
+class delete_meeting_recordings extends scheduled_task {
     /**
      * Returns name of task.
      *
@@ -52,7 +55,7 @@ class delete_meeting_recordings extends \core\task\scheduled_task {
 
         try {
             $service = zoom_webservice();
-        } catch (\moodle_exception $exception) {
+        } catch (moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
         }
