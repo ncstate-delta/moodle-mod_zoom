@@ -1084,6 +1084,8 @@ class webservice {
         $expires = $cache->get('expires');
         if (empty($token) || empty($expires) || time() >= $expires) {
             $token = $this->oauth($cache);
+        } else {
+            $this->scopes = $cache->get('scopes');
         }
 
         return $token;
