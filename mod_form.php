@@ -204,10 +204,10 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add options for recurring meeting.
         $recurrencetype = [
+            ZOOM_RECURRINGTYPE_NOTIME => get_string('recurrence_option_no_time', 'zoom'),
             ZOOM_RECURRINGTYPE_DAILY => get_string('recurrence_option_daily', 'zoom'),
             ZOOM_RECURRINGTYPE_WEEKLY => get_string('recurrence_option_weekly', 'zoom'),
             ZOOM_RECURRINGTYPE_MONTHLY => get_string('recurrence_option_monthly', 'zoom'),
-            ZOOM_RECURRINGTYPE_NOTIME => get_string('recurrence_option_no_time', 'zoom'),
         ];
         $mform->addElement('select', 'recurrence_type', get_string('recurrencetype', 'zoom'), $recurrencetype);
         $mform->hideif('recurrence_type', 'recurring', 'notchecked');
