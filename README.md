@@ -53,6 +53,14 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v5.1.2
+
+- Bugfix: Skip redundant calendar permissions check #535 (thanks @danowar2k)
+- Bugfix: Initialize scopes from cache to avoid TypeError #542 (thanks @foxlapinou)
+- Regression: Restore exceptions were not being caught #537
+  - Introduced in v5.1.1 when moving classes into namespaces.
+- Code quality: Void test return types in moodle-cs v3.3.10 #536
+
 v5.1.1
 
 - Bugfix: Get all meeting recordings, not just the last occurrence #517 (thanks @LGPoly)
