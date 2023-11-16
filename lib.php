@@ -277,7 +277,7 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
 
     $newzoom = clone $zoom;
 
-    $samefields = ['start_url', 'join_url', 'created_at', 'timezone'];
+    $samefields = ['join_url', 'created_at', 'timezone'];
     foreach ($samefields as $field) {
         if (isset($response->$field)) {
             $newzoom->$field = $response->$field;

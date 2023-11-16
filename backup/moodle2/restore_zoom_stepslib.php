@@ -69,7 +69,6 @@ class restore_activity_structure_step extends \restore_activity_structure_step {
             $data = populate_zoom_from_response($data, $updateddata);
             $data->exists_on_zoom = ZOOM_MEETING_EXISTS;
         } catch (moodle_exception $e) {
-            $data->start_url = '';
             $data->join_url = '';
             $data->meeting_id = 0;
             $data->exists_on_zoom = ZOOM_MEETING_EXPIRED;

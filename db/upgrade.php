@@ -915,5 +915,23 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2023080202, 'zoom');
     }
 
+    if ($oldversion < 2023111600) {
+        // Issue #326: Drop start_url from database
+
+        // Start zoom table modifications.
+        $table = new xmldb_table('zoom');
+
+        // Define field status to be dropped from zoom.
+        $field = new xmldb_field('start_url');
+
+        // Conditionally launch drop field status.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2023111600, 'zoom');
+    }
+
     return true;
 }
