@@ -916,7 +916,7 @@ function xmldb_zoom_upgrade($oldversion) {
     }
 
     if ($oldversion < 2023111600) {
-        // Issue #326: Drop start_url from database
+        // Issue #326: Drop start_url from database.
 
         // Start zoom table modifications.
         $table = new xmldb_table('zoom');
