@@ -210,6 +210,10 @@ class mod_zoom_mod_form extends moodleform_mod {
             ZOOM_RECURRINGTYPE_NOTIME => get_string('recurrence_option_no_time', 'zoom'),
         ];
         $mform->addElement('select', 'recurrence_type', get_string('recurrencetype', 'zoom'), $recurrencetype);
+        // If the defaultrecurring option is active, set default recurrence_type to be No Fixed Time.
+        if ($config->defaultrecurring == 1) {
+            $mform->setDefault('recurrence_type', ZOOM_RECURRINGTYPE_NOTIME);
+        }
         $mform->hideif('recurrence_type', 'recurring', 'notchecked');
 
         // Repeat Interval options.
