@@ -53,6 +53,13 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v5.1.3
+
+- Bugfix: Allow editing a past Zoom meeting without changing the time #545 (thanks @davefoord, @tlock)
+- Bugfix: Remove unused start_url field from the database #546 (thanks @ShilVita)
+- Regression: "Recurring No Time" admin setting was defaulting to "Daily" #544 (thanks @easegill)
+  - Introduced in v4.9.0 when adding support for meeting registration.
+
 v5.1.2
 
 - Bugfix: Skip redundant calendar permissions check #535 (thanks @danowar2k)
