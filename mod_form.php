@@ -60,8 +60,14 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         $zoomuserid = zoom_get_user_id(false);
 
+        // Dirty hack to prevent throwing a moodle_exception when calling this from defaultcompletion()
+        // since Moodle 4.3.
+        // When being called from defaultcompletion() the output of the page has already begun (state == 2) due to
+        // course/defaultcompletion.php line 97, so only throw a zoom_fatal_error when before any output (state == 0)
+        // as otherwise it will break the 'Default activity completion' page.
+        // TODO: find a better solution for this.
         // If creating a new instance, but the Zoom user does not exist.
-        if ($isnew && $zoomuserid === false) {
+        if ($isnew && $zoomuserid === false && $PAGE->state == 0) {
             // Assume user is using Zoom for the first time.
             $errstring = 'zoomerr_usernotfound';
             // After they set up their account, the user should continue to the page they were on.
@@ -316,7 +322,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Only show if the admin did not disable this feature completely.
         if ($config->showwebinars != ZOOM_WEBINAR_DISABLE) {
             // If we are creating a new instance.
-            if ($isnew) {
+            if ($isnew && $zoomuserid) {
                 // Check if the user has a webinar license.
                 $userfeatures = zoom_get_user_settings($zoomuserid)->feature;
                 $haswebinarlicense = !empty($userfeatures->webinar) || !empty($userfeatures->zoom_events);
@@ -343,7 +349,8 @@ class mod_zoom_mod_form extends moodleform_mod {
                     $mform->setDefault('webinar', $config->webinardefault);
                     $mform->addHelpButton('webinar', 'webinar', 'zoom');
                 }
-            } else if ($this->current->webinar) {
+            } else if (isset($this->current->webinar) && $this->current->webinar) {
+                // If this is called from defaultcompletion() $this->current->webinar will not be set,
                 $mform->addElement(
                     'static',
                     'webinaralreadyset',
@@ -658,7 +665,8 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $options[ZOOM_AUTORECORDING_CLOUD] = get_string('autorecording_cloud', 'mod_zoom');
             }
 
-            if ($config->recordingoption === ZOOM_AUTORECORDING_USERDEFAULT) {
+            if ($config->recordingoption === ZOOM_AUTORECORDING_USERDEFAULT && isset($recordingsettings->auto_recording)) {
+                // When called by defaultcompletion() $recordingsettings->auto_recording is not set.
                 $defaultsetting = $recordingsettings->auto_recording;
             } else {
                 $defaultsetting = $config->recordingoption;
