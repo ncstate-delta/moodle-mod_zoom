@@ -31,11 +31,13 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once("$CFG->libdir/externallib.php");
 
+use context_module;
 use external_api;
 use external_function_parameters;
 use external_single_structure;
 use external_value;
 use external_warnings;
+use invalid_response_exception;
 
 /**
  * Zoom external functions
