@@ -53,6 +53,12 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v5.1.4
+
+- Bugfix: Avoid breaking completion defaults form in Moodle 4.3 #555 (thanks @opitz)
+- Regression: 'Use' missing classes required for Moodle app #554 (thanks ramprakash k)
+  - Introduced in v5.1.1 when moving classes into namespaces.
+
 v5.1.3
 
 - Bugfix: Allow editing a past Zoom meeting without changing the time #545 (thanks @davefoord, @tlock)
