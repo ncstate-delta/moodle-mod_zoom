@@ -256,12 +256,12 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
      * Breakout rooms editor.
      */
     var BreakoutroomsEditor = function() {
-        this.roomsListColumn = $("#meeting-rooms-list");
+        this.roomsListColumn = $("#mod-zoom-meeting-rooms-list");
         this.roomsList = $("ul", this.roomsListColumn);
         this.addBtn = $("#add-room", this.roomsListColumn);
         this.emptyAlert = $(".empty-alert", this.roomsListColumn);
         this.deleteBtn = $(".delete-room", this.roomsListColumn);
-        this.roomsDataColumn = $("#meeting-rooms-data");
+        this.roomsDataColumn = $("#mod-zoom-meeting-rooms-data");
         this.roomItemToClone = $('#rooms-list-item').html();
         this.roomItemDataToClone = $('#rooms-list-item-data').html();
         this.initialRoomsCount = parseInt(this.roomsListColumn.attr('data-initial-rooms-count'));
