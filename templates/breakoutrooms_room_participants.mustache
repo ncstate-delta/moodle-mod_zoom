@@ -29,7 +29,7 @@
         "courseparticipants": [
             {
                 "participantid": "2",
-                "participantemail": "a@example.com",
+                "participantname": "John Doe",
                 "selected": true
             }
         ]
@@ -39,7 +39,7 @@
     <div class="card-body">
         <select id="participants-{{roomid}}" class="room-participants" name="{{toclone}}roomsparticipants[{{roomid}}][]" multiple>
             {{#courseparticipants}}
-            <option value="{{participantid}}" {{#selected}}selected{{/selected}}>{{participantemail}}</option>
+            <option value="{{participantid}}" {{#selected}}selected{{/selected}}>{{participantname}}</option>
             {{/courseparticipants}}
         </select>
     </div>
