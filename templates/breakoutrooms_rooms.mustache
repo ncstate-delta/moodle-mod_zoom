@@ -65,10 +65,10 @@
         ]
     }
 }}
-<table id="breakout-rooms-table" class="table table-bordered">
+<table id="mod-zoom-breakout-rooms-table" class="table table-bordered">
   <tr>
     <td>
-      <div id="meeting-rooms-list" data-initial-rooms-count="{{roomscount}}">
+      <div id="mod-zoom-meeting-rooms-list" data-initial-rooms-count="{{roomscount}}">
         <div class="mb-2">
           <span>{{#str}} rooms, zoom {{/str}}</span>
           <button id="add-room" type="button" title="{{#str}} addroom, zoom {{/str}}" class="btn btn-default btn-sm">
@@ -97,7 +97,7 @@
       </div>
     </td>
     <td>
-      <div id="meeting-rooms-data">
+      <div id="mod-zoom-meeting-rooms-data">
         <div class="tab-content">
           {{#rooms}}
           <div class="tab-pane {{#roomactive}}active{{/roomactive}}" id="link{{roomid}}" role="tabpanel">
