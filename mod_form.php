@@ -422,7 +422,10 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Getting Course participants.
         $courseparticipants = [];
         foreach ($participants as $participant) {
-            $courseparticipants[] = ['participantid' => $participant->id, 'participantname' => $participant->firstname . ' ' . $participant->lastname];
+            $courseparticipants[] = [
+                'participantid' => $participant->id,
+                'participantname' => fullname($participant) . ' <' . $participant->email . '>',
+            ];
         }
 
         // Getting Course groups.
