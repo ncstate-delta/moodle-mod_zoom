@@ -874,7 +874,7 @@ function xmldb_zoom_upgrade($oldversion) {
         $table = new xmldb_table('zoom');
 
         // Define and conditionally add field registration.
-        $field = new xmldb_field('registration', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'option_auto_recording');
+        $field = new xmldb_field('registration', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '2', 'option_auto_recording');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -931,6 +931,20 @@ function xmldb_zoom_upgrade($oldversion) {
 
         // Zoom savepoint reached.
         upgrade_mod_savepoint(true, 2023111600, 'zoom');
+    }
+
+    if ($oldversion < 2024012500) {
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('registration', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '2', 'option_auto_recording');
+
+        // Launch change of notnull for field registration.
+        $dbman->change_field_notnull($table, $field);
+
+        // Launch change of default for field registration.
+        $dbman->change_field_default($table, $field);
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2024012500, 'zoom');
     }
 
     return true;
