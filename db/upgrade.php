@@ -934,10 +934,11 @@ function xmldb_zoom_upgrade($oldversion) {
     }
 
     if ($oldversion < 2024012500) {
+        // Version 5.1.0 incorrectly upgraded the zoom table's registration field. It should not be null and should default to 2.
         $table = new xmldb_table('zoom');
         $field = new xmldb_field('registration', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '2', 'option_auto_recording');
 
-        // Launch change of notnull for field registration.
+        // Launch change of nullability for field registration.
         $dbman->change_field_notnull($table, $field);
 
         // Launch change of default for field registration.
