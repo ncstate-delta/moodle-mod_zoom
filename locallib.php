@@ -226,7 +226,8 @@ function zoom_get_sessions_for_display($zoomid) {
     $sessions = [];
     $format = get_string('strftimedatetimeshort', 'langconfig');
 
-    $instances = $DB->get_records('zoom_meeting_details', ['zoomid' => $zoomid]);
+    // Sort sessions in start_time ascending order.
+    $instances = $DB->get_records('zoom_meeting_details', ['zoomid' => $zoomid], 'start_time');
 
     foreach ($instances as $instance) {
         // The meeting uuid, not the participant's uuid.
