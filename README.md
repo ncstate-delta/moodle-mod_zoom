@@ -53,6 +53,17 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v5.1.5
+
+- Bugfix: Add PNG/SVG calendar icon for Moodle 4.3 #558 (thanks @ScottVerbeek)
+- Bugfix: Display user fullname in breakout room participant list #562 (thanks @mofetdanielsmolkin)
+- Bugfix: Sort session report by start time #567
+- Code quality: Namespace CSS identifiers #560 (thanks @danielcifuentesopen)
+- Code quality: Optimize SVGs #561 (thanks @jakearchibald for SVGOMG)
+- Code quality: Remove long-forgotten todo PHPDoc tags causing warnings in moodle-cs v3.3.13
+- Regression: Registration field default was accidentally upgrading to null #565 (thanks @michael-milette)
+  - Introduced in v5.1.0 when fixing recording field definition.
+
 v5.1.4
 
 - Bugfix: Avoid breaking completion defaults form in Moodle 4.3 #555 (thanks @opitz)
