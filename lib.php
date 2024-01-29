@@ -443,7 +443,6 @@ function zoom_refresh_events($courseid, $zoom, $cm) {
  * @param bool $viewfullnames Should we display full names
  * @param int $timestart Print activity since this timestamp
  * @return boolean True if anything was printed, otherwise false
- * @todo implement this function
  */
 function zoom_print_recent_activity($course, $viewfullnames, $timestart) {
     return false;
@@ -465,7 +464,6 @@ function zoom_print_recent_activity($course, $viewfullnames, $timestart) {
  * @param int $cmid course module id
  * @param int $userid check for a particular user's activity only, defaults to 0 (all users)
  * @param int $groupid check for a particular group's activity only, defaults to 0 (all groups)
- * @todo implement this function
  */
 function zoom_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid = 0, $groupid = 0) {
 }
@@ -478,7 +476,6 @@ function zoom_get_recent_mod_activity(&$activities, &$index, $timestart, $course
  * @param bool $detail print detailed report
  * @param array $modnames as returned by get_module_types_names()
  * @param bool $viewfullnames display users' full names
- * @todo implement this function
  */
 function zoom_print_recent_mod_activity($activity, $courseid, $detail, $modnames, $viewfullnames) {
 }
@@ -490,7 +487,6 @@ function zoom_print_recent_mod_activity($activity, $courseid, $detail, $modnames
  * module uses that capability.
  *
  * @return array
- * @todo implement this function
  */
 function zoom_get_extra_capabilities() {
     return [];
@@ -905,7 +901,6 @@ function zoom_reset_course_form_defaults($course) {
  * @param stdClass $cm
  * @param stdClass $context
  * @return array of [(string)filearea] => (string)description
- * @todo implement this function
  */
 function zoom_get_file_areas($course, $cm, $context) {
     return [];
@@ -927,7 +922,6 @@ function zoom_get_file_areas($course, $cm, $context) {
  * @param string $filepath
  * @param string $filename
  * @return file_info instance or null if not found
- * @todo implement this function
  */
 function zoom_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
     return null;
@@ -968,7 +962,6 @@ function zoom_pluginfile($course, $cm, $context, $filearea, array $args, $forced
  * @param stdClass $course current course record
  * @param stdClass $module current zoom instance record
  * @param cm_info $cm course module information
- * @todo implement this function
  */
 function zoom_extend_navigation(navigation_node $navref, stdClass $course, stdClass $module, cm_info $cm) {
 }
@@ -981,7 +974,6 @@ function zoom_extend_navigation(navigation_node $navref, stdClass $course, stdCl
  *
  * @param settings_navigation $settingsnav complete settings navigation tree
  * @param navigation_node $zoomnode zoom administration node
- * @todo implement this function
  */
 function zoom_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $zoomnode = null) {
 }
