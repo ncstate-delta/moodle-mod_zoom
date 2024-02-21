@@ -1,3 +1,8 @@
+## v5.1.6 ##
+
+- Bugfix: Update NULL registration values to fix upgrade step #574 (thanks @michael-milette)
+- Code quality: Move changelog to CHANGES.md and upgrade.txt #572
+
 ## v5.1.5 ##
 
 - Bugfix: Add PNG/SVG calendar icon for Moodle 4.3 #558 (thanks @ScottVerbeek)
