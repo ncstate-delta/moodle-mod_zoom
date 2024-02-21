@@ -1,0 +1,81 @@
+== v5.0.0 ==
+
+- Drop support for JWT authentication
+- Require PHP 7.1+ (Moodle 3.7+)
+- Drop Moodle 3.4 mobile support
+
+== v4.10.0 ==
+
+- New setting `zoom/instanceusers`
+
+== v4.9.0 ==
+
+- New setting `zoom/defaultregistration`
+- New per activity setting `registration`
+- Removed OAuth scope: `account:read:admin`
+
+== v4.8.0 ==
+
+- New settings `zoom/accountid`, `zoom/clientid`, `zoom/clientsecret`
+- Reminder: You must [switch from JWT to Server-to-Server OAuth by June 2023](https://developers.zoom.us/docs/internal-apps/jwt-faq/).
+
+== v4.7.0 ==
+
+- New settings `zoom/recordingoption`, `zoom/allowrecordingchangeoption`
+- New per activity setting `option_auto_recording`
+
+== v4.4.0 ==
+
+- New settings `zoom/defaultshowschedule`, `zoom/defaultshowsecurity`, `zoom/defaultshowmedia`
+- New per activity settings `show_schedule`, `show_security`, `show_media`
+- New setting `zoom/webinardefault`
+
+== v4.3 ==
+
+- New setting `zoom/viewrecordings`
+- New per activity setting `recordings_visible_default`
+
+== v4.2 ==
+
+- New setting `zoom/defaulttrackingfields`
+
+== v4.1 ==
+
+- New setting `zoom/apiidentifier`
+- New setting `zoom/apiendpoint`
+
+== v4.0 ==
+
+- New setting `zoom/invitationremoveicallink`
+- Backward incompatible: exported iCal events now match Moodle's uid format
+
+== v3.7 ==
+
+- New capabilities `mod/zoom:viewjoinurl` and `mod/zoom:viewdialin`
+
+== v3.5 ==
+
+- Added new settings for E2EE, Webinars, Alternative hosts, Download iCal,
+  Meeting capacity warning, and Enable meeting links
+
+== v3.4 ==
+
+- Requiring passcodes is now a site wide configuration
+
+== v3.1 ==
+
+- Added site config to mask participant data from appearing in reports (useful for sites that mask participant data, e.g., for HIPAA)
+
+== v3.0 ==
+
+- Added more meeting options: Mute upon entry, Enable waiting room, Only authenticated users.
+- Added a new setting 'proxyurl' that can be used to set a proxy as hostname:port.
+
+== v2.0 ==
+
+- Updated to support Zoom API V2
+- Support for alternative hosts
+
+== v1.4 ==
+
+- Added support for webinars.
