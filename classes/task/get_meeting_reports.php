@@ -30,12 +30,17 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
 use context_course;
+use core\message\message;
 use core\task\scheduled_task;
+use core_user;
 use dml_exception;
+use Exception;
+use html_writer;
 use mod_zoom\not_found_exception;
 use mod_zoom\retry_failed_exception;
 use mod_zoom\webservice_exception;
 use moodle_exception;
+use moodle_url;
 use stdClass;
 
 /**
@@ -176,7 +181,7 @@ class get_meeting_reports extends scheduled_task {
 
                     break;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 mtrace($e->getMessage());
                 mtrace($e->getTraceAsString());
                 // Some unknown error, need to handle it so we can record
@@ -217,6 +222,14 @@ class get_meeting_reports extends scheduled_task {
 
         // Cleanup the name. For some reason # gets into the name instead of a comma.
         $participant->name = str_replace('#', ',', $participant->name);
+
+        // Extract the ID and name from the participant's name if it is in the format "(id)Name".
+        if (preg_match('/^\((\d+)\)(.+)$/', $participant->name, $matches)) {
+            $moodleuserid = $matches[1];
+            $name = trim($matches[2]);
+        } else {
+            $name = $participant->name;
+        }
 
         // Try to see if we successfully queried for this user and found a Moodle id before.
         if (!empty($participant->id)) {
@@ -269,11 +282,15 @@ class get_meeting_reports extends scheduled_task {
             }
         }
 
-        if ($participant->user_email == '') {
-            $participant->user_email = null;
+        if ($participant->user_email === '') {
+            if (!empty($moodleuserid)) {
+                $participant->user_email = $DB->get_field('user', 'email', ['id' => $moodleuserid]);
+            } else {
+                $participant->user_email = null;
+            }
         }
 
-        if ($participant->id == '') {
+        if ($participant->id === '') {
             $participant->id = null;
         }
 
@@ -477,7 +494,7 @@ class get_meeting_reports extends scheduled_task {
     /**
      * Saves meeting details and participants for reporting.
      *
-     * @param array $meeting    Normalized meeting object
+     * @param object $meeting    Normalized meeting object
      * @return boolean
      */
     public function process_meeting_reports($meeting) {
@@ -526,18 +543,19 @@ class get_meeting_reports extends scheduled_task {
 
         $this->debugmsg(sprintf('Processing %d participants', count($participants)));
 
-        // Now try to insert participants, first drop any records for given
-        // meeting and then add. There is no unique key that we can use for
-        // knowing what users existed before.
+        // Now try to insert new participant records.
+        // There is no unique key, so we make sure each record's data is distinct.
         try {
             $transaction = $DB->start_delegated_transaction();
 
             $count = $DB->count_records('zoom_meeting_participants', ['detailsid' => $detailsid]);
             if (!empty($count)) {
-                $this->debugmsg(sprintf('Dropping previous records of %d participants', $count));
-                $DB->delete_records('zoom_meeting_participants', ['detailsid' => $detailsid]);
+                $this->debugmsg(sprintf('Existing participant records: %d', $count));
+                // No need to delete old records, we don't insert matching records.
             }
 
+            // To prevent sending notifications every time the task ran check if there is inserted new records.
+            $recordupdated = false;
             foreach ($participants as $rawparticipant) {
                 $this->debugmsg(sprintf(
                     'Working on %s (user_id: %d, uuid: %s)',
@@ -546,8 +564,43 @@ class get_meeting_reports extends scheduled_task {
                     $rawparticipant->id
                 ));
                 $participant = $this->format_participant($rawparticipant, $detailsid, $names, $emails);
-                $recordid = $DB->insert_record('zoom_meeting_participants', $participant, true);
-                $this->debugmsg('Inserted record ' . $recordid);
+
+                // These conditions are enough.
+                $conditions = [
+                    'name' => $participant['name'],
+                    'userid' => $participant['userid'],
+                    'detailsid' => $participant['detailsid'],
+                    'zoomuserid' => $participant['zoomuserid'],
+                    'join_time' => $participant['join_time'],
+                    'leave_time' => $participant['leave_time'],
+                ];
+
+                // Check if the record already exists.
+                if ($record = $DB->get_record('zoom_meeting_participants', $conditions)) {
+                    // The exact record already exists, so do nothing.
+                    $this->debugmsg('Record already exists ' . $record->id);
+                } else {
+                    // Insert all new records.
+                    $recordid = $DB->insert_record('zoom_meeting_participants', $participant, true);
+                    // At least one new record inserted.
+                    $recordupdated = true;
+                    $this->debugmsg('Inserted record ' . $recordid);
+                }
+            }
+
+            // If there are new records and the grading method is attendance duration.
+            // Check the grading method settings.
+            if (!empty($zoomrecord->grading_method)) {
+                $gradingmethod = $zoomrecord->grading_method;
+            } else if ($defaultgrading = get_config('gradingmethod', 'zoom')) {
+                $gradingmethod = $defaultgrading;
+            } else {
+                $gradingmethod = 'entry';
+            }
+
+            if ($recordupdated && $gradingmethod === 'period') {
+                // Grade users according to their duration in the meeting.
+                $this->grading_participant_upon_duration($zoomrecord, $detailsid);
             }
 
             $transaction->allow_commit();
@@ -559,6 +612,333 @@ class get_meeting_reports extends scheduled_task {
 
         $this->debugmsg('Finished updating meeting report');
         return true;
+    }
+
+    /**
+     * Update the grades of users according to their duration in the meeting.
+     * @param object $zoomrecord
+     * @param int $detailsid
+     * @return void
+     */
+    public function grading_participant_upon_duration($zoomrecord, $detailsid) {
+        global $CFG, $DB;
+
+        require_once($CFG->libdir . '/gradelib.php');
+        $courseid = $zoomrecord->course;
+        $context = context_course::instance($courseid);
+        // Get grade list for items.
+        $gradelist = grade_get_grades($courseid, 'mod', 'zoom', $zoomrecord->id);
+
+        // Is this meeting is not gradable, return.
+        if (empty($gradelist->items)) {
+            return;
+        }
+
+        $gradeitem = $gradelist->items[0];
+        $itemid = $gradeitem->id;
+        $grademax = $gradeitem->grademax;
+        $oldgrades = $gradeitem->grades;
+
+        // After check and testing, these timings are the actual meeting timings returned from zoom
+        // ... (i.e.when the host start and end the meeting).
+        // Not like those on 'zoom' table which represent the settings from zoom activity.
+        $meetingtime = $DB->get_record('zoom_meeting_details', ['id' => $detailsid], 'start_time, end_time');
+        if (empty($zoomrecord->recurring)) {
+            $end = min($meetingtime->end_time, $zoomrecord->start_time + $zoomrecord->duration);
+            $start = max($meetingtime->start_time, $zoomrecord->start_time);
+            $meetingduration = $end - $start;
+        } else {
+            $meetingduration = $meetingtime->end_time - $meetingtime->start_time;
+        }
+
+        // Get the required records again.
+        $records = $DB->get_records('zoom_meeting_participants', ['detailsid' => $detailsid], 'join_time ASC');
+        // Initialize the data arrays, indexing them later with userids.
+        $durations = [];
+        $join = [];
+        $leave = [];
+        // Looping the data to calculate the duration of each user.
+        foreach ($records as $record) {
+            $userid = $record->userid;
+            if (empty($userid)) {
+                if (is_numeric($record->name)) {
+                    // In case the participant name looks like an integer, we need to avoid a conflict.
+                    $userid = '~' . $record->name . '~';
+                } else {
+                    $userid = $record->name;
+                }
+            }
+
+            // Check if there is old duration stored for this user.
+            if (!empty($durations[$userid])) {
+                $old = new stdClass();
+                $old->duration = $durations[$userid];
+                $old->join_time = $join[$userid];
+                $old->leave_time = $leave[$userid];
+                // Calculating the overlap time.
+                $overlap = $this->get_participant_overlap_time($old, $record);
+
+                // Set the new data for next use.
+                $leave[$userid] = max($old->leave_time, $record->leave_time);
+                $join[$userid] = min($old->join_time, $record->join_time);
+                $durations[$userid] = $old->duration + $record->duration - $overlap;
+            } else {
+                $leave[$userid] = $record->leave_time;
+                $join[$userid] = $record->join_time;
+                $durations[$userid] = $record->duration;
+            }
+        }
+
+        // Used to count the number of users being graded.
+        $graded = 0;
+        $alreadygraded = 0;
+
+        // Array of unidentified users that need to be graded manually.
+        $needgrade = [];
+
+        // Array of found user ids.
+        $found = [];
+
+        // Array of non-enrolled users.
+        $notenrolled = [];
+
+        // Now check the duration for each user and grade them according to it.
+        foreach ($durations as $userid => $userduration) {
+            // Setup the grade according to the duration.
+            $newgrade = min($userduration * $grademax / $meetingduration, $grademax);
+
+            // Double check that this is a Moodle user.
+            if (is_integer($userid) && (isset($found[$userid]) || $DB->record_exists('user', ['id' => $userid]))) {
+                // Successfully found this user in Moodle.
+                if (!isset($found[$userid])) {
+                    $found[$userid] = true;
+                }
+
+                $oldgrade = null;
+                if (isset($oldgrades[$userid])) {
+                    $oldgrade = $oldgrades[$userid]->grade;
+                }
+
+                // Check if the user is enrolled before assign the grade.
+                if (is_enrolled($context, $userid)) {
+                    // Compare with the old grade and only update if the new grade is higher.
+                    // Use number_format because the old stored grade only contains 5 decimals.
+                    if (empty($oldgrade) || $oldgrade < number_format($newgrade, 5)) {
+                        $gradegrade = [
+                            'rawgrade' => $newgrade,
+                            'userid' => $userid,
+                            'usermodified' => $userid,
+                            'dategraded' => '',
+                            'feedbackformat' => '',
+                            'feedback' => '',
+                        ];
+
+                        zoom_grade_item_update($zoomrecord, $gradegrade);
+                        $graded++;
+                        $this->debugmsg('grade updated for user with id: ' . $userid
+                                        . ', duration =' . $userduration
+                                        . ', maxgrade =' . $grademax
+                                        . ', meeting duration =' . $meetingduration
+                                        . ', User grade:' . $newgrade);
+                    } else {
+                        $alreadygraded++;
+                        $this->debugmsg('User already has a higher grade. Old grade: ' . $oldgrade
+                                        . ', New grade: ' . $newgrade);
+                    }
+                } else {
+                    $notenrolled[$userid] = fullname(core_user::get_user($userid));
+                }
+            } else {
+                // This means that this user was not identified.
+                // Provide information about participants that need to be graded manually.
+                $a = [
+                    'userid' => $userid,
+                    'grade' => $newgrade,
+                ];
+                $needgrade[] = get_string('nonrecognizedusergrade', 'mod_zoom', $a);
+            }
+        }
+
+        // Get the list of users who clicked join meeting and were not recognized by the participant report.
+        $allusers = $this->get_users_clicked_join($zoomrecord);
+        $notfound = [];
+        foreach ($allusers as $userid) {
+            if (!isset($found[$userid])) {
+                $notfound[$userid] = fullname(core_user::get_user($userid));
+            }
+        }
+
+        // Try not to spam the instructors, only notify them when grades have changed.
+        if ($graded > 0) {
+            // Sending a notification to teachers in this course about grades, and users that need to be graded manually.
+            $notifydata = [
+                'graded' => $graded,
+                'alreadygraded' => $alreadygraded,
+                'needgrade' => $needgrade,
+                'courseid' => $courseid,
+                'zoomid' => $zoomrecord->id,
+                'itemid' => $itemid,
+                'name' => $zoomrecord->name,
+                'notfound' => $notfound,
+                'notenrolled' => $notenrolled,
+            ];
+            $this->notify_teachers($notifydata);
+        }
+    }
+
+    /**
+     * Calculate the overlap time for a participant.
+     *
+     * @param object $record1 Record data 1.
+     * @param object $record2 Record data 2.
+     * @return int the overlap time
+     */
+    public function get_participant_overlap_time($record1, $record2) {
+        // Determine which record starts first.
+        if ($record1->join_time < $record2->join_time) {
+            $old = $record1;
+            $new = $record2;
+        } else {
+            $old = $record2;
+            $new = $record1;
+        }
+
+        $oldjoin = (int) $old->join_time;
+        $oldleave = (int) $old->leave_time;
+        $newjoin = (int) $new->join_time;
+        $newleave = (int) $new->leave_time;
+
+        // There are three possible cases.
+        if ($newjoin >= $oldleave) {
+            // First case - No overlap.
+            // Example: old(join: 15:00 leave: 15:30), new(join: 15:35 leave: 15:50).
+            // No overlap.
+            $overlap = 0;
+        } else if ($newleave > $oldleave) {
+            // Second case - Partial overlap.
+            // Example: new(join: 15:15 leave: 15:45), old(join: 15:00 leave: 15:30).
+            // 15 min overlap.
+            $overlap = $oldleave - $newjoin;
+        } else {
+            // Third case - Complete overlap.
+            // Example:  new(join: 15:15 leave: 15:29), old(join: 15:00 leave: 15:30).
+            // 14 min overlap (new duration).
+            $overlap = $new->duration;
+        }
+
+        return $overlap;
+    }
+
+    /**
+     * Sending a notification to all teachers in the course notify them about grading
+     * also send the names of the users needing a manual grading.
+     * return array of messages ids and false if there is no users in this course
+     * with the capability of edit grades.
+     *
+     * @param array $data
+     * @return array|bool
+     */
+    public function notify_teachers($data) {
+        // Number of users graded automatically.
+        $graded = $data['graded'];
+        // Number of users already graded.
+        $alreadygraded = $data['alreadygraded'];
+        // Number of users need to be graded.
+        $needgradenumber = count($data['needgrade']);
+        // List of users need grading.
+        $needstring = get_string('grading_needgrade', 'mod_zoom');
+        $needgrade = (!empty($data['needgrade'])) ? $needstring . implode('<br>', $data['needgrade']) . "\n" : '';
+
+        $zoomid = $data['zoomid'];
+        $itemid = $data['itemid'];
+        $name = $data['name'];
+        $courseid = $data['courseid'];
+        $context = context_course::instance($courseid);
+        // Get teachers in the course (actually those with the ability to edit grades).
+        $teachers = get_enrolled_users($context, 'moodle/grade:edit', 0, 'u.*', null, 0, 0, true);
+
+        // Grading item url.
+        $gurl = new moodle_url(
+            '/grade/report/singleview/index.php',
+            [
+                'id' => $courseid,
+                'item' => 'grade',
+                'itemid' => $itemid,
+            ]
+        );
+        $gradeurl = html_writer::link($gurl, get_string('gradinglink', 'mod_zoom'));
+
+        // Zoom instance url.
+        $zurl = new moodle_url('/mod/zoom/view.php', ['id' => $zoomid]);
+        $zoomurl = html_writer::link($zurl, $name);
+
+        // Data object used in lang strings.
+        $a = (object) [
+            'name' => $name,
+            'graded' => $graded,
+            'alreadygraded' => $alreadygraded,
+            'needgrade' => $needgrade,
+            'number' => $needgradenumber,
+            'gradeurl' => $gradeurl,
+            'zoomurl' => $zoomurl,
+            'notfound' => '',
+            'notenrolled' => '',
+        ];
+        // Get the list of users clicked join meeting but not graded or reconized.
+        // This helps the teacher to grade them manually.
+        $notfound = $data['notfound'];
+        if (!empty($notfound)) {
+            $a->notfound = get_string('grading_notfound', 'mod_zoom');
+            foreach ($notfound as $userid => $fullname) {
+                $params = ['item' => 'user', 'id' => $courseid, 'userid' => $userid];
+                $url = new moodle_url('/grade/report/singleview/index.php', $params);
+                $userurl = html_writer::link($url, $fullname . ' (' . $userid . ')');
+                $a->notfound .= '<br> ' . $userurl;
+            }
+        }
+
+        $notenrolled = $data['notenrolled'];
+        if (!empty($notenrolled)) {
+            $a->notenrolled = get_string('grading_notenrolled', 'mod_zoom');
+            foreach ($notenrolled as $userid => $fullname) {
+                $userurl = new moodle_url('/user/profile.php', ['id' => $userid]);
+                $profile = html_writer::link($userurl, $fullname);
+                $a->notenrolled .= '<br>' . $profile;
+            }
+        }
+
+        // Prepare the message.
+        $message = new message();
+        $message->component = 'mod_zoom';
+        $message->name = 'teacher_notification'; // The notification name from message.php.
+        $message->userfrom = core_user::get_noreply_user();
+
+        $message->subject = get_string('gradingmessagesubject', 'mod_zoom', $a);
+
+        $messagebody = get_string('gradingmessagebody', 'mod_zoom', $a);
+        $message->fullmessage = $messagebody;
+
+        $message->fullmessageformat = FORMAT_MARKDOWN;
+        $message->fullmessagehtml = "<p>$messagebody</p>";
+        $message->smallmessage = get_string('gradingsmallmeassage', 'mod_zoom', $a);
+        $message->notification = 1;
+        $message->contexturl = $gurl; // This link redirect the teacher to the page of item's grades.
+        $message->contexturlname = get_string('gradinglink', 'mod_zoom');
+        // Email content.
+        $content = ['*' => ['header' => $message->subject, 'footer' => '']];
+        $message->set_additional_content('email', $content);
+        $messageids = [];
+        if (!empty($teachers)) {
+            foreach ($teachers as $teacher) {
+                $message->userto = $teacher;
+                // Actually send the message for each teacher.
+                $messageids[] = message_send($message);
+            }
+        } else {
+            return false;
+        }
+
+        return $messageids;
     }
 
     /**
@@ -606,5 +986,45 @@ class get_meeting_reports extends scheduled_task {
         $normalizedmeeting->total_minutes = $meeting->total_minutes ?? null;
 
         return $normalizedmeeting;
+    }
+
+    /**
+     * Get list of all users clicked (join meeting) in a given zoom instance.
+     * @param object $zoomrecord
+     * @return array<int>
+     */
+    public function get_users_clicked_join($zoomrecord) {
+        global $DB;
+        $logmanager = get_log_manager();
+        if (!$readers = $logmanager->get_readers('core\log\sql_reader')) {
+            // Should be using 2.8, use old class.
+            $readers = $logmanager->get_readers('core\log\sql_select_reader');
+        }
+
+        $reader = array_pop($readers);
+        if ($reader === null) {
+            return [];
+        }
+
+        $params = [
+            'courseid' => $zoomrecord->course,
+            'objectid' => $zoomrecord->id,
+        ];
+        $selectwhere = "eventname = '\\\\mod_zoom\\\\event\\\\join_meeting_button_clicked'
+            AND courseid = :courseid
+            AND objectid = :objectid";
+        $events = $reader->get_events_select($selectwhere, $params, 'userid ASC', 0, 0);
+
+        $userids = [];
+        foreach ($events as $event) {
+            if (
+                $event->other['meetingid'] === $zoomrecord->meeting_id &&
+                !in_array($event->userid, $userids, true)
+            ) {
+                $userids[] = $event->userid;
+            }
+        }
+
+        return $userids;
     }
 }

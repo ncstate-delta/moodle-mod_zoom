@@ -806,6 +806,26 @@ class mod_zoom_mod_form extends moodleform_mod {
     }
 
     /**
+     * Add standard_grading_coursemodule_elements with grading for field.
+     * @return void
+     */
+    public function standard_grading_coursemodule_elements() {
+        parent::standard_grading_coursemodule_elements();
+        $mform = $this->_form;
+        $itemnumber = 0;
+        $component = "mod_{$this->_modname}";
+        $gradefieldname = \core_grades\component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
+        $options = [
+            'entry' => get_string('gradingentry', 'mod_zoom'), // All credit upon entry.
+            'period' => get_string('gradingperiod', 'mod_zoom'), // Credit according to attend duration.
+        ];
+        $mform->addElement('select', 'grading_method', get_string('gradingmethod', 'mod_zoom'), $options);
+        $mform->setDefault('grading_method', get_config('zoom', 'gradingmethod'));
+        $mform->addHelpButton('grading_method', 'gradingmethod', 'zoom');
+        $mform->hideIf('grading_method', "{$gradefieldname}[modgrade_type]", 'eq', 'none');
+    }
+
+    /**
      * Fill in the current page data for this course.
      */
     public function definition_after_data() {

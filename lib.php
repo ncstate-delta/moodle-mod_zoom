@@ -747,7 +747,7 @@ function zoom_grade_item_update(stdClass $zoom, $grades = null) {
  * Delete grade item for given zoom instance
  *
  * @param stdClass $zoom instance object
- * @return grade_item
+ * @return int
  */
 function zoom_grade_item_delete($zoom) {
     global $CFG;

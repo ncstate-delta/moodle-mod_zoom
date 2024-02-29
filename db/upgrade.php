@@ -951,5 +951,19 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2024012500, 'zoom');
     }
 
+    if ($oldversion < 2024030100) {
+        // Define field grading_method to be added to zoom.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('grading_method', XMLDB_TYPE_CHAR, '10', null, null, null, null, 'grade');
+
+        // Conditionally launch add field grading_method.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2024030100, 'zoom');
+    }
+
     return true;
 }
