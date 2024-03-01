@@ -1,9 +1,17 @@
-## v5.1.6 ##
+### Releases ###
+
+#### v5.2.0 ####
+
+- Feature: Grading based on attendance duration #477 (thanks @fmido88)
+  - New settings `zoom/gradingmethod`, `zoom/unamedisplay`
+  - New per activity setting `grading_method`
+
+#### v5.1.6 ####
 
 - Bugfix: Update NULL registration values to fix upgrade step #574 (thanks @michael-milette)
 - Code quality: Move changelog to CHANGES.md and upgrade.txt #572
 
-## v5.1.5 ##
+#### v5.1.5 ####
 
 - Bugfix: Add PNG/SVG calendar icon for Moodle 4.3 #558 (thanks @ScottVerbeek)
 - Bugfix: Display user fullname in breakout room participant list #562 (thanks @mofetdanielsmolkin)
@@ -14,20 +22,20 @@
 - Regression: Registration field default was accidentally upgrading to null #565 (thanks @michael-milette)
   - Introduced in v5.1.0 when fixing recording field definition.
 
-## v5.1.4 ##
+#### v5.1.4 ####
 
 - Bugfix: Avoid breaking completion defaults form in Moodle 4.3 #555 (thanks @opitz)
 - Regression: 'Use' missing classes required for Moodle app #554 (thanks ramprakash k)
   - Introduced in v5.1.1 when moving classes into namespaces.
 
-## v5.1.3 ##
+#### v5.1.3 ####
 
 - Bugfix: Allow editing a past Zoom meeting without changing the time #545 (thanks @davefoord, @tlock)
 - Bugfix: Remove unused start_url field from the database #546 (thanks @ShilVita)
 - Regression: "Recurring No Time" admin setting was defaulting to "Daily" #544 (thanks @easegill)
   - Introduced in v4.9.0 when adding support for meeting registration.
 
-## v5.1.2 ##
+#### v5.1.2 ####
 
 - Bugfix: Skip redundant calendar permissions check #535 (thanks @danowar2k)
 - Bugfix: Initialize scopes from cache to avoid TypeError #542 (thanks @foxlapinou)
@@ -35,7 +43,7 @@
   - Introduced in v5.1.1 when moving classes into namespaces.
 - Code quality: Void test return types in moodle-cs v3.3.10 #536
 
-## v5.1.1 ##
+#### v5.1.1 ####
 
 - Bugfix: Get all meeting recordings, not just the last occurrence #517 (thanks @LGPoly)
 - Bugfix: Choose meeting reports API based on OAuth permissions #525 (thanks @xmontana)
@@ -48,7 +56,7 @@
 - Code quality: Array syntax updates in moodle-cs v3.3.7 #524
 - Code quality: Test against Moodle 4.3 and PHP 8.2 #531
 
-## v5.1.0 ##
+#### v5.1.0 ####
 
 - Feature: Show activity date/time directly on course page #509 (thanks @cdipe)
 - Regression: Auto recording was forced off by default #505 (thanks @emmarichardson)
@@ -59,14 +67,14 @@
 - Bugfix: Correct error message handling #503 (thanks @jwalits)
 - Bugfix: Provide prescribed Promise parameters #499 (thanks @fmido88)
 
-## v5.0.0 ##
+#### v5.0.0 ####
 
 - Backward incompatible: Drop support for JWT authentication (thanks @aspark21)
   - Zoom requires everyone to use Server-to-Server OAuth by September 1, 2023
 - Backward incompatible: Require PHP 7.1+ (Moodle 3.7+) (thanks @rlaneIT)
 - Backward incompatible: Drop Moodle 3.4 mobile support
 
-## v4.10.3 ##
+#### v4.10.3 ####
 
 - Bugfix: Also use proxy settings for OAuth token request #494 (thanks @adnbes)
 - Bugfix: Clean up exception handling to avoid notice #482 (thanks @andremenrath)
@@ -74,13 +82,13 @@
 - Regression: PHP 7.0 class constant visibility errors #495 (thanks @rlaneIT)
   - Introduced in v4.10.1 when aligning with PSR-12 coding standards.
 
-## v4.10.2 ##
+#### v4.10.2 ####
 
 - Regression: Instructors were unable to edit Zoom activity completion defaults #479 (thanks @phette23)
   - Introduced in v4.6.0 when adding breakout room support.
 - Bugfix: Course reset now verifies that the Zoom checkbox is checked #483 (thanks @carlosalal)
 
-## v4.10.1 ##
+#### v4.10.1 ####
 
 - Bugfix: Stop showing finished events in My Overview block #451 (thanks @nstefanski)
 - Bugfix: Automatically retry on TLS connection error #466 (thanks @lcollong)
@@ -90,7 +98,7 @@
 - Code quality: Align with Moodle-compatible PSR-1 and PSR-12 rules #465
 - Special thanks to @rickbeasley for his contributions to this plugin and to the team.
 
-## v4.10.0 ##
+#### v4.10.0 ####
 
 - Feature: Option for redefine licenses to only affect users on 'this' Moodle server #436 (thanks @KepaUrzelai)
   - New setting `zoom/instanceusers`
@@ -98,13 +106,13 @@
 - Code quality: Use short array syntax (MDLSITE-4776) #447
 - Code quality: One space around assignment operators (MDLSITE-6594) #457
 
-## v4.9.2 ##
+#### v4.9.2 ####
 
 - Bugfix: New meetings did not know which user to check for security settings #438 (thanks @haietza)
 - Bugfix: Use select field so registration option saves correctly #448 (thanks @paulandm)
 - Compatibility: grunt rebuild against Moodle 4.1 #446
 
-## v4.9.1 ##
+#### v4.9.1 ####
 
 - Regression: Administrators without Zoom account were unable to edit #422 (thanks @juanbrunetmf)
   - Introduced in v4.7.0 when adding automatic recording options.
@@ -112,7 +120,7 @@
 - Bugfix: Always request JSON API responses and show error details #426 (thanks @sascha-serwe)
 - Bugfix: Default start time should be in the future and be a multiple of 5 minutes #427
 
-## v4.9.0 ##
+#### v4.9.0 ####
 
 - Feature: Allow Registration #412 (thanks @paulandm, @haietza, @MoleLR, @lcollong, @louisaoc)
   - New setting `zoom/defaultregistration`
@@ -125,12 +133,12 @@
   - Introduced in v3.5 of this plugin while tidying the form UI.
   - Minimum required Moodle version officially increased to 3.4.
 
-## v4.8.1 ##
+#### v4.8.1 ####
 
 - Bugfix: Moodle 4 was displaying the activity description twice #417 (thanks @Laur0r, @haietza)
 - Bugfix: Avoid HTTP/2 error when using Server-to-Server OAuth #418 (thanks @phette23)
 
-## v4.8.0 ##
+#### v4.8.0 ####
 
 - Feature: Support Server-to-Server OAuth app #387 (thanks @haietza, @mhughes2k)
   - New settings `zoom/accountid`, `zoom/clientid`, `zoom/clientsecret`
@@ -138,7 +146,7 @@
 - Regression: Locked settings were not being applied #407 (thanks @krab-stik)
   - Introduced in v4.7.0 while adding support for automatic recording.
 
-## v4.7.0 ##
+#### v4.7.0 ####
 
 - Feature: Allow automatic recording #390 (thanks @aduranterres, @lcollong)
   - New settings `zoom/recordingoption`, `zoom/allowrecordingchangeoption`
@@ -146,45 +154,45 @@
   - Known issue: Causes pre-existing events to turn off automatic recording when edited.
 - Performance: Static caching of repeated API calls #402 (thanks @aduranterres)
 
-## v4.6.2 ##
+#### v4.6.2 ####
 
 - Regression: Rename mustache templates for backward compatibility #398 (thanks @PhilipBeacon)
   - Introduced in v4.6.0 by new mustache templates in sub-directories (a Moodle 3.8 feature).
 - Bugfix: Recognize the Webinar capabilities of a Zoom Events license #338 (thanks @dottbarbieri)
 - Bugfix: Avoid PHP Warning when restoring Zoom activities without breakout room data #399
 
-## v4.6.1 ##
+#### v4.6.1 ####
 
 - Bugfix: Avoid JavaScript error when 'Show More' button does not exist #392 (thanks @mwithheld)
 - Bugfix: Add missing privacy coverage for breakout rooms; fix privacy data deletion #395 (thanks @hdagheda)
 
-## v4.6.0 ##
+#### v4.6.0 ####
 
 - Feature: Pre-assign Breakout Rooms #371 (thanks @annouarf, @levemar, University of Montreal, @mhughes2k)
 - Bugfix: Validate start times and duration for timed recurring meetings #389 (thanks @nchan31, @jwalits)
 
-## v4.5.3 ##
+#### v4.5.3 ####
 
 - Bugfix: Allow plugin settings to update without a configuration exception #386 (thanks @acquaalta)
 
-## v4.5.2 ##
+#### v4.5.2 ####
 
 - Regression: Avoid requiring paid accounts for meeting default settings #383 (thanks @nstefanski, @nickchen, @valeriy67, @obook)
   - Introduced in v3.5 to determine passcode requirements.
 - Bugfix: Allow course restore to complete even when Zoom is not fully configured #378
 - Code quality: Require PHPUnit to pass without warnings #379
 
-## v4.5.1 ##
+#### v4.5.1 ####
 
 - Regression: Fix Zoom activity icon visibility #375 (thanks @foxlapinou)
 - Compatibility: Fix PHPUnit deprecation warnings #373
 
-## v4.5.0 ##
+#### v4.5.0 ####
 
 - Feature: Support for Reset course functionality #370 (thanks @izendegi)
 - Compatibility: Improved support for Moodle 4.0 #369
 
-## v4.4.0 ##
+#### v4.4.0 ####
 
 - Feature: Allow configuration of section visibility on the view page #363 (thanks @aduranterres, @rayjbarrett1)
   - New settings `zoom/defaultshowschedule`, `zoom/defaultshowsecurity`, `zoom/defaultshowmedia`
@@ -193,41 +201,41 @@
   - New setting `zoom/webinardefault`
 - Code quality: specify code coverage for tests #367
 
-## v4.3.4 ##
+#### v4.3.4 ####
 
 - Privacy: Add tests, support recordings, fix existing code #345 (thanks @jwalits, @tuanngocnguyen, @mattporritt, @marcghaly)
 - Compatibility: grunt rebuild for MDL-73915 #364
 
-## v4.3.3 ##
+#### v4.3.3 ####
 
 - Fix recording table database schema definitions #358 (thanks @jwalits)
 - Compatibility: Moodle upstream upgraded to php-jwt v6.0 #359
 - Renamed primary branch in GitHub to `main` #353
 
-## v4.3.2 ##
+#### v4.3.2 ####
 
 - Only cache successful Zoom user ID values #350 (thanks @merrill-oakland)
 - Code quality: Align with moodle-local_codechecker v3.0.5 #351
 
-## v4.3.1 ##
+#### v4.3.1 ####
 
 - Fix database schema alignment and associated code #335 (thanks @TomoTsuyuki)
 - Run "Update Meetings" task once per day by default #342 (thanks @deraadt for reporting)
   - Note: You may need to manually adjust your task schedule on existing installs.
 
-## v4.3 ##
+#### v4.3 ####
 
 - Add support for Zoom Cloud Recordings #292 (thanks @jwalits, @nstefanski, @abias, ETH Zürich)
   - New setting `zoom/viewrecordings`
   - New per activity setting `recordings_visible_default`
 - Fix tracking field PHP notices #337 (thanks @alina-kiz, @ndunand, @haietza)
 
-## v4.2.1 ##
+#### v4.2.1 ####
 
 - Fix PHP 8 deprecation warning #332 (thanks @ndunand)
 - Fix duplicate column name on "All Meetings" page #330
 
-## v4.2 ##
+#### v4.2 ####
 
 - Add support for Zoom Tracking Fields #308 (thanks @haietza, @porcospino)
   - New setting `zoom/defaulttrackingfields`
@@ -236,21 +244,21 @@
 - Reduce zoom_refresh_events overreach; fix 'quick edit' issue #320 (thanks @alina-kiz, @jwalits for testing)
 - Add error handling and improve consistency in Zoom activity restore #328 (thanks @jonof)
 
-## v4.1.3 ##
+#### v4.1.3 ####
 
 - Always use a fresh copy of start_url #316 (thanks @ShilVita for reporting)
 - Synchronize calendar events consistently #319 (thanks @martinoesterreicher for reporting)
 - Update JWT library to v5.4.0 #312
 
-## v4.1.2 ##
+#### v4.1.2 ####
 
 - Make loadmeeting consistent via web and mobile (event, completion, grade, etc) #307 (thanks @nstefanski)
 
-## v4.1.1 ##
+#### v4.1.1 ####
 
 - Fix invitation class not found exception #296 (thanks @byvamo for reporting)
 
-## v4.1 ##
+#### v4.1 ####
 
 - Allow configuration of Zoom identifier #280 (thanks @jwalits, @abias, @jonlan)
   - New setting `zoom/apiidentifier`
@@ -258,18 +266,18 @@
   - New setting `zoom/apiendpoint`
 - Use case-insensitive email comparison for schedule_for #295 (thanks @stopfstedt, @briannwar)
 
-## v4.0 ##
+#### v4.0 ####
 
 - Fully support recurring meetings #258 (thanks @abias, @jwalits, ETH Zürich)
   - New setting `zoom/invitationremoveicallink`
   - Backward incompatible change: exported iCal events now match Moodle's uid format
 - Retroactively fix database schema defaults #291 (thanks @foxlapinou for reporting)
 
-## v3.8.1 ##
+#### v3.8.1 ####
 
 - Only allow real host to use start_url #285 (thanks @abias for reporting)
 
-## v3.8 ##
+#### v3.8 ####
 
 - Add support for Ionic 5 #269 (thanks @dpalou)
 - Improve update_meetings scheduled task #263 (thanks @abias)
@@ -279,7 +287,7 @@
 - Update `timemodified` only when needed #279 (thanks @abias for reporting)
 - Fix meeting invitation issues #267, #274 (thanks @abias, @nstefanski, @andrewmadden for feedback)
 
-## v3.7 ##
+#### v3.7 ####
 
 - Allow administrators to selectively remove Meeting Invitation details #235 (thanks @andrewmadden)
   - New capabilities `mod/zoom:viewjoinurl` and `mod/zoom:viewdialin`
@@ -291,13 +299,13 @@
 - Fix encryption type validation #232 (thanks @abias)
 - Clean up error messages / efficiency on the view page #245 (thanks @abias)
 
-## v3.6 ##
+#### v3.6 ####
 
 - Fixed fatal regression on settings.php for Moodle < 3.7 (Thanks abias)
 - Fixed debugging messages that occur for users without webinar licenses
 - Various string improvements
 
-## v3.5 ##
+#### v3.5 ####
 
 - Removed language translations. Please submit language translations to AMOS (https://lang.moodle.org/)
 - Fixed bug causing downloading of meeting participation reports to fail
@@ -309,7 +317,7 @@
 - Support for more advanced passcode requirements
 - This will be the last supported release by UCLA. This plugin will now be maintained by jrchamp and NC State DELTA.
 
-## v3.4 ##
+#### v3.4 ####
 
 - Used Dashboard API to improve get_meeting_reports task
 - Added meeting invite text to calendar and meeting page to provide phone details
@@ -324,13 +332,13 @@
 - Fixed failing DB schema checks (Thanks dvdcastro)
 - Requiring passcodes is now a site wide configuration
 
-## v3.3 ##
+#### v3.3 ####
 
 - Fixed problems with error handling (Thanks kbowlerarden and jrchamp)
 - Added language translations for uk, pl, and ru (Thanks mkikets99)
 - Thanks to kubilayagi for all his work on the Zoom plugin these past 2.5 years and good luck on future endeavors
 
-## v3.2 ##
+#### v3.2 ####
 
 - Password/Passcode changes
   - Renamed passwords to passcodes
@@ -343,11 +351,11 @@
 - Fixed error handling for non-English Zoom deployments
 - Added Travis CI support
 
-## v3.1 ##
+#### v3.1 ####
 
 - Added site config to mask participant data form appearing in reports (useful for sites that mask participant data, e.g., for HIPAA) (Thanks stopfstedt)
 
-## v3.0 ##
+#### v3.0 ####
 
 - Support Retry-After header in Zoom API
 - Supports longer Zoom meeting ids
@@ -360,7 +368,7 @@
 - Fixed meeting dates during restore (Thanks nstefanski)
 - Added German translation (Thanks pefeigl)
 
-## v2.2 ##
+#### v2.2 ####
 
 - Resized svg icon (Thanks stopfstedt)
 - Fixed error handling for 'User not found on this account' (Thanks nstefanski and tzerafnx)
@@ -368,7 +376,7 @@
 - Added global search support
 - Fixed inconsistent "start_time" column (Thanks tuanngocnguyen)
 
-## v2.1 ##
+#### v2.1 ####
 
 - Moodle 3.7 support (Thanks danmarsden)
 - Privacy API support
@@ -376,12 +384,12 @@
 - iCal generation
 - Various bug fixes/improvements.
 
-## v2.0.1 ##
+#### v2.0.1 ####
 
 - Fixing conflicts with Firebase\JWT library. If more conflicts are found,
   please contact plugin maintainer to add to list in classes/webservice.php.
 
-## v2.0 ##
+#### v2.0 ####
 
 - Updated to support Zoom API V2
 - Added SVG icon for resolution independence (Thanks rrusso)
@@ -391,7 +399,7 @@
 - GDPR compliance
 - Support for alternative hosts
 
-## v1.7 ##
+#### v1.7 ####
 
 - Lang string BOM fix (Thanks roperto/tonyjbutler)
 - Support for proxy servers (Thanks jonof)
@@ -400,37 +408,37 @@
 - Improved participants report
 - Fixing coding issues
 
-## v1.6 ##
+#### v1.6 ####
 
 - Addressed coding issues brought up by a MoodleRooms review done for CSUN.
 
-## v1.5 ##
+#### v1.5 ####
 
 - Fixed upgrade issues with PostgreSQL
 
-## v1.4 ##
+#### v1.4 ####
 
 - Added missing lang string for cache.
 - Updated activity chooser help text.
 - Added support for webinars.
 - Fixing Unicode issues.
 
-## v1.3 ##
+#### v1.3 ####
 
 - Fixed join before host option.
 - Added Zoom user reports.
 - Added connection status checking on settings page.
 
-## v1.2 ##
+#### v1.2 ####
 
 - Allowing Zoom users to be found by other login types than just SSO.
 
-## v1.1 ##
+#### v1.1 ####
 
 - Issue #1: allow underscores in API key and secret.
 - Issue #2: Fix language strings to not use concatenation.
 - Added support for "group members only".
 
-## v1.0 ##
+#### v1.0 ####
 
 - Initial release

@@ -1,3 +1,8 @@
+== v5.2.0 ==
+
+- New settings `zoom/gradingmethod`, `zoom/unamedisplay`
+- New per activity setting `grading_method`
+
 == v5.0.0 ==
 
 - Drop support for JWT authentication
