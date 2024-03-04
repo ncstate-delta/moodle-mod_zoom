@@ -1067,7 +1067,7 @@ class webservice {
                         $recordinginfo->recordingstart = strtotime($recording->recording_start);
 
                         $recordings[$recording->id] = $recordinginfo;
-                    }else if (!empty($recording->download_url) && isset($allowedrecordingtypes[$recording->file_type])) {
+                    } else if (!empty($recording->download_url) && isset($allowedrecordingtypes[$recording->file_type])) {
                         $recordinginfo = new stdClass();
                         $recordinginfo->recordingid = $recording->id;
                         $recordinginfo->meetingid = $meeting->id;
