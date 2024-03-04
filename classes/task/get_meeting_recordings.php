@@ -73,8 +73,25 @@ class get_meeting_recordings extends \core\task\scheduled_task {
         mtrace('Finding meeting recordings for this account...');
 
         $recordingtypestrings = [
-            'audio' => get_string('recordingtypeaudio', 'mod_zoom'),
-            'video' => get_string('recordingtypevideo', 'mod_zoom'),
+            'active_speaker' => get_string('recordingtype_active_speaker', 'mod_zoom'),
+            'audio_interpretation' => get_string('recordingtype_audio_interpretation', 'mod_zoom'),
+            'audio_only' => get_string('recordingtype_audio_only', 'mod_zoom'),
+            'audio_transcript' => get_string('recordingtype_audio_transcript', 'mod_zoom'),
+            'chat_file' => get_string('recordingtype_chat', 'mod_zoom'),
+            'closed_caption' => get_string('recordingtype_closed_caption', 'mod_zoom'),
+            'gallery_view' => get_string('recordingtype_gallery', 'mod_zoom'),
+            'poll' => get_string('recordingtype_poll', 'mod_zoom'),
+            'production_studio' => get_string('recordingtype_production_studio', 'mod_zoom'),
+            'shared_screen' => get_string('recordingtype_shared', 'mod_zoom'),
+            'shared_screen_with_gallery_view' => get_string('recordingtype_shared_gallery', 'mod_zoom'),
+            'shared_screen_with_speaker_view' => get_string('recordingtype_shared_speaker', 'mod_zoom'),
+            'shared_screen_with_speaker_view(CC)' => get_string('recordingtype_shared_speaker_cc', 'mod_zoom'),
+            'sign_interpretation' => get_string('recordingtype_sign', 'mod_zoom'),
+            'speaker_view' => get_string('recordingtype_speaker', 'mod_zoom'),
+            'summary' => get_string('recordingtype_summary', 'mod_zoom'),
+            'summary_next_steps' => get_string('recordingtype_summary_next_steps', 'mod_zoom'),
+            'summary_smart_chapters' => get_string('recordingtype_summary_smart_chapters', 'mod_zoom'),
+            'timeline' => get_string('recordingtype_timeline', 'mod_zoom'),
         ];
 
         $localmeetings = zoom_get_all_meeting_records();
@@ -112,6 +129,8 @@ class get_meeting_recordings extends \core\task\scheduled_task {
 
                 if (empty($meetings[$recording->meetingid])) {
                     // Skip meetings that are not in Moodle.
+
+                    var_dump($recording);
                     mtrace('Meeting id: ' . $recording->meetingid . ' does not exist...skipping');
                     continue;
                 }
@@ -127,7 +146,6 @@ class get_meeting_recordings extends \core\task\scheduled_task {
                 }
 
                 $zoom = $meetings[$recording->meetingid];
-
                 $recordingtype = $recording->recordingtype;
                 $recordingtypestring = $recordingtypestrings[$recordingtype];
 
