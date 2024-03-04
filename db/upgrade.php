@@ -965,5 +965,17 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2024030100, 'zoom');
     }
 
+    if ($oldversion < 2024030101) {
+        // Update existing recording names to default for translatable recordingtype strings.
+        $meetings = $DB->get_records('zoom');
+
+        foreach ($meetings as $meeting) {
+            $DB->set_field_select('zoom_meeting_recordings', 'name', $meeting->name, 'zoomid = ?', [$meeting->id]);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2024030101, 'zoom');
+    }
+
     return true;
 }
