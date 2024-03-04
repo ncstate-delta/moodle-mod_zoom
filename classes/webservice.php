@@ -994,6 +994,9 @@ class webservice {
         $allowedrecordingtypes = [
             'MP4' => 'video',
             'M4A' => 'audio',
+            'TRANSCRIPT' => 'transcript',
+            'CHAT' => 'chat',
+            'CC' => 'captions',
         ];
 
         try {
@@ -1008,7 +1011,7 @@ class webservice {
                         $recordinginfo->meetinguuid = $response->uuid;
                         $recordinginfo->url = $recording->play_url;
                         $recordinginfo->filetype = $recording->file_type;
-                        $recordinginfo->recordingtype = $allowedrecordingtypes[$recording->file_type];
+                        $recordinginfo->recordingtype = $recording->recording_type;
                         $recordinginfo->passcode = $response->password;
                         $recordinginfo->recordingstart = strtotime($recording->recording_start);
 
@@ -1041,6 +1044,9 @@ class webservice {
         $allowedrecordingtypes = [
             'MP4' => 'video',
             'M4A' => 'audio',
+            'TRANSCRIPT' => 'transcript',
+            'CHAT' => 'chat',
+            'CC' => 'captions',
         ];
 
         try {
@@ -1057,7 +1063,18 @@ class webservice {
                         $recordinginfo->meetinguuid = $meeting->uuid;
                         $recordinginfo->url = $recording->play_url;
                         $recordinginfo->filetype = $recording->file_type;
-                        $recordinginfo->recordingtype = $allowedrecordingtypes[$recording->file_type];
+                        $recordinginfo->recordingtype = $recording->recording_type;
+                        $recordinginfo->recordingstart = strtotime($recording->recording_start);
+
+                        $recordings[$recording->id] = $recordinginfo;
+                    }else if (!empty($recording->download_url) && isset($allowedrecordingtypes[$recording->file_type])) {
+                        $recordinginfo = new stdClass();
+                        $recordinginfo->recordingid = $recording->id;
+                        $recordinginfo->meetingid = $meeting->id;
+                        $recordinginfo->meetinguuid = $meeting->uuid;
+                        $recordinginfo->url = $recording->download_url;
+                        $recordinginfo->filetype = $recording->file_type;
+                        $recordinginfo->recordingtype = $recording->recording_type;
                         $recordinginfo->recordingstart = strtotime($recording->recording_start);
 
                         $recordings[$recording->id] = $recordinginfo;
