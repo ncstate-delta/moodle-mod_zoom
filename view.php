@@ -94,6 +94,7 @@ if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
  * Get the display name for a Zoom user.
  * This is wrapped in a function to avoid unnecessary API calls.
  *
+ * @package mod_zoom
  * @param string $zoomuserid Zoom user ID.
  * @return ?string
  */
