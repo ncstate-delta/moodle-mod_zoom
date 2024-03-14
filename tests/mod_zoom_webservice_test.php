@@ -30,7 +30,7 @@ use advanced_testcase;
  * PHPunit testcase class.
  * @covers \mod_zoom\webservice
  */
-class mod_zoom_webservice_test extends advanced_testcase {
+final class mod_zoom_webservice_test extends advanced_testcase {
     /**
      * @var object Anonymous class to mock \curl.
      */
