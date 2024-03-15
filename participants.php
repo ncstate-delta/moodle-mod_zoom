@@ -166,7 +166,8 @@ if ($export != 'xls') {
         'export' => 'xls',
     ]);
     $xlsstring = get_string('application/vnd.ms-excel', 'mimetypes');
-    $xlsicon = html_writer::img($OUTPUT->image_url('f/spreadsheet'), $xlsstring, ['title' => $xlsstring]);
+    $xlsicon = html_writer::img($OUTPUT->image_url('f/spreadsheet'), $xlsstring,
+        ['title' => $xlsstring, 'class' => 'mimetypeicon']);
     echo get_string('export', 'mod_zoom') . ': ' . html_writer::link($exporturl, $xlsicon);
 
     echo $OUTPUT->footer();
