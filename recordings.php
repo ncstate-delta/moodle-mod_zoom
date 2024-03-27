@@ -136,6 +136,13 @@ if (empty($recordings)) {
     }
 }
 
+/**
+ * Get the display name for a Zoom recording type.
+ *
+ * @package mod_zoom
+ * @param string $recordingtype Zoom recording type.
+ * @return string
+ */
 function zoom_get_recording_type_string($recordingtype) {
     $recordingtypestringmap = [
         'active_speaker' => 'recordingtype_active_speaker',

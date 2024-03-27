@@ -104,19 +104,26 @@ class get_meeting_recordings extends scheduled_task {
             $zoomrecordings = $service->get_user_recordings($hostid, $from, $to);
 
             foreach ($zoomrecordings as $recordingid => $recording) {
-                if (isset($localrecordings[$recording->meetinguuid][$recordingid])) {
-                    mtrace('Recording id: ' . $recordingid . ' exists...verifying current data.');
-                    if ($localrecordings[$recording->meetinguuid][$recordingid]->name != $meetings[$recording->meetingid]->name) {
-                        $updatemeeting = $localrecordings[$recording->meetinguuid][$recordingid];
-                        $updatemeeting->name = $meetings[$recording->meetingid]->name;
-                        $DB->update_record('zoom_meeting_recordings', $updatemeeting);
-                    }
-                    continue;
-                }
-
                 if (empty($meetings[$recording->meetingid])) {
                     // Skip meetings that are not in Moodle.
                     mtrace('Meeting id: ' . $recording->meetingid . ' does not exist...skipping');
+                    continue;
+                }
+
+                $zoom = $meetings[$recording->meetingid];
+
+                if (isset($localrecordings[$recording->meetinguuid][$recordingid])) {
+                    mtrace('Recording id: ' . $recordingid . ' exists...verifying current data.');
+                    $localrecording = $localrecordings[$recording->meetinguuid][$recordingid];
+
+                    if ($localrecording->name !== $zoom->name) {
+                        $updatemeeting = (object) [
+                            'id' => $localrecording->id,
+                            'name' => $zoom->name,
+                        ];
+                        $DB->update_record('zoom_meeting_recordings', $updatemeeting);
+                    }
+
                     continue;
                 }
 
@@ -130,7 +137,7 @@ class get_meeting_recordings extends scheduled_task {
                     }
                 }
 
-                $zoom = $meetings[$recording->meetingid];
+                $recordingtype = $recording->recordingtype;
 
                 $record = new stdClass();
                 $record->zoomid = $zoom->id;
@@ -139,7 +146,7 @@ class get_meeting_recordings extends scheduled_task {
                 $record->name = $zoom->name;
                 $record->externalurl = $recording->url;
                 $record->passcode = $meetingpasscodes[$recording->meetinguuid];
-                $record->recordingtype = $recording->recordingtype;
+                $record->recordingtype = $recordingtype;
                 $record->recordingstart = $recording->recordingstart;
                 $record->showrecording = $zoom->recordings_visible_default;
                 $record->timecreated = $now;

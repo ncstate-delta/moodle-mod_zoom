@@ -1005,11 +1005,12 @@ class webservice {
 
             if (!empty($response->recording_files)) {
                 foreach ($response->recording_files as $recording) {
-                    if (!empty($recording->play_url) && isset($allowedrecordingtypes[$recording->file_type])) {
+                    $url = $recording->play_url ?? $recording->download_url ?? null;
+                    if (!empty($url) && isset($allowedrecordingtypes[$recording->file_type])) {
                         $recordinginfo = new stdClass();
                         $recordinginfo->recordingid = $recording->id;
                         $recordinginfo->meetinguuid = $response->uuid;
-                        $recordinginfo->url = $recording->play_url;
+                        $recordinginfo->url = $url;
                         $recordinginfo->filetype = $recording->file_type;
                         $recordinginfo->recordingtype = $recording->recording_type;
                         $recordinginfo->passcode = $response->password;
@@ -1062,7 +1063,7 @@ class webservice {
                         $recordinginfo->recordingid = $recording->id;
                         $recordinginfo->meetingid = $meeting->id;
                         $recordinginfo->meetinguuid = $meeting->uuid;
-                        $recordinginfo->url = $recording->play_url;
+                        $recordinginfo->url = $url;
                         $recordinginfo->filetype = $recording->file_type;
                         $recordinginfo->recordingtype = $recording->recording_type;
                         $recordinginfo->recordingstart = strtotime($recording->recording_start);
