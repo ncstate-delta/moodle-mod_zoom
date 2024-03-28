@@ -29,7 +29,7 @@ use basic_testcase;
 /**
  * PHPunit testcase class.
  */
-class advanced_passcode_test extends basic_testcase {
+final class advanced_passcode_test extends basic_testcase {
     /**
      * Fake data from get_user_security_settings().
      * @var object
