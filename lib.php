@@ -202,6 +202,7 @@ function zoom_update_instance(stdClass $zoom, ?mod_zoom_mod_form $mform = null) 
     // Get the updated meeting info from zoom, before updating calendar events.
     $response = zoom_webservice()->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
     $zoom = populate_zoom_from_response($zoom, $response);
+    $DB->update_record('zoom', $zoom);
 
     // Update tracking field data for meeting.
     zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields ?? []);
