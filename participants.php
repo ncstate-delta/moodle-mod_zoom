@@ -21,6 +21,7 @@
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 require_once(__DIR__ . '/locallib.php');
@@ -166,8 +167,11 @@ if ($export != 'xls') {
         'export' => 'xls',
     ]);
     $xlsstring = get_string('application/vnd.ms-excel', 'mimetypes');
-    $xlsicon = html_writer::img($OUTPUT->image_url('f/spreadsheet'), $xlsstring,
-        ['title' => $xlsstring, 'class' => 'mimetypeicon']);
+    $xlsicon = html_writer::img(
+        $OUTPUT->image_url('f/spreadsheet'),
+        $xlsstring,
+        ['title' => $xlsstring, 'class' => 'mimetypeicon']
+    );
     echo get_string('export', 'mod_zoom') . ': ' . html_writer::link($exporturl, $xlsicon);
 
     echo $OUTPUT->footer();

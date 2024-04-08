@@ -54,8 +54,8 @@ final class mod_zoom_webservice_test extends advanced_testcase {
         set_config('clientsecret', 'test', 'zoom');
         set_config('accountid', 'test', 'zoom');
 
+        // @codingStandardsIgnoreStart
         $this->notfoundmockcurl = new class {
-            // @codingStandardsIgnoreStart
             /**
              * Stub for curl setHeader().
              * @param string $unusedparam
@@ -169,8 +169,8 @@ final class mod_zoom_webservice_test extends advanced_testcase {
      * Tests whether invalid user errors are parsed properly
      */
     public function test_invalid_user_exception(): void {
+        // @codingStandardsIgnoreStart
         $invalidmockcurl = new class {
-            // @codingStandardsIgnoreStart
             /**
              * Stub for curl setHeader().
              * @param string $unusedparam
@@ -230,9 +230,9 @@ final class mod_zoom_webservice_test extends advanced_testcase {
      * is in the curl response to specify the time that the retry should be sent.
      */
     public function test_retry_with_header(): void {
+        // @codingStandardsIgnoreStart
         $retrywithheadermockcurl = new class {
             public $numgetinfocalls = 0;
-            // @codingStandardsIgnoreStart
             /**
              * Stub for curl setHeader().
              * @param string $unusedparam
@@ -309,9 +309,9 @@ final class mod_zoom_webservice_test extends advanced_testcase {
      * header is not sent in the curl response.
      */
     public function test_retry_without_header(): void {
+        // @codingStandardsIgnoreStart
         $retrynoheadermockcurl = new class {
             public $numgetinfocalls = 0;
-            // @codingStandardsIgnoreStart
             /**
              * Stub for curl setHeader().
              * @param string $unusedparam
@@ -377,9 +377,9 @@ final class mod_zoom_webservice_test extends advanced_testcase {
      * Tests that we throw error if we tried more than max retries.
      */
     public function test_retry_exception(): void {
+        // @codingStandardsIgnoreStart
         $retryfailuremockcurl = new class {
             public $urlpath = null;
-            // @codingStandardsIgnoreStart
             /**
              * Stub for curl setHeader().
              * @param string $unusedparam
@@ -464,9 +464,9 @@ final class mod_zoom_webservice_test extends advanced_testcase {
      * Tests that we are waiting 1 minute for QPS rate limit types.
      */
     public function test_retryqps_exception(): void {
+        // @codingStandardsIgnoreStart
         $retryqpsmockcurl = new class {
             public $urlpath = null;
-            // @codingStandardsIgnoreStart
             /**
              * Stub for curl setHeader().
              * @param string $unusedparam
