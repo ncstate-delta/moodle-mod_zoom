@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: 'ubuntu-latest'
+
     services:
       postgres:
         image: postgres:13
@@ -31,7 +32,7 @@ jobs:
       matrix:
         include:
           - php: '8.2'
-            moodle-branch: 'master'
+            moodle-branch: 'main'
             database: 'mariadb'
           - php: '8.2'
             moodle-branch: 'MOODLE_403_STABLE'
@@ -54,7 +55,7 @@ jobs:
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: plugin
 
@@ -64,7 +65,8 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: ${{ matrix.extensions }}
           ini-values: max_input_vars=5000
-          # none to use phpdbg fallback. Specify pcov (Moodle 3.10 and up) or xdebug to use them instead.
+          # If you are not using code coverage, keep "none". Otherwise, use "pcov" (Moodle 3.10 and up) or "xdebug".
+          # If you try to use code coverage with "none", it will fallback to phpdbg (which has known problems).
           coverage: none
 
       - name: Initialise moodle-plugin-ci
@@ -92,15 +94,12 @@ jobs:
           DB: ${{ matrix.database }}
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
           MUSTACHE_IGNORE_NAMES: 'mobile_view_page_latest.mustache,mobile_view_page_ionic3.mustache'
+          # Uncomment this to run Behat tests using the Moodle App.
+          # MOODLE_APP: 'true'
 
       - name: PHP Lint
         if: ${{ !cancelled() && steps.install_ci.outcome == 'success' }}
         run: moodle-plugin-ci phplint
-
-      - name: PHP Copy/Paste Detector
-        continue-on-error: true # This step will show errors but will not fail
-        if: ${{ !cancelled() && steps.install_ci.outcome == 'success' }}
-        run: moodle-plugin-ci phpcpd
 
       - name: PHP Mess Detector
         continue-on-error: true # This step will show errors but will not fail
@@ -142,8 +141,18 @@ jobs:
         run: moodle-plugin-ci phpunit --fail-on-warning
 
       - name: Behat features
+        id: behat
         if: ${{ !cancelled() && steps.install_ci.outcome == 'success' }}
         run: moodle-plugin-ci behat --profile chrome
+
+      - name: Upload Behat Faildump
+        if: ${{ failure() && steps.behat.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Behat Faildump (${{ join(matrix.*, ', ') }})
+          path: ${{ github.workspace }}/moodledata/behat_dump
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: Make sure cancelled jobs are marked as failures.
         if: ${{ cancelled() }}

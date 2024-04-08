@@ -1314,3 +1314,29 @@ function zoom_get_registrant_join_url($useremail, $meetingid, $iswebinar) {
 
     return false;
 }
+
+/**
+ * Get the display name for a Zoom user.
+ * This is wrapped in a function to avoid unnecessary API calls.
+ *
+ * @param string $zoomuserid Zoom user ID.
+ * @return ?string
+ */
+function zoom_get_user_display_name($zoomuserid) {
+    try {
+        $hostuser = zoom_get_user($zoomuserid);
+
+        // Compose Moodle user object for host.
+        $hostmoodleuser = new stdClass();
+        $hostmoodleuser->firstname = $hostuser->first_name;
+        $hostmoodleuser->lastname = $hostuser->last_name;
+        $hostmoodleuser->alternatename = '';
+        $hostmoodleuser->firstnamephonetic = '';
+        $hostmoodleuser->lastnamephonetic = '';
+        $hostmoodleuser->middlename = '';
+
+        return fullname($hostmoodleuser);
+    } catch (moodle_exception $error) {
+        return null;
+    }
+}

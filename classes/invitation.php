@@ -60,9 +60,9 @@ class invitation {
      *
      * @param int $coursemoduleid Course module where the user will view the invitation.
      * @param int|null $userid Optionally supply the intended user to view the string. Defaults to global $USER.
-     * @return string|null
+     * @return ?string
      */
-    public function get_display_string(int $coursemoduleid, int $userid = null) {
+    public function get_display_string(int $coursemoduleid, ?int $userid = null) {
         if (empty($this->invitation)) {
             return null;
         }
