@@ -76,11 +76,6 @@ class get_meeting_recordings extends scheduled_task {
 
         mtrace('Finding meeting recordings for this account...');
 
-        $recordingtypestrings = [
-            'audio' => get_string('recordingtypeaudio', 'mod_zoom'),
-            'video' => get_string('recordingtypevideo', 'mod_zoom'),
-        ];
-
         $localmeetings = zoom_get_all_meeting_records();
 
         $now = time();
@@ -111,6 +106,15 @@ class get_meeting_recordings extends scheduled_task {
             foreach ($zoomrecordings as $recordingid => $recording) {
                 if (isset($localrecordings[$recording->meetinguuid][$recordingid])) {
                     mtrace('Recording id: ' . $recordingid . ' exists...skipping');
+                    $localrecording = $localrecordings[$recording->meetinguuid][$recordingid];
+
+                    if ($localrecording->recordingtype !== $recording->recordingtype) {
+                        $updatemeeting = (object) [
+                            'id' => $localrecording->id,
+                            'recordingtype' => $recording->recordingtype,
+                        ];
+                        $DB->update_record('zoom_meeting_recordings', $updatemeeting);
+                    }
                     continue;
                 }
 
@@ -131,15 +135,13 @@ class get_meeting_recordings extends scheduled_task {
                 }
 
                 $zoom = $meetings[$recording->meetingid];
-
                 $recordingtype = $recording->recordingtype;
-                $recordingtypestring = $recordingtypestrings[$recordingtype];
 
                 $record = new stdClass();
                 $record->zoomid = $zoom->id;
                 $record->meetinguuid = $recording->meetinguuid;
                 $record->zoomrecordingid = $recordingid;
-                $record->name = trim($zoom->name) . ' (' . $recordingtypestring . ')';
+                $record->name = $zoom->name;
                 $record->externalurl = $recording->url;
                 $record->passcode = $meetingpasscodes[$recording->meetinguuid];
                 $record->recordingtype = $recordingtype;
