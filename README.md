@@ -17,7 +17,50 @@ permission is required. You should create a separate Server-to-Server OAuth app 
 
 The Server-to-Server OAuth app will generate a client ID, client secret and account ID.
 
-At a minimum, the following scopes are required by this plugin:
+#### Granular scopes
+At a minimum, the following scopes are required:
+
+- meeting:read:meeting:admin (Get meeting)
+- meeting:read:invitation:admin (Get meeting invitation)
+- meeting:delete:meeting:admin (Delete meeting)
+- meeting:update:meeting:admin (Update meeting)
+- meeting:write:meeting:admin (Create meeting)
+- user:read:list_schedulers:admin (List schedulers)
+- user:read:settings:admin (Get user settings)
+- user:read:user:admin (Get user)
+
+Optional functionality can be enabled by granting additional scopes:
+
+- Meeting registrations
+    - meeting:read:list_registrants:admin (Get registrants)
+- Reports for meetings / webinars (Licensed accounts and higher)
+    - report:read:list_meeting_participants:admin
+    - report:read:list_webinar_participants:admin
+    - report:read:list_users:admin
+    - report:read:user:admin
+- Faster reports for meetings / webinars (Business accounts and higher)
+    - dashboard:read:list_meeting_participants:admin
+    - dashboard:read:list_meetings:admin
+    - dashboard:read:list_webinar_participants:admin
+    - dashboard:read:list_webinars:admin
+- Allow recordings to be viewed (zoom | viewrecordings)
+    - cloud_recording:read:list_recording_files:admin
+    - cloud_recording:read:recording_settings:admin
+    - user:read:list_recordings:admin
+- Tracking fields (zoom | defaulttrackingfields)
+    - Not yet supported by Zoom
+- Recycle licenses (zoom | utmost), (zoom | recycleonjoin)
+    - user:read:list_users:admin
+    - user:update:user:admin
+- Webinars (zoom | showwebinars), (zoom | webinardefault)
+    - webinar:read:list_registrants:admin
+    - webinar:read:webinar:admin
+    - webinar:delete:webinar:admin
+    - webinar:update:webinar:admin
+    - webinar:write:webinar:admin
+
+#### Classic scopes
+At a minimum, the following scopes are required:
 
 - meeting:read:admin (Read meeting details)
 - meeting:write:admin (Create/Update meetings)
