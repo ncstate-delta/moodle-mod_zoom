@@ -104,25 +104,23 @@ class get_meeting_recordings extends scheduled_task {
             $zoomrecordings = $service->get_user_recordings($hostid, $from, $to);
 
             foreach ($zoomrecordings as $recordingid => $recording) {
-                if (empty($meetings[$recording->meetingid])) {
-                    // Skip meetings that are not in Moodle.
-                    mtrace('Meeting id: ' . $recording->meetingid . ' does not exist...skipping');
-                    continue;
-                }
-
-                $zoom = $meetings[$recording->meetingid];
-
                 if (isset($localrecordings[$recording->meetinguuid][$recordingid])) {
                     mtrace('Recording id: ' . $recordingid . ' exists...skipping');
                     $localrecording = $localrecordings[$recording->meetinguuid][$recordingid];
 
-                    if ($localrecording->recordingtype !== $zoom->recordingtype) {
+                    if ($localrecording->recordingtype !== $recording->recordingtype) {
                         $updatemeeting = (object) [
                             'id' => $localrecording->id,
-                            'recordingtype' => $zoom->recordingtype,
+                            'recordingtype' => $recording->recordingtype,
                         ];
                         $DB->update_record('zoom_meeting_recordings', $updatemeeting);
                     }
+                    continue;
+                }
+
+                if (empty($meetings[$recording->meetingid])) {
+                    // Skip meetings that are not in Moodle.
+                    mtrace('Meeting id: ' . $recording->meetingid . ' does not exist...skipping');
                     continue;
                 }
 
@@ -136,6 +134,7 @@ class get_meeting_recordings extends scheduled_task {
                     }
                 }
 
+                $zoom = $meetings[$recording->meetingid];
                 $recordingtype = $recording->recordingtype;
 
                 $record = new stdClass();
