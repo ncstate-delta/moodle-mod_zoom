@@ -1109,7 +1109,7 @@ class webservice {
 
         try {
             // Classic: recording:read:admin.
-            // Granular: user:read:list_recordings:admin.
+            // Granular: cloud_recording:read:list_user_recordings:admin.
             $url = 'users/' . $userid . '/recordings';
             $data = ['from' => $from, 'to' => $to];
             $response = $this->make_paginated_call($url, $data, 'meetings');

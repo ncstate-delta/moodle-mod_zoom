@@ -45,8 +45,8 @@ Optional functionality can be enabled by granting additional scopes:
     - dashboard:read:list_webinars:admin
 - Allow recordings to be viewed (zoom | viewrecordings)
     - cloud_recording:read:list_recording_files:admin
+    - cloud_recording:read:list_user_recordings:admin
     - cloud_recording:read:recording_settings:admin
-    - user:read:list_recordings:admin
 - Tracking fields (zoom | defaulttrackingfields)
     - Not yet supported by Zoom
 - Recycle licenses (zoom | utmost), (zoom | recycleonjoin)
