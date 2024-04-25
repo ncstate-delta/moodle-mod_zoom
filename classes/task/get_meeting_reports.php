@@ -82,7 +82,6 @@ class get_meeting_reports extends scheduled_task {
     /**
      * Gets the meeting IDs from the queue, retrieve the information for each
      * meeting, then remove the meeting from the queue.
-     * @link https://zoom.github.io/api/#report-metric-apis
      *
      * @param string $paramstart    If passed, will find meetings starting on given date. Format is YYYY-MM-DD.
      * @param string $paramend      If passed, will find meetings ending on given date. Format is YYYY-MM-DD.
@@ -144,14 +143,24 @@ class get_meeting_reports extends scheduled_task {
 
         $recordedallmeetings = true;
 
+        $dashboardscopes = [
+            'dashboard_meetings:read:admin',
+            'dashboard_meetings:read:list_meetings:admin',
+            'dashboard_meetings:read:list_webinars:admin',
+        ];
+
+        $reportscopes = [
+            'report:read:admin',
+            'report:read:list_users:admin',
+        ];
+
         // Can only query on $hostuuids using Report API.
-        if (empty($hostuuids) && $this->service->has_scope('dashboard_meetings:read:admin')) {
+        if (empty($hostuuids) && $this->service->has_scope($dashboardscopes)) {
             $allmeetings = $this->get_meetings_via_dashboard($start, $end);
-        } else if ($this->service->has_scope('report:read:admin')) {
+        } else if ($this->service->has_scope($reportscopes)) {
             $allmeetings = $this->get_meetings_via_reports($start, $end, $hostuuids);
         } else {
-            $requiredscope = !empty($hostuuids) ? 'report:read:admin' : 'dashboard_meetings:read:admin or report:read:admin';
-            mtrace('Skipping task - missing required OAuth scope: ' . $requiredscope);
+            mtrace('Skipping task - missing OAuth scopes required for reports');
             return;
         }
 
@@ -406,13 +415,23 @@ class get_meeting_reports extends scheduled_task {
     public function get_meetings_via_dashboard($start, $end) {
         mtrace('Using Dashboard API');
 
+        $meetingscopes = [
+            'dashboard_meetings:read:admin',
+            'dashboard_meetings:read:list_meetings:admin',
+        ];
+
+        $webinarscopes = [
+            'dashboard_webinars:read:admin',
+            'dashboard_webinars:read:list_webinars:admin',
+        ];
+
         $meetings = [];
-        if ($this->service->has_scope('dashboard_meetings:read:admin')) {
+        if ($this->service->has_scope($meetingscopes)) {
             $meetings = $this->service->get_meetings($start, $end);
         }
 
         $webinars = [];
-        if ($this->service->has_scope('dashboard_webinars:read:admin')) {
+        if ($this->service->has_scope($webinarscopes)) {
             $webinars = $this->service->get_webinars($start, $end);
         }
 

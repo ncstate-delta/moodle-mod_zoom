@@ -1,3 +1,7 @@
+== v5.2.1 ==
+
+- Document Zoom's new granular OAuth scopes.
+
 == v5.2.0 ==
 
 - New settings `zoom/gradingmethod`, `zoom/unamedisplay`

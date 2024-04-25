@@ -1,5 +1,16 @@
 ### Releases ###
 
+#### v5.2.1 ####
+
+- Bugfix: Set icon size to something reasonable on Moodle 4.3 #581 (thanks @haietza)
+- Bugfix: Save Zoom data (e.g. join_url) when updating instance #585 (thanks @selimmeziti)
+- Bugfix: Form sections can now toggle independently #587 (thanks @kiratskitizing)
+- Bugfix: Differentiate between multiple recording types #578 (thanks @welegionsr)
+- Bugfix: Granular OAuth scopes work now #590 (thanks @amendezinserver, @jport500, @haietza, Kohei SHIRAHAMA)
+- Code quality: Move function from view page to locallib #584
+- Code quality: Freshen GitHub Action to match moodle-plugin-ci #584
+- Code quality: Align with moodle-cs v3.4.6 #584
+
 #### v5.2.0 ####
 
 - Feature: Grading based on attendance duration #477 (thanks @fmido88)

@@ -349,7 +349,6 @@ class webservice {
      * @param string $datatoget The name of the array of the data to get.
      * @return array The retrieved data.
      * @see make_call()
-     * @link https://zoom.github.io/api/#list-users
      */
     private function make_paginated_call($url, $data, $datatoget) {
         $aggregatedata = [];
@@ -379,9 +378,11 @@ class webservice {
      *
      * @param stdClass $user The user to create.
      * @return bool Whether the user was succesfully created.
-     * @link https://zoom.github.io/api/#create-a-user
+     * @deprecated Has never been used by internal code.
      */
     public function autocreate_user($user) {
+        // Classic: user:write:admin.
+        // Granular: user:write:user:admin.
         $url = 'users';
         $data = ['action' => 'autocreate'];
         $data['user_info'] = [
@@ -410,10 +411,11 @@ class webservice {
      * Get users list.
      *
      * @return array An array of users.
-     * @link https://zoom.github.io/api/#list-users
      */
     public function list_users() {
         if (empty(self::$userslist)) {
+            // Classic: user:read:admin.
+            // Granular: user:read:list_users:admin.
             self::$userslist = $this->make_paginated_call('users', [], 'users');
         }
 
@@ -452,7 +454,11 @@ class webservice {
      */
     private function get_least_recently_active_paid_user_id() {
         $usertimes = [];
+
+        // Classic: user:read:admin.
+        // Granular: user:read:list_users:admin.
         $userslist = $this->list_users();
+
         foreach ($userslist as $user) {
             if ($user->type != ZOOM_USER_TYPE_BASIC && isset($user->last_login_time)) {
                 // Count the user if we're including all users or if the user is on this instance.
@@ -474,9 +480,10 @@ class webservice {
      *
      * @param string $userid The user's ID.
      * @return stdClass The call's result in JSON format.
-     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/methods/#operation/userSettings
      */
     public function get_user_settings($userid) {
+        // Classic: user:read:admin.
+        // Granular: user:read:settings:admin.
         return $this->make_call('users/' . $userid . '/settings');
     }
 
@@ -485,9 +492,10 @@ class webservice {
      *
      * @param string $userid The user's ID.
      * @return stdClass The call's result in JSON format.
-     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/methods/#operation/userSettings
      */
     public function get_account_meeting_security_settings($userid) {
+        // Classic: user:read:admin.
+        // Granular: user:read:settings:admin.
         $url = 'users/' . $userid . '/settings?option=meeting_security';
         try {
             $response = $this->make_call($url);
@@ -519,11 +527,12 @@ class webservice {
      *
      * @param string|int $identifier The user's email or the user's ID per Zoom API.
      * @return stdClass|false If user is found, returns the User object. Otherwise, returns false.
-     * @link https://zoom.github.io/api/#users
      */
     public function get_user($identifier) {
         $founduser = false;
 
+        // Classic: user:read:admin.
+        // Granular: user:read:user:admin.
         $url = 'users/' . $identifier;
 
         try {
@@ -544,9 +553,10 @@ class webservice {
      *
      * @param string $identifier The user's email or the user's ID per Zoom API.
      * @return array|false If schedulers are returned array of {id,email} objects. Otherwise returns false.
-     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/users/userschedulers
      */
     public function get_schedule_for_users($identifier) {
+        // Classic: user:read:admin.
+        // Granular: user:read:list_schedulers:admin.
         $url = "users/{$identifier}/schedulers";
 
         $schedulerswithoutkey = [];
@@ -734,6 +744,8 @@ class webservice {
      */
     public function provide_license($zoomuserid) {
         // Checks whether we need to recycle licenses and acts accordingly.
+        // Classic: user:read:admin.
+        // Granular: user:read:user:admin.
         if ($this->recyclelicenses && $this->make_call("users/$zoomuserid")->type == ZOOM_USER_TYPE_BASIC) {
             if ($this->paid_user_limit_reached()) {
                 $leastrecentlyactivepaiduserid = $this->get_least_recently_active_paid_user_id();
@@ -742,6 +754,8 @@ class webservice {
             }
 
             // Changes current user to pro so they can make a meeting.
+            // Classic: user:write:admin.
+            // Granular: user:update:user:admin.
             $this->make_call("users/$zoomuserid", ['type' => ZOOM_USER_TYPE_PRO], 'patch');
         }
     }
@@ -756,6 +770,11 @@ class webservice {
     public function create_meeting($zoom) {
         // Provide license if needed.
         $this->provide_license($zoom->host_id);
+
+        // Classic: meeting:write:admin.
+        // Granular: meeting:write:meeting:admin.
+        // Classic: webinar:write:admin.
+        // Granular: webinar:write:webinar:admin.
         $url = "users/$zoom->host_id/" . (!empty($zoom->webinar) ? 'webinars' : 'meetings');
         return $this->make_call($url, $this->database_to_api($zoom), 'post');
     }
@@ -767,6 +786,10 @@ class webservice {
      * @return void
      */
     public function update_meeting($zoom) {
+        // Classic: meeting:write:admin.
+        // Granular: meeting:update:meeting:admin.
+        // Classic: webinar:write:admin.
+        // Granular: webinar:update:webinar:admin.
         $url = ($zoom->webinar ? 'webinars/' : 'meetings/') . $zoom->meeting_id;
         $this->make_call($url, $this->database_to_api($zoom), 'patch');
     }
@@ -779,6 +802,10 @@ class webservice {
      * @return void
      */
     public function delete_meeting($id, $webinar) {
+        // Classic: meeting:write:admin.
+        // Granular: meeting:delete:meeting:admin.
+        // Classic: webinar:write:admin.
+        // Granular: webinar:delete:webinar:admin.
         $url = ($webinar ? 'webinars/' : 'meetings/') . $id . '?schedule_for_reminder=false';
         $this->make_call($url, null, 'delete');
     }
@@ -791,6 +818,10 @@ class webservice {
      * @return stdClass The meeting's or webinar's information.
      */
     public function get_meeting_webinar_info($id, $webinar) {
+        // Classic: meeting:read:admin.
+        // Granular: meeting:read:meeting:admin.
+        // Classic: webinar:read:admin.
+        // Granular: webinar:read:webinar:admin.
         $url = ($webinar ? 'webinars/' : 'meetings/') . $id;
         $response = $this->make_call($url);
         return $response;
@@ -801,7 +832,6 @@ class webservice {
      *
      * @param stdClass $zoom The zoom meeting
      * @return \mod_zoom\invitation The meeting's invitation.
-     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetinginvitation
      */
     public function get_meeting_invitation($zoom) {
         global $CFG;
@@ -812,7 +842,10 @@ class webservice {
             return new invitation(null);
         }
 
+        // Classic: meeting:read:admin.
+        // Granular: meeting:read:invitation:admin.
         $url = 'meetings/' . $zoom->meeting_id . '/invitation';
+
         try {
             $response = $this->make_call($url);
         } catch (moodle_exception $error) {
@@ -830,9 +863,10 @@ class webservice {
      * @param string $from Start date of period in the form YYYY-MM-DD
      * @param string $to End date of period in the form YYYY-MM-DD
      * @return array The retrieved meetings.
-     * @link https://zoom.github.io/api/#retrieve-meetings-report
      */
     public function get_user_report($userid, $from, $to) {
+        // Classic: report:read:admin.
+        // Granular: report:read:user:admin.
         $url = 'report/users/' . $userid . '/meetings';
         $data = ['from' => $from, 'to' => $to];
         return $this->make_paginated_call($url, $data, 'meetings');
@@ -844,10 +878,13 @@ class webservice {
      * @param string $userid The user whose meetings or webinars to retrieve.
      * @param boolean $webinar Whether to list meetings or to list webinars.
      * @return array An array of meeting information.
-     * @link https://zoom.github.io/api/#list-webinars
-     * @link https://zoom.github.io/api/#list-meetings
+     * @deprecated Has never been used by internal code.
      */
     public function list_meetings($userid, $webinar) {
+        // Classic: meeting:read:admin.
+        // Granular: meeting:read:list_meetings:admin.
+        // Classic: webinar:read:admin.
+        // Granular: webinar:read:list_webinars:admin.
         $url = 'users/' . $userid . ($webinar ? '/webinars' : '/meetings');
         $instances = $this->make_paginated_call($url, [], ($webinar ? 'webinars' : 'meetings'));
         return $instances;
@@ -863,13 +900,30 @@ class webservice {
         $meetinguuid = $this->encode_uuid($meetinguuid);
 
         $meetingtype = ($webinar ? 'webinars' : 'meetings');
+        $meetingtypesingular = ($webinar ? 'webinar' : 'meeting');
 
-        if ($this->has_scope('report:read:admin')) {
+        $reportscopes = [
+            // Classic.
+            'report:read:admin',
+
+            // Granular.
+            'report:read:list_' . $meetingtypesingular . '_participants:admin',
+        ];
+
+        $dashboardscopes = [
+            // Classic.
+            'dashboard_' . $meetingtype . ':read:admin',
+
+            // Granular.
+            'dashboard:read:list_' . $meetingtypesingular . '_participants:admin',
+        ];
+
+        if ($this->has_scope($reportscopes)) {
             $apitype = 'report';
-        } else if ($this->has_scope('dashboard_' . $meetingtype . ':read:admin')) {
+        } else if ($this->has_scope($dashboardscopes)) {
             $apitype = 'metrics';
         } else {
-            mtrace('Missing required OAuth scope: report:read:admin or dashboard_' . $meetingtype . ':read:admin');
+            mtrace('Missing OAuth scopes required for reports.');
             return [];
         }
 
@@ -885,6 +939,8 @@ class webservice {
      * @return array An array of UUIDs.
      */
     public function get_active_hosts_uuids($from, $to) {
+        // Classic: report:read:admin.
+        // Granular: report:read:list_users:admin.
         $users = $this->make_paginated_call('report/users', ['type' => 'active', 'from' => $from, 'to' => $to], 'users');
         $uuids = [];
         foreach ($users as $user) {
@@ -899,8 +955,6 @@ class webservice {
      *
      * Ignores meetings that were attended only by one user.
      *
-     * See https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/dashboardMeetings
-     *
      * NOTE: Requires Business or a higher plan and have "Dashboard" feature
      * enabled. This query is rated "Resource-intensive"
      *
@@ -909,6 +963,8 @@ class webservice {
      * @return array An array of meeting objects.
      */
     public function get_meetings($from, $to) {
+        // Classic: dashboard_meetings:read:admin.
+        // Granular: dashboard:read:list_meetings:admin.
         return $this->make_paginated_call(
             'metrics/meetings',
             [
@@ -926,8 +982,6 @@ class webservice {
      *
      * Ignores meetings that were attended only by one user.
      *
-     * See https://marketplace.zoom.us/docs/api-reference/zoom-api/dashboards/dashboardmeetings
-     *
      * NOTE: Requires Business or a higher plan and have "Dashboard" feature
      * enabled. This query is rated "Resource-intensive"
      *
@@ -936,6 +990,8 @@ class webservice {
      * @return array An array of meeting objects.
      */
     public function get_webinars($from, $to) {
+        // Classic: dashboard_webinars:read:admin.
+        // Granular: dashboard:read:list_webinars:admin.
         return $this->make_paginated_call('metrics/webinars', ['type' => 'past', 'from' => $from, 'to' => $to], 'webinars');
     }
 
@@ -943,11 +999,12 @@ class webservice {
      * Lists tracking fields configured on the account.
      *
      * @return ?stdClass The call's result in JSON format.
-     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/trackingfield/trackingfieldlist
      */
     public function list_tracking_fields() {
         $response = null;
         try {
+            // Classic: tracking_fields:read:admin.
+            // Granular: Not yet implemented by Zoom.
             $response = $this->make_call('tracking_fields');
         } catch (moodle_exception $error) {
             debugging($error->getMessage());
@@ -982,7 +1039,6 @@ class webservice {
      * There can be more than one url for the same meeting if the host stops the recording in the middle
      * of the meeting and then starts recording again without ending the meeting.
      *
-     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/cloud-recording/recordingget
      * @param string $meetingid The string meeting UUID.
      * @return array Returns the list of recording URLs and the type of recording that is being sent back.
      */
@@ -1000,6 +1056,8 @@ class webservice {
         ];
 
         try {
+            // Classic: recording:read:admin.
+            // Granular: cloud_recording:read:list_recording_files:admin.
             $url = 'meetings/' . $this->encode_uuid($meetingid) . '/recordings';
             $response = $this->make_call($url);
 
@@ -1035,7 +1093,6 @@ class webservice {
      * @param string $from Start date of period in the form YYYY-MM-DD
      * @param string $to End date of period in the form YYYY-MM-DD
      * @return array
-     * @link https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/recordingsList
      */
     public function get_user_recordings($userid, $from, $to) {
         $recordings = [];
@@ -1051,6 +1108,8 @@ class webservice {
         ];
 
         try {
+            // Classic: recording:read:admin.
+            // Granular: cloud_recording:read:list_user_recordings:admin.
             $url = 'users/' . $userid . '/recordings';
             $data = ['from' => $from, 'to' => $to];
             $response = $this->make_paginated_call($url, $data, 'meetings');
@@ -1100,19 +1159,21 @@ class webservice {
     }
 
     /**
-     * Has the request OAuth scope been granted?
+     * Has one of the required OAuth scopes been granted?
      *
-     * @param string $scope OAuth scope.
+     * @param array $scopes OAuth scopes.
      * @throws moodle_exception
      * @return bool
      */
-    public function has_scope($scope) {
+    public function has_scope($scopes) {
         if (!isset($this->scopes)) {
             $this->get_access_token();
         }
 
-        mtrace('checking has_scope(' . $scope . ')');
-        return \in_array($scope, $this->scopes, true);
+        mtrace('checking has_scope(' . implode(' || ', $scopes) . ')');
+
+        $matchingscopes = \array_intersect($scopes, $this->scopes);
+        return !empty($matchingscopes);
     }
 
     /**
@@ -1149,12 +1210,29 @@ class webservice {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_no_access_token', 'mod_zoom'));
         }
 
-        $requiredscopes = [
-            'meeting:read:admin',
-            'meeting:write:admin',
-            'user:read:admin',
-        ];
         $scopes = explode(' ', $response->scope);
+
+        // Assume that we are using granular scopes.
+        $requiredscopes = [
+            'meeting:read:meeting:admin',
+            'meeting:read:invitation:admin',
+            'meeting:delete:meeting:admin',
+            'meeting:update:meeting:admin',
+            'meeting:write:meeting:admin',
+            'user:read:list_schedulers:admin',
+            'user:read:settings:admin',
+            'user:read:user:admin',
+        ];
+
+        // Check if we received classic scopes.
+        if (in_array('meeting:read:admin', $scopes, true)) {
+            $requiredscopes = [
+                'meeting:read:admin',
+                'meeting:write:admin',
+                'user:read:admin',
+            ];
+        }
+
         $missingscopes = array_diff($requiredscopes, $scopes);
 
         // Keep the scope information in memory.
@@ -1190,6 +1268,10 @@ class webservice {
      * @return stdClass The meeting's or webinar's information.
      */
     public function get_meeting_registrants($id, $webinar) {
+        // Classic: meeting:read:admin.
+        // Granular: meeting:read:list_registrants:admin.
+        // Classic: webinar:read:admin.
+        // Granular: webinar:read:list_registrants:admin.
         $url = ($webinar ? 'webinars/' : 'meetings/') . $id . '/registrants';
         $response = $this->make_call($url);
         return $response;
@@ -1202,6 +1284,8 @@ class webservice {
      * @return stdClass The meeting's recording settings.
      */
     public function get_recording_settings($meetinguuid) {
+        // Classic: recording:read:admin.
+        // Granular: cloud_recording:read:recording_settings:admin.
         $url = 'meetings/' . $this->encode_uuid($meetinguuid) . '/recordings/settings';
         $response = $this->make_call($url);
         return $response;
