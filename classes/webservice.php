@@ -98,6 +98,12 @@ class webservice {
     protected $instanceusers;
 
     /**
+     * Zoom group to protect from licenses redefining
+     * @var array
+     */
+    protected $protectedgroup;
+
+    /**
      * Maximum limit of paid users
      * @var int
      */
@@ -151,6 +157,7 @@ class webservice {
             if (!empty($config->utmost)) {
                 $this->recyclelicenses = $config->utmost;
                 $this->instanceusers = !empty($config->instanceusers);
+                $this->protectedgroup = $config->protectedgrp;
             }
 
             if ($this->recyclelicenses) {
@@ -461,7 +468,8 @@ class webservice {
         $userslist = $this->list_users();
 
         foreach ($userslist as $user) {
-            if ($user->type != ZOOM_USER_TYPE_BASIC && isset($user->last_login_time)) {
+            if ($user->type != ZOOM_USER_TYPE_BASIC && isset($user->last_login_time)
+                && !in_array($this->protectedgroup,$user->group_ids ?? array(),true)) { // needle: 'PROTECTED' zoom group
                 // Count the user if we're including all users or if the user is on this instance.
                 if (!$this->instanceusers || core_user::get_user_by_email($user->email)) {
                     $usertimes[$user->id] = strtotime($user->last_login_time);
@@ -474,6 +482,15 @@ class webservice {
         }
 
         return false;
+    }
+
+    /**
+     * Get a list of Zoom groups
+     *
+     * @return stdClass The call's result in JSON format.
+     */
+    public function get_groups() {
+        return $this->make_call('/groups');
     }
 
     /**
