@@ -72,20 +72,24 @@ class delete_meeting_recordings extends scheduled_task {
         // Get all recordings stored in Moodle, grouped by meetinguuid.
         $zoomrecordings = zoom_get_meeting_recordings_grouped();
         foreach ($zoomrecordings as $meetinguuid => $recordings) {
-            // Now check which recordings still exist on Zoom.
-            $recordinglist = $service->get_recording_url_list($meetinguuid);
-            foreach ($recordinglist as $recordinginfo) {
-                $zoomrecordingid = trim($recordinginfo->recordingid);
-                if (isset($recordings[$zoomrecordingid])) {
-                    mtrace('Recording id: ' . $zoomrecordingid . ' exist(s)...skipping');
-                    unset($recordings[$zoomrecordingid]);
+            try {
+                // Now check which recordings still exist on Zoom.
+                $recordinglist = $service->get_recording_url_list($meetinguuid);
+                foreach ($recordinglist as $recordinginfo) {
+                    $zoomrecordingid = trim($recordinginfo->recordingid);
+                    if (isset($recordings[$zoomrecordingid])) {
+                        mtrace('Recording id: ' . $zoomrecordingid . ' exist(s)...skipping');
+                        unset($recordings[$zoomrecordingid]);
+                    }
                 }
-            }
 
-            // If recordings are in Moodle but not in Zoom, we need to remove them from Moodle as well.
-            foreach ($recordings as $zoomrecordingid => $recording) {
-                mtrace('Deleting recording with id: ' . $zoomrecordingid . ' as corresponding record on zoom has been removed.');
-                $DB->delete_records('zoom_meeting_recordings', ['zoomrecordingid' => $zoomrecordingid]);
+                // If recordings are in Moodle but not in Zoom, we need to remove them from Moodle as well.
+                foreach ($recordings as $zoomrecordingid => $recording) {
+                    mtrace('Deleting recording with id: ' . $zoomrecordingid . ' because the recording is no longer in Zoom.');
+                    $DB->delete_records('zoom_meeting_recordings', ['zoomrecordingid' => $zoomrecordingid]);
+                }
+            } catch (moodle_exception $e) {
+                mtrace('Exception occurred: ' . $e->getMessage());
             }
         }
     }

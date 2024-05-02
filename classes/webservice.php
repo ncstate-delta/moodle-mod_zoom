@@ -1041,6 +1041,7 @@ class webservice {
      *
      * @param string $meetingid The string meeting UUID.
      * @return array Returns the list of recording URLs and the type of recording that is being sent back.
+     * @throws moodle_exception
      */
     public function get_recording_url_list($meetingid) {
         $recordings = [];
@@ -1055,32 +1056,27 @@ class webservice {
             'CC' => 'captions',
         ];
 
-        try {
-            // Classic: recording:read:admin.
-            // Granular: cloud_recording:read:list_recording_files:admin.
-            $url = 'meetings/' . $this->encode_uuid($meetingid) . '/recordings';
-            $response = $this->make_call($url);
+        // Classic: recording:read:admin.
+        // Granular: cloud_recording:read:list_recording_files:admin.
+        $url = 'meetings/' . $this->encode_uuid($meetingid) . '/recordings';
+        $response = $this->make_call($url);
 
-            if (!empty($response->recording_files)) {
-                foreach ($response->recording_files as $recording) {
-                    $url = $recording->play_url ?? $recording->download_url ?? null;
-                    if (!empty($url) && isset($allowedrecordingtypes[$recording->file_type])) {
-                        $recordinginfo = new stdClass();
-                        $recordinginfo->recordingid = $recording->id;
-                        $recordinginfo->meetinguuid = $response->uuid;
-                        $recordinginfo->url = $url;
-                        $recordinginfo->filetype = $recording->file_type;
-                        $recordinginfo->recordingtype = $recording->recording_type;
-                        $recordinginfo->passcode = $response->password;
-                        $recordinginfo->recordingstart = strtotime($recording->recording_start);
+        if (!empty($response->recording_files)) {
+            foreach ($response->recording_files as $recording) {
+                $url = $recording->play_url ?? $recording->download_url ?? null;
+                if (!empty($url) && isset($allowedrecordingtypes[$recording->file_type])) {
+                    $recordinginfo = new stdClass();
+                    $recordinginfo->recordingid = $recording->id;
+                    $recordinginfo->meetinguuid = $response->uuid;
+                    $recordinginfo->url = $url;
+                    $recordinginfo->filetype = $recording->file_type;
+                    $recordinginfo->recordingtype = $recording->recording_type;
+                    $recordinginfo->passcode = $response->password;
+                    $recordinginfo->recordingstart = strtotime($recording->recording_start);
 
-                        $recordings[$recording->id] = $recordinginfo;
-                    }
+                    $recordings[$recording->id] = $recordinginfo;
                 }
             }
-        } catch (moodle_exception $error) {
-            // No recordings found for this meeting id.
-            $recordings = [];
         }
 
         return $recordings;
