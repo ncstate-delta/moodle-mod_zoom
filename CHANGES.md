@@ -1,5 +1,9 @@
 ### Releases ###
 
+#### v5.2.2 ####
+
+- Bugfix: Keep recordings even if the API errors #593 (thanks @LGPoly, @mjleblanc)
+
 #### v5.2.1 ####
 
 - Bugfix: Set icon size to something reasonable on Moodle 4.3 #581 (thanks @haietza)
