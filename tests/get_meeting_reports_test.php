@@ -69,6 +69,8 @@ final class get_meeting_reports_test extends advanced_testcase {
      * Setup.
      */
     public function setUp(): void {
+        parent::setUp();
+
         $this->resetAfterTest(true);
 
         $this->meetingtask = new \mod_zoom\task\get_meeting_reports();
@@ -380,7 +382,7 @@ final class get_meeting_reports_test extends advanced_testcase {
         // Try duration under an hour.
         $dashboardmeeting['duration'] = '10:01';
         $meeting = $this->meetingtask->normalize_meeting((object) $dashboardmeeting);
-		$this->assertEquals($meeting->duration, 10 * 60 + 1);
+        $this->assertEquals($meeting->duration, 10 * 60 + 1);
 
         $reportmeeting = [
             'uuid' => 'sfsdfsdfc6122222d',

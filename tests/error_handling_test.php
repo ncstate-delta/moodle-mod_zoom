@@ -62,12 +62,14 @@ final class error_handling_test extends basic_testcase {
     public static function setUpBeforeClass(): void {
         global $CFG;
         require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+        parent::setUpBeforeClass();
     }
 
     /**
      * Setup before every test.
      */
     public function setUp(): void {
+        parent::setUp();
         $this->meetingnotfoundexception = new not_found_exception('meeting not found', 3001);
         $this->usernotfoundexception = new not_found_exception('user not found', 1001);
         $this->invaliduserexception = new not_found_exception('invalid user found', 1120);

@@ -982,7 +982,8 @@ function xmldb_zoom_upgrade($oldversion) {
         $occurrences = $DB->get_records('zoom_meeting_details');
 
         foreach ($occurrences as $occurrence) {
-            $DB->set_field_select('zoom_meeting_details', 'duration', $occurrence->end_time - $occurrence->start_time, 'id = ?', [$occurrence->id]);
+            $duration = $occurrence->end_time - $occurrence->start_time;
+            $DB->set_field_select('zoom_meeting_details', 'duration', $duration, 'id = ?', [$occurrence->id]);
         }
 
         // Zoom savepoint reached.
