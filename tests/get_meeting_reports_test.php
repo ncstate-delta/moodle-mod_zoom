@@ -286,7 +286,7 @@ final class get_meeting_reports_test extends advanced_testcase {
         $participant2->user_email = 'jane@test.com';
         $participant2->join_time = '2020-04-01T15:00:00Z';
         $participant2->leave_time = '2020-04-01T15:10:00Z';
-        $participant2->duration = 10;
+        $participant2->duration = 10 * 60;
         $this->mockparticipantsdata['someuuid'][] = $participant2;
 
         // Make get_meeting_participants() return our results array.
@@ -305,7 +305,7 @@ final class get_meeting_reports_test extends advanced_testcase {
         $meeting->start_time = '2020-04-01T15:00:00Z';
         $meeting->end_time = '2020-04-01T16:00:00Z';
         $meeting->uuid = 'someuuid';
-        $meeting->duration = 60;
+        $meeting->duration = 60 * 60;
         $meeting->participants = 3;
 
         // Insert stub data for zoom table.
@@ -334,7 +334,7 @@ final class get_meeting_reports_test extends advanced_testcase {
         $participant3->user_email = 'joe@test.com';
         $participant3->join_time = '2020-04-01T15:05:00Z';
         $participant3->leave_time = '2020-04-01T15:35:00Z';
-        $participant3->duration = 30;
+        $participant3->duration = 30 * 60;
         $this->mockparticipantsdata['someuuid'][] = $participant3;
         $this->assertTrue($this->meetingtask->process_meeting_reports($meeting));
         $this->assertEquals(1, $DB->count_records('zoom_meeting_details'));
@@ -354,7 +354,7 @@ final class get_meeting_reports_test extends advanced_testcase {
             'email' => 'test@email.com',
             'user_type' => 2,
             'start_time' => '2019-07-14T09:05:19.754Z',
-            'end_time' => '2019-08-14T09:05:19.754Z',
+            'end_time' => '2019-07-14T10:26:37.754Z',
             'duration' => '01:21:18',
             'participants' => 4,
             'has_pstn' => false,
@@ -373,14 +373,14 @@ final class get_meeting_reports_test extends advanced_testcase {
         $this->assertEquals($dashboardmeeting['topic'], $meeting->topic);
         $this->assertIsInt($meeting->start_time);
         $this->assertIsInt($meeting->end_time);
-        $this->assertEquals($meeting->duration, 81);
+        $this->assertEquals($meeting->duration, 1 * 3600 + 21 * 60 + 18);
         $this->assertEquals($dashboardmeeting['participants'], $meeting->participants_count);
         $this->assertNull($meeting->total_minutes);
 
         // Try duration under an hour.
         $dashboardmeeting['duration'] = '10:01';
         $meeting = $this->meetingtask->normalize_meeting((object) $dashboardmeeting);
-        $this->assertEquals($meeting->duration, 10);
+		$this->assertEquals($meeting->duration, 10 * 60 + 1);
 
         $reportmeeting = [
             'uuid' => 'sfsdfsdfc6122222d',
@@ -390,8 +390,8 @@ final class get_meeting_reports_test extends advanced_testcase {
             'user_name' => 'John Doe',
             'user_email' => 'test@email.com',
             'start_time' => '2019-07-14T09:05:19.754Z',
-            'end_time' => '2019-08-14T09:05:19.754Z',
-            'duration' => 11,
+            'end_time' => '2019-07-14T09:16:19.754Z',
+            'duration' => 11 * 60,
             'total_minutes' => 11,
             'participants_count' => 4,
         ];
@@ -442,7 +442,7 @@ final class get_meeting_reports_test extends advanced_testcase {
         $meeting->start_time = '2020-04-01T15:00:00Z';
         $meeting->end_time = '2020-04-01T17:00:00Z';
         $meeting->uuid = 'someuuid123';
-        $meeting->duration = 120; // In minutes.
+        $meeting->duration = 120 * 60; // In seconds.
         $meeting->participants = 4;
 
         // Create a new zoom instance.
