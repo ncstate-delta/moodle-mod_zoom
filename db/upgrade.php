@@ -990,8 +990,7 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2024070300, 'zoom');
     }
 
-    if ($oldversion < XXXXXXXXXX) {
-        
+    if ($oldversion < 2024072500) {
         // Changing precision of field recordingtype on table zoom_meeting_recordings to (50).
         $table = new xmldb_table('zoom_meeting_recordings');
         $field = new xmldb_field('recordingtype', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null, 'passcode');
@@ -1000,7 +999,7 @@ function xmldb_zoom_upgrade($oldversion) {
         $dbman->change_field_precision($table, $field);
 
         // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, XXXXXXXXXX, 'zoom');
+        upgrade_mod_savepoint(true, 2024072500, 'zoom');
     }
 
     return true;
