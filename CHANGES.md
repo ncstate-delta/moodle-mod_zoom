@@ -1,5 +1,13 @@
 ### Releases ###
 
+#### v5.2.3 ####
+
+- Bugfix: Duration language string was incorrectly specifying units #250 (thanks @abias)
+- Bugfix: Stop using deprecated core-course-module-description for mobile app v4.4.0 #602 (thanks @dpalou)
+- Code quality: Align with moodle-cs v3.4.9 #605
+- Regression: `recordingtype` column was too small for some type strings #605 (thanks @samwitzig, @acquaalta)
+  - Introduced in v5.2.1 when fixing recording type language strings.
+
 #### v5.2.2 ####
 
 - Bugfix: Keep recordings even if the API errors #593 (thanks @LGPoly, @mjleblanc)
