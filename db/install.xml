@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/zoom/db" VERSION="20240105" COMMENT="Zoom module"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+<XMLDB PATH="mod/zoom/db" VERSION="20240724" COMMENT="Zoom module"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
     <TABLE NAME="zoom" COMMENT="Zoom meetings and webinars">
@@ -124,7 +124,7 @@
         <FIELD NAME="name" TYPE="char" LENGTH="300" NOTNULL="true" SEQUENCE="false" COMMENT="Recording topic. Max of 300 characters."/>
         <FIELD NAME="externalurl" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Link to view the recording."/>
         <FIELD NAME="passcode" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false" COMMENT="Passcode to access the recording."/>
-        <FIELD NAME="recordingtype" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="Type of recording."/>
+        <FIELD NAME="recordingtype" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Type of recording."/>
         <FIELD NAME="recordingstart" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="showrecording" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp when the record was created."/>
