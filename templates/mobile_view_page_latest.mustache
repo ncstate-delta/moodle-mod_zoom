@@ -47,7 +47,13 @@
 }}
 {{=<% %>=}}
 <div>
-    <core-course-module-description description="<% zoom.intro %>" component="mod_zoom" componentId="<% cmid %>"></core-course-module-description>
+    <%#canusemoduleinfo%>
+        <core-course-module-info [module]="module" description="<% zoom.intro %>" component="mod_zoom" componentId="<% cmid %>" [courseId]="courseId">
+        </core-course-module-info>
+    <%/canusemoduleinfo%>
+    <%^canusemoduleinfo%>
+        <core-course-module-description description="<% zoom.intro %>" component="mod_zoom" componentId="<% cmid %>"></core-course-module-description>
+    <%/canusemoduleinfo%>
 
     <ion-list>
         <%#available%>
