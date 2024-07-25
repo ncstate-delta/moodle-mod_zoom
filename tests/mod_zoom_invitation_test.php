@@ -41,12 +41,14 @@ final class mod_zoom_invitation_test extends advanced_testcase {
     public static function setUpBeforeClass(): void {
         global $CFG;
         require_once($CFG->libdir . '/accesslib.php');
+        parent::setUpBeforeClass();
     }
 
     /**
      * Run before every test.
      */
     protected function setUp(): void {
+        parent::setUp();
         set_config('invitationregexenabled', 1, 'zoom');
     }
 

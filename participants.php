@@ -148,12 +148,7 @@ foreach ($participants as $p) {
     $row[] = userdate($p->leave_time, get_string('strftimedatetimeshort', 'langconfig'));
 
     // Duration.
-    $durationremainder = $p->duration % 60;
-    if ($durationremainder != 0) {
-        $p->duration += 60 - $durationremainder;
-    }
-
-    $row[] = $p->duration / 60;
+    $row[] = format_time($p->duration);
 
     $table->data[] = $row;
 }

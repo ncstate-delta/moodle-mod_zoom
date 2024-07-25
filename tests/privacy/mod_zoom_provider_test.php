@@ -55,6 +55,7 @@ final class mod_zoom_provider_test extends provider_testcase {
      * {@inheritdoc}
      */
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
 

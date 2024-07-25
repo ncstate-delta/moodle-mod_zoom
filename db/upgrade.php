@@ -977,5 +977,18 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2024041900, 'zoom');
     }
 
+    if ($oldversion < 2024070300) {
+        // Update existing meeting occurrence duration to seconds.
+        $occurrences = $DB->get_records('zoom_meeting_details');
+
+        foreach ($occurrences as $occurrence) {
+            $duration = $occurrence->end_time - $occurrence->start_time;
+            $DB->set_field_select('zoom_meeting_details', 'duration', $duration, 'id = ?', [$occurrence->id]);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2024070300, 'zoom');
+    }
+
     return true;
 }
