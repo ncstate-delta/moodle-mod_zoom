@@ -156,7 +156,7 @@ foreach ($zooms as $z) {
         $oldtable->data[] = $row;
     } else {
         if ($inprogress) {
-            $label = html_writer::tag('span', $strmeetingstarted, ['class' => 'badge bg-info text-dark']);
+            $label = html_writer::tag('span', $strmeetingstarted, ['class' => 'badge bg-dark badge-dark bg-text-dark']);
             $row[2] = html_writer::tag('div', $label);
         } else {
             $row[2] = $displaytime;
