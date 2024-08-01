@@ -245,6 +245,7 @@ if (!$showrecreate) {
 }
 
 if ($zoom->show_schedule) {
+    echo $OUTPUT->box_start('', 'section-schedule');
     // Output "Schedule" heading.
     echo $OUTPUT->heading(get_string('schedule', 'mod_zoom'), 3);
 
@@ -256,21 +257,42 @@ if ($zoom->show_schedule) {
     $numcolumns = 2;
 
     // Show start/end date or recurring meeting information.
+    $rowmeetingtime = new html_table_row();
+    $rowmeetingtime->id = 'schedule-row-meetingtime';
+    $thmeetingtime = new html_table_cell();
+    $thmeetingtime->header = true;
+    $tdmeetingtime = new html_table_cell();
+
     if ($isrecurringnotime) {
-        $table->data[] = [get_string('recurringmeeting', 'mod_zoom'), get_string('recurringmeetingexplanation', 'mod_zoom')];
+        $thmeetingtime->text = get_string('recurringmeeting', 'mod_zoom');
+        $tdmeetingtime->text = get_string('recurringmeetingexplanation', 'mod_zoom');
     } else if ($zoom->recurring && $zoom->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
-        $table->data[] = [get_string('recurringmeeting', 'mod_zoom'), get_string('recurringmeetingthisis', 'mod_zoom')];
+        $thmeetingtime->text = get_string('recurringmeeting', 'mod_zoom');
+        $tdmeetingtime->text = get_string('recurringmeetingthisis', 'mod_zoom');
         $nextoccurrence = zoom_get_next_occurrence($zoom);
         if ($nextoccurrence > 0) {
-            $table->data[] = [get_string('nextoccurrence', 'mod_zoom'), userdate($nextoccurrence)];
+            $thmeetingtime->text = get_string('nextoccurrence', 'mod_zoom');
+            $tdmeetingtime->text = userdate($nextoccurrence);
         } else {
-            $table->data[] = [get_string('nextoccurrence', 'mod_zoom'), get_string('nooccurrenceleft', 'mod_zoom')];
+            $thmeetingtime->text = get_string('nextoccurrence', 'mod_zoom');
+            $tdmeetingtime->text = get_string('nooccurrenceleft', 'mod_zoom');
         }
-
-        $table->data[] = [$strduration, format_time($zoom->duration)];
     } else {
-        $table->data[] = [$strtime, userdate($zoom->start_time)];
-        $table->data[] = [$strduration, format_time($zoom->duration)];
+        $thmeetingtime->text = $strtime;
+        $tdmeetingtime->text = userdate($zoom->start_time);
+    }
+
+    $rowmeetingtime->cells = [$thmeetingtime, $tdmeetingtime];
+    $table->data[] = $rowmeetingtime;
+
+    // Show meeting duration
+    if (!$isrecurringnotime) {
+        $rowduration = new html_table_row();
+        $rowduration->id = 'schedule-row-duration';
+        $thduration = new html_table_cell($strduration);
+        $thduration->header = true;
+        $rowduration->cells = [$thduration, format_time($zoom->duration)];
+        $table->data[] = $rowduration;
     }
 
     // Show recordings section if option enabled to view recordings.
@@ -282,7 +304,12 @@ if ($zoom->show_schedule) {
         $recordingaddhtml = html_writer::div($recordingaddbuttonhtml);
         $recordinghtml .= $recordingaddhtml;
 
-        $table->data[] = [get_string('recordings', 'mod_zoom'), $recordinghtml];
+        $rowrecordings = new html_table_row();
+        $rowrecordings->id = 'schedule-row-recordings';
+        $threcording = new html_table_cell(get_string('recordings', 'mod_zoom'));
+        $threcording->header = true;
+        $rowrecordings->cells = [$threcording, $recordinghtml];
+        $table->data[] = $rowrecordings;
     }
 
     // Display add-to-calendar button if meeting was found and isn't recurring and if the admin did not disable the feature.
@@ -291,7 +318,12 @@ if ($zoom->show_schedule) {
         $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'));
         $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
         $buttonhtml = html_writer::link((string) $icallink, $calendarbutton, ['target' => '_blank']);
-        $table->data[] = [get_string('addtocalendar', 'mod_zoom'), $buttonhtml];
+        $rowaddtocalendar = new html_table_row();
+        $rowaddtocalendar->id = 'schedule-row-addtocalendar';
+        $thaddtocalendar = new html_table_cell(get_string('addtocalendar', 'mod_zoom'));
+        $thaddtocalendar->header = true;
+        $rowaddtocalendar->cells = [$thaddtocalendar, $buttonhtml];
+        $table->data[] = $rowaddtocalendar;
     }
 
     // Show meeting status.
@@ -305,20 +337,34 @@ if ($zoom->show_schedule) {
         } else {
             $status = get_string('meeting_not_started', 'mod_zoom');
         }
-
-        $table->data[] = [$strstatus, $status];
+        $rowstatus = new html_table_row();
+        $rowstatus->id = 'schedule-row-status';
+        $thstatus = new html_table_cell($strstatus);
+        $thstatus->header = true;
+        $rowstatus->cells = [$thstatus, $status];
+        $table->data[] = $rowstatus;
     }
 
     // Show host.
     $hostdisplayname = zoom_get_user_display_name($zoom->host_id);
     if (isset($hostdisplayname)) {
-        $table->data[] = [$strhost, $hostdisplayname];
+        $rowhost = new html_table_row();
+        $rowhost->id = 'schedule-row-host';
+        $thhost = new html_table_cell($strhost);
+        $thhost->header = true;
+        $rowhost->cells = [$thhost, $hostdisplayname];
+        $table->data[] = $rowhost;
     }
 
     // Display alternate hosts if they exist and if the admin did not disable the feature.
     if ($iszoommanager) {
         if ($config->showalternativehosts != ZOOM_ALTERNATIVEHOSTS_DISABLE && !empty($zoom->alternative_hosts)) {
             // If the admin did show the alternative hosts user picker, we try to show the real names of the users here.
+            $rowshowalternativehosts = new html_table_row();
+            $rowshowalternativehosts->id = 'schedule-row-showalternativehosts';
+            $thalternativehosts = new html_table_cell(get_string('alternative_hosts', 'mod_zoom'));
+            $thalternativehosts->header = true;
+
             if ($config->showalternativehosts == ZOOM_ALTERNATIVEHOSTS_PICKER) {
                 // Unfortunately, the host is not only able to add alternative hosts in Moodle with the user picker.
                 // He is also able to add any alternative host with an email address in Zoom directly.
@@ -352,12 +398,14 @@ if ($zoom->show_schedule) {
                 }
 
                 // Output the concatenated string of alternative hosts.
-                $table->data[] = [get_string('alternative_hosts', 'mod_zoom'), $alternativehoststring];
+                $rowshowalternativehosts->cells = [$thalternativehosts, $alternativehoststring];
 
                 // Otherwise we stick with the plain list of email addresses as we got it from Zoom directly.
             } else {
-                $table->data[] = [get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts];
+                $rowshowalternativehosts->cells = [$thalternativehosts, $zoom->alternative_hosts];
             }
+
+            $table->data[] = $rowshowalternativehosts;
         }
     }
 
@@ -365,14 +413,21 @@ if ($zoom->show_schedule) {
     if ($iszoommanager) {
         $sessionsurl = new moodle_url('/mod/zoom/report.php', ['id' => $cm->id]);
         $sessionslink = html_writer::link($sessionsurl, get_string('sessionsreport', 'mod_zoom'));
-        $table->data[] = [get_string('sessions', 'mod_zoom'), $sessionslink];
+        $rowsessions = new html_table_row();
+        $rowsessions->id = 'schedule-row-sessions';
+        $thsessions = new html_table_cell(get_string('sessions', 'mod_zoom'));
+        $thsessions->header = true;
+        $rowsessions->cells = [$thsessions, $sessionslink];
+        $table->data[] = $rowsessions;
     }
 
     // Output table.
     echo html_writer::table($table);
+    echo $OUTPUT->box_end();
 }
 
 if ($zoom->show_security) {
+    echo $OUTPUT->box_start('', 'section-security');
     // Output "Security" heading.
     echo $OUTPUT->heading(get_string('security', 'mod_zoom'), 3);
 
@@ -389,16 +444,31 @@ if ($zoom->show_security) {
     $canviewjoinurl = ($userishost || has_capability('mod/zoom:viewjoinurl', $context));
 
     // Show passcode status.
-    $table->data[] = [$strpassprotect, $strhaspass];
+    $rowhaspass = new html_table_row();
+    $rowhaspass->id = 'security-row-haspass';
+    $thhaspass = new html_table_cell($strpassprotect);
+    $thhaspass->header = true;
+    $rowhaspass->cells = [$thhaspass, $strhaspass];
+    $table->data[] = $rowhaspass;
 
     // Show passcode.
     if ($haspassword && ($canviewjoinurl || get_config('zoom', 'displaypassword'))) {
-        $table->data[] = [$strpassword, $zoom->password];
+        $rowpassword = new html_table_row();
+        $rowpassword->id = 'security-row-password';
+        $thpassword = new html_table_cell($strpassword);
+        $thpassword->header = true;
+        $rowpassword->cells = [$thpassword, $zoom->password];
+        $table->data[] = $rowpassword;
     }
 
     // Show join link.
     if ($canviewjoinurl) {
-        $table->data[] = [$strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, ['target' => '_blank'])];
+        $rowjoinurl = new html_table_row();
+        $rowjoinurl->id = 'security-row-joinurl';
+        $thjoinurl = new html_table_cell($strjoinlink);
+        $thjoinurl->header = true;
+        $rowjoinurl->cells = [$thjoinurl, html_writer::link($zoom->join_url, $zoom->join_url, ['target' => '_blank'])];
+        $table->data[] = $rowjoinurl;
     }
 
     // Show encryption type.
@@ -407,30 +477,52 @@ if ($zoom->show_security) {
             $strenc = ($zoom->option_encryption_type === ZOOM_ENCRYPTION_TYPE_E2EE)
                 ? $strencryptionendtoend
                 : $strencryptionenhanced;
-            $table->data[] = [$strencryption, $strenc];
+            $rowencryption = new html_table_row();
+            $rowencryption->id = 'security-row-encryption';
+            $thencryption = new html_table_cell($strencryption);
+            $thencryption->header = true;
+            $rowencryption->cells = [$thencryption, $strenc];
+            $table->data[] = $rowencryption;
         }
     }
 
     // Show waiting room.
     if (!$zoom->webinar) {
         $strwr = ($zoom->option_waiting_room) ? $stryes : $strno;
-        $table->data[] = [$strwwaitingroom, $strwr];
+        $rowwaitingroom = new html_table_row();
+        $rowwaitingroom->id = 'security-row-waitingroom';
+        $thwaitingroom = new html_table_cell($strwwaitingroom);
+        $thwaitingroom->header = true;
+        $rowwaitingroom->cells = [$thwaitingroom, $strwr];
+        $table->data[] = $rowwaitingroom;
     }
 
     // Show join before host.
     if (!$zoom->webinar) {
         $strjbh = ($zoom->option_jbh) ? $stryes : $strno;
-        $table->data[] = [$strjoinbeforehost, $strjbh];
+        $rowjoinbeforehost = new html_table_row();
+        $rowjoinbeforehost->id = 'security-row-joinbeforehost';
+        $thjoinbeforehost = new html_table_cell($strjoinbeforehost);
+        $thjoinbeforehost->header = true;
+        $rowjoinbeforehost->cells = [$thjoinbeforehost, $strjbh];
+        $table->data[] = $rowjoinbeforehost;
     }
 
     // Show authentication.
-    $table->data[] = [$strauthenticatedusers, ($zoom->option_authenticated_users) ? $stryes : $strno];
+    $rowauthenticatedusers = new html_table_row();
+    $rowauthenticatedusers->id = 'security-row-authenticatedusers';
+    $thauthenticatedusers = new html_table_cell($strauthenticatedusers);
+    $thauthenticatedusers->header = true;
+    $rowauthenticatedusers->cells = [$thauthenticatedusers, $zoom->option_authenticated_users];
+    $table->data[] = $rowauthenticatedusers;
 
     // Output table.
     echo html_writer::table($table);
+    echo $OUTPUT->box_end();
 }
 
 if ($zoom->show_media) {
+    echo $OUTPUT->box_start('', 'section-media');
     // Output "Media" heading.
     echo $OUTPUT->heading(get_string('media', 'mod_zoom'), 3);
 
@@ -444,20 +536,40 @@ if ($zoom->show_media) {
     // Show host video.
     if (!$zoom->webinar) {
         $strvideohost = ($zoom->option_host_video) ? $stryes : $strno;
-        $table->data[] = [$strstartvideohost, $strvideohost];
+        $rowshowhostvideo = new html_table_row();
+        $rowshowhostvideo->id = 'media-row-showhostvideo';
+        $thshowhostvideo = new html_table_cell($strstartvideohost);
+        $thshowhostvideo->header = true;
+        $rowshowhostvideo->cells = [$thshowhostvideo, $strvideohost];
+        $table->data[] = $rowshowhostvideo;
     }
 
     // Show participants video.
     if (!$zoom->webinar) {
         $strparticipantsvideo = ($zoom->option_participants_video) ? $stryes : $strno;
-        $table->data[] = [$strstartvideopart, $strparticipantsvideo];
+        $rowstartvideopart = new html_table_row();
+        $rowstartvideopart->id = 'media-row-startvideopart';
+        $thstartvideopart = new html_table_cell($strstartvideopart);
+        $thstartvideopart->header = true;
+        $rowstartvideopart->cells = [$thstartvideopart, $strparticipantsvideo];
+        $table->data[] = $rowstartvideopart;
     }
 
     // Show audio options.
-    $table->data[] = [$straudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom')];
+    $rowaudioopt = new html_table_row();
+    $rowaudioopt->id = 'media-row-audioopt';
+    $thaudioopt = new html_table_cell($straudioopt);
+    $thaudioopt->header = true;
+    $rowaudioopt->cells = [$thaudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom')];
+    $table->data[] = $rowaudioopt;
 
     // Show audio default configuration.
-    $table->data[] = [$strmuteuponentry, ($zoom->option_mute_upon_entry) ? $stryes : $strno];
+    $rowmuteuponentry = new html_table_row();
+    $rowmuteuponentry->id = 'media-row-muteuponentry';
+    $thmuteuponentry = new html_table_cell($strmuteuponentry);
+    $thmuteuponentry->header = true;
+    $rowmuteuponentry->cells = [$thmuteuponentry, ($zoom->option_mute_upon_entry) ? $stryes : $strno];
+    $table->data[] = $rowmuteuponentry;
 
     // Show dial-in information.
     if (
@@ -480,12 +592,18 @@ if ($zoom->show_media) {
                 '',
                 ['id' => 'show-more-body', 'style' => 'display: none;']
             );
-            $table->data[] = [$strmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, '')];
+            $rowmeetinginvite = new html_table_row();
+            $rowmeetinginvite->id = 'media-row-meetinginvite';
+            $thmeetinginvite = new html_table_cell($strmeetinginvite);
+            $thmeetinginvite->header = true;
+            $rowmeetinginvite->cells = [$thmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, '')];
+            $table->data[] = $rowmeetinginvite;
         }
     }
 
     // Output table.
     echo html_writer::table($table);
+    echo $OUTPUT->box_end();
 }
 
 // Supplementary feature: All meetings link.
