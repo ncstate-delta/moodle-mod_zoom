@@ -285,7 +285,7 @@ if ($zoom->show_schedule) {
     $rowmeetingtime->cells = [$thmeetingtime, $tdmeetingtime];
     $table->data[] = $rowmeetingtime;
 
-    // Show meeting duration
+    // Show meeting duration.
     if (!$isrecurringnotime) {
         $rowduration = new html_table_row();
         $rowduration->id = 'schedule-row-duration';
