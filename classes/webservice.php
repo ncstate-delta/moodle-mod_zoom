@@ -590,15 +590,24 @@ class webservice {
     private function database_to_api($zoom) {
         global $CFG;
 
+        [$course, $cm] = get_course_and_cm_from_instance($zoom, 'zoom');
+        $context = \context_module::instance($cm->id);
+
         $data = [
-            'topic' => $zoom->name,
+            // Process the meeting topic with proper filter.
+            'topic' => format_text($zoom->name, FORMAT_MOODLE, ['context' => $context, 'para' => false]),
             'settings' => [
                 'host_video' => (bool) ($zoom->option_host_video),
                 'audio' => $zoom->option_audio,
             ],
         ];
         if (isset($zoom->intro)) {
-            $data['agenda'] = content_to_text($zoom->intro, FORMAT_MOODLE);
+            // Process the description text with proper filter and then convert to plain text.
+            $data['agenda'] = content_to_text(format_text(
+                $zoom->intro,
+                FORMAT_MOODLE,
+                ['context' => $context]
+            ), false);
         }
 
         if (isset($CFG->timezone) && !empty($CFG->timezone)) {
