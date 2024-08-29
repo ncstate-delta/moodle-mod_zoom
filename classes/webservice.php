@@ -590,8 +590,14 @@ class webservice {
     private function database_to_api($zoom) {
         global $CFG;
 
-        [$course, $cm] = get_course_and_cm_from_instance($zoom, 'zoom');
-        $context = \context_module::instance($cm->id);
+        if (isset($zoom->coursemodule)) {
+            $cmid = $zoom->coursemodule;
+        } else {
+            [$course, $cm] = get_course_and_cm_from_instance($zoom, 'zoom');
+            $cmid = $cm->id;
+        }
+
+        $context = \context_module::instance($cmid);
 
         $data = [
             // Process the meeting topic with proper filter.
