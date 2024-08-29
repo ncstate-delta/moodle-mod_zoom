@@ -601,7 +601,7 @@ class webservice {
 
         $data = [
             // Process the meeting topic with proper filter.
-            'topic' => format_text($zoom->name, FORMAT_MOODLE, ['context' => $context, 'para' => false]),
+            'topic' => substr(format_text($zoom->name, FORMAT_MOODLE, ['context' => $context, 'para' => false]), 0, 200),
             'settings' => [
                 'host_video' => (bool) ($zoom->option_host_video),
                 'audio' => $zoom->option_audio,
