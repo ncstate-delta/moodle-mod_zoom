@@ -601,7 +601,7 @@ class webservice {
 
         $data = [
             // Process the meeting topic with proper filter.
-            'topic' => substr(format_text($zoom->name, FORMAT_MOODLE, ['context' => $context, 'para' => false]), 0, 200),
+            'topic' => substr(format_string($zoom->name, true, ['context' => $context, 'escape' => false]), 0, 200),
             'settings' => [
                 'host_video' => (bool) ($zoom->option_host_video),
                 'audio' => $zoom->option_audio,
@@ -609,11 +609,11 @@ class webservice {
         ];
         if (isset($zoom->intro)) {
             // Process the description text with proper filter and then convert to plain text.
-            $data['agenda'] = content_to_text(format_text(
+            $data['agenda'] = substr(content_to_text(format_text(
                 $zoom->intro,
                 FORMAT_MOODLE,
                 ['context' => $context]
-            ), false);
+            ), false), 0, 2000);
         }
 
         if (isset($CFG->timezone) && !empty($CFG->timezone)) {
