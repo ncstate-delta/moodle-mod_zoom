@@ -99,7 +99,7 @@ function zoom_add_instance(stdClass $zoom, ?mod_zoom_mod_form $mform = null) {
         $zoom->breakoutrooms = $breakoutrooms['zoom'];
     }
 
-    $response = zoom_webservice()->create_meeting($zoom);
+    $response = zoom_webservice()->create_meeting($zoom, $mform->_cm->id);
     $zoom = populate_zoom_from_response($zoom, $response);
     $zoom->timemodified = time();
     if (!empty($zoom->schedule_for)) {
@@ -187,7 +187,7 @@ function zoom_update_instance(stdClass $zoom, ?mod_zoom_mod_form $mform = null) 
 
     // Update meeting on Zoom.
     try {
-        zoom_webservice()->update_meeting($zoom);
+        zoom_webservice()->update_meeting($zoom, $mform->_cm->id);
         if (!empty($zoom->schedule_for)) {
             // Only update this if we actually get a valid user.
             if ($correcthostzoomuser = zoom_get_user($zoom->schedule_for)) {
@@ -424,7 +424,7 @@ function zoom_refresh_events($courseid, $zoom, $cm) {
         // Only if the name has changed, update meeting on Zoom.
         if ($zoom->name !== $fullzoom->name) {
             $fullzoom->name = $zoom->name;
-            zoom_webservice()->update_meeting($zoom);
+            zoom_webservice()->update_meeting($zoom, $cm->id);
         }
 
         zoom_calendar_item_update($fullzoom);

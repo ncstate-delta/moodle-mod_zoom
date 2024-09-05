@@ -585,23 +585,20 @@ class webservice {
      * database fields to the appropriate API request fields.
      *
      * @param stdClass $zoom The zoom meeting to format.
+     * @param ?int $cmid The cmid if available.
      * @return array The formatted meetings for the meeting.
      */
-    private function database_to_api($zoom) {
+    private function database_to_api($zoom, $cmid) {
         global $CFG;
 
-        if (isset($zoom->coursemodule)) {
-            $cmid = $zoom->coursemodule;
-        } else {
-            [$course, $cm] = get_course_and_cm_from_instance($zoom, 'zoom');
-            $cmid = $cm->id;
+        $options = [];
+        if (!empty($cmid)) {
+            $options['context'] = \context_module::instance($cmid);
         }
-
-        $context = \context_module::instance($cmid);
 
         $data = [
             // Process the meeting topic with proper filter.
-            'topic' => substr(format_string($zoom->name, true, ['context' => $context, 'escape' => false]), 0, 200),
+            'topic' => substr(format_string($zoom->name, true, $options + ['escape' => false]), 0, 200),
             'settings' => [
                 'host_video' => (bool) ($zoom->option_host_video),
                 'audio' => $zoom->option_audio,
@@ -612,7 +609,7 @@ class webservice {
             $data['agenda'] = substr(content_to_text(format_text(
                 $zoom->intro,
                 FORMAT_MOODLE,
-                ['context' => $context]
+                $options
             ), false), 0, 2000);
         }
 
@@ -780,9 +777,10 @@ class webservice {
      * Take a $zoom object as returned from the Moodle form and respond with an object that can be saved to the database.
      *
      * @param stdClass $zoom The meeting to create.
+     * @param ?int $cmid The cmid if available.
      * @return stdClass The call response.
      */
-    public function create_meeting($zoom) {
+    public function create_meeting($zoom, $cmid) {
         // Provide license if needed.
         $this->provide_license($zoom->host_id);
 
@@ -791,22 +789,23 @@ class webservice {
         // Classic: webinar:write:admin.
         // Granular: webinar:write:webinar:admin.
         $url = "users/$zoom->host_id/" . (!empty($zoom->webinar) ? 'webinars' : 'meetings');
-        return $this->make_call($url, $this->database_to_api($zoom), 'post');
+        return $this->make_call($url, $this->database_to_api($zoom, $cmid), 'post');
     }
 
     /**
      * Update a meeting/webinar on Zoom.
      *
      * @param stdClass $zoom The meeting to update.
+     * @param ?int $cmid The cmid if available.
      * @return void
      */
-    public function update_meeting($zoom) {
+    public function update_meeting($zoom, $cmid) {
         // Classic: meeting:write:admin.
         // Granular: meeting:update:meeting:admin.
         // Classic: webinar:write:admin.
         // Granular: webinar:update:webinar:admin.
         $url = ($zoom->webinar ? 'webinars/' : 'meetings/') . $zoom->meeting_id;
-        $this->make_call($url, $this->database_to_api($zoom), 'patch');
+        $this->make_call($url, $this->database_to_api($zoom, $cmid), 'patch');
     }
 
     /**

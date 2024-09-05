@@ -49,7 +49,7 @@ foreach ($trackingfields as $trackingfield) {
 }
 
 // Set the current zoom table entry to use the new meeting (meeting_id/etc).
-$response = zoom_webservice()->create_meeting($zoom);
+$response = zoom_webservice()->create_meeting($zoom, $cm->id);
 $zoom = populate_zoom_from_response($zoom, $response);
 $zoom->exists_on_zoom = ZOOM_MEETING_EXISTS;
 $zoom->timemodified = time();
