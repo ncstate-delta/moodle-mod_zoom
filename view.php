@@ -273,7 +273,7 @@ if ($zoom->show_schedule) {
         $meetingrecurringtext = new html_table_cell();
         $meetingrecurringtext->text = get_string('recurringmeetingthisis', 'mod_zoom');
         $rowmeetingrecurring = new html_table_row();
-        $rowmeetingrecurring ->id = 'zoom_schedule-meetingrecurring';
+        $rowmeetingrecurring->id = 'zoom_schedule-meetingrecurring';
         $rowmeetingrecurring->cells = [$meetingrecurringheader, $meetingrecurringtext];
         $table->data[] = $rowmeetingrecurring;
         $nextoccurrence = zoom_get_next_occurrence($zoom);
