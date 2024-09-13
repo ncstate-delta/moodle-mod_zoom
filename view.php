@@ -267,8 +267,15 @@ if ($zoom->show_schedule) {
         $meetingtimeheader->text = get_string('recurringmeeting', 'mod_zoom');
         $meetingtimetext->text = get_string('recurringmeetingexplanation', 'mod_zoom');
     } else if ($zoom->recurring && $zoom->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
-        $meetingtimeheader->text = get_string('recurringmeeting', 'mod_zoom');
-        $meetingtimetext->text = get_string('recurringmeetingthisis', 'mod_zoom');
+        $meetingrecurringheader = new html_table_cell();
+        $meetingrecurringheader->header = true;
+        $meetingrecurringheader->text = get_string('recurringmeeting', 'mod_zoom');
+        $meetingrecurringtext = new html_table_cell();
+        $meetingrecurringtext->text = get_string('recurringmeetingthisis', 'mod_zoom');
+        $rowmeetingrecurring = new html_table_row();
+        $rowmeetingrecurring ->id = 'zoom_schedule-meetingrecurring';
+        $rowmeetingrecurring->cells = [$meetingrecurringheader, $meetingrecurringtext];
+        $table->data[] = $rowmeetingrecurring;
         $nextoccurrence = zoom_get_next_occurrence($zoom);
         $meetingtimeheader->text = get_string('nextoccurrence', 'mod_zoom');
         if ($nextoccurrence > 0) {
