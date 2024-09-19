@@ -1070,7 +1070,7 @@ class webservice {
                     $recordinginfo->meetinguuid = $response->uuid;
                     $recordinginfo->url = $url;
                     $recordinginfo->filetype = $recording->file_type;
-                    $recordinginfo->recordingtype = $recording->recording_type;
+                    $recordinginfo->recordingtype = $recording->recording_type ?? 'null';
                     $recordinginfo->passcode = $response->password;
                     $recordinginfo->recordingstart = strtotime($recording->recording_start);
 
@@ -1120,7 +1120,7 @@ class webservice {
                         $recordinginfo->meetinguuid = $meeting->uuid;
                         $recordinginfo->url = $url;
                         $recordinginfo->filetype = $recording->file_type;
-                        $recordinginfo->recordingtype = $recording->recording_type;
+                        $recordinginfo->recordingtype = $recording->recording_type ?? 'null';
                         $recordinginfo->recordingstart = strtotime($recording->recording_start);
 
                         $recordings[$recording->id] = $recordinginfo;
