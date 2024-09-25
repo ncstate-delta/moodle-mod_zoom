@@ -99,7 +99,7 @@ function zoom_add_instance(stdClass $zoom, ?mod_zoom_mod_form $mform = null) {
         $zoom->breakoutrooms = $breakoutrooms['zoom'];
     }
 
-    $response = zoom_webservice()->create_meeting($zoom, $mform->_cm->id);
+    $response = zoom_webservice()->create_meeting($zoom, $zoom->coursemodule);
     $zoom = populate_zoom_from_response($zoom, $response);
     $zoom->timemodified = time();
     if (!empty($zoom->schedule_for)) {
@@ -187,7 +187,7 @@ function zoom_update_instance(stdClass $zoom, ?mod_zoom_mod_form $mform = null) 
 
     // Update meeting on Zoom.
     try {
-        zoom_webservice()->update_meeting($zoom, $mform->_cm->id);
+        zoom_webservice()->update_meeting($zoom, $zoom->coursemodule);
         if (!empty($zoom->schedule_for)) {
             // Only update this if we actually get a valid user.
             if ($correcthostzoomuser = zoom_get_user($zoom->schedule_for)) {
@@ -290,6 +290,8 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     }
 
     $newzoom->meeting_id = $response->id;
+    // Need to get the meeting name from API call for comparison in the refresh_events function.
+    $newzoom->apiresponsename = $response->topic;
     if (isset($response->start_time)) {
         $newzoom->start_time = strtotime($response->start_time);
     }
@@ -422,8 +424,10 @@ function zoom_refresh_events($courseid, $zoom, $cm) {
         $fullzoom = populate_zoom_from_response($zoom, $response);
 
         // Only if the name has changed, update meeting on Zoom.
-        if ($zoom->name !== $fullzoom->name) {
-            $fullzoom->name = $zoom->name;
+        // Before comparing, need to apply filter on the name if applicable.
+        $options = [];
+        $options['context'] = \context_module::instance($cm->id);
+        if (zoom_apply_filter_on_meeting_name($zoom->name, $options) !== $fullzoom->apiresponsename) {
             zoom_webservice()->update_meeting($zoom, $cm->id);
         }
 
@@ -1336,4 +1340,15 @@ function zoom_cm_info_dynamic(cm_info $cm) {
             $cm->override_customdata('start_time', zoom_get_next_occurrence($moduleinstance));
         }
     }
+}
+
+/**
+ * Apply filter(s) on Zoom activity name if applicable.
+ *
+ * @param string $name Original name to be processed
+ * @param array $options Format_string options
+ * @return string Filtered name
+ */
+function zoom_apply_filter_on_meeting_name($name, $options) {
+    return substr(format_string($name, true, $options + ['escape' => false]), 0, 200);
 }

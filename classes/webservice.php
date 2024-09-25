@@ -598,7 +598,7 @@ class webservice {
 
         $data = [
             // Process the meeting topic with proper filter.
-            'topic' => substr(format_string($zoom->name, true, $options + ['escape' => false]), 0, 200),
+            'topic' => zoom_apply_filter_on_meeting_name($zoom->name, $options),
             'settings' => [
                 'host_video' => (bool) ($zoom->option_host_video),
                 'audio' => $zoom->option_audio,
