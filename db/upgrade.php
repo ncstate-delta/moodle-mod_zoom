@@ -998,7 +998,7 @@ function xmldb_zoom_upgrade($oldversion) {
         // Launch change of precision for field recordingtype.
         $dbman->change_field_precision($table, $field);
 
-        // Conditionally create the Zoom iCal Notification table
+        // Conditionally create the Zoom iCal Notification table.
         $table = new xmldb_table('zoom_ical_notifications');
 
         if (!$dbman->table_exists($table)) {

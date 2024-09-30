@@ -1309,12 +1309,12 @@ class webservice {
     public function get_user_registration_capable() {
         global $USER;
 
-        $zoom_user = $this->get_user($USER->email);
+        $zoomuser = $this->get_user($USER->email);
         // User Types
         // 1 - Basic.
         // 2 - Licensed.
         // 99 - None (this can only be set with ssoCreate).
-        if ($zoom_user && $zoom_user->type != 2) {
+        if ($zoomuser && $zoomuser->type != 2) {
             return false;
         }
         return true;
