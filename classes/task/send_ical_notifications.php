@@ -123,7 +123,7 @@ class send_ical_notifications extends \core\task\scheduled_task {
 
     /**
      * The zoom ical notification task.
-     * @param $zoom The zoom entry.
+     * @param mixed $zoom The zoom entry.
      */
     private function zoom_ical_notification($zoom) {
         global $CFG, $DB, $SITE;
