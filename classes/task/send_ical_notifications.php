@@ -216,8 +216,10 @@ class send_ical_notifications extends \core\task\scheduled_task {
         $noreplyuser = \core_user::get_noreply_user();
         $icalevent->add_property('organizer', 'mailto:' . $noreplyuser->email, ['cn' => $SITE->fullname]);
         // Need to strip out the double quotations around the 'organizer' values - probably a bug in the core code.
-        $icalevent->properties['ORGANIZER'][0]->value = substr($icalevent->properties['ORGANIZER'][0]->value, 1, -1);
-        $icalevent->properties['ORGANIZER'][0]->parameters['CN'] = substr($icalevent->properties['ORGANIZER'][0]->parameters['CN'], 1, -1);
+        $organizervalue = $icalevent->properties['ORGANIZER'][0]->value;
+        $icalevent->properties['ORGANIZER'][0]->value = substr($organizervalue, 1, -1);
+        $organizercnparam = $icalevent->properties['ORGANIZER'][0]->parameters['CN'];
+        $icalevent->properties['ORGANIZER'][0]->parameters['CN'] = substr($organizercnparam, 1, -1);
 
         // Add the event to the iCal file.
         $ical->add_component($icalevent);
