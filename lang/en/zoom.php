@@ -124,6 +124,7 @@ $string['err_invalid_password'] = 'Passcode contains invalid characters.';
 $string['err_long_timeframe'] = 'Requested time frame too long, showing results of latest month in range.';
 $string['err_password'] = 'Passcode may only contain the following characters: [a-z A-Z 0-9 @ - _ *]. Max of 10 characters.';
 $string['err_password_required'] = 'Passcode is required.';
+$string['err_registration'] = 'The current user is not capable of creating a meeting/webinar that requires registration.';
 $string['err_repeat_monthly_interval'] = 'Max interval for monthly meeting is 3 months';
 $string['err_repeat_weekly_interval'] = 'Max interval for weekly meeting is 12 weeks';
 $string['err_start_time_past'] = 'The start date cannot be in the past.';
