@@ -1172,17 +1172,6 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
         }
 
-        // Validation for registration required functionality.
-        if ($data['registration'] != ZOOM_REGISTRATION_OFF) {
-            // Recurring meeting validation already handled by hiding registration option where required.
-            // All meetings created with 'use_pmi' option set to false by default so no validation for that at this stage.
-            // Check licensing of the user.
-            $capableuserfound = zoom_webservice()->get_user_registration_capable();
-            if (!$capableuserfound) {
-                $errors['registration'] = get_string('err_registration', 'zoom');
-            }
-        }
-
         return $errors;
     }
 }

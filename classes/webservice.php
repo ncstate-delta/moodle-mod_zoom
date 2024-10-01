@@ -1302,21 +1302,4 @@ class webservice {
         return $response;
     }
 
-    /**
-     * Returns whether or not the current user is capable of creating a meeting/webinar that requires registration.
-     * @return boolean
-     */
-    public function get_user_registration_capable() {
-        global $USER;
-
-        $zoomuser = $this->get_user($USER->email);
-        // User Types
-        // 1 - Basic.
-        // 2 - Licensed.
-        // 99 - None (this can only be set with ssoCreate).
-        if ($zoomuser && $zoomuser->type != 2) {
-            return false;
-        }
-        return true;
-    }
 }
