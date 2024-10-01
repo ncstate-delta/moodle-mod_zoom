@@ -187,12 +187,12 @@
     <TABLE NAME="zoom_ical_notifications" COMMENT="Identifies the zoom module instance that has been notified with an ical notification email.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="zoomid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="zoomeventid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="executiontime" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="The time when this cron job was completed successfully."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_zoomid" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoom" REFFIELDS="id"/>
+        <KEY NAME="fk_zoomeventid" TYPE="foreign" FIELDS="zoomeventid" REFTABLE="event" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>
