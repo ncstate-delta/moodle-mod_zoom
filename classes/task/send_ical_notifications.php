@@ -73,7 +73,8 @@ class send_ical_notifications extends \core\task\scheduled_task {
     }
 
     /**
-     * Get zoom events created/modified in the last hour, but ignore the last 2 minutes.
+     * Get zoom events created/modified in the last hour, but ignore the last 10 minutes. 
+     * This allows the user to still make adjustments to the event before the ical invite is sent out.
      * @return array
      */
     private function get_zoom_events_to_notify() {
@@ -84,7 +85,7 @@ class send_ical_notifications extends \core\task\scheduled_task {
         WHERE modulename = :zoommodulename
         AND eventtype = :zoomeventtype
         AND timemodified >= (unix_timestamp() - (60 * 60))
-        AND timemodified <= (unix_timestamp() - (2 * 60))';
+        AND timemodified <= (unix_timestamp() - (10 * 60))';
 
         return $DB->get_records_sql($sql, ['zoommodulename' => 'zoom', 'zoomeventtype' => 'zoom']);
     }
