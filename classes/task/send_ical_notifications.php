@@ -73,8 +73,8 @@ class send_ical_notifications extends \core\task\scheduled_task {
     }
 
     /**
-     * Get zoom events created/modified in the last hour, but ignore the last 10 minutes. 
-     * This allows the user to still make adjustments to the event before the ical invite is sent out.
+     * Get zoom events created/modified in the last hour, but ignore the last 10 minutes. This allows
+     * the user to still make adjustments to the event before the ical invite is sent out.
      * @return array
      */
     private function get_zoom_events_to_notify() {
@@ -259,7 +259,8 @@ class send_ical_notifications extends \core\task\scheduled_task {
 
     /**
      * Filter the zoom users based on availability restrictions.
-     * @param stdClass $zoom The zoom entry.
+     * @param string $zoomid The zoom instance id.
+     * @param string $courseid The course id of the course in which the zoom event occurred.
      * @param array $users An array of users that potentially has access to the Zoom activity.
      * @return array A filtered array of users.
      */
