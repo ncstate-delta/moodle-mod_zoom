@@ -27,11 +27,10 @@ defined('MOODLE_INTERNAL') || die();
 $messageproviders = [
     'teacher_notification' => [],
     // The ical notifications task messages.
-    // Use MESSAGE_DEFAULT_LOGGEDIN instead of MESSAGE_DEFAULT_ENABLED for Moodle 3.9 compatibility.
     'ical_notifications' => [
         'defaults' => [
             'popup' => MESSAGE_DISALLOWED,
-            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN,
+            'email' => MESSAGE_PERMITTED,
             'airnotifier' => MESSAGE_DISALLOWED,
         ],
     ],
