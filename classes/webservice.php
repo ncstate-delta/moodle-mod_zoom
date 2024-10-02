@@ -638,6 +638,9 @@ class webservice {
 
         if (isset($zoom->registration)) {
             $data['settings']['approval_type'] = $zoom->registration;
+            if ($zoom->registration != ZOOM_REGISTRATION_OFF) {
+                $data['settings']['use_pmi'] = false;
+            }
         }
 
         if (!empty($zoom->webinar)) {
