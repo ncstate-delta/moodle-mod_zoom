@@ -30,7 +30,7 @@ $messageproviders = [
     'ical_notifications' => [
         'defaults' => [
             'popup' => MESSAGE_DISALLOWED,
-            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'email' => MESSAGE_PERMITTED,
             'airnotifier' => MESSAGE_DISALLOWED,
         ],
     ],
