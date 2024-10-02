@@ -244,6 +244,7 @@ $string['meetingcapacitywarningcontactrealhost'] = 'Please turn to the Zoom acco
 $string['meetingcapacitywarningheading'] = 'Meeting capacity warning:';
 $string['meetingparticipantsdeleted'] = 'Meeting participant user data deleted.';
 $string['meetingrecordingviewsdeleted'] = 'Meeting recording user view data deleted.';
+$string['messageprovider:ical_notifications'] = 'Send iCal invitations for a newly created Zoom event to participants.';
 $string['messageprovider:teacher_notification'] = 'Notify teachers about user grades (according to duration) in a Zoom session';
 $string['modulename'] = 'Zoom meeting';
 $string['modulename_help'] = 'Zoom is a video and web conferencing platform that gives authorized users the ability to host online meetings.';
