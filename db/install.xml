@@ -184,11 +184,11 @@
         <KEY NAME="fk_breakoutroomid" TYPE="foreign" FIELDS="breakoutroomid" REFTABLE="zoom_meeting_breakout_rooms" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoom_ical_notifications" COMMENT="Identifies the zoom module instance that has been notified with an ical notification email.">
+    <TABLE NAME="zoom_ical_notifications" COMMENT="Identifies the zoom event for which ical notifications have been emailed.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="zoomeventid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="executiontime" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="The time when this cron job was completed successfully."/>
+        <FIELD NAME="executiontime" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="The time when the send ical notifications task was completed successfully."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
