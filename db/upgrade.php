@@ -998,7 +998,12 @@ function xmldb_zoom_upgrade($oldversion) {
         // Launch change of precision for field recordingtype.
         $dbman->change_field_precision($table, $field);
 
-        // Conditionally create the Zoom iCal Notification table.
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2024072500, 'zoom');
+    }
+
+    if ($oldversion < 2024100300) {
+        // Conditionally create the Zoom iCal Notifications table.
         $table = new xmldb_table('zoom_ical_notifications');
 
         if (!$dbman->table_exists($table)) {
@@ -1014,7 +1019,7 @@ function xmldb_zoom_upgrade($oldversion) {
         }
 
         // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2024072500, 'zoom');
+        upgrade_mod_savepoint(true, 2024100300, 'zoom');
     }
 
     return true;
