@@ -1176,9 +1176,8 @@ class mod_zoom_mod_form extends moodleform_mod {
         if ($data['registration'] != ZOOM_REGISTRATION_OFF) {
             // Recurring meeting validation already handled by hiding registration option where required.
             // Check licensing of the user.
-            $registrationcapableuserfound = zoom_webservice()->get_user_registration_capable();
-            if (!$registrationcapableuserfound) {
-                $errors['registration'] = get_string('err_registration', 'zoom');
+            if (!zoom_webservice()->is_user_permitted_to_require_registration()) {
+                $errors['registration'] = get_string('err_registration', 'mod_zoom');
             }
         }
 

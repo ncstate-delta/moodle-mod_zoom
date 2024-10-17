@@ -1306,12 +1306,12 @@ class webservice {
     }
 
     /**
-     * Returns whether or not the current user is capable of creating a meeting/webinar that requires registration.
+     * Returns whether or not the current user is permitted to create a meeting/webinar that requires registration.
      * @return boolean
      */
-    public function get_user_registration_capable() {
+    public function is_user_permitted_to_require_registration() {
         global $USER;
-        $zoomuser = $this->get_user($USER->email);
+        $zoomuser = zoom_get_user(zoom_get_api_identifier($USER));
         if ($zoomuser && $zoomuser->type == ZOOM_USER_TYPE_PRO) {
             return true;
         }
