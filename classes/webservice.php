@@ -638,6 +638,9 @@ class webservice {
 
         if (isset($zoom->registration)) {
             $data['settings']['approval_type'] = $zoom->registration;
+            if ($zoom->registration != ZOOM_REGISTRATION_OFF) {
+                $data['settings']['use_pmi'] = false;
+            }
         }
 
         if (!empty($zoom->webinar)) {
@@ -1300,5 +1303,18 @@ class webservice {
         $url = 'meetings/' . $this->encode_uuid($meetinguuid) . '/recordings/settings';
         $response = $this->make_call($url);
         return $response;
+    }
+
+    /**
+     * Returns whether or not the current user is permitted to create a meeting/webinar that requires registration.
+     * @return boolean
+     */
+    public function is_user_permitted_to_require_registration() {
+        global $USER;
+        $zoomuser = zoom_get_user(zoom_get_api_identifier($USER));
+        if ($zoomuser && $zoomuser->type == ZOOM_USER_TYPE_PRO) {
+            return true;
+        }
+        return false;
     }
 }

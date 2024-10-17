@@ -1172,6 +1172,15 @@ class mod_zoom_mod_form extends moodleform_mod {
             }
         }
 
+        // Validation for registration required functionality.
+        if ($data['registration'] != ZOOM_REGISTRATION_OFF) {
+            // Recurring meeting validation already handled by hiding registration option where required.
+            // Check licensing of the user.
+            if (!zoom_webservice()->is_user_permitted_to_require_registration()) {
+                $errors['registration'] = get_string('err_registration', 'mod_zoom');
+            }
+        }
+
         return $errors;
     }
 }
