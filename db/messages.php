@@ -26,4 +26,12 @@ defined('MOODLE_INTERNAL') || die();
 
 $messageproviders = [
     'teacher_notification' => [],
+    // The ical notifications task messages.
+    'ical_notifications' => [
+        'defaults' => [
+            'popup' => MESSAGE_DISALLOWED,
+            'email' => MESSAGE_PERMITTED,
+            'airnotifier' => MESSAGE_DISALLOWED,
+        ],
+    ],
 ];
