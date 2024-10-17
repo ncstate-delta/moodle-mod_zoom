@@ -1,5 +1,13 @@
 ### Releases ###
 
+#### v5.2.4 ####
+
+- Bugfix: Apply Moodle filters to the Zoom topic and description #615 (thanks @behanw)
+- Bugfix: Temporarily use string 'null' when `recording_type` is null #620 (thanks @smangancap)
+- Accessibility: Migrate Bootstrap `.label` to `.badge` (Bootstrap 3 -> 4/5) #608 (thanks @sgrandh3)
+- Accessibility: Add table headers and IDs to activity details sections and rows #612 (thanks @a-kempka)
+- Code quality: Check Moodle 4.4 and PHP 8.3 #611
+
 #### v5.2.3 ####
 
 - Bugfix: Duration language string was incorrectly specifying units #250 (thanks @abias)
