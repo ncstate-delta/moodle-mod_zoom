@@ -26,9 +26,9 @@ namespace mod_zoom\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/calendar/lib.php');
-require_once($CFG->libdir.'/bennu/bennu.inc.php');
-require_once($CFG->libdir.'/bennu/iCalendar_components.php');
+require_once($CFG->dirroot . '/calendar/lib.php');
+require_once($CFG->libdir . '/bennu/bennu.inc.php');
+require_once($CFG->libdir . '/bennu/iCalendar_components.php');
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
 /**
@@ -202,14 +202,18 @@ class send_ical_notifications extends \core\task\scheduled_task {
 
         $icalevent = zoom_helper_icalendar_event($zoomevent, $zoomevent->description);
 
+        $cm = get_fast_modinfo($zoomevent->courseid, $user->id)->instances['zoom'][$zoomevent->instance];
+
+        $zoomurl = new \moodle_url('/mod/zoom/view.php', ['id' => $cm->id]);
+
         if ($zoom->registration == ZOOM_REGISTRATION_OFF) {
-            $icalevent->add_property('location', $zoom->join_url);
+            $icalevent->add_property('location', $zoomurl->out(false));
         } else {
             $registrantjoinurl = zoom_get_registrant_join_url($user->email, $zoom->meeting_id, $zoom->webinar);
             if ($registrantjoinurl) {
                 $icalevent->add_property('location', $registrantjoinurl);
             } else {
-                $icalevent->add_property('location', $zoom->join_url);
+                $icalevent->add_property('location', $zoomurl->out(false));
             }
         }
 
@@ -234,51 +238,15 @@ class send_ical_notifications extends \core\task\scheduled_task {
      * @return array An array of users.
      */
     private function get_users_to_notify($zoomid, $courseid) {
-        global $DB;
-        $users = [];
+        $cm = get_fast_modinfo($courseid)->instances['zoom'][$zoomid];
+        $users = get_users_by_capability($cm->context, 'mod/zoom:view');
 
-        $sql = 'SELECT distinct ue.userid
-        FROM {zoom} z
-        JOIN {enrol} e
-        ON e.courseid = z.course
-        JOIN {user_enrolments} ue
-        ON ue.enrolid = e.id
-        WHERE z.id = :zoom_id';
-
-        $zoomparticipantsids = $DB->get_records_sql($sql, ['zoom_id' => $zoomid]);
-        if ($zoomparticipantsids) {
-            foreach ($zoomparticipantsids as $zoomparticipantid) {
-                $users += [$zoomparticipantid->userid => \core_user::get_user($zoomparticipantid->userid)];
-            }
+        if (empty($users)) {
+            return [];
         }
 
-        if (count($users) > 0) {
-            $users = $this->filter_users($zoomid, $courseid, $users);
-        }
-
-        return $users;
-    }
-
-    /**
-     * Filter the zoom users based on availability restrictions.
-     * @param string $zoomid The zoom instance id.
-     * @param string $courseid The course id of the course in which the zoom event occurred.
-     * @param array $users An array of users that potentially has access to the Zoom activity.
-     * @return array A filtered array of users.
-     */
-    private function filter_users($zoomid, $courseid, $users) {
-        $modinfo = get_fast_modinfo($courseid);
-        $coursemodules = $modinfo->get_cms();
-        if ($coursemodules) {
-            foreach ($coursemodules as $coursemod) {
-                if ($coursemod->modname == 'zoom' && $coursemod->instance == $zoomid) {
-                    $availinfo = new \core_availability\info_module($coursemod);
-                    $users = $availinfo->filter_user_list($users);
-                    break;
-                }
-            }
-        }
-        return $users;
+        $info = new \core_availability\info_module($cm);
+        return $info->filter_user_list($users);
     }
 
     /**
