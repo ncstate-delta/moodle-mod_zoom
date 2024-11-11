@@ -30,7 +30,8 @@ $messageproviders = [
     'ical_notifications' => [
         'defaults' => [
             'popup' => MESSAGE_DISALLOWED,
-            'email' => MESSAGE_PERMITTED,
+            'email' => MESSAGE_PERMITTED + (defined('MESSAGE_DEFAULT_ENABLED') ?
+                MESSAGE_DEFAULT_ENABLED : MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF),
             'airnotifier' => MESSAGE_DISALLOWED,
         ],
     ],
