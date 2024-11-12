@@ -192,8 +192,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_zoomeventid" TYPE="foreign" FIELDS="zoomeventid" REFTABLE="event" REFFIELDS="id"/>
-        <KEY NAME="zoomeventid" TYPE="unique" FIELDS="zoomeventid"/>
+        <KEY NAME="fk_zoomeventid" TYPE="foreign-unique" FIELDS="zoomeventid" REFTABLE="event" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>

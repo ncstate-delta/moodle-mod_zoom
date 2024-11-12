@@ -1012,8 +1012,7 @@ function xmldb_zoom_upgrade($oldversion) {
             $table->add_field('executiontime', XMLDB_TYPE_INTEGER, '12', null, null, null, null);
 
             $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-            $table->add_key('fk_zoomeventid', XMLDB_KEY_FOREIGN, ['zoomeventid'], 'event', ['id']);
-            $table->add_key('unique_zoomeventid', XMLDB_KEY_UNIQUE, ['zoomeventid']);
+            $table->add_key('fk_zoomeventid', XMLDB_KEY_FOREIGN_UNIQUE, ['zoomeventid'], 'event', ['id']);
 
             $dbman->create_table($table);
         }

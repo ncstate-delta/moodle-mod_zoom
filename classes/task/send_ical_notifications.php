@@ -84,10 +84,15 @@ class send_ical_notifications extends \core\task\scheduled_task {
         FROM {event}
         WHERE modulename = :zoommodulename
         AND eventtype = :zoomeventtype
-        AND timemodified >= (unix_timestamp() - (60 * 60))
-        AND timemodified <= (unix_timestamp() - (10 * 60))';
+        AND timemodified >= :onehourago
+        AND timemodified <= :tenminutesago';
 
-        return $DB->get_records_sql($sql, ['zoommodulename' => 'zoom', 'zoomeventtype' => 'zoom']);
+        return $DB->get_records_sql($sql, [
+            'zoommodulename' => 'zoom',
+            'zoomeventtype' => 'zoom',
+            'onehourago' => time() - (60 * 60),
+            'tenminutesago' => time() - (60 * 10),
+        ]);
     }
 
     /**
