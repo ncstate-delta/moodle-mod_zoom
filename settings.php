@@ -182,13 +182,13 @@ if ($ADMIN->fulltree) {
             }
         }
 
-        $protectedgroup = new admin_setting_configselect(
-            'zoom/protectedgroup',
-            get_string('protectedgroup', 'mod_zoom'),
-            get_string('protectedgroup_desc', 'mod_zoom'),
-            0,
+        $protectedgroups = new admin_setting_configmultiselect(
+            'zoom/protectedgroups',
+            get_string('protectedgroups', 'mod_zoom'),
+            get_string('protectedgroups_desc', 'mod_zoom'),
+            [],
             $zoomgrps);
-        $settings->add($protectedgroup);
+        $settings->add($protectedgroups);
     }
 
     // Global settings.

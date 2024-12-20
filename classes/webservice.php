@@ -101,7 +101,7 @@ class webservice {
      * Zoom group to protect from licenses redefining
      * @var array
      */
-    protected $protectedgroup;
+    protected $protectedgroups;
 
     /**
      * Maximum limit of paid users
@@ -157,7 +157,7 @@ class webservice {
             if (!empty($config->utmost)) {
                 $this->recyclelicenses = $config->utmost;
                 $this->instanceusers = !empty($config->instanceusers);
-                $this->protectedgroup = $config->protectedgroup;
+                $this->protectedgroups = !empty($config->protectedgroups) ? explode(',', $config->protectedgroups) : [];
             }
 
             if ($this->recyclelicenses) {
@@ -473,7 +473,7 @@ class webservice {
                 continue;
             }
             // Skip the protected group.
-            if (!in_array($this->protectedgroup, $user->group_ids ?? [], true)) {
+            if (!empty($this->protectedgroups) && array_intersect($this->protectedgroups, $user->group_ids ?? [])) {
                 continue;
             }
             // We need the login time.
