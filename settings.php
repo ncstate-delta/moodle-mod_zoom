@@ -172,6 +172,25 @@ if ($ADMIN->fulltree) {
     );
     $settings->add($recycleonjoin);
 
+    // Only call to the web services and load the setting if the connection is OK.
+    if (isset($status) && $status === 'connectionok') {
+        $zoomgrps = [];
+        $groupobj = zoom_webservice()->get_groups();
+        if ($groupobj) {
+            foreach ($groupobj->groups as $group) {
+                $zoomgrps[$group->id] = $group->name;
+            }
+        }
+
+        $protectedgroups = new admin_setting_configmultiselect(
+            'zoom/protectedgroups',
+            get_string('protectedgroups', 'mod_zoom'),
+            get_string('protectedgroups_desc', 'mod_zoom'),
+            [],
+            $zoomgrps);
+        $settings->add($protectedgroups);
+    }
+
     // Global settings.
     $settings->add(new admin_setting_heading(
         'zoom/globalsettings',

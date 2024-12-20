@@ -98,6 +98,12 @@ class webservice {
     protected $instanceusers;
 
     /**
+     * Zoom group to protect from licenses redefining
+     * @var array
+     */
+    protected $protectedgroups;
+
+    /**
      * Maximum limit of paid users
      * @var int
      */
@@ -151,6 +157,7 @@ class webservice {
             if (!empty($config->utmost)) {
                 $this->recyclelicenses = $config->utmost;
                 $this->instanceusers = !empty($config->instanceusers);
+                $this->protectedgroups = !empty($config->protectedgroups) ? explode(',', $config->protectedgroups) : [];
             }
 
             if ($this->recyclelicenses) {
@@ -461,12 +468,23 @@ class webservice {
         $userslist = $this->list_users();
 
         foreach ($userslist as $user) {
-            if ($user->type != ZOOM_USER_TYPE_BASIC && isset($user->last_login_time)) {
-                // Count the user if we're including all users or if the user is on this instance.
-                if (!$this->instanceusers || core_user::get_user_by_email($user->email)) {
-                    $usertimes[$user->id] = strtotime($user->last_login_time);
-                }
+            // Skip Basic user accounts.
+            if ($user->type == ZOOM_USER_TYPE_BASIC) {
+                continue;
             }
+            // Skip the protected group.
+            if (!empty($this->protectedgroups) && array_intersect($this->protectedgroups, $user->group_ids ?? [])) {
+                continue;
+            }
+            // We need the login time.
+            if (!isset($user->last_login_time)) {
+                continue;
+            }
+            // Count the user only if we're including all users or if the user is on this instance.
+            if (!$this->instanceusers || core_user::get_user_by_email($user->email)) {
+                continue;
+            }
+            $usertimes[$user->id] = strtotime($user->last_login_time);
         }
 
         if (!empty($usertimes)) {
@@ -474,6 +492,28 @@ class webservice {
         }
 
         return false;
+    }
+
+    /**
+     * Get a list of Zoom groups
+     *
+     * @return stdClass The call's result in JSON format.
+     */
+    public function get_groups() {
+        // Classic: group:read:admin.
+        // Granular: group:read:list_groups:admin.
+        // Not essential scope, execute only if scope has been granted.
+        if ($this->has_scope(['group:read:list_groups:admin']) || $this->has_scope(['group:read:admin'])) {
+            try {
+                $response = $this->make_call('/groups');
+            } catch (moodle_exception $error) {
+                $response = '';
+            }
+        } else {
+            $response = '';
+        }
+
+        return $response;
     }
 
     /**
