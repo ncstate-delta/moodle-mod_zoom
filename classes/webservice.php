@@ -473,7 +473,7 @@ class webservice {
                 continue;
             }
             // Skip the protected group.
-            if (!in_array($this->protectedgroup,$user->group_ids ?? array(),true)) {
+            if (!in_array($this->protectedgroup, $user->group_ids ?? [], true)) {
                 continue;
             }
             // We need the login time.
@@ -502,14 +502,13 @@ class webservice {
     public function get_groups() {
         // Classic: group:read:admin.
         // Granular: group:read:list_groups:admin.
-        // Not essential scope, execute only if scope has been granted
+        // Not essential scope, execute only if scope has been granted.
         if ($this->has_scope(['group:read:list_groups:admin']) || $this->has_scope(['group:read:admin'])) {
             try {
                 $response = $this->make_call('/groups');
-    
             } catch (moodle_exception $error) {
                 $response = '';
-            }        
+            }
         } else {
             $response = '';
         }
