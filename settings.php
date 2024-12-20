@@ -175,8 +175,8 @@ if ($ADMIN->fulltree) {
     // Only call to the web services and load the setting if the connection is OK
     if (isset($status) && $status === 'connectionok') {
         $zoomgrps = [];
-        if (zoom_webservice()->get_groups()) {
-            $groupobj = zoom_webservice()->get_groups();
+        $groupobj = zoom_webservice()->get_groups();
+        if ($groupobj) {
             foreach ($groupobj->groups as $group) {
                 $zoomgrps[$group->id] = $group->name;
             }
