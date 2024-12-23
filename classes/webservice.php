@@ -472,14 +472,17 @@ class webservice {
             if ($user->type == ZOOM_USER_TYPE_BASIC) {
                 continue;
             }
+
             // Skip the protected group.
             if (!empty($this->protectedgroups) && !empty(array_intersect($this->protectedgroups, $user->group_ids ?? []))) {
                 continue;
             }
+
             // We need the login time.
             if (!isset($user->last_login_time)) {
                 continue;
             }
+
             // Count the user only if we're including all users or if the user is on this instance.
             if (!$this->instanceusers || core_user::get_user_by_email($user->email)) {
                 $usertimes[$user->id] = strtotime($user->last_login_time);
