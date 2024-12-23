@@ -482,9 +482,8 @@ class webservice {
             }
             // Count the user only if we're including all users or if the user is on this instance.
             if (!$this->instanceusers || core_user::get_user_by_email($user->email)) {
-                continue;
+                $usertimes[$user->id] = strtotime($user->last_login_time);
             }
-            $usertimes[$user->id] = strtotime($user->last_login_time);
         }
 
         if (!empty($usertimes)) {
