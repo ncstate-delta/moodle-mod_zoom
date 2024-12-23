@@ -496,23 +496,24 @@ class webservice {
     /**
      * Get a list of Zoom groups
      *
-     * @return stdClass The call's result in JSON format.
+     * @return array Group information.
      */
     public function get_groups() {
+        $groups = [];
+
         // Classic: group:read:admin.
         // Granular: group:read:list_groups:admin.
         // Not essential scope, execute only if scope has been granted.
-        if ($this->has_scope(['group:read:list_groups:admin']) || $this->has_scope(['group:read:admin'])) {
+        if ($this->has_scope(['group:read:list_groups:admin', 'group:read:admin'])) {
             try {
                 $response = $this->make_call('/groups');
+                $groups = $response->groups ?? [];
             } catch (moodle_exception $error) {
-                $response = '';
+                // Only available for Paid accounts, so ignore error.
             }
-        } else {
-            $response = '';
         }
 
-        return $response;
+        return $groups;
     }
 
     /**
