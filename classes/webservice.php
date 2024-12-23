@@ -513,6 +513,7 @@ class webservice {
                 $groups = $response->groups ?? [];
             } catch (moodle_exception $error) {
                 // Only available for Paid accounts, so ignore error.
+                $response = '';
             }
         }
 
