@@ -175,11 +175,9 @@ if ($ADMIN->fulltree) {
     // Only call to the web services and load the setting if the connection is OK.
     if (isset($status) && $status === 'connectionok') {
         $zoomgroups = [];
-        $groupobj = zoom_webservice()->get_groups();
-        if ($groupobj) {
-            foreach ($groupobj->groups as $group) {
-                $zoomgroups[$group->id] = $group->name;
-            }
+        $groups = zoom_webservice()->get_groups();
+        foreach ($groups as $group) {
+            $zoomgroups[$group->id] = $group->name;
         }
 
         $protectedgroups = new admin_setting_configmultiselect(
@@ -187,7 +185,8 @@ if ($ADMIN->fulltree) {
             get_string('protectedgroups', 'mod_zoom'),
             get_string('protectedgroups_desc', 'mod_zoom'),
             [],
-            $zoomgroups);
+            $zoomgroups
+        );
         $settings->add($protectedgroups);
     }
 
