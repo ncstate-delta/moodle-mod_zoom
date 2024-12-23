@@ -473,7 +473,7 @@ class webservice {
                 continue;
             }
             // Skip the protected group.
-            if (!empty($this->protectedgroups) && array_intersect($this->protectedgroups, $user->group_ids ?? [])) {
+            if (!empty($this->protectedgroups) && !empty(array_intersect($this->protectedgroups, $user->group_ids ?? []))) {
                 continue;
             }
             // We need the login time.
