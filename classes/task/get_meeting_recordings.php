@@ -67,6 +67,27 @@ class get_meeting_recordings extends scheduled_task {
             return;
         }
 
+        // Required scopes for meeting recordings.
+        $requiredscopes = [
+            'classic' => [
+                'recording:read:admin',
+            ],
+            'granular' => [
+                'cloud_recording:read:list_recording_files:admin'
+            ],
+        ];
+
+        $this->scopetype = $this->get_scope_type($this->scopes);
+
+        // Checking for missing scopes.
+        $missingscopes = $this->check_zoom_scopes($requiredscopes[$this->scopetype]);
+        if($missingscopes != []){
+            foreach($missingscopes as $missingscope){
+                mtrace('Missing scope: '.$missingscope);
+            }
+            return;
+        }
+
         // See if we cannot make anymore API calls.
         $retryafter = get_config('zoom', 'retry-after');
         if (!empty($retryafter) && time() < $retryafter) {
