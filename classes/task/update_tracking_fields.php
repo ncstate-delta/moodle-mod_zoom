@@ -58,6 +58,27 @@ class update_tracking_fields extends scheduled_task {
             return;
         }
 
+        // Required scopes for tracking fields.
+        $requiredscopes = [
+            'classic' => [
+                'tracking_fields:write:admin',
+            ],
+            'granular' => [
+                'tracking_field:update:tracking_field:admin'
+            ],
+        ];
+
+        $this->scopetype = $this->get_scope_type($this->scopes);
+
+        // Checking for missing scopes.
+        $missingscopes = $this->check_zoom_scopes($requiredscopes[$this->scopetype]);
+        if($missingscopes != []){
+            foreach($missingscopes as $missingscope){
+                mtrace('Missing scope: '.$missingscope);
+            }
+            return;
+        }
+
         // Show trace message.
         mtrace('Starting to process existing Zoom tracking fields ...');
 

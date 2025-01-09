@@ -1240,6 +1240,33 @@ class webservice {
         return !empty($matchingscopes);
     }
 
+        /**
+     * Check for Zoom scopes
+     *
+     * @param string $requiredscopes Required Zoom scopes.
+     * @throws moodle_exception
+     * @return array missingscopes 
+     */
+    public function check_zoom_scopes($requiredscopes) {
+        if (!isset($this->scopes)) {
+            $this->get_access_token();
+        }
+
+        $missingscopes = array_diff($requiredscopes, $this->scopes);
+        return $missingscopes;
+    }
+
+    /**
+     * Checks for the type of scope (classic or granular) of the user.
+     *
+     * @param array $scopes
+     * @throws moodle_exception
+     * @return string scope type
+     */
+    private function get_scope_type($scopes) {
+        return in_array('meeting:read:admin', $scopes, true) ? 'classic' : 'granular';
+    }
+
     /**
      * Stores token and expiration in cache, returns token from OAuth call.
      *

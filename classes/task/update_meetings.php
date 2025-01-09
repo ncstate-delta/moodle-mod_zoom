@@ -63,6 +63,27 @@ class update_meetings extends scheduled_task {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
         }
+        
+        // Required scopes for updating meetings.
+        $requiredscopes = [
+            'classic' => [
+                'tracking_fields:write:admin',
+            ],
+            'granular' => [
+                'tracking_field:update:tracking_field:admin'
+            ],
+        ];
+
+        $this->scopetype = $this->get_scope_type($this->scopes);
+
+        // Checking for missing scopes.
+        $missingscopes = $this->check_zoom_scopes($requiredscopes[$this->scopetype]);
+        if($missingscopes != []){
+            foreach($missingscopes as $missingscope){
+                mtrace('Missing scope: '.$missingscope);
+            }
+            return;
+        }
 
         // Show trace message.
         mtrace('Starting to process existing Zoom meeting activities ...');
