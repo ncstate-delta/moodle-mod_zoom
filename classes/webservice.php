@@ -810,7 +810,11 @@ class webservice {
             if ($this->paid_user_limit_reached()) {
                 $leastrecentlyactivepaiduserid = $this->get_least_recently_active_paid_user_id();
                 // Changes least_recently_active_user to a basic user so we can use their license.
-                $this->make_call("users/$leastrecentlyactivepaiduserid", ['type' => ZOOM_USER_TYPE_BASIC], 'patch');
+                if ($leastrecentlyactivepaiduserid) {
+                    $this->make_call("users/$leastrecentlyactivepaiduserid", ['type' => ZOOM_USER_TYPE_BASIC], 'patch');
+                } else {
+                    throw new moodle_exception('errornousersfound', 'mod_zoom');
+                }
             }
 
             // Changes current user to pro so they can make a meeting.
