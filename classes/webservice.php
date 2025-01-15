@@ -473,8 +473,8 @@ class webservice {
                 continue;
             }
 
-            // Skip the protected group.
-            if (!empty($this->protectedgroups) && !empty(array_intersect($this->protectedgroups, $user->group_ids ?? []))) {
+            // Skip the users of protected groups.
+            if (!empty(array_intersect($this->protectedgroups, $user->group_ids ?? []))) {
                 continue;
             }
 
