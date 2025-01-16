@@ -1,5 +1,11 @@
 ### Releases ###
 
+#### v5.2.5 ####
+
+- Bugfix: Validation for registration #622 (thanks @paulandm)
+- Code quality: Check Moodle 4.5; skip Moodle 4.2 #631
+- Code quality: Remove legacy reference to local_mobile service #632
+
 #### v5.2.4 ####
 
 - Bugfix: Apply Moodle filters to the Zoom topic and description #615 (thanks @behanw)
