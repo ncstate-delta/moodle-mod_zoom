@@ -807,18 +807,20 @@ class webservice {
         // Classic: user:read:admin.
         // Granular: user:read:user:admin.
         if ($this->recyclelicenses && $this->make_call("users/$zoomuserid")->type == ZOOM_USER_TYPE_BASIC) {
-            if ($this->paid_user_limit_reached()) {
+            $licenseisavailable = !$this->paid_user_limit_reached();
+            if (!$licenseisavailable) {
                 $leastrecentlyactivepaiduserid = $this->get_least_recently_active_paid_user_id();
                 // Changes least_recently_active_user to a basic user so we can use their license.
                 if ($leastrecentlyactivepaiduserid) {
                     $this->make_call("users/$leastrecentlyactivepaiduserid", ['type' => ZOOM_USER_TYPE_BASIC], 'patch');
+                    $licenseisavailable = true;
                 }
             }
 
             // Changes current user to pro so they can make a meeting.
             // Classic: user:write:admin.
             // Granular: user:update:user:admin.
-            if (!$this->paid_user_limit_reached() || $leastrecentlyactivepaiduserid) {
+            if ($licenseisavailable) {
                 $this->make_call("users/$zoomuserid", ['type' => ZOOM_USER_TYPE_PRO], 'patch');
             }
         }
