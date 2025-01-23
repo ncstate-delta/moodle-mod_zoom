@@ -98,6 +98,12 @@ class webservice {
     protected $instanceusers;
 
     /**
+     * Zoom group to protect from licenses redefining
+     * @var array
+     */
+    protected $protectedgroups;
+
+    /**
      * Maximum limit of paid users
      * @var int
      */
@@ -151,6 +157,7 @@ class webservice {
             if (!empty($config->utmost)) {
                 $this->recyclelicenses = $config->utmost;
                 $this->instanceusers = !empty($config->instanceusers);
+                $this->protectedgroups = !empty($config->protectedgroups) ? explode(',', $config->protectedgroups) : [];
             }
 
             if ($this->recyclelicenses) {
@@ -461,11 +468,24 @@ class webservice {
         $userslist = $this->list_users();
 
         foreach ($userslist as $user) {
-            if ($user->type != ZOOM_USER_TYPE_BASIC && isset($user->last_login_time)) {
-                // Count the user if we're including all users or if the user is on this instance.
-                if (!$this->instanceusers || core_user::get_user_by_email($user->email)) {
-                    $usertimes[$user->id] = strtotime($user->last_login_time);
-                }
+            // Skip Basic user accounts.
+            if ($user->type == ZOOM_USER_TYPE_BASIC) {
+                continue;
+            }
+
+            // Skip the users of protected groups.
+            if (!empty(array_intersect($this->protectedgroups, $user->group_ids ?? []))) {
+                continue;
+            }
+
+            // We need the login time.
+            if (!isset($user->last_login_time)) {
+                continue;
+            }
+
+            // Count the user only if we're including all users or if the user is on this instance.
+            if (!$this->instanceusers || core_user::get_user_by_email($user->email)) {
+                $usertimes[$user->id] = strtotime($user->last_login_time);
             }
         }
 
@@ -474,6 +494,30 @@ class webservice {
         }
 
         return false;
+    }
+
+    /**
+     * Get a list of Zoom groups
+     *
+     * @return array Group information.
+     */
+    public function get_groups() {
+        $groups = [];
+
+        // Classic: group:read:admin.
+        // Granular: group:read:list_groups:admin.
+        // Not essential scope, execute only if scope has been granted.
+        if ($this->has_scope(['group:read:list_groups:admin', 'group:read:admin'])) {
+            try {
+                $response = $this->make_call('/groups');
+                $groups = $response->groups ?? [];
+            } catch (moodle_exception $error) {
+                // Only available for Paid accounts, so ignore error.
+                $response = '';
+            }
+        }
+
+        return $groups;
     }
 
     /**
@@ -763,16 +807,22 @@ class webservice {
         // Classic: user:read:admin.
         // Granular: user:read:user:admin.
         if ($this->recyclelicenses && $this->make_call("users/$zoomuserid")->type == ZOOM_USER_TYPE_BASIC) {
-            if ($this->paid_user_limit_reached()) {
+            $licenseisavailable = !$this->paid_user_limit_reached();
+            if (!$licenseisavailable) {
                 $leastrecentlyactivepaiduserid = $this->get_least_recently_active_paid_user_id();
                 // Changes least_recently_active_user to a basic user so we can use their license.
-                $this->make_call("users/$leastrecentlyactivepaiduserid", ['type' => ZOOM_USER_TYPE_BASIC], 'patch');
+                if ($leastrecentlyactivepaiduserid) {
+                    $this->make_call("users/$leastrecentlyactivepaiduserid", ['type' => ZOOM_USER_TYPE_BASIC], 'patch');
+                    $licenseisavailable = true;
+                }
             }
 
             // Changes current user to pro so they can make a meeting.
             // Classic: user:write:admin.
             // Granular: user:update:user:admin.
-            $this->make_call("users/$zoomuserid", ['type' => ZOOM_USER_TYPE_PRO], 'patch');
+            if ($licenseisavailable) {
+                $this->make_call("users/$zoomuserid", ['type' => ZOOM_USER_TYPE_PRO], 'patch');
+            }
         }
     }
 
