@@ -73,17 +73,18 @@ class get_meeting_recordings extends scheduled_task {
                 'recording:read:admin',
             ],
             'granular' => [
-                'cloud_recording:read:list_recording_files:admin'
+                'cloud_recording:read:list_recording_files:admin',
+                'cloud_recording:read:list_user_recordings:admin',
             ],
         ];
 
         $this->scopetype = $this->get_scope_type($this->scopes);
 
         // Checking for missing scopes.
-        $missingscopes = $this->check_zoom_scopes($requiredscopes[$this->scopetype]);
-        if($missingscopes != []){
-            foreach($missingscopes as $missingscope){
-                mtrace('Missing scope: '.$missingscope);
+        $missingscopes = $service->check_zoom_scopes($requiredscopes[$this->scopetype]);
+        if ($missingscopes != []) {
+            foreach ($missingscopes as $missingscope) {
+                mtrace('Missing scope: ' . $missingscope);
             }
             return;
         }

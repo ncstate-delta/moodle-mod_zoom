@@ -59,27 +59,28 @@ class delete_meeting_recordings extends scheduled_task {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
         }
-        
+
         // Required scopes for deleting meeting recordings.
         $requiredscopes = [
             'classic' => [
-                'recording:write:admin',
+                'recording:read:admin',
             ],
             'granular' => [
-                'cloud_recording:delete:meeting_recording:admin'
+                'cloud_recording:read:list_recording_files:admin',
+                'cloud_recording:read:list_user_recordings:admin',
             ],
         ];
 
         $this->scopetype = $this->get_scope_type($this->scopes);
 
         // Checking for missing scopes.
-        $missingscopes = $this->check_zoom_scopes($requiredscopes[$this->scopetype]);
-        if($missingscopes != []){
-            foreach($missingscopes as $missingscope){
-                mtrace('Missing scope: '.$missingscope);
+        $missingscopes = $service->check_zoom_scopes($requiredscopes[$this->scopetype]);
+        if ($missingscopes != []) {
+            foreach ($missingscopes as $missingscope) {
+                mtrace('Missing scope: ' . $missingscope);
             }
             return;
-        }      
+        }
 
         // See if we cannot make anymore API calls.
         $retryafter = get_config('zoom', 'retry-after');

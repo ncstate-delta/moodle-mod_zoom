@@ -1240,12 +1240,12 @@ class webservice {
         return !empty($matchingscopes);
     }
 
-        /**
+    /**
      * Check for Zoom scopes
      *
      * @param string $requiredscopes Required Zoom scopes.
      * @throws moodle_exception
-     * @return array missingscopes 
+     * @return array missingscopes
      */
     public function check_zoom_scopes($requiredscopes) {
         if (!isset($this->scopes)) {
