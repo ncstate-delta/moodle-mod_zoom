@@ -281,7 +281,6 @@ if ($zoom->show_schedule) {
         if ($nextoccurrence > 0) {
             $meetingtimetext->text = userdate($nextoccurrence);
         } else {
-
             $meetingtimetext->text = get_string('nooccurrenceleft', 'mod_zoom');
         }
     } else {
