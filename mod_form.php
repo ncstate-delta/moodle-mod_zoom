@@ -818,15 +818,19 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform = $this->_form;
         $itemnumber = 0;
         $component = "mod_{$this->_modname}";
-        $gradefieldname = \core_grades\component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
         $options = [
             'entry' => get_string('gradingentry', 'mod_zoom'), // All credit upon entry.
             'period' => get_string('gradingperiod', 'mod_zoom'), // Credit according to attend duration.
         ];
         $mform->addElement('select', 'grading_method', get_string('gradingmethod', 'mod_zoom'), $options);
         $mform->setDefault('grading_method', get_config('zoom', 'gradingmethod'));
-        $mform->addHelpButton('grading_method', 'gradingmethod', 'zoom');
-        $mform->hideIf('grading_method', "{$gradefieldname}[modgrade_type]", 'eq', 'none');
+        $mform->addHelpButton('grading_method', 'gradingmethod', 'mod_zoom');
+
+        // Requires Moodle 3.8+. Hide field if the grade item is not graded.
+        if (class_exists('\\core_grades\\component_gradeitems')) {
+            $gradefieldname = \core_grades\component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
+            $mform->hideIf('grading_method', $gradefieldname['modgrade_type'], 'eq', 'none');
+        }
     }
 
     /**
