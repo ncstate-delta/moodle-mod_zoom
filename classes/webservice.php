@@ -718,7 +718,7 @@ class webservice {
                     $zoomuser = zoom_get_user($zoom->schedule_for);
                     $zoomuserid = $zoomuser->id;
                 } else {
-                    $zoomuserid = zoom_get_user_id();
+                    $zoomuserid = $zoom->host_id;
                 }
 
                 $autorecording = zoom_get_user_settings($zoomuserid)->recording->auto_recording;

@@ -34,6 +34,6 @@ class not_found_exception extends webservice_exception {
      * @param int $errorcode     Web service response error code
      */
     public function __construct($response, $errorcode) {
-        parent::__construct($response, $errorcode, 'errorwebservice_notfound', 'mod_zoom');
+        parent::__construct($response, $errorcode, 'errorwebservice_notfound', 'mod_zoom', '', $response);
     }
 }

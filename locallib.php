@@ -400,6 +400,10 @@ function zoom_get_user_id($required = true) {
                 $zoomuserid = $zoomuser->id;
                 $cache->set($USER->id, $zoomuserid);
             }
+            // If user does not have a Zoom account, throw an error.
+            if ($required && $zoomuser === false) {
+                throw new moodle_exception('zoomerr_usernotfound', 'mod_zoom', '', get_config('zoom', 'zoomurl'));
+            }
         } catch (moodle_exception $error) {
             if ($required) {
                 throw $error;
