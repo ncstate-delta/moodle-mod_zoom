@@ -1072,7 +1072,7 @@ class webservice {
         $response = null;
         try {
             // Classic: tracking_fields:read:admin.
-            // Granular: tracking_field:read:list_tracking_fields:admin
+            // Granular: tracking_field:read:list_tracking_fields:admin.
             $response = $this->make_call('tracking_fields');
         } catch (moodle_exception $error) {
             debugging($error->getMessage());
@@ -1304,31 +1304,29 @@ class webservice {
 
         $scopes = explode(' ', $response->scope);
 
+        // Keep the scope information in memory.
+        $this->scopes = $scopes;
+
         // Assume that we are using granular scopes.
         $requiredscopes = [
-            'meeting:read:meeting:admin',
-            'meeting:read:invitation:admin',
-            'meeting:delete:meeting:admin',
-            'meeting:update:meeting:admin',
-            'meeting:write:meeting:admin',
-            'user:read:list_schedulers:admin',
-            'user:read:settings:admin',
-            'user:read:user:admin',
-        ];
-
-        // Check if we received classic scopes.
-        if (in_array('meeting:read:admin', $scopes, true)) {
-            $requiredscopes = [
+            'granular' => [
+                'meeting:read:meeting:admin',
+                'meeting:read:invitation:admin',
+                'meeting:delete:meeting:admin',
+                'meeting:update:meeting:admin',
+                'meeting:write:meeting:admin',
+                'user:read:list_schedulers:admin',
+                'user:read:settings:admin',
+                'user:read:user:admin',
+            ],
+            'classic' => [
                 'meeting:read:admin',
                 'meeting:write:admin',
                 'user:read:admin',
-            ];
-        }
+            ],
+        ];
 
-        $missingscopes = array_diff($requiredscopes, $scopes);
-
-        // Keep the scope information in memory.
-        $this->scopes = $scopes;
+        $missingscopes = $this->check_scopes($requiredscopes);
 
         if (!empty($missingscopes)) {
             $missingscopes = implode(', ', $missingscopes);
