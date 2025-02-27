@@ -644,6 +644,11 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('option_mute_upon_entry', $config->defaultmuteuponentryoption);
         $mform->addHelpButton('option_mute_upon_entry', 'option_mute_upon_entry', 'mod_zoom');
 
+        $hostuserid = $zoomuserid;
+        if (!empty($this->current->host_id)) {
+            $hostuserid = $this->current->host_id;
+        }
+
         // Add autorecording option if enabled.
         $allowrecordingchangeoption = $config->allowrecordingchangeoption;
         if ($allowrecordingchangeoption) {
@@ -651,11 +656,6 @@ class mod_zoom_mod_form extends moodleform_mod {
             $options = [
                 ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'mod_zoom'),
             ];
-
-            $hostuserid = $zoomuserid;
-            if (!empty($this->current->host_id)) {
-                $hostuserid = $this->current->host_id;
-            }
 
             if (!empty($hostuserid)) {
                 $recordingsettings = zoom_get_user_settings($hostuserid)->recording;
@@ -794,7 +794,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setType('meeting_id', PARAM_ALPHANUMEXT);
 
         // Add host id (will error if user does not have an account on Zoom).
-        $mform->addElement('hidden', 'host_id', zoom_get_user_id());
+        $mform->addElement('hidden', 'host_id', $hostuserid);
         $mform->setType('host_id', PARAM_ALPHANUMEXT);
 
         // Add standard grading elements.
