@@ -1072,7 +1072,7 @@ class webservice {
         $response = null;
         try {
             // Classic: tracking_fields:read:admin.
-            // Granular: Not yet implemented by Zoom.
+            // Granular: tracking_field:read:list_tracking_fields:admin
             $response = $this->make_call('tracking_fields');
         } catch (moodle_exception $error) {
             debugging($error->getMessage());
@@ -1247,12 +1247,14 @@ class webservice {
      * @throws moodle_exception
      * @return array missingscopes
      */
-    public function check_zoom_scopes($requiredscopes) {
+    public function check_scopes($requiredscopes) {
         if (!isset($this->scopes)) {
             $this->get_access_token();
         }
 
-        $missingscopes = array_diff($requiredscopes, $this->scopes);
+        $scopetype = $this->get_scope_type($this->scopes);
+
+        $missingscopes = array_diff($requiredscopes[$scopetype], $this->scopes);
         return $missingscopes;
     }
 
@@ -1260,7 +1262,6 @@ class webservice {
      * Checks for the type of scope (classic or granular) of the user.
      *
      * @param array $scopes
-     * @throws moodle_exception
      * @return string scope type
      */
     private function get_scope_type($scopes) {

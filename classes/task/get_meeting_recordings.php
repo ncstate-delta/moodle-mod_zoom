@@ -78,11 +78,9 @@ class get_meeting_recordings extends scheduled_task {
             ],
         ];
 
-        $this->scopetype = $this->get_scope_type($this->scopes);
-
         // Checking for missing scopes.
-        $missingscopes = $service->check_zoom_scopes($requiredscopes[$this->scopetype]);
-        if ($missingscopes != []) {
+        $missingscopes = $service->check_scopes($requiredscopes);
+        if (!empty($missingscopes)) {
             foreach ($missingscopes as $missingscope) {
                 mtrace('Missing scope: ' . $missingscope);
             }
