@@ -829,7 +829,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Requires Moodle 3.8+. Hide field if the grade item is not graded.
         if (class_exists('\\core_grades\\component_gradeitems')) {
             $gradefieldname = \core_grades\component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
-            $mform->hideIf('grading_method', $gradefieldname['modgrade_type'], 'eq', 'none');
+            $mform->hideIf('grading_method', "{$gradefieldname}[modgrade_type]", 'eq', 'none');
         }
     }
 
