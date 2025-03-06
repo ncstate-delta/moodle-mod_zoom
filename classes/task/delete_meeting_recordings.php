@@ -67,7 +67,6 @@ class delete_meeting_recordings extends scheduled_task {
             ],
             'granular' => [
                 'cloud_recording:read:list_recording_files:admin',
-                'cloud_recording:read:list_user_recordings:admin',
             ],
         ];
 

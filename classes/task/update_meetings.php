@@ -67,12 +67,12 @@ class update_meetings extends scheduled_task {
         // Required scopes for updating meetings.
         $requiredscopes = [
             'classic' => [
-                'tracking_fields:write:admin',
+                'meeting:read:admin',
+                'webinar:read:admin',
             ],
             'granular' => [
-                'cloud_recording:read:list_recording_files:admin',
-                'cloud_recording:read:list_user_recordings:admin',
-                'cloud_recording:read:recording_settings:admin',
+                'meeting:read:meeting:admin',
+                'webinar:read:webinar:admin',
             ],
         ];
 

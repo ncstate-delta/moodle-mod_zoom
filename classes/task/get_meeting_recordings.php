@@ -72,9 +72,9 @@ class get_meeting_recordings extends scheduled_task {
             'classic' => [
                 'recording:read:admin',
             ],
-            'granular' => [
-                'cloud_recording:read:list_recording_files:admin',
+            'granular' => [                
                 'cloud_recording:read:list_user_recordings:admin',
+                'cloud_recording:read:recording_settings:admin',
             ],
         ];
 
