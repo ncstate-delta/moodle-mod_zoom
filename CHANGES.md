@@ -1,5 +1,20 @@
 ### Releases ###
 
+#### v5.3.0 ####
+
+- Feature: Protect groups from license reassignment #630 (thanks @izendegi, @tsostef, @lcollong)
+  - New setting `zoom/protectedgroups`
+  - Optional OAuth scope `group:read:list_groups:admin` or `group:read:admin`
+- Bugfix: Incorrect rendering of HTML characters in recording passcodes #637 (thanks @FrancescoTerrosi)
+- Bugfix: More detailed error messages #639 (thanks @ahmadalwa)
+- Bugfix: Check a task's necessary scopes prior to API calls #642 (thanks @syedaawais)
+- Bugfix: Remove calendar events for deleted meeting occurrences #645 (thanks @mei-cberry)
+- Code quality: Forward compatibility for PHPUnit #640
+- Regression: Moodle 3.7 support #638 (thanks @gzvol)
+  - Introduced in v5.2.0 when adding attendance-based grading.
+- Regression: Moodle 3.8+ support #644 (thanks @cybernotic, @bobopinna)
+  - Introduced in unreleased code when fixing Moodle 3.7 support.
+
 #### v5.2.5 ####
 
 - Bugfix: Validation for registration #622 (thanks @paulandm)
