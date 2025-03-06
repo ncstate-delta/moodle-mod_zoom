@@ -64,24 +64,40 @@ class update_meetings extends scheduled_task {
             return;
         }
 
-        // Required scopes for updating meetings.
+        // Required scopes for reading meeting information.
         $requiredscopes = [
             'classic' => [
                 'meeting:read:admin',
-                'webinar:read:admin',
             ],
             'granular' => [
                 'meeting:read:meeting:admin',
+            ],
+        ];
+
+        // Checking for missing scopes.
+        $missingmeetingscopes = $service->check_scopes($requiredscopes);
+        foreach ($missingmeetingscopes as $missingscope) {
+            mtrace('Missing scope: ' . $missingscope);
+        }
+
+        // Required scopes for reading webinar information.
+        $requiredscopes = [
+            'classic' => [
+                'webinar:read:admin',
+            ],
+            'granular' => [
                 'webinar:read:webinar:admin',
             ],
         ];
 
         // Checking for missing scopes.
-        $missingscopes = $service->check_scopes($requiredscopes);
-        if (!empty($missingscopes)) {
-            foreach ($missingscopes as $missingscope) {
-                mtrace('Missing scope: ' . $missingscope);
-            }
+        $missingwebinarscopes = $service->check_scopes($requiredscopes);
+        foreach ($missingwebinarscopes as $missingscope) {
+            mtrace('Missing scope: ' . $missingscope);
+        }
+
+        // Exit if we have neither meeting scopes nor webinar scopes.
+        if (!empty($missingmeetingscopes) && !empty($missingwebinarscopes)) {
             return;
         }
 
