@@ -512,7 +512,7 @@ function zoom_calendar_item_update(stdClass $zoom) {
     } else if (!empty($zoom->occurrences)) {
         foreach ($zoom->occurrences as $occurrence) {
             $uuid = $occurrence->occurrence_id;
-            if ($occurrence->status != "deleted") {
+            if ($occurrence->status !== 'deleted') {
                 $newevents[$uuid] = zoom_populate_calender_item($zoom, $occurrence);
             }
         }
