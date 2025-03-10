@@ -52,7 +52,7 @@ class update_tracking_fields extends scheduled_task {
      */
     public function execute() {
         try {
-            zoom_webservice();
+            $service = zoom_webservice();
         } catch (moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
