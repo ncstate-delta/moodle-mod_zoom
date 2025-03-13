@@ -1,5 +1,10 @@
 ### Releases ###
 
+#### v5.3.1 ####
+
+- Regression: Tracking fields task missing variable #648 (thanks @lorenzogreco, @phette23, @izendegi)
+  - Introduced in v5.3.0 when checking necessary scopes for tasks.
+
 #### v5.3.0 ####
 
 - Feature: Protect groups from license reassignment #630 (thanks @izendegi, @tsostef, @lcollong)
