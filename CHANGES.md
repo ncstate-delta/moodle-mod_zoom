@@ -1,5 +1,31 @@
 ### Releases ###
 
+#### v5.3.1 ####
+
+- Regression: Tracking fields task missing variable #648 (thanks @lorenzogreco, @phette23, @izendegi)
+  - Introduced in v5.3.0 when checking necessary scopes for tasks.
+
+#### v5.3.0 ####
+
+- Feature: Protect groups from license reassignment #630 (thanks @izendegi, @tsostef, @lcollong)
+  - New setting `zoom/protectedgroups`
+  - Optional OAuth scope `group:read:list_groups:admin` or `group:read:admin`
+- Bugfix: Incorrect rendering of HTML characters in recording passcodes #637 (thanks @FrancescoTerrosi)
+- Bugfix: More detailed error messages #639 (thanks @ahmadalwa)
+- Bugfix: Check a task's necessary scopes prior to API calls #642 (thanks @syedaawais)
+- Bugfix: Remove calendar events for deleted meeting occurrences #645 (thanks @mei-cberry)
+- Code quality: Forward compatibility for PHPUnit #640
+- Regression: Moodle 3.7 support #638 (thanks @gzvol)
+  - Introduced in v5.2.0 when adding attendance-based grading.
+- Regression: Moodle 3.8+ support #644 (thanks @cybernotic, @bobopinna)
+  - Introduced in unreleased code when fixing Moodle 3.7 support.
+
+#### v5.2.5 ####
+
+- Bugfix: Validation for registration #622 (thanks @paulandm)
+- Code quality: Check Moodle 4.5; skip Moodle 4.2 #631
+- Code quality: Remove legacy reference to local_mobile service #632
+
 #### v5.2.4 ####
 
 - Bugfix: Apply Moodle filters to the Zoom topic and description #615 (thanks @behanw)

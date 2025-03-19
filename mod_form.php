@@ -644,6 +644,11 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('option_mute_upon_entry', $config->defaultmuteuponentryoption);
         $mform->addHelpButton('option_mute_upon_entry', 'option_mute_upon_entry', 'mod_zoom');
 
+        $hostuserid = $zoomuserid;
+        if (!empty($this->current->host_id)) {
+            $hostuserid = $this->current->host_id;
+        }
+
         // Add autorecording option if enabled.
         $allowrecordingchangeoption = $config->allowrecordingchangeoption;
         if ($allowrecordingchangeoption) {
@@ -651,11 +656,6 @@ class mod_zoom_mod_form extends moodleform_mod {
             $options = [
                 ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'mod_zoom'),
             ];
-
-            $hostuserid = $zoomuserid;
-            if (!empty($this->current->host_id)) {
-                $hostuserid = $this->current->host_id;
-            }
 
             if (!empty($hostuserid)) {
                 $recordingsettings = zoom_get_user_settings($hostuserid)->recording;
@@ -794,7 +794,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setType('meeting_id', PARAM_ALPHANUMEXT);
 
         // Add host id (will error if user does not have an account on Zoom).
-        $mform->addElement('hidden', 'host_id', zoom_get_user_id());
+        $mform->addElement('hidden', 'host_id', $hostuserid);
         $mform->setType('host_id', PARAM_ALPHANUMEXT);
 
         // Add standard grading elements.
@@ -818,15 +818,19 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform = $this->_form;
         $itemnumber = 0;
         $component = "mod_{$this->_modname}";
-        $gradefieldname = \core_grades\component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
         $options = [
             'entry' => get_string('gradingentry', 'mod_zoom'), // All credit upon entry.
             'period' => get_string('gradingperiod', 'mod_zoom'), // Credit according to attend duration.
         ];
         $mform->addElement('select', 'grading_method', get_string('gradingmethod', 'mod_zoom'), $options);
         $mform->setDefault('grading_method', get_config('zoom', 'gradingmethod'));
-        $mform->addHelpButton('grading_method', 'gradingmethod', 'zoom');
-        $mform->hideIf('grading_method', "{$gradefieldname}[modgrade_type]", 'eq', 'none');
+        $mform->addHelpButton('grading_method', 'gradingmethod', 'mod_zoom');
+
+        // Requires Moodle 3.8+. Hide field if the grade item is not graded.
+        if (class_exists('\\core_grades\\component_gradeitems')) {
+            $gradefieldname = \core_grades\component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
+            $mform->hideIf('grading_method', "{$gradefieldname}[modgrade_type]", 'eq', 'none');
+        }
     }
 
     /**
@@ -1169,6 +1173,15 @@ class mod_zoom_mod_form extends moodleform_mod {
                 if ($data['end_date_time'] < $data['start_time']) {
                     $errors['radioenddate'] = get_string('err_end_date_before_start', 'zoom');
                 }
+            }
+        }
+
+        // Validation for registration required functionality.
+        if ($data['registration'] != ZOOM_REGISTRATION_OFF) {
+            // Recurring meeting validation already handled by hiding registration option where required.
+            // Check licensing of the user.
+            if (!zoom_webservice()->is_user_permitted_to_require_registration()) {
+                $errors['registration'] = get_string('err_registration', 'mod_zoom');
             }
         }
 

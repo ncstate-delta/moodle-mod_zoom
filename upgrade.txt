@@ -1,3 +1,8 @@
+== v5.3.0 ==
+
+- New setting `zoom/protectedgroups`
+- Optional OAuth scope `group:read:list_groups:admin` or `group:read:admin`
+
 == v5.2.1 ==
 
 - Document Zoom's new granular OAuth scopes.
