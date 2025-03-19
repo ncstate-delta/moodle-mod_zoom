@@ -1002,7 +1002,7 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2024072500, 'zoom');
     }
 
-    if ($oldversion < 2024101700) {
+    if ($oldversion < 2025031300) {
         // Conditionally create the Zoom iCal Notifications table.
         $table = new xmldb_table('zoom_ical_notifications');
 
@@ -1018,7 +1018,7 @@ function xmldb_zoom_upgrade($oldversion) {
         }
 
         // Zoom savepoint reached.
-        upgrade_mod_savepoint(true, 2024101700, 'zoom');
+        upgrade_mod_savepoint(true, 2025031300, 'zoom');
     }
 
     return true;
