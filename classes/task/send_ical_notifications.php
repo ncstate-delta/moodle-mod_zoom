@@ -55,13 +55,13 @@ class send_ical_notifications extends scheduled_task {
             $zoomevents = $this->get_zoom_events_to_notify();
             if ($zoomevents) {
                 foreach ($zoomevents as $zoomevent) {
-                    $executiontime = $this->get_notification_executiontime($zoomevent->id);
+                    $executiontime = $this->get_notification_executiontime((int)$zoomevent->id);
                     // Only run if it hasn't run before.
                     if ($executiontime == 0) {
                         mtrace('A notification will be sent for Zoom event with ID ' . $zoomevent->id);
                         $this->send_zoom_ical_notifications($zoomevent);
                         // Set execution time for this cron job.
-                        $this->set_notification_executiontime($zoomevent->id);
+                        $this->set_notification_executiontime((int)$zoomevent->id);
                     }
                 }
             } else {
@@ -100,24 +100,24 @@ class send_ical_notifications extends scheduled_task {
 
     /**
      * Get the execution time (last successful ical notifications sent) for the related zoom event id.
-     * @param string $zoomeventid The zoom event id.
-     * @return string The timestamp of the last execution.
+     * @param int $zoomeventid The zoom event id.
+     * @return int The timestamp of the last execution.
      */
-    private function get_notification_executiontime(string $zoomeventid) {
+    private function get_notification_executiontime(int $zoomeventid) {
         global $DB;
 
         $executiontime = $DB->get_field('zoom_ical_notifications', 'executiontime', ['zoomeventid' => $zoomeventid]);
         if (!$executiontime) {
             $executiontime = 0;
         }
-        return $executiontime;
+        return (int)$executiontime;
     }
 
     /**
      * Set the execution time (the current time) for successful ical notifications sent for the related zoom event id.
-     * @param string $zoomeventid The zoom event id.
+     * @param int $zoomeventid The zoom event id.
      */
-    private function set_notification_executiontime(string $zoomeventid) {
+    private function set_notification_executiontime(int $zoomeventid) {
         global $DB;
 
         $icalnotifojb = new stdClass();
@@ -131,10 +131,10 @@ class send_ical_notifications extends scheduled_task {
      * The zoom ical notification task.
      * @param stdClass $zoomevent The zoom event record.
      */
-    private function send_zoom_ical_notifications($zoomevent) {
+    private function send_zoom_ical_notifications(stdClass $zoomevent) {
         global $DB;
 
-        $users = $this->get_users_to_notify($zoomevent->instance, $zoomevent->courseid);
+        $users = $this->get_users_to_notify((int)$zoomevent->instance, (int)$zoomevent->courseid);
 
         $zoom = $DB->get_record('zoom', ['id' => $zoomevent->instance], 'id,registration,join_url,meeting_id,webinar');
 
@@ -199,7 +199,7 @@ class send_ical_notifications extends scheduled_task {
      * @param stdClass $user The user object.
      * @return \iCalendar
      */
-    private function create_ical_object($zoomevent, $zoom, $user) {
+    private function create_ical_object(stdClass $zoomevent, stdClass $zoom, stdClass $user) {
         global $CFG, $SITE;
 
         $ical = new \iCalendar();
@@ -208,7 +208,7 @@ class send_ical_notifications extends scheduled_task {
 
         $icalevent = zoom_helper_icalendar_event($zoomevent, $zoomevent->description);
 
-        $cm = get_fast_modinfo($zoomevent->courseid, $user->id)->instances['zoom'][$zoomevent->instance];
+        $cm = get_fast_modinfo((int)$zoomevent->courseid, $user->id)->instances['zoom'][$zoomevent->instance];
 
         $zoomurl = new moodle_url('/mod/zoom/view.php', ['id' => $cm->id]);
 
@@ -239,11 +239,11 @@ class send_ical_notifications extends scheduled_task {
 
     /**
      * Get an array of users in the format of userid=>user object.
-     * @param string $zoomid The zoom instance id.
-     * @param string $courseid The course id of the course in which the zoom event occurred.
+     * @param int $zoomid The zoom instance id.
+     * @param int $courseid The course id of the course in which the zoom event occurred.
      * @return array An array of users.
      */
-    private function get_users_to_notify($zoomid, $courseid) {
+    private function get_users_to_notify(int $zoomid, int $courseid) {
         $cm = get_fast_modinfo($courseid)->instances['zoom'][$zoomid];
         $users = get_users_by_capability($cm->context, 'mod/zoom:view');
 
