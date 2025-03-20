@@ -55,13 +55,13 @@ class send_ical_notifications extends scheduled_task {
             $zoomevents = $this->get_zoom_events_to_notify();
             if ($zoomevents) {
                 foreach ($zoomevents as $zoomevent) {
-                    $executiontime = $this->get_notification_executiontime((int)$zoomevent->id);
+                    $notificationtime = $this->get_notification_time((int)$zoomevent->id);
                     // Only run if it hasn't run before.
-                    if ($executiontime == 0) {
+                    if ($notificationtime == 0) {
                         mtrace('A notification will be sent for Zoom event with ID ' . $zoomevent->id);
                         $this->send_zoom_ical_notifications($zoomevent);
-                        // Set execution time for this cron job.
-                        $this->set_notification_executiontime((int)$zoomevent->id);
+                        // Set the notification time for this cron job.
+                        $this->set_notification_time((int)$zoomevent->id);
                     }
                 }
             } else {
@@ -94,35 +94,35 @@ class send_ical_notifications extends scheduled_task {
             'zoommodulename' => 'zoom',
             'zoomeventtype' => 'zoom',
             'onehourago' => time() - (60 * 60),
-            'tenminutesago' => time() - (60 * 10),
+            'tenminutesago' => time() - (60 * 2),
         ]);
     }
 
     /**
-     * Get the execution time (last successful ical notifications sent) for the related zoom event id.
+     * Get the notification time (last successful ical notifications sent) for the related zoom event id.
      * @param int $zoomeventid The zoom event id.
-     * @return int The timestamp of the last execution.
+     * @return int The timestamp of the last notification sent.
      */
-    private function get_notification_executiontime(int $zoomeventid) {
+    private function get_notification_time(int $zoomeventid) {
         global $DB;
 
-        $executiontime = $DB->get_field('zoom_ical_notifications', 'executiontime', ['zoomeventid' => $zoomeventid]);
-        if (!$executiontime) {
-            $executiontime = 0;
+        $notificationtime = $DB->get_field('zoom_ical_notifications', 'notificationtime', ['zoomeventid' => $zoomeventid]);
+        if (!$notificationtime) {
+            $notificationtime = 0;
         }
-        return (int)$executiontime;
+        return (int)$notificationtime;
     }
 
     /**
-     * Set the execution time (the current time) for successful ical notifications sent for the related zoom event id.
+     * Set the notification time (the current time) for successful ical notifications sent for the related zoom event id.
      * @param int $zoomeventid The zoom event id.
      */
-    private function set_notification_executiontime(int $zoomeventid) {
+    private function set_notification_time(int $zoomeventid) {
         global $DB;
 
         $icalnotifojb = new stdClass();
         $icalnotifojb->zoomeventid = $zoomeventid;
-        $icalnotifojb->executiontime = time();
+        $icalnotifojb->notificationtime = time();
 
         $DB->insert_record('zoom_ical_notifications', $icalnotifojb);
     }

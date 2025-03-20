@@ -188,7 +188,7 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="zoomeventid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="executiontime" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="The time when the send ical notifications task was completed successfully."/>
+        <FIELD NAME="notificationtime" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="The time when the send ical notifications task was completed successfully."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
