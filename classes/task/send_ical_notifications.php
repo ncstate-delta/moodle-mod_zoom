@@ -140,13 +140,27 @@ class send_ical_notifications extends scheduled_task {
 
         $filestorage = get_file_storage();
 
+        // Apply filters to event name and description.
+        $cminfo = get_fast_modinfo((int)$zoomevent->courseid)->instances['zoom'][(int)$zoomevent->instance];
+        $formatoptions = [];
+        if ($cminfo && !empty($cminfo->id)) {
+            $formatoptions['context'] = \context_module::instance($cminfo->id);
+        }
+        $zoomeventname = zoom_apply_filter_on_meeting_name($zoomevent->name, $formatoptions);
+        $zoomeventhtmldesc = format_text($zoomevent->description, FORMAT_HTML, $formatoptions);
+        $zoomeventplaindesc = strip_tags($zoomevent->description);
+
+        // Setup zoom event url.
+        $zoomurlwrapper = new moodle_url('/mod/zoom/view.php', ['id' => $cminfo->id]);
+        $zoomurl = $zoomurlwrapper->out(false);
+    
         foreach ($users as $user) {
             // Check if user has "Disable notifications" set.
             if ($user->emailstop) {
                 continue;
             }
 
-            $ical = $this->create_ical_object($zoomevent, $zoom, $user);
+            $ical = $this->create_ical_object($zoomevent, $zoom, $zoomeventplaindesc, $zoomurl, $user->email);
 
             $filerecord = [
                 'contextid' => context_user::instance($user->id)->id,
@@ -171,11 +185,11 @@ class send_ical_notifications extends scheduled_task {
             $messagedata->name = 'ical_notifications';
             $messagedata->userfrom = core_user::get_noreply_user();
             $messagedata->userto = $user;
-            $messagedata->subject = $zoomevent->name;
-            $messagedata->fullmessage = $zoomevent->description;
+            $messagedata->subject = $zoomeventname;
+            $messagedata->fullmessage = $zoomeventhtmldesc;
             $messagedata->fullmessageformat = FORMAT_HTML;
-            $messagedata->fullmessagehtml = $zoomevent->description;
-            $messagedata->smallmessage = $zoomevent->name . ' - ' . $zoomevent->description;
+            $messagedata->fullmessagehtml = $zoomeventhtmldesc;
+            $messagedata->smallmessage = $zoomeventname . ' - ' . $zoomeventplaindesc;
             $messagedata->notification = true;
             $messagedata->attachment = $icalfileattachment;
             $messagedata->attachname = $icalfileattachment->get_filename();
@@ -196,30 +210,28 @@ class send_ical_notifications extends scheduled_task {
      * Create the ical object.
      * @param stdClass $zoomevent The zoom event record.
      * @param stdClass $zoom The zoom record.
-     * @param stdClass $user The user object.
+     * @param string $zoomeventdescription The zoom event's plain (non-html) description.
+     * @param string $zoomurl The un-escaped zoom event url.
+     * @param string $email The user's email. 
      * @return \iCalendar
      */
-    private function create_ical_object(stdClass $zoomevent, stdClass $zoom, stdClass $user) {
+    private function create_ical_object(stdClass $zoomevent, stdClass $zoom, string $zoomeventdescription, string $zoomurl, string $email) {
         global $CFG, $SITE;
 
         $ical = new \iCalendar();
         $ical->add_property('method', 'PUBLISH');
         $ical->add_property('prodid', '-//Moodle Pty Ltd//NONSGML Moodle Version ' . $CFG->version . '//EN');
 
-        $icalevent = zoom_helper_icalendar_event($zoomevent, $zoomevent->description);
-
-        $cm = get_fast_modinfo((int)$zoomevent->courseid, $user->id)->instances['zoom'][$zoomevent->instance];
-
-        $zoomurl = new moodle_url('/mod/zoom/view.php', ['id' => $cm->id]);
+        $icalevent = zoom_helper_icalendar_event($zoomevent, $zoomeventdescription);
 
         if ($zoom->registration == ZOOM_REGISTRATION_OFF) {
-            $icalevent->add_property('location', $zoomurl->out(false));
+            $icalevent->add_property('location', $zoomurl);
         } else {
-            $registrantjoinurl = zoom_get_registrant_join_url($user->email, $zoom->meeting_id, $zoom->webinar);
+            $registrantjoinurl = zoom_get_registrant_join_url($email, $zoom->meeting_id, $zoom->webinar);
             if ($registrantjoinurl) {
                 $icalevent->add_property('location', $registrantjoinurl);
             } else {
-                $icalevent->add_property('location', $zoomurl->out(false));
+                $icalevent->add_property('location', $zoomurl);
             }
         }
 
