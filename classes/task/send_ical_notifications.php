@@ -31,6 +31,7 @@ require_once($CFG->libdir . '/bennu/bennu.inc.php');
 require_once($CFG->libdir . '/bennu/iCalendar_components.php');
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
+use context_module;
 use context_user;
 use core_availability\info_module;
 use core_user;
@@ -55,13 +56,13 @@ class send_ical_notifications extends scheduled_task {
             $zoomevents = $this->get_zoom_events_to_notify();
             if ($zoomevents) {
                 foreach ($zoomevents as $zoomevent) {
-                    $notificationtime = $this->get_notification_time((int)$zoomevent->id);
+                    $notificationtime = $this->get_notification_time((int) $zoomevent->id);
                     // Only run if it hasn't run before.
                     if ($notificationtime == 0) {
                         mtrace('A notification will be sent for Zoom event with ID ' . $zoomevent->id);
                         $this->send_zoom_ical_notifications($zoomevent);
                         // Set the notification time for this cron job.
-                        $this->set_notification_time((int)$zoomevent->id);
+                        $this->set_notification_time((int) $zoomevent->id);
                     }
                 }
             } else {
@@ -94,7 +95,7 @@ class send_ical_notifications extends scheduled_task {
             'zoommodulename' => 'zoom',
             'zoomeventtype' => 'zoom',
             'onehourago' => time() - (60 * 60),
-            'tenminutesago' => time() - (60 * 2),
+            'tenminutesago' => time() - (60 * 10),
         ]);
     }
 
@@ -110,7 +111,7 @@ class send_ical_notifications extends scheduled_task {
         if (!$notificationtime) {
             $notificationtime = 0;
         }
-        return (int)$notificationtime;
+        return (int) $notificationtime;
     }
 
     /**
@@ -134,17 +135,17 @@ class send_ical_notifications extends scheduled_task {
     private function send_zoom_ical_notifications(stdClass $zoomevent) {
         global $DB;
 
-        $users = $this->get_users_to_notify((int)$zoomevent->instance, (int)$zoomevent->courseid);
+        $users = $this->get_users_to_notify((int) $zoomevent->instance, (int) $zoomevent->courseid);
 
         $zoom = $DB->get_record('zoom', ['id' => $zoomevent->instance], 'id,registration,join_url,meeting_id,webinar');
 
         $filestorage = get_file_storage();
 
         // Apply filters to event name and description.
-        $cminfo = get_fast_modinfo((int)$zoomevent->courseid)->instances['zoom'][(int)$zoomevent->instance];
+        $cminfo = get_coursemodule_from_instance('zoom', (int) $zoomevent->instance, (int) $zoomevent->courseid);
         $formatoptions = [];
         if ($cminfo && !empty($cminfo->id)) {
-            $formatoptions['context'] = \context_module::instance($cminfo->id);
+            $formatoptions['context'] = context_module::instance($cminfo->id);
         }
         $zoomeventname = zoom_apply_filter_on_meeting_name($zoomevent->name, $formatoptions);
         $zoomeventhtmldesc = format_text($zoomevent->description, FORMAT_HTML, $formatoptions);
@@ -257,14 +258,14 @@ class send_ical_notifications extends scheduled_task {
      * @return array An array of users.
      */
     private function get_users_to_notify(int $zoomid, int $courseid) {
-        $cm = get_fast_modinfo($courseid)->instances['zoom'][$zoomid];
-        $users = get_users_by_capability($cm->context, 'mod/zoom:view');
+        $cminfo = get_coursemodule_from_instance('zoom', $zoomid, $courseid);
+        $users = get_users_by_capability($cminfo->context, 'mod/zoom:view');
 
         if (empty($users)) {
             return [];
         }
 
-        $info = new info_module($cm);
+        $info = new info_module($cminfo);
         return $info->filter_user_list($users);
     }
 
