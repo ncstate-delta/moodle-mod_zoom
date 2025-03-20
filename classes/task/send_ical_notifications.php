@@ -153,7 +153,7 @@ class send_ical_notifications extends scheduled_task {
         // Setup zoom event url.
         $zoomurlwrapper = new moodle_url('/mod/zoom/view.php', ['id' => $cminfo->id]);
         $zoomurl = $zoomurlwrapper->out(false);
-    
+
         foreach ($users as $user) {
             // Check if user has "Disable notifications" set.
             if ($user->emailstop) {
@@ -212,10 +212,11 @@ class send_ical_notifications extends scheduled_task {
      * @param stdClass $zoom The zoom record.
      * @param string $zoomeventdescription The zoom event's plain (non-html) description.
      * @param string $zoomurl The un-escaped zoom event url.
-     * @param string $email The user's email. 
+     * @param string $email The user's email.
      * @return \iCalendar
      */
-    private function create_ical_object(stdClass $zoomevent, stdClass $zoom, string $zoomeventdescription, string $zoomurl, string $email) {
+    private function create_ical_object(stdClass $zoomevent, stdClass $zoom, string $zoomeventdescription,
+                                        string $zoomurl, string $email) {
         global $CFG, $SITE;
 
         $ical = new \iCalendar();
