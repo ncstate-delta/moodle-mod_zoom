@@ -51,31 +51,26 @@ class send_ical_notifications extends scheduled_task {
      */
     public function execute() {
         if (get_config('zoom', 'sendicalnotifications')) {
-            mtrace('[Zoom ical Notifications] Starting cron job.');
+            mtrace('Zoom ical Notifications - Starting cron job.');
             $zoomevents = $this->get_zoom_events_to_notify();
             if ($zoomevents) {
                 foreach ($zoomevents as $zoomevent) {
-                    mtrace('[Zoom ical Notifications] Checking to see if a zoom event with with ID ' .
-                            $zoomevent->id . ' was notified before.');
                     $executiontime = $this->get_notification_executiontime($zoomevent->id);
                     // Only run if it hasn't run before.
                     if ($executiontime == 0) {
-                        mtrace('[Zoom ical Notifications] Zoom event with ID ' .
-                                $zoomevent->id . ' can be notified - not notified before.');
+                        mtrace('A notification will be sent for Zoom event with ID ' . $zoomevent->id);
                         $this->send_zoom_ical_notifications($zoomevent);
                         // Set execution time for this cron job.
-                        mtrace('[Zoom ical Notifications] Zoom event with ID ' . $zoomevent->id .
-                                ' was successfully notified - set execution time for log table.');
                         $this->set_notification_executiontime($zoomevent->id);
                     }
                 }
             } else {
-                mtrace('[Zoom ical Notifications] Found no zoom event records to process and notify ' .
+                mtrace('Found no zoom event records to process and notify ' .
                        '(created or modified within the last hour that was not notified before).');
             }
-            mtrace('[Zoom ical Notifications] Cron job Completed.');
+            mtrace('Zoom ical Notifications - Cron job Completed.');
         } else {
-            mtrace('[Zoom ical Notifications] The Admin Setting for the Send iCal Notification scheduled task ' .
+            mtrace('The Admin Setting for the Send iCal Notification scheduled task ' .
                    'has not been enabled - will not run the cron job.');
         }
     }
@@ -139,8 +134,6 @@ class send_ical_notifications extends scheduled_task {
     private function send_zoom_ical_notifications($zoomevent) {
         global $DB;
 
-        mtrace('[Zoom ical Notifications] Notifying Zoom event with ID ' . $zoomevent->id);
-
         $users = $this->get_users_to_notify($zoomevent->instance, $zoomevent->courseid);
 
         $zoom = $DB->get_record('zoom', ['id' => $zoomevent->instance], 'id,registration,join_url,meeting_id,webinar');
@@ -166,7 +159,7 @@ class send_ical_notifications extends scheduled_task {
 
             $serializedical = $ical->serialize();
             if (!$serializedical || empty($serializedical)) {
-                mtrace('[Zoom ical Notifications] A problem occurred while trying to serialize the ical data for user ID ' .
+                mtrace('A problem occurred while trying to serialize the ical data for user ID ' .
                         $user->id . ' for zoom event ID ' . $zoomevent->id);
                 continue;
             }
@@ -190,10 +183,10 @@ class send_ical_notifications extends scheduled_task {
             $emailsuccess = message_send($messagedata);
 
             if ($emailsuccess) {
-                mtrace('[Zoom ical Notifications] Successfully emailed user ID ' . $user->id .
+                mtrace('Successfully emailed user ID ' . $user->id .
                         ' for zoom event ID ' . $zoomevent->id);
             } else {
-                mtrace('[Zoom ical Notifications] A problem occurred while emailing user ID ' . $user->id .
+                mtrace('A problem occurred while emailing user ID ' . $user->id .
                         ' for zoom event ID ' . $zoomevent->id);
             }
         }
