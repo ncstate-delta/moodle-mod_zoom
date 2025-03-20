@@ -18,7 +18,7 @@
  * Task: send_ical_notification
  *
  * @package    mod_zoom
- * @copyright  2024 OPENCOLLAB <info@opencollab.co.za>
+ * @copyright  2025 OPENCOLLAB <info@opencollab.co.za>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -31,10 +31,18 @@ require_once($CFG->libdir . '/bennu/bennu.inc.php');
 require_once($CFG->libdir . '/bennu/iCalendar_components.php');
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
+use context_user;
+use core_availability\info_module;
+use core_user;
+use core\message\message;
+use core\task\scheduled_task;
+use moodle_url;
+use stdClass;
+
 /**
  * Scheduled task to send ical notifications for zoom meetings that were scheduled within the last 30 minutes.
  */
-class send_ical_notifications extends \core\task\scheduled_task {
+class send_ical_notifications extends scheduled_task {
 
     /**
      * Execute the send ical notifications cron function.
@@ -117,7 +125,7 @@ class send_ical_notifications extends \core\task\scheduled_task {
     private function set_notification_executiontime(string $zoomeventid) {
         global $DB;
 
-        $icalnotifojb = new \stdClass();
+        $icalnotifojb = new stdClass();
         $icalnotifojb->zoomeventid = $zoomeventid;
         $icalnotifojb->executiontime = time();
 
@@ -148,7 +156,7 @@ class send_ical_notifications extends \core\task\scheduled_task {
             $ical = $this->create_ical_object($zoomevent, $zoom, $user);
 
             $filerecord = [
-                'contextid' => \context_user::instance($user->id)->id,
+                'contextid' => context_user::instance($user->id)->id,
                 'component' => 'user',
                 'filearea' => 'draft',
                 'itemid' => file_get_unused_draft_itemid(),
@@ -165,10 +173,10 @@ class send_ical_notifications extends \core\task\scheduled_task {
 
             $icalfileattachment = $filestorage->create_file_from_string($filerecord, $serializedical);
 
-            $messagedata = new \core\message\message();
+            $messagedata = new message();
             $messagedata->component = 'mod_zoom';
             $messagedata->name = 'ical_notifications';
-            $messagedata->userfrom = \core_user::get_noreply_user();
+            $messagedata->userfrom = core_user::get_noreply_user();
             $messagedata->userto = $user;
             $messagedata->subject = $zoomevent->name;
             $messagedata->fullmessage = $zoomevent->description;
@@ -209,7 +217,7 @@ class send_ical_notifications extends \core\task\scheduled_task {
 
         $cm = get_fast_modinfo($zoomevent->courseid, $user->id)->instances['zoom'][$zoomevent->instance];
 
-        $zoomurl = new \moodle_url('/mod/zoom/view.php', ['id' => $cm->id]);
+        $zoomurl = new moodle_url('/mod/zoom/view.php', ['id' => $cm->id]);
 
         if ($zoom->registration == ZOOM_REGISTRATION_OFF) {
             $icalevent->add_property('location', $zoomurl->out(false));
@@ -222,7 +230,7 @@ class send_ical_notifications extends \core\task\scheduled_task {
             }
         }
 
-        $noreplyuser = \core_user::get_noreply_user();
+        $noreplyuser = core_user::get_noreply_user();
         $icalevent->add_property('organizer', 'mailto:' . $noreplyuser->email, ['cn' => $SITE->fullname]);
         // Need to strip out the double quotations around the 'organizer' values - probably a bug in the core code.
         $organizervalue = $icalevent->properties['ORGANIZER'][0]->value;
@@ -250,7 +258,7 @@ class send_ical_notifications extends \core\task\scheduled_task {
             return [];
         }
 
-        $info = new \core_availability\info_module($cm);
+        $info = new info_module($cm);
         return $info->filter_user_list($users);
     }
 
