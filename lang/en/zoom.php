@@ -400,6 +400,7 @@ $string['security'] = 'Security';
 $string['selectionarea'] = 'No selection';
 $string['sendicalnotifications'] = 'Send iCal Notifications';
 $string['sendicalnotifications_help'] = "Enabling this option will allow iCal Notifications to be sent via the 'Send iCal Notification' scheduled task.";
+$string['sendicalnotifications_warning'] = "Attachments must be enabled in Site administration / Server / Email / Outgoing mail configuration to use this option.";
 $string['sessions'] = 'Sessions';
 $string['sessionsreport'] = 'Sessions report';
 $string['sesskeyinvalid'] = 'Invalid session detected. Cannot proceed further.';
