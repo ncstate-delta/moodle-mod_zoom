@@ -234,6 +234,7 @@ $string['meeting_nonexistent_on_zoom'] = 'Nonexistent on Zoom';
 $string['meeting_not_started'] = 'Not started';
 $string['meeting_started'] = 'In progress';
 $string['meeting_time'] = 'Start Time';
+$string['meetingactivityURL'] = 'Meeting activity URL: <a href="{$a}">{$a}</a>';
 $string['meetingcapacitywarning'] = 'Meeting capacity warning';
 $string['meetingcapacitywarning_desc'] = 'With this setting, you can show a warning notification if there are more active and enrolled participants in the course than the host\'s Zoom license meeting capacity is. The notification will be shown to the host (and alternative hosts) on the Zoom activity overview page. It will recommend the host to turn to the Zoom account owner to obtain a larger Zoom license if necessary. You can change this message through Moodle language customization.';
 $string['meetingcapacitywarning_disable'] = 'Disable meeting capacity warning';
