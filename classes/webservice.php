@@ -388,14 +388,14 @@ class webservice {
      * @return bool Whether the user was succesfully created.
      * @deprecated Has never been used by internal code.
      */
-    public function autocreate_user($user) {
+    public function autocreate_user($user, $action = 'autoCreate', $type = ZOOM_USER_TYPE_PRO) {
         // Classic: user:write:admin.
         // Granular: user:write:user:admin.
         $url = 'users';
-        $data = ['action' => 'autocreate'];
+        $data = ['action' => $action];
         $data['user_info'] = [
             'email' => zoom_get_api_identifier($user),
-            'type' => ZOOM_USER_TYPE_PRO,
+            'type' => $type,
             'first_name' => $user->firstname,
             'last_name' => $user->lastname,
             'password' => base64_encode(random_bytes(16)),
