@@ -385,6 +385,8 @@ class webservice {
      * Autocreate a user on Zoom.
      *
      * @param stdClass $user The user to create.
+     * @param string $action The account create action: create, autoCreate, custCreate or ssoCreate.
+     * @param int $type The user type number.
      * @return bool Whether the user was succesfully created.
      * @deprecated Has never been used by internal code.
      */
