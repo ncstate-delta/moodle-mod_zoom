@@ -392,15 +392,16 @@ if ($ADMIN->fulltree) {
     );
     $settings->add($offerdownloadical);
 
-    $sendicalnotifications_help = get_string('sendicalnotifications_help', 'mod_zoom');
+    $sendicalnotificationshelp = get_string('sendicalnotifications_help', 'mod_zoom');
     if (empty($CFG->allowattachments)) {
-        $sendicalnotifications_help .= '<div class="alert alert-block alert-warning" role="alert">' . get_string('sendicalnotifications_warning', 'mod_zoom') . '</div>';
+        $sendicalnotificationshelp .= '<div class="alert alert-block alert-warning" role="alert">' 
+                                      . get_string('sendicalnotifications_warning', 'mod_zoom') . '</div>';
     }
 
     $sendicalnotifications = new admin_setting_configcheckbox(
         'zoom/sendicalnotifications',
         get_string('sendicalnotifications', 'mod_zoom'),
-        $sendicalnotifications_help,
+        $sendicalnotificationshelp,
         0,
         1,
         0
