@@ -394,7 +394,7 @@ if ($ADMIN->fulltree) {
 
     $sendicalnotificationshelp = get_string('sendicalnotifications_help', 'mod_zoom');
     if (empty($CFG->allowattachments)) {
-        $sendicalnotificationshelp .= '<div class="alert alert-block alert-warning" role="alert">' 
+        $sendicalnotificationshelp .= '<div class="alert alert-block alert-warning" role="alert">'
                                       . get_string('sendicalnotifications_warning', 'mod_zoom') . '</div>';
     }
 
