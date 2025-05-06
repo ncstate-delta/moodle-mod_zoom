@@ -133,7 +133,7 @@ class send_ical_notifications extends scheduled_task {
      * @param stdClass $zoomevent The zoom event record.
      */
     private function send_zoom_ical_notifications(stdClass $zoomevent) {
-        global $DB;
+        global $DB, $CFG;
 
         $users = $this->get_users_to_notify((int) $zoomevent->instance, (int) $zoomevent->courseid);
 
@@ -149,6 +149,7 @@ class send_ical_notifications extends scheduled_task {
         }
         $zoomeventname = zoom_apply_filter_on_meeting_name($zoomevent->name, $formatoptions);
         $zoomeventhtmldesc = format_text($zoomevent->description, FORMAT_HTML, $formatoptions);
+        $zoomeventhtmldesc .= format_text(get_string('meetingactivityurl', 'mod_zoom', $CFG->wwwroot . '/mod/zoom/view.php?id=' . $cminfo->id), FORMAT_HTML, $formatoptions);
         $zoomeventplaindesc = strip_tags($zoomevent->description);
 
         // Setup zoom event url.
