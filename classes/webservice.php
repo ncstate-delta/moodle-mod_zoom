@@ -388,7 +388,7 @@ class webservice {
      * @param string $action The account create action: create, autoCreate, custCreate or ssoCreate.
      * @param int $type The user type number.
      * @return bool Whether the user was succesfully created.
-     * @deprecated Has never been used by internal code.
+     * @example https://github.com/yedidiaklein/moodle-local_zoomsyncusers An external plugin that depends on mod_zoom uses this method.
      */
     public function autocreate_user($user, $action = 'autoCreate', $type = ZOOM_USER_TYPE_PRO) {
         // Classic: user:write:admin.
