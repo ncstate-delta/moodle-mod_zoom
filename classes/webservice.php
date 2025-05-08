@@ -385,17 +385,19 @@ class webservice {
      * Autocreate a user on Zoom.
      *
      * @param stdClass $user The user to create.
+     * @param string $action The account create action: create, autoCreate, custCreate or ssoCreate.
+     * @param int $type The user type number.
      * @return bool Whether the user was succesfully created.
-     * @deprecated Has never been used by internal code.
+     * @see https://github.com/yedidiaklein/moodle-local_zoomsyncusers An external plugin that depends on mod_zoom uses this method.
      */
-    public function autocreate_user($user) {
+    public function autocreate_user($user, $action = 'autoCreate', $type = ZOOM_USER_TYPE_PRO) {
         // Classic: user:write:admin.
         // Granular: user:write:user:admin.
         $url = 'users';
-        $data = ['action' => 'autocreate'];
+        $data = ['action' => $action];
         $data['user_info'] = [
             'email' => zoom_get_api_identifier($user),
-            'type' => ZOOM_USER_TYPE_PRO,
+            'type' => $type,
             'first_name' => $user->firstname,
             'last_name' => $user->lastname,
             'password' => base64_encode(random_bytes(16)),
