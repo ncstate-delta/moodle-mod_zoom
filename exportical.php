@@ -69,7 +69,7 @@ $meetinginvite = zoom_webservice()->get_meeting_invitation($zoom)->get_display_s
 
 // Compute and add description property to event.
 $convertedtext = html_to_text($zoom->intro);
-$descriptiontext = get_string('calendardescriptionURL', 'mod_zoom', $CFG->wwwroot . '/mod/zoom/view.php?id=' . $cm->id);
+$descriptiontext = get_string('calendardescriptionurl', 'mod_zoom', $CFG->wwwroot . '/mod/zoom/view.php?id=' . $cm->id);
 if (!empty($convertedtext)) {
     $descriptiontext .= get_string('calendardescriptionintro', 'mod_zoom', $convertedtext);
 }

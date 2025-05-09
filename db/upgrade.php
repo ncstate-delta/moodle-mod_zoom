@@ -1002,5 +1002,24 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2024072500, 'zoom');
     }
 
+    if ($oldversion < 2025031300) {
+        // Conditionally create the Zoom iCal Notifications table.
+        $table = new xmldb_table('zoom_ical_notifications');
+
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('zoomeventid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('notificationtime', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
+
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_key('fk_zoomeventid', XMLDB_KEY_FOREIGN_UNIQUE, ['zoomeventid'], 'event', ['id']);
+
+            $dbman->create_table($table);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2025031300, 'zoom');
+    }
+
     return true;
 }
