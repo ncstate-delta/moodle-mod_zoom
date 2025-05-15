@@ -196,7 +196,7 @@ function zoom_update_instance(stdClass $zoom, ?mod_zoom_mod_form $mform = null) 
             }
         }
     } catch (moodle_exception $error) {
-        return false;
+        throw $error;
     }
 
     // Get the updated meeting info from zoom, before updating calendar events.
