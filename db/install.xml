@@ -1,8 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/zoom/db" VERSION="20240724" COMMENT="Zoom module"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
->
+<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="mod/zoom/db" VERSION="20250509" COMMENT="Zoom module" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
     <TABLE NAME="zoom" COMMENT="Zoom meetings and webinars">
       <FIELDS>
@@ -182,6 +178,17 @@
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="fk_breakoutroomid" TYPE="foreign" FIELDS="breakoutroomid" REFTABLE="zoom_meeting_breakout_rooms" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="zoom_ical_notifications" COMMENT="Identifies the zoom event for which ical notifications have been emailed.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="zoomeventid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="notificationtime" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="The time when the send ical notifications task was completed successfully."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_zoomeventid" TYPE="foreign-unique" FIELDS="zoomeventid" REFTABLE="event" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>
