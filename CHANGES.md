@@ -1,5 +1,16 @@
 ### Releases ###
 
+#### v5.4.0 ####
+
+- Feature: Send iCal Notifications #623 (thanks @paulandm, @OpenCollabZA)
+  - New setting `zoom/sendicalnotifications`
+  - New message `mod_zoom/ical_notifications`
+  - New table `zoom_ical_notifications`
+  - New task `mod_zoom\task\send_ical_notifications`
+- Bugfix: Create Zoom user webservice method used outdated action. #655 (thanks @yedidiaklein)
+- Bugfix: Detailed error messages when editing activities #656 (thanks @Chatharina)
+- Code quality: Check Moodle 5.0 #654
+
 #### v5.3.1 ####
 
 - Regression: Tracking fields task missing variable #648 (thanks @lorenzogreco, @phette23, @izendegi)

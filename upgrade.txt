@@ -1,3 +1,10 @@
+== v5.4.0 ==
+
+- New setting `zoom/sendicalnotifications`
+- New message `mod_zoom/ical_notifications`
+- New table `zoom_ical_notifications`
+- New task `mod_zoom\task\send_ical_notifications`
+
 == v5.3.0 ==
 
 - New setting `zoom/protectedgroups`
