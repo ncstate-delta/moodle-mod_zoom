@@ -1024,5 +1024,26 @@ function xmldb_zoom_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2025050900, 'zoom');
     }
 
+    if ($oldversion < 2025062600) {
+        // Define the SQL query to fix the inconsistent casing in the customlang stringid.
+        $sql = "UPDATE {tool_customlang} tc
+                  JOIN {tool_customlang_components} tcc ON tc.componentid = tcc.id
+                   SET tc.stringid = :newstringid
+                 WHERE tcc.name = :componentname
+                   AND tc.stringid = :oldstringid";
+
+        $params = [
+            'newstringid' => 'calendardescriptionurl',
+            'componentname' => 'mod_zoom',
+            'oldstringid' => 'calendardescriptionURL',
+        ];
+
+        // Execute the query.
+        $DB->execute($sql, $params);
+
+        // Savepoint reached.
+        upgrade_mod_savepoint(true, 2025062600, 'zoom');
+    }
+
     return true;
 }
