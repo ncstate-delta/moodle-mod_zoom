@@ -990,15 +990,19 @@ class webservice {
 
         if ($this->has_scope($reportscopes)) {
             $apitype = 'report';
+            $data = [];
         } else if ($this->has_scope($dashboardscopes)) {
             $apitype = 'metrics';
+            $data = [
+                'type' => 'past',
+            ];
         } else {
             mtrace('Missing OAuth scopes required for reports.');
             return [];
         }
 
         $url = $apitype . '/' . $meetingtype . '/' . $meetinguuid . '/participants';
-        return $this->make_paginated_call($url, [], 'participants');
+        return $this->make_paginated_call($url, $data, 'participants');
     }
 
     /**
