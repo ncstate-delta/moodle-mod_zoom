@@ -1,5 +1,11 @@
 ### Releases ###
 
+#### v5.4.1 ####
+
+- Bugfix: Fix stringid capitalization in upgrade step #659 (thanks @Ethan-DevIT)
+- Bugfix: Dashboard API was not working for get_meeting_reports #662 (thanks @Caspiofri)
+- Code quality: Apply moodle-cs for line wrapping in send_ical_notifications
+
 #### v5.4.0 ####
 
 - Feature: Send iCal Notifications #623 (thanks @paulandm, @OpenCollabZA)
