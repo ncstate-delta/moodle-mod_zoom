@@ -44,7 +44,6 @@ use stdClass;
  * Scheduled task to send ical notifications for zoom meetings that were scheduled within the last 30 minutes.
  */
 class send_ical_notifications extends scheduled_task {
-
     /**
      * Execute the send ical notifications cron function.
      *
@@ -149,11 +148,15 @@ class send_ical_notifications extends scheduled_task {
         }
         $zoomeventname = zoom_apply_filter_on_meeting_name($zoomevent->name, $formatoptions);
         $zoomeventhtmldesc = format_text($zoomevent->description, FORMAT_HTML, $formatoptions);
-        $zoomeventhtmldesc .= format_text(get_string('meetingactivityurl',
-                                          'mod_zoom',
-                                          $CFG->wwwroot . '/mod/zoom/view.php?id=' . $cminfo->id),
-                                          FORMAT_HTML,
-                                          $formatoptions);
+        $zoomeventhtmldesc .= format_text(
+            get_string(
+                'meetingactivityurl',
+                'mod_zoom',
+                $CFG->wwwroot . '/mod/zoom/view.php?id=' . $cminfo->id
+            ),
+            FORMAT_HTML,
+            $formatoptions
+        );
         $zoomeventplaindesc = strip_tags($zoomevent->description);
 
         // Setup zoom event url.
@@ -221,8 +224,13 @@ class send_ical_notifications extends scheduled_task {
      * @param string $email The user's email.
      * @return \iCalendar
      */
-    private function create_ical_object(stdClass $zoomevent, stdClass $zoom, string $zoomeventdescription,
-                                        string $zoomurl, string $email) {
+    private function create_ical_object(
+        stdClass $zoomevent,
+        stdClass $zoom,
+        string $zoomeventdescription,
+        string $zoomurl,
+        string $email
+    ) {
         global $CFG, $SITE;
 
         $ical = new \iCalendar();
@@ -282,5 +290,4 @@ class send_ical_notifications extends scheduled_task {
     public function get_name() {
         return get_string('sendicalnotifications', 'mod_zoom');
     }
-
 }
