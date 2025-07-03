@@ -145,8 +145,9 @@ class get_meeting_reports extends scheduled_task {
 
         $dashboardscopes = [
             'dashboard_meetings:read:admin',
-            'dashboard_meetings:read:list_meetings:admin',
-            'dashboard_meetings:read:list_webinars:admin',
+            'dashboard_webinars:read:admin',
+            'dashboard:read:list_meetings:admin',
+            'dashboard:read:list_webinars:admin',
         ];
 
         $reportscopes = [
@@ -417,12 +418,12 @@ class get_meeting_reports extends scheduled_task {
 
         $meetingscopes = [
             'dashboard_meetings:read:admin',
-            'dashboard_meetings:read:list_meetings:admin',
+            'dashboard:read:list_meetings:admin',
         ];
 
         $webinarscopes = [
             'dashboard_webinars:read:admin',
-            'dashboard_webinars:read:list_webinars:admin',
+            'dashboard:read:list_webinars:admin',
         ];
 
         $meetings = [];
