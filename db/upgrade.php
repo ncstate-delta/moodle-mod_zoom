@@ -1029,7 +1029,7 @@ function xmldb_zoom_upgrade($oldversion) {
         $sql = "UPDATE {tool_customlang} tc
                    SET stringid = :newstringid
                  WHERE tc.stringid = :oldstringid
-                   AND tc.componentid in (SELECT tcc.id 
+                   AND tc.componentid in (SELECT tcc.id
                                             FROM {tool_customlang_components} tcc
                                            WHERE tcc.name = :componentname)";
 
