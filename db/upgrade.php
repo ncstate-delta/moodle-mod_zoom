@@ -1027,10 +1027,13 @@ function xmldb_zoom_upgrade($oldversion) {
     if ($oldversion < 2025062600) {
         // Define the SQL query to fix the inconsistent casing in the customlang stringid.
         $sql = "UPDATE {tool_customlang} tc
-                  JOIN {tool_customlang_components} tcc ON tc.componentid = tcc.id
-                   SET tc.stringid = :newstringid
-                 WHERE tcc.name = :componentname
-                   AND tc.stringid = :oldstringid";
+                   SET stringid = :newstringid
+                 WHERE tc.stringid = :oldstringid
+                   AND tc.componentid IN (
+                           SELECT tcc.id
+                             FROM {tool_customlang_components} tcc
+                            WHERE tcc.name = :componentname
+                       )";
 
         $params = [
             'newstringid' => 'calendardescriptionurl',
