@@ -1,5 +1,9 @@
 ### Releases ###
 
+#### v5.4.2 ####
+
+- Bugfix: Fix SQL compatibility in upgrade step #664 (thanks @izendegi, @SimonThornett)
+
 #### v5.4.1 ####
 
 - Bugfix: Fix stringid capitalization in upgrade step #659 (thanks @Ethan-DevIT)
