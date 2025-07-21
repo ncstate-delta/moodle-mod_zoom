@@ -1,5 +1,9 @@
 ### Releases ###
 
+#### v5.4.3 ####
+
+- Bugfix: Rename string to avoid flawed database upgrade step #668 (thanks @samwitzig)
+
 #### v5.4.2 ####
 
 - Bugfix: Fix SQL compatibility in upgrade step #664 (thanks @izendegi, @SimonThornett)
