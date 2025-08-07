@@ -30,8 +30,8 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
 $courseid = required_param('courseid', PARAM_INT);
-$startdate = escapeshellarg(optional_param('start', date('Y-m-d', strtotime('-3 days')), PARAM_ALPHANUMEXT));
-$enddate = escapeshellarg(optional_param('end', date('Y-m-d'), PARAM_ALPHANUMEXT));
+$startdate = optional_param('start', date('Y-m-d', strtotime('-3 days')), PARAM_ALPHANUMEXT);
+$enddate = optional_param('end', date('Y-m-d'), PARAM_ALPHANUMEXT);
 
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
@@ -46,7 +46,15 @@ $PAGE->set_url('/mod/zoom/console/');
 
 echo html_writer::tag('h1', get_string('getmeetingreports', 'mod_zoom'));
 $output = null;
-exec("php $CFG->dirroot/mod/zoom/cli/get_meeting_report.php --start=$startdate --end=$enddate --courseid=$courseid", $output);
+$arguments = implode(
+    ' ',
+    [
+        '--start=' . escapeshellarg($startdate),
+        '--end=' . escapeshellarg($enddate),
+        '--courseid=' . escapeshellarg($courseid),
+    ]
+);
+exec("php $CFG->dirroot/mod/zoom/cli/get_meeting_report.php $arguments", $output);
 echo '<pre>';
 echo implode("\n", $output);
 echo '</pre>';
