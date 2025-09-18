@@ -64,7 +64,12 @@ $userisrealhost = ($zoomuserid === $zoom->host_id);
 $alternativehosts = zoom_get_alternative_host_array_from_string($zoom->alternative_hosts);
 
 // Check if this user is the host or an alternative host.
-$userishost = ($userisrealhost || in_array(zoom_get_api_identifier($USER), $alternativehosts, true));
+// Lowercase email addresses so that we can do case-insensitive comparisons.
+if (filter_var(zoom_get_api_identifier($USER), FILTER_VALIDATE_EMAIL) !== false) {
+    $userishost = ($userisrealhost || in_array(strtolower(zoom_get_api_identifier($USER)), $alternativehosts, true));
+} else {
+    $userishost = ($userisrealhost || in_array(zoom_get_api_identifier($USER), $alternativehosts, true));
+}
 
 // Get host user from Zoom.
 $showrecreate = false;
