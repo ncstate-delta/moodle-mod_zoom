@@ -970,11 +970,11 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
     $userisrealhost = (zoom_get_user_id(false) === $zoom->host_id);
     $alternativehosts = zoom_get_alternative_host_array_from_string($zoom->alternative_hosts);
     // Lowercase email addresses so that we can do case-insensitive comparisons.
-    if (filter_var(zoom_get_api_identifier($USER), FILTER_VALIDATE_EMAIL) !== false) {
-        $userishost = ($userisrealhost || in_array(strtolower(zoom_get_api_identifier($USER)), $alternativehosts, true));
-    } else {
-        $userishost = ($userisrealhost || in_array(zoom_get_api_identifier($USER), $alternativehosts, true));
+    $userapiidentifier = zoom_get_api_identifier($USER);
+    if (filter_var($userapiidentifier, FILTER_VALIDATE_EMAIL) !== false) {
+        $userapiidentifier = strtolower($userapiidentifier);
     }
+    $userishost = ($userisrealhost || in_array($userapiidentifier, $alternativehosts, true));
 
     // Check if we should use the start meeting url.
     if ($userisrealhost && $usestarturl) {
