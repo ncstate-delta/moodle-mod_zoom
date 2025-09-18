@@ -599,7 +599,7 @@ function zoom_get_selectable_alternative_hosts_list(context $context) {
         $zoomuser = zoom_get_user($u->email);
         if ($zoomuser !== false && $zoomuser->status === 'active') {
             // Add user to array of users.
-            $selectablealternativehosts[$u->email] = fullname($u);
+            $selectablealternativehosts[strtolower($u->email)] = fullname($u);
         }
     }
 
