@@ -2,7 +2,9 @@
 
 #### v5.4.5 ####
 
+- Bugfix: Case-insensitive comparisons for alternative host emails #677
 - Hardening: Verify zoomid when toggling recording visibility #681
+- CI: add Moodle 5.1 checks #679
 
 #### v5.4.4 ####
 
