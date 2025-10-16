@@ -1,5 +1,9 @@
 ### Releases ###
 
+#### v5.4.5 ####
+
+- Hardening: Verify zoomid when toggling recording visibility #681
+
 #### v5.4.4 ####
 
 - Hardening: Shell arguments should always be escaped #671 (thanks @OshratLuski, @nadavkav)
