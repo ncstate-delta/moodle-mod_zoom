@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Load zoom meeting recording and add a record of the view.
+ * Toggle the visibility of zoom meeting recordings.
  *
  * @package    mod_zoom
  * @copyright  2020 Nick Stefanski <nmstefanski@gmail.com>
@@ -49,7 +49,14 @@ if (!confirm_sesskey()) {
 }
 
 // Find the video recording and audio only recording pair that matches the criteria.
-$recordings = $DB->get_records('zoom_meeting_recordings', ['meetinguuid' => $meetinguuid, 'recordingstart' => $recordingstart]);
+$recordings = $DB->get_records(
+    'zoom_meeting_recordings',
+    [
+        'zoomid' => $zoom->id,
+        'meetinguuid' => $meetinguuid,
+        'recordingstart' => $recordingstart,
+    ]
+);
 if (empty($recordings)) {
     throw new moodle_exception('recordingnotfound', 'mod_zoom', '', get_string('recordingnotfound', 'zoom'));
 }
