@@ -45,7 +45,7 @@ class mod_zoom_generator extends testing_module_generator {
             'meetingcode' => '',
             'webinar' => 0,
             'option_host_video' => 0,
-            'option_audio' => 0,
+            'option_audio' => ZOOM_AUDIO_BOTH,
             'recurring' => 0,
             'option_participants_video' => 0,
             'option_jbh' => 0,

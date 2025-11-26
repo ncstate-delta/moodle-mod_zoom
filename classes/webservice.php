@@ -314,7 +314,7 @@ class webservice {
                         if ($header['x-ratelimit-remaining'] == 0 && !empty($retryafter)) {
                             set_config('retry-after', $retryafter, 'zoom');
                             throw new api_limit_exception($response->message, $response->code, $retryafter);
-                        } else if (!(defined('PHPUNIT_TEST') && PHPUNIT_TEST)) {
+                        } else if (!(defined('PHPUNIT_TEST' || 'BEHAT_TEST') && PHPUNIT_TEST || BEHAT_TEST)) {
                             // When running CLI we might want to know how many calls remaining.
                             debugging('x-ratelimit-remaining = ' . $header['x-ratelimit-remaining']);
                         }
@@ -322,7 +322,7 @@ class webservice {
 
                     debugging('Received 429 response, sleeping ' . strval($timediff) .
                             ' seconds until next retry. Current retry: ' . $this->makecallretries);
-                    if ($timediff > 0 && !(defined('PHPUNIT_TEST') && PHPUNIT_TEST)) {
+                    if ($timediff > 0 && !(defined('PHPUNIT_TEST' || 'BEHAT_TEST') && PHPUNIT_TEST || BEHAT_TEST)) {
                         sleep($timediff);
                     }
                     return $this->make_call($path, $data, $method);
