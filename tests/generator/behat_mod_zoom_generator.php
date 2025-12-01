@@ -41,7 +41,7 @@ class behat_mod_zoom_generator extends behat_generator_base {
     /**
      * Look up the id of a Zoom meeting from its name.
      *
-     * @param string $zoommeetingname the Zoom activity name, for example 'Test meeting'.
+     * @param string $zoomname The Zoom activity name, for example 'Test meeting'.
      * @return int corresponding id.
      * @throws Exception
      */

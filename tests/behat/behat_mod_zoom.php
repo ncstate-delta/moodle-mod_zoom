@@ -49,7 +49,7 @@ class behat_mod_zoom extends behat_base implements Context {
      * | pagetype   | name meaning       | description                    |
      * | View       | Zoom meeting name  | The Zoom meeting activity page |
      *
-     * @param string $page identifies which type of page this is, e.g. 'mod_zoom > View'.
+     * @param string $type identifies which type of page this is, e.g. 'mod_zoom > View'.
      * @param string $identifier identifies the particular page, e.g. 'Test Meeting'.
      * @return moodle_url the corresponding URL.
      * @throws Exception with a meaningful error message if the specified page cannot be found.
