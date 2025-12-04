@@ -21,7 +21,7 @@ use Behat\Behat\Context\Context;
  * Behat steps for mod_zoom.
  *
  * @package mod_zoom
- * @copyright 2020 UC Regents
+ * @copyright 2025 Alan McCoy
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_mod_zoom extends behat_base implements Context {
