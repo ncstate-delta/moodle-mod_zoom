@@ -69,7 +69,7 @@ class behat_mod_zoom_generator extends behat_generator_base {
               FROM {course_modules} cm
         INNER JOIN {modules} m ON m.id = cm.module
         INNER JOIN {zoom} z ON z.id = cm.instance
-             WHERE cm.idnumber = :idnumber or z.name = :name
+             WHERE cm.idnumber = :idnumber OR z.name = :name
 EOF;
         $id = $DB->get_field_sql($sql, ['idnumber' => $activityname, 'name' => $activityname]);
         if (empty($id)) {
