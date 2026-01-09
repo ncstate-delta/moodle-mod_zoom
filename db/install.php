@@ -27,7 +27,7 @@
  *
  * @see upgrade_plugins_modules()
  */
-function xmldb_zoom_install() {
+function xmldb_zoomyt_install() {
 }
 
 /**
@@ -35,5 +35,5 @@ function xmldb_zoom_install() {
  *
  * @see upgrade_plugins_modules()
  */
-function xmldb_zoom_install_recovery() {
+function xmldb_zoomyt_install_recovery() {
 }

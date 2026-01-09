@@ -27,6 +27,6 @@
 /**
  * Custom uninstallation procedure
  */
-function xmldb_zoom_uninstall() {
+function xmldb_zoomyt_uninstall() {
     return true;
 }
