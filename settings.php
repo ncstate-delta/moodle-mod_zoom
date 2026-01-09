@@ -703,6 +703,22 @@ if ($ADMIN->fulltree) {
         get_string('youtube_settings_desc', 'zoomyt')
     ));
 
+    // YouTube Client ID (site-wide).
+    $settings->add(new admin_setting_configtext(
+        'zoom/youtube_client_id',
+        get_string('youtube_client_id', 'zoomyt'),
+        get_string('youtube_client_id_desc', 'zoomyt'),
+        ''
+    ));
+
+    // YouTube Client Secret (site-wide).
+    $settings->add(new admin_setting_configpasswordunmask(
+        'zoom/youtube_client_secret',
+        get_string('youtube_client_secret', 'zoomyt'),
+        get_string('youtube_client_secret_desc', 'zoomyt'),
+        ''
+    ));
+
     // Default YouTube visibility.
     $visibilityoptions = [
         'unlisted' => get_string('youtube_visibility_unlisted', 'zoomyt'),
