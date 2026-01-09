@@ -125,7 +125,7 @@ class invitation {
         $configregex = $this->get_config_invitation_regex();
         if (!array_key_exists($element, $configregex)) {
             throw new coding_exception('Cannot remove element: ' . $element
-                    . '. See mod/zoom/classes/invitation.php:get_default_invitation_regex for valid elements.');
+                    . '. See mod/zoom_yt/classes/invitation.php:get_default_invitation_regex for valid elements.');
         }
 
         // If the element pattern is intentionally empty, return the invitation string unaltered.

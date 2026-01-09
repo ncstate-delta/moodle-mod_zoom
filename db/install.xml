@@ -1,4 +1,4 @@
-<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="mod/zoom/db" VERSION="20250509" COMMENT="Zoom module" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="mod/zoom_yt/db" VERSION="20250509" COMMENT="Zoom module" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
     <TABLE NAME="zoom_yt" COMMENT="Zoom meetings and webinars">
       <FIELDS>

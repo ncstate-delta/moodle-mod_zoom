@@ -750,7 +750,7 @@ function zoom_yt_grade_item_update(stdClass $zoom, $grades = null) {
         $grades = null;
     }
 
-    grade_update('mod/zoom', $zoom->course, 'mod', 'zoom_yt', $zoom->id, 0, $grades, $item);
+    grade_update('mod/zoom_yt', $zoom->course, 'mod', 'zoom_yt', $zoom->id, 0, $grades, $item);
 }
 
 /**
@@ -763,7 +763,7 @@ function zoom_yt_grade_item_delete($zoom) {
     global $CFG;
     require_once($CFG->libdir . '/gradelib.php');
 
-    return grade_update('mod/zoom', $zoom->course, 'mod', 'zoom_yt', $zoom->id, 0, null, ['deleted' => 1]);
+    return grade_update('mod/zoom_yt', $zoom->course, 'mod', 'zoom_yt', $zoom->id, 0, null, ['deleted' => 1]);
 }
 
 /**

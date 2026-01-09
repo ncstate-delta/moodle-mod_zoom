@@ -57,7 +57,7 @@ Options:
 --courseid          Optional. If given, will find all hosts for course and get meeting reports.
 
 Example:
-\$sudo -u www-data /usr/bin/php mod/zoom/cli/get_meeting_report.php --start=2020-03-31 --end=2020-04-01
+\$sudo -u www-data /usr/bin/php mod/zoom_yt/cli/get_meeting_report.php --start=2020-03-31 --end=2020-04-01
 ";
     cli_error($help);
 }
