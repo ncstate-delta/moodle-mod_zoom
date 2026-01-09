@@ -235,4 +235,4 @@ This plugin is licensed under the [GNU GPL v3 or later](http://www.gnu.org/copyl
 ## Credits
 
 Based on the original mod_zoom plugin by UC Regents.
-YouTube integration and category-level settings by the Innovative Minitry Centre of Toronto United Church Council.
+YouTube integration and category-level settings by Tay Moss at the Innovative Minitry Centre of Toronto United Church Council.

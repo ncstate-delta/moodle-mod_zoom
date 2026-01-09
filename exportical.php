@@ -79,7 +79,7 @@ if (!empty($meetinginvite)) {
 }
 
 // Get all occurrences of the meeting from the DB.
-$params = ['modulename => 'zoom_yt'->id];
+$params = ['modulename' => 'zoom_yt', 'instance' => $zoom_yt->id];
 $events = $DB->get_records('event', $params, 'timestart ASC');
 
 // If we haven't got at least a single occurrence.

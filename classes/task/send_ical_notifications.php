@@ -85,13 +85,13 @@ class send_ical_notifications extends scheduled_task {
 
         $sql = 'SELECT *
         FROM {event}
-        WHERE modulename => 'zoom_yt'modulename
+        WHERE modulename = :zoommodulename
         AND eventtype = :zoomeventtype
         AND timemodified >= :onehourago
         AND timemodified <= :tenminutesago';
 
         return $DB->get_records_sql($sql, [
-            'zoommodulename => 'zoom_yt'_yt',
+            'zoommodulename' => 'zoom_yt',
             'zoomeventtype' => 'zoom_yt',
             'onehourago' => time() - (60 * 60),
             'tenminutesago' => time() - (60 * 10),

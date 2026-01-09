@@ -312,7 +312,7 @@ function zoom_yt_get_next_occurrence($zoom) {
         } else {
             // Get the calendar event of the next occurrence.
             $selectclause = "modulename = :modulename AND instance = :instance AND (timestart + timeduration) >= :now";
-            $selectparams = ['modulename => 'zoom_yt'->id, 'now' => time()];
+            $selectparams = ['modulename' => 'zoom_yt', 'instance' => $zoom_yt->id, 'now' => time()];
             $nextoccurrence = $DB->get_records_select('event', $selectclause, $selectparams, 'timestart ASC', 'timestart', 0, 1);
 
             // If we haven't got a single event.

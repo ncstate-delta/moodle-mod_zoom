@@ -130,7 +130,7 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
 
         $params = [
             'instanceid' => $context->instanceid,
-            'modulename => 'zoom_yt'_yt',
+            'modulename' => 'zoom_yt',
         ];
 
         $sql = "SELECT zmp.userid

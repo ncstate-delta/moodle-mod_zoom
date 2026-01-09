@@ -44,7 +44,7 @@ $event = \mod_zoom_yt\event\course_module_instance_list_viewed::create($params);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
 
-$strname = get_string('modulename => 'zoom_yt'_yt');
+$strname = get_string('modulename', 'zoom_yt');
 $strnew = get_string('newmeetings', 'mod_zoom_yt');
 $strold = get_string('oldmeetings', 'mod_zoom_yt');
 
