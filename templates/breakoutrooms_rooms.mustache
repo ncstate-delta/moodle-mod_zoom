@@ -70,8 +70,8 @@
     <td>
       <div id="mod-zoom-meeting-rooms-list" data-initial-rooms-count="{{roomscount}}">
         <div class="mb-2">
-          <span>{{#str}} rooms, zoom {{/str}}</span>
-          <button id="add-room" type="button" title="{{#str}} addroom, zoom {{/str}}" class="btn btn-default btn-sm">
+          <span>{{#str}} rooms, zoomyt {{/str}}</span>
+          <button id="add-room" type="button" title="{{#str}} addroom, zoomyt {{/str}}" class="btn btn-default btn-sm">
             <span class="fa fa-plus-circle fa-lg" aria-hidden="true"></span>
           </button>
         </div>
@@ -81,16 +81,16 @@
             <a class="nav-link {{#roomactive}}active{{/roomactive}}" href="#link{{roomid}}" data-toggle="tab" role="tab">
               <span class="tab-name">{{roomname}}</span>
             </a>
-            <button type="button" class="pull-right delete-room" title="{{#str}} deleteroom, zoom {{/str}}">
+            <button type="button" class="pull-right delete-room" title="{{#str}} deleteroom, zoomyt {{/str}}">
               <span class="fa fa-trash-o fa-lg" aria-hidden="true"></span>
             </button>
           </li>
           {{/rooms}}
         </ul>
         <div class="empty-alert text-center hidden">
-          <p><strong>{{#str}} norooms, zoom {{/str}}</strong></p>
+          <p><strong>{{#str}} norooms, zoomyt {{/str}}</strong></p>
           <span>
-            {{#str}} addroomalert, zoom {{/str}}
+            {{#str}} addroomalert, zoomyt {{/str}}
             <span class="fa fa-plus-circle" aria-hidden="true"></span>
           </span>
         </div>
@@ -101,7 +101,7 @@
         <div class="tab-content">
           {{#rooms}}
           <div class="tab-pane {{#roomactive}}active{{/roomactive}}" id="link{{roomid}}" role="tabpanel">
-              {{> zoom/breakoutrooms_room_data }}
+              {{> zoomyt/breakoutrooms_room_data }}
           </div>
           {{/rooms}}
         </div>
@@ -111,5 +111,5 @@
 </table>
 
 {{#roomtoclone}}
-{{> zoom/breakoutrooms_room_datatoclone }}
+{{> zoomyt/breakoutrooms_room_datatoclone }}
 {{/roomtoclone}}
