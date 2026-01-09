@@ -32,10 +32,10 @@ if ($ADMIN->fulltree) {
 
     $moodlehashideif = version_compare(normalize_version($CFG->release), '3.7.0', '>=');
 
-    $settings = new admin_settingpage('modsettingzoom', get_string('pluginname', 'mod_zoomyt'));
+    $settings = new admin_settingpage('modsettingzoomyt', get_string('pluginname', 'mod_zoomyt'));
 
     // Test whether connection works and display result to user.
-    if (!CLI_SCRIPT && $PAGE->url == $CFG->wwwroot . '/' . $CFG->admin . '/settings.php?section=modsettingzoom') {
+    if (!CLI_SCRIPT && $PAGE->url == $CFG->wwwroot . '/' . $CFG->admin . '/settings.php?section=modsettingzoomyt') {
         $status = 'connectionfailed';
         $notifyclass = 'notifyproblem';
         $errormessage = '';
