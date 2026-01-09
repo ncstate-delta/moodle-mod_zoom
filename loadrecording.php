@@ -56,12 +56,12 @@ $params = ['recordingsid' => $rec->id, 'userid' => $USER->id];
 $now = time();
 
 // Keep track of whether someone has viewed the recording or not.
-$view = $DB->get_record('zoomyt_meeting_recordings_view', $params);
+$view = $DB->get_record('zoomyt_rec_views', $params);
 if (!empty($view)) {
     if (empty($view->viewed)) {
         $view->viewed = 1;
         $view->timemodified = $now;
-        $DB->update_record('zoomyt_meeting_recordings_view', $view);
+        $DB->update_record('zoomyt_rec_views', $view);
     }
 } else {
     $view = new stdClass();
@@ -69,7 +69,7 @@ if (!empty($view)) {
     $view->userid = $USER->id;
     $view->viewed = 1;
     $view->timemodified = $now;
-    $view->id = $DB->insert_record('zoomyt_meeting_recordings_view', $view);
+    $view->id = $DB->insert_record('zoomyt_rec_views', $view);
 }
 
 $nexturl = new moodle_url($rec->externalurl);

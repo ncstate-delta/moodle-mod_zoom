@@ -96,7 +96,7 @@
         <INDEX NAME="uuid" UNIQUE="false" FIELDS="uuid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="zoomyt_meeting_tracking_fields" COMMENT="A list of tracking field values for meetings in Zoom.">
+    <TABLE NAME="zoomyt_tracking_fields" COMMENT="A list of tracking field values for meetings in Zoom.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The id of the meeting from the DB table."/>
@@ -131,7 +131,7 @@
         <KEY NAME="zoomid_foreign" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoomyt" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoomyt_meeting_recordings_view" COMMENT="A list to track when users view Zoom meeting recordings.">
+    <TABLE NAME="zoomyt_rec_views" COMMENT="A list to track when users view Zoom meeting recordings.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field."/>
         <FIELD NAME="recordingsid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="link to zoom_meeting_recordings table"/>
@@ -147,7 +147,7 @@
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="zoomyt_meeting_breakout_rooms" COMMENT="A list of zoom meeting breakout rooms.">
+    <TABLE NAME="zoomyt_breakout_rooms" COMMENT="A list of zoom meeting breakout rooms.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false"/>
@@ -158,7 +158,7 @@
         <KEY NAME="fk_zoomid" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoomyt" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoomyt_breakout_participants" COMMENT="A list of zoom meeting breakout rooms participants.">
+    <TABLE NAME="zoomyt_breakout_parts" COMMENT="A list of zoom meeting breakout rooms participants.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -166,7 +166,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_breakoutroomid" TYPE="foreign" FIELDS="breakoutroomid" REFTABLE="zoomyt_meeting_breakout_rooms" REFFIELDS="id"/>
+        <KEY NAME="fk_breakoutroomid" TYPE="foreign" FIELDS="breakoutroomid" REFTABLE="zoomyt_breakout_rooms" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="zoomyt_breakout_groups" COMMENT="A list of zoom meeting breakout rooms groups.">
@@ -177,7 +177,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_breakoutroomid" TYPE="foreign" FIELDS="breakoutroomid" REFTABLE="zoomyt_meeting_breakout_rooms" REFFIELDS="id"/>
+        <KEY NAME="fk_breakoutroomid" TYPE="foreign" FIELDS="breakoutroomid" REFTABLE="zoomyt_breakout_rooms" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="zoomyt_ical_notifications" COMMENT="Identifies the zoom event for which ical notifications have been emailed.">

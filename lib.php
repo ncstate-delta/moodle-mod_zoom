@@ -393,7 +393,7 @@ function zoomyt_delete_instance($id) {
     $DB->delete_records('zoomyt_meeting_details', ['zoomid' => $zoom->id]);
 
     // Delete tracking field data for deleted meetings.
-    $DB->delete_records('zoomyt_meeting_tracking_fields', ['meeting_id' => $zoom->id]);
+    $DB->delete_records('zoomyt_tracking_fields', ['meeting_id' => $zoom->id]);
 
     // Delete any dependent records here.
     zoomyt_calendar_item_delete($zoom);
@@ -861,7 +861,7 @@ function zoomyt_reset_userdata($data) {
         ];
 
         $DB->delete_records_select(
-            'zoomyt_meeting_recordings_view',
+            'zoomyt_rec_views',
             'recordingsid IN (SELECT zmr.id
                              FROM {zoomyt_meeting_recordings} zmr
                              JOIN {zoomyt} z ON z.id = zmr.zoomid
@@ -1060,7 +1060,7 @@ function mod_zoomyt_update_tracking_fields() {
         foreach ($oldconfigs as $oldconfig) {
             if (preg_match($pattern, $oldconfig, $matches)) {
                 set_config($oldconfig, null, 'zoomyt');
-                $DB->delete_records('zoomyt_meeting_tracking_fields', ['tracking_field' => $matches['oldfield']]);
+                $DB->delete_records('zoomyt_tracking_fields', ['tracking_field' => $matches['oldfield']]);
             }
         }
     } catch (Exception $e) {
@@ -1085,13 +1085,13 @@ function zoomyt_insert_instance_breakout_rooms($zoomid, $breakoutrooms) {
         $item->name = $breakoutroom['name'];
         $item->zoomid = $zoomid;
 
-        $breakoutroomid = $DB->insert_record('zoomyt_meeting_breakout_rooms', $item);
+        $breakoutroomid = $DB->insert_record('zoomyt_breakout_rooms', $item);
 
         foreach ($breakoutroom['participants'] as $participant) {
             $item = new stdClass();
             $item->userid = $participant;
             $item->breakoutroomid = $breakoutroomid;
-            $DB->insert_record('zoomyt_breakout_participants', $item);
+            $DB->insert_record('zoomyt_breakout_parts', $item);
         }
 
         foreach ($breakoutroom['groups'] as $group) {
@@ -1124,14 +1124,14 @@ function zoomyt_update_instance_breakout_rooms($zoomid, $breakoutrooms) {
 function zoomyt_delete_instance_breakout_rooms($zoomid) {
     global $DB;
 
-    $zoomcurrentbreakoutroomsids = $DB->get_fieldset_select('zoomyt_meeting_breakout_rooms', 'id', "zoomid = {$zoomid}");
+    $zoomcurrentbreakoutroomsids = $DB->get_fieldset_select('zoomyt_breakout_rooms', 'id', "zoomid = {$zoomid}");
 
     foreach ($zoomcurrentbreakoutroomsids as $id) {
-        $DB->delete_records('zoomyt_breakout_participants', ['breakoutroomid' => $id]);
+        $DB->delete_records('zoomyt_breakout_parts', ['breakoutroomid' => $id]);
         $DB->delete_records('zoomyt_breakout_groups', ['breakoutroomid' => $id]);
     }
 
-    $DB->delete_records('zoomyt_meeting_breakout_rooms', ['zoomid' => $zoomid]);
+    $DB->delete_records('zoomyt_breakout_rooms', ['zoomid' => $zoomid]);
 }
 
 /**
@@ -1260,7 +1260,7 @@ function zoomyt_get_instance_breakout_rooms($zoomid) {
     $params = [$zoomid];
 
     $sql = "SELECT id, name
-        FROM {zoomyt_meeting_breakout_rooms}
+        FROM {zoomyt_breakout_rooms}
         WHERE zoomid = ?";
 
     $rooms = $DB->get_records_sql($sql, $params);
@@ -1276,7 +1276,7 @@ function zoomyt_get_instance_breakout_rooms($zoomid) {
         // Get breakout room participants.
         $params = [$room->id];
         $sql = "SELECT userid
-        FROM {zoomyt_breakout_participants}
+        FROM {zoomyt_breakout_parts}
         WHERE breakoutroomid = ?";
 
         $participants = $DB->get_records_sql($sql, $params);

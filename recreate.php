@@ -42,7 +42,7 @@ $PAGE->set_url('/mod/zoomyt/recreate.php', ['id' => $cm->id]);
 // in case the meeting's former owner no longer exists on Zoom.
 $zoom->host_id = zoomyt_get_user_id();
 
-$trackingfields = $DB->get_records('zoomyt_meeting_tracking_fields', ['meeting_id' => $zoom->id]);
+$trackingfields = $DB->get_records('zoomyt_tracking_fields', ['meeting_id' => $zoom->id]);
 foreach ($trackingfields as $trackingfield) {
     $field = $trackingfield->tracking_field;
     $zoom->$field = $trackingfield->value;

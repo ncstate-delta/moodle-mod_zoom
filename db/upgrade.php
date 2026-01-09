@@ -630,7 +630,7 @@ function xmldb_zoomyt_upgrade($oldversion) {
 
     if ($oldversion < 2021111100) {
         // Define table zoom_meeting_tracking_fields to be created.
-        $table = new xmldb_table('zoomyt_meeting_tracking_fields');
+        $table = new xmldb_table('zoomyt_tracking_fields');
 
         // Adding fields to table zoom_meeting_tracking_fields.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
@@ -682,7 +682,7 @@ function xmldb_zoomyt_upgrade($oldversion) {
         }
 
         // Define table zoom_meeting_recordings_view to be created.
-        $table = new xmldb_table('zoomyt_meeting_recordings_view');
+        $table = new xmldb_table('zoomyt_rec_views');
 
         // Adding fields to table zoom_meeting_recordings_view.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
@@ -803,7 +803,7 @@ function xmldb_zoomyt_upgrade($oldversion) {
 
     if ($oldversion < 2022071500) {
         // Define table zoom_meeting_breakout_rooms to be created.
-        $table = new xmldb_table('zoomyt_meeting_breakout_rooms');
+        $table = new xmldb_table('zoomyt_breakout_rooms');
 
         // Adding fields to table zoom_meeting_breakout_rooms.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
@@ -820,7 +820,7 @@ function xmldb_zoomyt_upgrade($oldversion) {
         }
 
         // Define table zoom_rooms_participants to be created.
-        $table = new xmldb_table('zoomyt_breakout_participants');
+        $table = new xmldb_table('zoomyt_breakout_parts');
 
         // Adding fields to table zoom_rooms_participants.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
@@ -829,7 +829,7 @@ function xmldb_zoomyt_upgrade($oldversion) {
 
         // Adding keys to table zoom_rooms_participants.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $table->add_key('fk_breakoutroomid', XMLDB_KEY_FOREIGN, ['breakoutroomid'], 'zoomyt_meeting_breakout_rooms', ['id']);
+        $table->add_key('fk_breakoutroomid', XMLDB_KEY_FOREIGN, ['breakoutroomid'], 'zoomyt_breakout_rooms', ['id']);
 
         // Conditionally launch create table for customfield_category.
         if (!$dbman->table_exists($table)) {
@@ -846,7 +846,7 @@ function xmldb_zoomyt_upgrade($oldversion) {
 
         // Adding keys to table zoom_rooms_groups.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $table->add_key('fk_breakoutroomid', XMLDB_KEY_FOREIGN, ['breakoutroomid'], 'zoomyt_meeting_breakout_rooms', ['id']);
+        $table->add_key('fk_breakoutroomid', XMLDB_KEY_FOREIGN, ['breakoutroomid'], 'zoomyt_breakout_rooms', ['id']);
 
         // Conditionally launch create table for customfield_category.
         if (!$dbman->table_exists($table)) {

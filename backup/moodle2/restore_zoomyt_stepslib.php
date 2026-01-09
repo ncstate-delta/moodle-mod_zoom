@@ -112,7 +112,7 @@ class restore_activity_structure_step extends \restore_activity_structure_step {
         $defaulttrackingfields = zoomyt_clean_tracking_fields();
 
         if (isset($defaulttrackingfields[$data->tracking_field])) {
-            $newitemid = $DB->insert_record('zoomyt_meeting_tracking_fields', $data);
+            $newitemid = $DB->insert_record('zoomyt_tracking_fields', $data);
             $this->set_mapping('zoom_tracking_field', $oldid, $newitemid);
         }
     }

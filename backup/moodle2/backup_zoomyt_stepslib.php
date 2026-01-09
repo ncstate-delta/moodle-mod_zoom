@@ -60,7 +60,7 @@ class backup_activity_structure_step extends \backup_activity_structure_step {
 
         // Define data sources.
         $zoom->set_source_table('zoomyt', ['id' => backup::VAR_ACTIVITYID]);
-        $trackingfield->set_source_table('zoomyt_meeting_tracking_fields', ['meeting_id' => backup::VAR_ACTIVITYID]);
+        $trackingfield->set_source_table('zoomyt_tracking_fields', ['meeting_id' => backup::VAR_ACTIVITYID]);
 
         // If we were referring to other tables, we would annotate the relation
         // with the element's annotate_ids() method.

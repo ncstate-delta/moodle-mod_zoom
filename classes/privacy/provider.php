@@ -67,13 +67,13 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
         );
 
         $coll->add_database_table(
-            'zoomyt_meeting_recordings_view',
+            'zoomyt_rec_views',
             ['userid' => 'privacy:metadata:zoom_meeting_view:userid'],
             'privacy:metadata:zoom_meeting_view'
         );
 
         $coll->add_database_table(
-            'zoomyt_breakout_participants',
+            'zoomyt_breakout_parts',
             ['userid' => 'privacy:metadata:zoom_breakout_participants:userid'],
             'privacy:metadata:zoom_breakout_participants'
         );
@@ -100,7 +100,7 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
             LEFT JOIN {zoomyt_meeting_details} zmd ON zmd.zoomid = z.id
             LEFT JOIN {zoomyt_meeting_participants} zmp ON zmp.detailsid = zmd.id
             LEFT JOIN {zoomyt_meeting_recordings} zmr ON zmr.zoomid = z.id
-            LEFT JOIN {zoomyt_meeting_recordings_view} zmrv ON zmrv.recordingsid = zmr.id
+            LEFT JOIN {zoomyt_rec_views} zmrv ON zmrv.recordingsid = zmr.id
                  WHERE zmp.userid = :userid1 OR zmrv.userid = :userid2
         ';
 
@@ -144,7 +144,7 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
         $userlist->add_from_sql('userid', $sql, $params);
 
         $sql = "SELECT zmrv.userid
-                  FROM {zoomyt_meeting_recordings_view} zmrv
+                  FROM {zoomyt_rec_views} zmrv
                   JOIN {zoomyt_meeting_recordings} zmr ON zmr.id = zmrv.recordingsid
                   JOIN {zoomyt} z ON zmr.zoomid = z.id
                   JOIN {modules} m ON m.name = :modulename
@@ -154,8 +154,8 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
         $userlist->add_from_sql('userid', $sql, $params);
 
         $sql = "SELECT zbp.userid
-                  FROM {zoomyt_breakout_participants} zbp
-                  JOIN {zoomyt_meeting_breakout_rooms} zmbr ON zbp.breakoutroomid = zmbr.id
+                  FROM {zoomyt_breakout_parts} zbp
+                  JOIN {zoomyt_breakout_rooms} zmbr ON zbp.breakoutroomid = zmbr.id
                   JOIN {zoomyt} z ON zmbr.zoomid = z.id
                   JOIN {modules} m ON m.name = :modulename
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
@@ -237,7 +237,7 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
             INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
             INNER JOIN {zoomyt} z ON z.id = cm.instance
             INNER JOIN {zoomyt_meeting_recordings} zmr ON zmr.zoomid = z.id
-            INNER JOIN {zoomyt_meeting_recordings_view} zmrv ON zmrv.recordingsid = zmr.id
+            INNER JOIN {zoomyt_rec_views} zmrv ON zmrv.recordingsid = zmr.id
                  WHERE c.id $contextsql
                        AND zmrv.userid = :userid
               ORDER BY cm.id ASC
@@ -291,17 +291,17 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
 
             $meetingrecordings = $DB->get_records('zoomyt_meeting_recordings', ['zoomid' => $cm->instance]);
             foreach ($meetingrecordings as $recording) {
-                $DB->delete_records('zoomyt_meeting_recordings_view', ['recordingsid' => $recording->id]);
+                $DB->delete_records('zoomyt_rec_views', ['recordingsid' => $recording->id]);
             }
 
             $DB->delete_records('zoomyt_meeting_recordings', ['zoomid' => $cm->instance]);
 
-            $breakoutrooms = $DB->get_records('zoomyt_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
+            $breakoutrooms = $DB->get_records('zoomyt_breakout_rooms', ['zoomid' => $cm->instance]);
             foreach ($breakoutrooms as $room) {
-                $DB->delete_records('zoomyt_breakout_participants', ['breakoutroomid' => $room->id]);
+                $DB->delete_records('zoomyt_breakout_parts', ['breakoutroomid' => $room->id]);
             }
 
-            $DB->delete_records('zoomyt_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
+            $DB->delete_records('zoomyt_breakout_rooms', ['zoomid' => $cm->instance]);
         }
     }
 
@@ -332,12 +332,12 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
 
                 $meetingrecordings = $DB->get_records('zoomyt_meeting_recordings', ['zoomid' => $cm->instance]);
                 foreach ($meetingrecordings as $recording) {
-                    $DB->delete_records('zoomyt_meeting_recordings_view', ['recordingsid' => $recording->id, 'userid' => $user->id]);
+                    $DB->delete_records('zoomyt_rec_views', ['recordingsid' => $recording->id, 'userid' => $user->id]);
                 }
 
-                $breakoutrooms = $DB->get_records('zoomyt_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
+                $breakoutrooms = $DB->get_records('zoomyt_breakout_rooms', ['zoomid' => $cm->instance]);
                 foreach ($breakoutrooms as $room) {
-                    $DB->delete_records('zoomyt_breakout_participants', ['breakoutroomid' => $room->id, 'userid' => $user->id]);
+                    $DB->delete_records('zoomyt_breakout_parts', ['breakoutroomid' => $room->id, 'userid' => $user->id]);
                 }
             }
         }
@@ -379,16 +379,16 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
                   JOIN {context} ctx ON cm.id = ctx.instanceid AND ctx.contextlevel = :modlevel
                  WHERE ctx.id = :contextid";
 
-        $DB->delete_records_select('zoomyt_meeting_recordings_view', "userid $insql AND recordingsid IN ($sql)", $params);
+        $DB->delete_records_select('zoomyt_rec_views', "userid $insql AND recordingsid IN ($sql)", $params);
 
         $sql = "SELECT zmbr.id
-                  FROM {zoomyt_meeting_breakout_rooms} zmbr
+                  FROM {zoomyt_breakout_rooms} zmbr
                   JOIN {zoomyt} z ON zmbr.zoomid = z.id
                   JOIN {modules} m ON m.name = 'zoomyt'
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
                   JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :modlevel
                  WHERE ctx.id = :contextid";
 
-        $DB->delete_records_select('zoomyt_breakout_participants', "userid $insql AND breakoutroomid IN ($sql)", $params);
+        $DB->delete_records_select('zoomyt_breakout_parts', "userid $insql AND breakoutroomid IN ($sql)", $params);
     }
 }
