@@ -17,15 +17,15 @@
 /**
  * Mobile support for zoom.
  *
- * @package     mod_zoom
+ * @package     mod_zoom_yt
  * @copyright   2018 Nick Stefanski <nmstefanski@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom\output;
+namespace mod_zoom_yt\output;
 
 use context_module;
-use mod_zoom\external;
+use mod_zoom_yt\external;
 
 /**
  * Mobile output class for zoom
@@ -43,17 +43,17 @@ class mobile {
 
         $args = (object) $args;
         $versionname = $args->appversioncode >= 3950 ? 'latest' : 'ionic3';
-        $cm = get_coursemodule_from_id('zoom', $args->cmid);
+        $cm = get_coursemodule_from_id('zoom_yt', $args->cmid);
 
         // Capabilities check.
         require_login($args->courseid, false, $cm, true, true);
 
         $context = context_module::instance($cm->id);
 
-        require_capability('mod/zoom:view', $context);
+        require_capability('mod/zoom_yt:view', $context);
         // Right now we're just implementing basic viewing, otherwise we may
         // need to check other capabilities.
-        $zoom = $DB->get_record('zoom', ['id' => $cm->instance]);
+        $zoom = $DB->get_record('zoom_yt', ['id' => $cm->instance]);
 
         // WS to get zoom state.
         try {
@@ -67,10 +67,10 @@ class mobile {
         $duration = format_time($zoom->duration);
 
         // Get audio option string.
-        $optionaudio = get_string('audio_' . $zoom->option_audio, 'mod_zoom');
+        $optionaudio = get_string('audio_' . $zoom->option_audio, 'mod_zoom_yt');
 
         $data = [
-            'zoom' => $zoom,
+            'zoom_yt' => $zoom,
             'available' => $zoomstate['available'],
             'status' => $zoomstate['status'],
             'start_time' => $starttime,
@@ -85,11 +85,11 @@ class mobile {
             'templates' => [
                 [
                     'id' => 'main',
-                    'html' => $OUTPUT->render_from_template("mod_zoom/mobile_view_page_$versionname", $data),
+                    'html' => $OUTPUT->render_from_template("mod_zoom_yt/mobile_view_page_$versionname", $data),
                 ],
             ],
             'javascript' => "this.loadMeeting = function(result) { window.open(result.joinurl, '_system'); };",
-            // This JS will redirect to a joinurl passed by the mod_zoom_grade_item_update WS.
+            // This JS will redirect to a joinurl passed by the mod_zoom_yt_grade_item_update WS.
             'otherdata' => '',
             'files' => '',
         ];

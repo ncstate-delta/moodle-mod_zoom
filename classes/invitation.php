@@ -17,13 +17,13 @@
 /**
  * Represents a Zoom invitation.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @author     Andrew Madden <andrewmadden@catalyst-au.net>
  * @copyright  2021 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom;
+namespace mod_zoom_yt;
 
 use coding_exception;
 use context_module;
@@ -68,28 +68,28 @@ class invitation {
         }
 
         // If regex patterns are disabled, return the raw zoom meeting invitation.
-        if (!get_config('zoom', 'invitationregexenabled')) {
+        if (!get_config('zoom_yt', 'invitationregexenabled')) {
             return $this->invitation;
         }
 
         $displaystring = $this->invitation;
         try {
             // If setting enabled, strip the invite message.
-            if (get_config('zoom', 'invitationremoveinvite')) {
+            if (get_config('zoom_yt', 'invitationremoveinvite')) {
                 $displaystring = $this->remove_element($displaystring, 'invite');
             }
 
             // If setting enabled, strip the iCal link.
-            if (get_config('zoom', 'invitationremoveicallink')) {
+            if (get_config('zoom_yt', 'invitationremoveicallink')) {
                 $displaystring = $this->remove_element($displaystring, 'icallink');
             }
 
             // Check user capabilities, and remove parts of the invitation they don't have permission to view.
-            if (!has_capability('mod/zoom:viewjoinurl', context_module::instance($coursemoduleid), $userid)) {
+            if (!has_capability('mod/zoom_yt:viewjoinurl', context_module::instance($coursemoduleid), $userid)) {
                 $displaystring = $this->remove_element($displaystring, 'joinurl');
             }
 
-            if (!has_capability('mod/zoom:viewdialin', context_module::instance($coursemoduleid), $userid)) {
+            if (!has_capability('mod/zoom_yt:viewdialin', context_module::instance($coursemoduleid), $userid)) {
                 $displaystring = $this->remove_element($displaystring, 'onetapmobile');
                 $displaystring = $this->remove_element($displaystring, 'dialin');
                 $displaystring = $this->remove_element($displaystring, 'sip');
@@ -140,7 +140,7 @@ class invitation {
         if ($invitation === null) {
             throw new moodle_exception(
                 'invitationmodificationfailed',
-                'mod_zoom',
+                'mod_zoom_yt',
                 $PAGE->url,
                 ['element' => $element, 'pattern' => $configregex[$element]]
             );
@@ -151,7 +151,7 @@ class invitation {
             debugging(
                 get_string(
                     'invitationmatchnotfound',
-                    'mod_zoom',
+                    'mod_zoom_yt',
                     ['element' => $element, 'pattern' => $configregex[$element]]
                 ),
                 DEBUG_DEVELOPER
@@ -185,7 +185,7 @@ class invitation {
             debugging(
                 get_string(
                     'invitationmodificationfailed',
-                    'mod_zoom',
+                    'mod_zoom_yt',
                     ['element' => $element, 'pattern' => $configregex[$element]]
                 ),
                 DEBUG_DEVELOPER
@@ -228,7 +228,7 @@ class invitation {
             return $this->configregex;
         }
 
-        $config = get_config('zoom');
+        $config = get_config('zoom_yt');
         $this->configregex = [];
         // Get the regex defined in the plugin settings for each element.
         foreach (self::get_default_invitation_regex() as $element => $pattern) {

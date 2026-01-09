@@ -17,17 +17,17 @@
 /**
  * The task for deleting recordings in Moodle if removed from Zoom.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @author     Jwalit Shah <jwalitshah@catalyst-au.net>
  * @copyright  2021 Jwalit Shah <jwalitshah@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom\task;
+namespace mod_zoom_yt\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
 
 use core\task\scheduled_task;
 use moodle_exception;
@@ -42,7 +42,7 @@ class delete_meeting_recordings extends scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('deletemeetingrecordings', 'mod_zoom');
+        return get_string('deletemeetingrecordings', 'mod_zoom_yt');
     }
 
     /**
@@ -54,7 +54,7 @@ class delete_meeting_recordings extends scheduled_task {
         global $DB;
 
         try {
-            $service = zoom_webservice();
+            $service = zoom_yt_webservice();
         } catch (moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
@@ -80,7 +80,7 @@ class delete_meeting_recordings extends scheduled_task {
         }
 
         // See if we cannot make anymore API calls.
-        $retryafter = get_config('zoom', 'retry-after');
+        $retryafter = get_config('zoom_yt', 'retry-after');
         if (!empty($retryafter) && time() < $retryafter) {
             mtrace('Out of API calls, retry after ' . userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig')));
             return;
@@ -89,7 +89,7 @@ class delete_meeting_recordings extends scheduled_task {
         mtrace('Checking if any meeting recordings in Moodle have been removed from Zoom...');
 
         // Get all recordings stored in Moodle, grouped by meetinguuid.
-        $zoomrecordings = zoom_get_meeting_recordings_grouped();
+        $zoomrecordings = zoom_yt_get_meeting_recordings_grouped();
         foreach ($zoomrecordings as $meetinguuid => $recordings) {
             try {
                 // Now check which recordings still exist on Zoom.
@@ -105,7 +105,7 @@ class delete_meeting_recordings extends scheduled_task {
                 // If recordings are in Moodle but not in Zoom, we need to remove them from Moodle as well.
                 foreach ($recordings as $zoomrecordingid => $recording) {
                     mtrace('Deleting recording with id: ' . $zoomrecordingid . ' because the recording is no longer in Zoom.');
-                    $DB->delete_records('zoom_meeting_recordings', ['zoomrecordingid' => $zoomrecordingid]);
+                    $DB->delete_records('zoom_yt_meeting_recordings', ['zoomrecordingid' => $zoomrecordingid]);
                 }
             } catch (moodle_exception $e) {
                 mtrace('Exception occurred: ' . $e->getMessage());

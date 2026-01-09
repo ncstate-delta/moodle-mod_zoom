@@ -17,7 +17,7 @@
 /**
  * Defines backup_zoom_activity_task class
  *
- * @package   mod_zoom
+ * @package   mod_zoom_yt
  * @category  backup
  * @copyright 2015 UC Regents
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,14 +25,14 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once($CFG->dirroot . '/mod/zoom/backup/moodle2/backup_zoom_stepslib.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/backup/moodle2/backup_zoom_yt_stepslib.php');
 
-use mod_zoom\backup_activity_structure_step;
+use mod_zoom_yt\backup_activity_structure_step;
 
 /**
- * Provides the steps to perform one complete backup of the zoom instance
+ * Provides the steps to perform one complete backup of the zoom_yt instance
  */
-class backup_zoom_activity_task extends backup_activity_task {
+class backup_zoom_yt_activity_task extends backup_activity_task {
     /**
      * No specific settings for this activity
      */
@@ -43,7 +43,7 @@ class backup_zoom_activity_task extends backup_activity_task {
      * Defines a backup step to store the instance data in the zoom.xml file
      */
     protected function define_my_steps() {
-        $this->add_step(new backup_activity_structure_step('zoom_structure', 'zoom.xml'));
+        $this->add_step(new backup_activity_structure_step('zoom_yt_structure', 'zoom_yt.xml'));
     }
 
     /**
@@ -58,12 +58,12 @@ class backup_zoom_activity_task extends backup_activity_task {
         $base = preg_quote($CFG->wwwroot, '/');
 
         // Link to the list of zooms.
-        $search = '/(' . $base . '\/mod\/zoom\/index.php\?id\=)([0-9]+)/';
-        $content = preg_replace($search, '$@ZOOMINDEX*$2@$', $content);
+        $search = '/(' . $base . '\/mod\/zoom_yt\/index.php\?id\=)([0-9]+)/';
+        $content = preg_replace($search, '$@ZOOMYTINDEX*$2@$', $content);
 
         // Link to zoom view by moduleid.
-        $search = '/(' . $base . '\/mod\/zoom\/view.php\?id\=)([0-9]+)/';
-        $content = preg_replace($search, '$@ZOOMVIEWBYID*$2@$', $content);
+        $search = '/(' . $base . '\/mod\/zoom_yt\/view.php\?id\=)([0-9]+)/';
+        $content = preg_replace($search, '$@ZOOMYTVIEWBYID*$2@$', $content);
 
         return $content;
     }

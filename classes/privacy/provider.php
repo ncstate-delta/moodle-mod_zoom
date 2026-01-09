@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Contains class mod_zoom\privacy\provider
+ * Contains class mod_zoom_yt\privacy\provider
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2018 UC Regents
  * @author     Kubilay Agi
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom\privacy;
+namespace mod_zoom_yt\privacy;
 
 use context;
 use context_module;
@@ -52,7 +52,7 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
     public static function get_metadata(collection $coll): collection {
         // Add all user data fields to the collection.
 
-        $coll->add_database_table('zoom_meeting_participants', [
+        $coll->add_database_table('zoom_yt_meeting_participants', [
             'name' => 'privacy:metadata:zoom_meeting_participants:name',
             'user_email' => 'privacy:metadata:zoom_meeting_participants:user_email',
             'join_time' => 'privacy:metadata:zoom_meeting_participants:join_time',
@@ -61,19 +61,19 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
         ], 'privacy:metadata:zoom_meeting_participants');
 
         $coll->add_database_table(
-            'zoom_meeting_details',
+            'zoom_yt_meeting_details',
             ['topic' => 'privacy:metadata:zoom_meeting_details:topic'],
             'privacy:metadata:zoom_meeting_details'
         );
 
         $coll->add_database_table(
-            'zoom_meeting_recordings_view',
+            'zoom_yt_meeting_recordings_view',
             ['userid' => 'privacy:metadata:zoom_meeting_view:userid'],
             'privacy:metadata:zoom_meeting_view'
         );
 
         $coll->add_database_table(
-            'zoom_breakout_participants',
+            'zoom_yt_breakout_participants',
             ['userid' => 'privacy:metadata:zoom_breakout_participants:userid'],
             'privacy:metadata:zoom_breakout_participants'
         );
@@ -96,16 +96,16 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
                   FROM {context} c
             INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
             INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-            INNER JOIN {zoom} z ON z.id = cm.instance
-            LEFT JOIN {zoom_meeting_details} zmd ON zmd.zoomid = z.id
-            LEFT JOIN {zoom_meeting_participants} zmp ON zmp.detailsid = zmd.id
-            LEFT JOIN {zoom_meeting_recordings} zmr ON zmr.zoomid = z.id
-            LEFT JOIN {zoom_meeting_recordings_view} zmrv ON zmrv.recordingsid = zmr.id
+            INNER JOIN {zoom_yt} z ON z.id = cm.instance
+            LEFT JOIN {zoom_yt_meeting_details} zmd ON zmd.zoomid = z.id
+            LEFT JOIN {zoom_yt_meeting_participants} zmp ON zmp.detailsid = zmd.id
+            LEFT JOIN {zoom_yt_meeting_recordings} zmr ON zmr.zoomid = z.id
+            LEFT JOIN {zoom_yt_meeting_recordings_view} zmrv ON zmrv.recordingsid = zmr.id
                  WHERE zmp.userid = :userid1 OR zmrv.userid = :userid2
         ';
 
         $params = [
-            'modname' => 'zoom',
+            'modname' => 'zoom_yt',
             'contextlevel' => CONTEXT_MODULE,
             'userid1' => $userid,
             'userid2' => $userid,
@@ -130,13 +130,13 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
 
         $params = [
             'instanceid' => $context->instanceid,
-            'modulename' => 'zoom',
+            'modulename => 'zoom_yt'_yt',
         ];
 
         $sql = "SELECT zmp.userid
-                  FROM {zoom_meeting_participants} zmp
-                  JOIN {zoom_meeting_details} zmd ON zmd.id = zmp.detailsid
-                  JOIN {zoom} z ON zmd.zoomid = z.id
+                  FROM {zoom_yt_meeting_participants} zmp
+                  JOIN {zoom_yt_meeting_details} zmd ON zmd.id = zmp.detailsid
+                  JOIN {zoom_yt} z ON zmd.zoomid = z.id
                   JOIN {modules} m ON m.name = :modulename
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
                  WHERE cm.id = :instanceid";
@@ -144,9 +144,9 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
         $userlist->add_from_sql('userid', $sql, $params);
 
         $sql = "SELECT zmrv.userid
-                  FROM {zoom_meeting_recordings_view} zmrv
-                  JOIN {zoom_meeting_recordings} zmr ON zmr.id = zmrv.recordingsid
-                  JOIN {zoom} z ON zmr.zoomid = z.id
+                  FROM {zoom_yt_meeting_recordings_view} zmrv
+                  JOIN {zoom_yt_meeting_recordings} zmr ON zmr.id = zmrv.recordingsid
+                  JOIN {zoom_yt} z ON zmr.zoomid = z.id
                   JOIN {modules} m ON m.name = :modulename
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
                  WHERE cm.id = :instanceid";
@@ -154,9 +154,9 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
         $userlist->add_from_sql('userid', $sql, $params);
 
         $sql = "SELECT zbp.userid
-                  FROM {zoom_breakout_participants} zbp
-                  JOIN {zoom_meeting_breakout_rooms} zmbr ON zbp.breakoutroomid = zmbr.id
-                  JOIN {zoom} z ON zmbr.zoomid = z.id
+                  FROM {zoom_yt_breakout_participants} zbp
+                  JOIN {zoom_yt_meeting_breakout_rooms} zmbr ON zbp.breakoutroomid = zmbr.id
+                  JOIN {zoom_yt} z ON zmbr.zoomid = z.id
                   JOIN {modules} m ON m.name = :modulename
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
                  WHERE cm.id = :instanceid";
@@ -192,16 +192,16 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
                   FROM {context} c
             INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
             INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-            INNER JOIN {zoom} z ON z.id = cm.instance
-            INNER JOIN {zoom_meeting_details} zmd ON zmd.zoomid = z.id
-            INNER JOIN {zoom_meeting_participants} zmp ON zmp.detailsid = zmd.id
+            INNER JOIN {zoom_yt} z ON z.id = cm.instance
+            INNER JOIN {zoom_yt_meeting_details} zmd ON zmd.zoomid = z.id
+            INNER JOIN {zoom_yt_meeting_participants} zmp ON zmp.detailsid = zmd.id
                  WHERE c.id $contextsql
                        AND zmp.userid = :userid
               ORDER BY cm.id ASC
         ";
 
         $params = [
-            'modname' => 'zoom',
+            'modname' => 'zoom_yt',
             'contextlevel' => CONTEXT_MODULE,
             'userid' => $user->id,
         ] + $contextparams;
@@ -235,16 +235,16 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
                   FROM {context} c
             INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
             INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-            INNER JOIN {zoom} z ON z.id = cm.instance
-            INNER JOIN {zoom_meeting_recordings} zmr ON zmr.zoomid = z.id
-            INNER JOIN {zoom_meeting_recordings_view} zmrv ON zmrv.recordingsid = zmr.id
+            INNER JOIN {zoom_yt} z ON z.id = cm.instance
+            INNER JOIN {zoom_yt_meeting_recordings} zmr ON zmr.zoomid = z.id
+            INNER JOIN {zoom_yt_meeting_recordings_view} zmrv ON zmrv.recordingsid = zmr.id
                  WHERE c.id $contextsql
                        AND zmrv.userid = :userid
               ORDER BY cm.id ASC
         ";
 
         $params = [
-            'modname' => 'zoom',
+            'modname' => 'zoom_yt',
             'contextlevel' => CONTEXT_MODULE,
             'userid' => $user->id,
         ] + $contextparams;
@@ -281,27 +281,27 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
         }
 
         // We delete each participant entry manually because deletes do not cascade.
-        if ($cm = get_coursemodule_from_id('zoom', $context->instanceid)) {
-            $meetingdetails = $DB->get_records('zoom_meeting_details', ['zoomid' => $cm->instance]);
+        if ($cm = get_coursemodule_from_id('zoom_yt', $context->instanceid)) {
+            $meetingdetails = $DB->get_records('zoom_yt_meeting_details', ['zoomid' => $cm->instance]);
             foreach ($meetingdetails as $meetingdetail) {
-                $DB->delete_records('zoom_meeting_participants', ['detailsid' => $meetingdetail->id]);
+                $DB->delete_records('zoom_yt_meeting_participants', ['detailsid' => $meetingdetail->id]);
             }
 
-            $DB->delete_records('zoom_meeting_details', ['zoomid' => $cm->instance]);
+            $DB->delete_records('zoom_yt_meeting_details', ['zoomid' => $cm->instance]);
 
-            $meetingrecordings = $DB->get_records('zoom_meeting_recordings', ['zoomid' => $cm->instance]);
+            $meetingrecordings = $DB->get_records('zoom_yt_meeting_recordings', ['zoomid' => $cm->instance]);
             foreach ($meetingrecordings as $recording) {
-                $DB->delete_records('zoom_meeting_recordings_view', ['recordingsid' => $recording->id]);
+                $DB->delete_records('zoom_yt_meeting_recordings_view', ['recordingsid' => $recording->id]);
             }
 
-            $DB->delete_records('zoom_meeting_recordings', ['zoomid' => $cm->instance]);
+            $DB->delete_records('zoom_yt_meeting_recordings', ['zoomid' => $cm->instance]);
 
-            $breakoutrooms = $DB->get_records('zoom_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
+            $breakoutrooms = $DB->get_records('zoom_yt_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
             foreach ($breakoutrooms as $room) {
-                $DB->delete_records('zoom_breakout_participants', ['breakoutroomid' => $room->id]);
+                $DB->delete_records('zoom_yt_breakout_participants', ['breakoutroomid' => $room->id]);
             }
 
-            $DB->delete_records('zoom_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
+            $DB->delete_records('zoom_yt_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
         }
     }
 
@@ -324,20 +324,20 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
                 continue;
             }
 
-            if ($cm = get_coursemodule_from_id('zoom', $context->instanceid)) {
-                $meetingdetails = $DB->get_records('zoom_meeting_details', ['zoomid' => $cm->instance]);
+            if ($cm = get_coursemodule_from_id('zoom_yt', $context->instanceid)) {
+                $meetingdetails = $DB->get_records('zoom_yt_meeting_details', ['zoomid' => $cm->instance]);
                 foreach ($meetingdetails as $meetingdetail) {
-                    $DB->delete_records('zoom_meeting_participants', ['detailsid' => $meetingdetail->id, 'userid' => $user->id]);
+                    $DB->delete_records('zoom_yt_meeting_participants', ['detailsid' => $meetingdetail->id, 'userid' => $user->id]);
                 }
 
-                $meetingrecordings = $DB->get_records('zoom_meeting_recordings', ['zoomid' => $cm->instance]);
+                $meetingrecordings = $DB->get_records('zoom_yt_meeting_recordings', ['zoomid' => $cm->instance]);
                 foreach ($meetingrecordings as $recording) {
-                    $DB->delete_records('zoom_meeting_recordings_view', ['recordingsid' => $recording->id, 'userid' => $user->id]);
+                    $DB->delete_records('zoom_yt_meeting_recordings_view', ['recordingsid' => $recording->id, 'userid' => $user->id]);
                 }
 
-                $breakoutrooms = $DB->get_records('zoom_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
+                $breakoutrooms = $DB->get_records('zoom_yt_meeting_breakout_rooms', ['zoomid' => $cm->instance]);
                 foreach ($breakoutrooms as $room) {
-                    $DB->delete_records('zoom_breakout_participants', ['breakoutroomid' => $room->id, 'userid' => $user->id]);
+                    $DB->delete_records('zoom_yt_breakout_participants', ['breakoutroomid' => $room->id, 'userid' => $user->id]);
                 }
             }
         }
@@ -362,33 +362,33 @@ class provider implements core_userlist_provider, metadata_provider, request_plu
         $params = array_merge($inparams, ['contextid' => $context->id, 'modlevel' => CONTEXT_MODULE]);
 
         $sql = "SELECT zmd.id
-                  FROM {zoom_meeting_details} zmd
-                  JOIN {zoom} z ON zmd.zoomid = z.id
-                  JOIN {modules} m ON m.name = 'zoom'
+                  FROM {zoom_yt_meeting_details} zmd
+                  JOIN {zoom_yt} z ON zmd.zoomid = z.id
+                  JOIN {modules} m ON m.name = 'zoom_yt'
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
                   JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :modlevel
                  WHERE ctx.id = :contextid";
 
-        $DB->delete_records_select('zoom_meeting_participants', "userid $insql AND detailsid IN ($sql)", $params);
+        $DB->delete_records_select('zoom_yt_meeting_participants', "userid $insql AND detailsid IN ($sql)", $params);
 
         $sql = "SELECT zmr.id
-                  FROM {zoom_meeting_recordings} zmr
-                  JOIN {zoom} z ON zmr.zoomid = z.id
-                  JOIN {modules} m ON m.name = 'zoom'
+                  FROM {zoom_yt_meeting_recordings} zmr
+                  JOIN {zoom_yt} z ON zmr.zoomid = z.id
+                  JOIN {modules} m ON m.name = 'zoom_yt'
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
                   JOIN {context} ctx ON cm.id = ctx.instanceid AND ctx.contextlevel = :modlevel
                  WHERE ctx.id = :contextid";
 
-        $DB->delete_records_select('zoom_meeting_recordings_view', "userid $insql AND recordingsid IN ($sql)", $params);
+        $DB->delete_records_select('zoom_yt_meeting_recordings_view', "userid $insql AND recordingsid IN ($sql)", $params);
 
         $sql = "SELECT zmbr.id
-                  FROM {zoom_meeting_breakout_rooms} zmbr
-                  JOIN {zoom} z ON zmbr.zoomid = z.id
-                  JOIN {modules} m ON m.name = 'zoom'
+                  FROM {zoom_yt_meeting_breakout_rooms} zmbr
+                  JOIN {zoom_yt} z ON zmbr.zoomid = z.id
+                  JOIN {modules} m ON m.name = 'zoom_yt'
                   JOIN {course_modules} cm ON z.id = cm.instance AND m.id = cm.module
                   JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :modlevel
                  WHERE ctx.id = :contextid";
 
-        $DB->delete_records_select('zoom_breakout_participants', "userid $insql AND breakoutroomid IN ($sql)", $params);
+        $DB->delete_records_select('zoom_yt_breakout_participants', "userid $insql AND breakoutroomid IN ($sql)", $params);
     }
 }

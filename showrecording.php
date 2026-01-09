@@ -17,7 +17,7 @@
 /**
  * Toggle the visibility of zoom meeting recordings.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2020 Nick Stefanski <nmstefanski@gmail.com>
  * @author     2021 Jwalit Shah <jwalitshah@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -31,26 +31,26 @@ $meetinguuid = required_param('meetinguuid', PARAM_TEXT);
 $recordingstart = required_param('recordingstart', PARAM_INT);
 $showrecording = required_param('showrecording', PARAM_INT);
 
-if (!get_config('zoom', 'viewrecordings')) {
-    throw new moodle_exception('recordingnotvisible', 'mod_zoom', get_string('recordingnotvisible', 'zoom'));
+if (!get_config('zoom_yt', 'viewrecordings')) {
+    throw new moodle_exception('recordingnotvisible', 'mod_zoom_yt', get_string('recordingnotvisible', 'zoom_yt'));
 }
 
-[$course, $cm, $zoom] = zoom_get_instance_setup();
+[$course, $cm, $zoom] = zoom_yt_get_instance_setup();
 require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
 $PAGE->set_context($context);
-require_capability('mod/zoom:addinstance', $context);
+require_capability('mod/zoom_yt:addinstance', $context);
 
 $urlparams = ['id' => $cm->id];
-$url = new moodle_url('/mod/zoom/recordings.php', $urlparams);
+$url = new moodle_url('/mod/zoom_yt/recordings.php', $urlparams);
 if (!confirm_sesskey()) {
-    redirect($url, get_string('sesskeyinvalid', 'mod_zoom'));
+    redirect($url, get_string('sesskeyinvalid', 'mod_zoom_yt'));
 }
 
 // Find the video recording and audio only recording pair that matches the criteria.
 $recordings = $DB->get_records(
-    'zoom_meeting_recordings',
+    'zoom_yt_meeting_recordings',
     [
         'zoomid' => $zoom->id,
         'meetinguuid' => $meetinguuid,
@@ -58,7 +58,7 @@ $recordings = $DB->get_records(
     ]
 );
 if (empty($recordings)) {
-    throw new moodle_exception('recordingnotfound', 'mod_zoom', '', get_string('recordingnotfound', 'zoom'));
+    throw new moodle_exception('recordingnotfound', 'mod_zoom_yt', '', get_string('recordingnotfound', 'zoom_yt'));
 }
 
 $now = time();
@@ -68,7 +68,7 @@ if ($showrecording === 1 || $showrecording === 0) {
     foreach ($recordings as $rec) {
         $rec->showrecording = $showrecording;
         $rec->timemodified = $now;
-        $DB->update_record('zoom_meeting_recordings', $rec);
+        $DB->update_record('zoom_yt_meeting_recordings', $rec);
     }
 }
 

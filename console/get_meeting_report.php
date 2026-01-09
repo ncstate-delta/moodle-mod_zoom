@@ -17,7 +17,7 @@
 /**
  * Console page to output the results of the CLI to get the Zoom meeting reports.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2020 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -38,13 +38,13 @@ $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 require_course_login($course);
 
 $context = context_course::instance($course->id);
-require_capability('mod/zoom:view', $context);
-require_capability('mod/zoom:refreshsessions', $context);
+require_capability('mod/zoom_yt:view', $context);
+require_capability('mod/zoom_yt:refreshsessions', $context);
 
 // Set up the moodle page.
-$PAGE->set_url('/mod/zoom/console/');
+$PAGE->set_url('/mod/zoom_yt/console/');
 
-echo html_writer::tag('h1', get_string('getmeetingreports', 'mod_zoom'));
+echo html_writer::tag('h1', get_string('getmeetingreports', 'mod_zoom_yt'));
 $output = null;
 $arguments = implode(
     ' ',
@@ -54,7 +54,7 @@ $arguments = implode(
         '--courseid=' . escapeshellarg($courseid),
     ]
 );
-exec("php $CFG->dirroot/mod/zoom/cli/get_meeting_report.php $arguments", $output);
+exec("php $CFG->dirroot/mod/zoom_yt/cli/get_meeting_report.php $arguments", $output);
 echo '<pre>';
 echo implode("\n", $output);
 echo '</pre>';

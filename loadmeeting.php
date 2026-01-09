@@ -17,7 +17,7 @@
 /**
  * Load zoom meeting.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -34,18 +34,18 @@ if ($id) {
     $PAGE->set_context($context);
 
     // Call load meeting function (note: this is where additional access checks happen).
-    $meetinginfo = zoom_load_meeting($id, $context);
+    $meetinginfo = zoom_yt_load_meeting($id, $context);
 
     // Redirect if available, otherwise deny access.
     if ($meetinginfo['nexturl']) {
         redirect($meetinginfo['nexturl']);
     } else {
         // Get redirect URL.
-        $unavailabilityurl = new moodle_url('/mod/zoom/view.php', ['id' => $id]);
+        $unavailabilityurl = new moodle_url('/mod/zoom_yt/view.php', ['id' => $id]);
 
         // Redirect the user back to the activity overview page.
         redirect($unavailabilityurl, $meetinginfo['error'], null, \core\output\notification::NOTIFY_ERROR);
     }
 } else {
-    throw new moodle_exception('zoomerr_id_missing', 'mod_zoom');
+    throw new moodle_exception('zoomerr_id_missing', 'mod_zoom_yt');
 }

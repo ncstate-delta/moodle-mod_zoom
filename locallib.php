@@ -20,7 +20,7 @@
  * All the zoom specific functions, needed to implement the module
  * logic, should go here. Never include this file from your lib.php!
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,13 +28,13 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/mod/zoom/lib.php');
-require_once($CFG->dirroot . '/mod/zoom/classes/webservice_exception.php');
-require_once($CFG->dirroot . '/mod/zoom/classes/api_limit_exception.php');
-require_once($CFG->dirroot . '/mod/zoom/classes/bad_request_exception.php');
-require_once($CFG->dirroot . '/mod/zoom/classes/not_found_exception.php');
-require_once($CFG->dirroot . '/mod/zoom/classes/retry_failed_exception.php');
-require_once($CFG->dirroot . '/mod/zoom/classes/webservice.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/lib.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/classes/webservice_exception.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/classes/api_limit_exception.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/classes/bad_request_exception.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/classes/not_found_exception.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/classes/retry_failed_exception.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/classes/webservice.php');
 
 // Constants.
 // Audio options.
@@ -50,8 +50,8 @@ define('ZOOM_RECURRING_WEBINAR', 6);
 define('ZOOM_RECURRING_FIXED_MEETING', 8);
 define('ZOOM_RECURRING_FIXED_WEBINAR', 9);
 // Meeting status.
-define('ZOOM_MEETING_EXPIRED', 0);
-define('ZOOM_MEETING_EXISTS', 1);
+define('zoom_yt_meeting_EXPIRED', 0);
+define('zoom_yt_meeting_EXISTS', 1);
 
 // Number of meetings per page from zoom's get user report.
 define('ZOOM_DEFAULT_RECORDS_PER_CALL', 30);
@@ -60,7 +60,7 @@ define('ZOOM_MAX_RECORDS_PER_CALL', 300);
 define('ZOOM_USER_TYPE_BASIC', 1);
 define('ZOOM_USER_TYPE_PRO', 2);
 define('ZOOM_USER_TYPE_CORP', 3);
-define('ZOOM_MEETING_NOT_FOUND_ERROR_CODE', 3001);
+define('zoom_yt_meeting_NOT_FOUND_ERROR_CODE', 3001);
 define('ZOOM_USER_NOT_FOUND_ERROR_CODE', 1001);
 define('ZOOM_INVALID_USER_ERROR_CODE', 1120);
 // Webinar options.
@@ -131,7 +131,7 @@ define('ZOOM_REGISTRATION_OFF', 2);
  *                             the site index page.
  * @param mixed $a Extra words and phrases that might be required in the error string
  */
-function zoom_fatal_error($errorcode, $module = '', $continuelink = '', $a = null) {
+function zoom_yt_fatal_error($errorcode, $module = '', $continuelink = '', $a = null) {
     global $CFG, $COURSE, $OUTPUT, $PAGE;
 
     $output = '';
@@ -186,28 +186,28 @@ function zoom_fatal_error($errorcode, $module = '', $continuelink = '', $a = nul
  *
  * @return array Array of ($course, $cm, $zoom)
  */
-function zoom_get_instance_setup() {
+function zoom_yt_get_instance_setup() {
     global $DB;
 
     $id = optional_param('id', 0, PARAM_INT); // Course_module ID.
     $n = optional_param('n', 0, PARAM_INT);  // Zoom instance ID.
 
     if ($id) {
-        $cm = get_coursemodule_from_id('zoom', $id, 0, false, MUST_EXIST);
+        $cm = get_coursemodule_from_id('zoom_yt', $id, 0, false, MUST_EXIST);
         $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
-        $zoom = $DB->get_record('zoom', ['id' => $cm->instance], '*', MUST_EXIST);
+        $zoom = $DB->get_record('zoom_yt', ['id' => $cm->instance], '*', MUST_EXIST);
     } else if ($n) {
-        $zoom = $DB->get_record('zoom', ['id' => $n], '*', MUST_EXIST);
+        $zoom = $DB->get_record('zoom_yt', ['id' => $n], '*', MUST_EXIST);
         $course = $DB->get_record('course', ['id' => $zoom->course], '*', MUST_EXIST);
-        $cm = get_coursemodule_from_instance('zoom', $zoom->id, $course->id, false, MUST_EXIST);
+        $cm = get_coursemodule_from_instance('zoom_yt', $zoom->id, $course->id, false, MUST_EXIST);
     } else {
-        throw new moodle_exception('zoomerr_id_missing', 'mod_zoom');
+        throw new moodle_exception('zoomerr_id_missing', 'mod_zoom_yt');
     }
 
     require_login($course, true, $cm);
 
     $context = context_module::instance($cm->id);
-    require_capability('mod/zoom:view', $context);
+    require_capability('mod/zoom_yt:view', $context);
 
     return [$course, $cm, $zoom];
 }
@@ -218,7 +218,7 @@ function zoom_get_instance_setup() {
  * @param int $zoomid
  * @return array information about the meeting
  */
-function zoom_get_sessions_for_display($zoomid) {
+function zoom_yt_get_sessions_for_display($zoomid) {
     global $DB, $CFG;
 
     require_once($CFG->libdir . '/moodlelib.php');
@@ -227,12 +227,12 @@ function zoom_get_sessions_for_display($zoomid) {
     $format = get_string('strftimedatetimeshort', 'langconfig');
 
     // Sort sessions in start_time ascending order.
-    $instances = $DB->get_records('zoom_meeting_details', ['zoomid' => $zoomid], 'start_time');
+    $instances = $DB->get_records('zoom_yt_meeting_details', ['zoomid' => $zoomid], 'start_time');
 
     foreach ($instances as $instance) {
         // The meeting uuid, not the participant's uuid.
         $uuid = $instance->uuid;
-        $participantlist = zoom_get_participants_report($instance->id);
+        $participantlist = zoom_yt_get_participants_report($instance->id);
         $sessions[$uuid]['participants'] = $participantlist;
 
         $uniquevalues = [];
@@ -284,7 +284,7 @@ function zoom_get_sessions_for_display($zoomid) {
  *             0 if this is a recurring meeting without fixed time or
  *             the timestamp of the meeting start date if this isn't a recurring meeting.
  */
-function zoom_get_next_occurrence($zoom) {
+function zoom_yt_get_next_occurrence($zoom) {
     global $DB;
 
     // Prepare an ad-hoc request cache as this function could be called multiple times throughout a request
@@ -293,7 +293,7 @@ function zoom_get_next_occurrence($zoom) {
         'simplekeys' => true,
         'simpledata' => true,
     ];
-    $cache = cache::make_from_params(cache_store::MODE_REQUEST, 'zoom', 'nextoccurrence', [], $cacheoptions);
+    $cache = cache::make_from_params(cache_store::MODE_REQUEST, 'zoom_yt', 'nextoccurrence', [], $cacheoptions);
 
     // If the next occurrence wasn't already cached, fill the cache.
     $cachednextoccurrence = $cache->get($zoom->id);
@@ -312,7 +312,7 @@ function zoom_get_next_occurrence($zoom) {
         } else {
             // Get the calendar event of the next occurrence.
             $selectclause = "modulename = :modulename AND instance = :instance AND (timestart + timeduration) >= :now";
-            $selectparams = ['modulename' => 'zoom', 'instance' => $zoom->id, 'now' => time()];
+            $selectparams = ['modulename => 'zoom_yt'->id, 'now' => time()];
             $nextoccurrence = $DB->get_records_select('event', $selectclause, $selectparams, 'timestart ASC', 'timestart', 0, 1);
 
             // If we haven't got a single event.
@@ -340,9 +340,9 @@ function zoom_get_next_occurrence($zoom) {
  * @param stdClass $zoom
  * @return array Array of booleans: [in progress, available, finished].
  */
-function zoom_get_state($zoom) {
+function zoom_yt_get_state($zoom) {
     // Get plugin config.
-    $config = get_config('zoom');
+    $config = get_config('zoom_yt');
 
     // Get the current time as calculation basis.
     $now = time();
@@ -350,7 +350,7 @@ function zoom_get_state($zoom) {
     // If this is a recurring meeting with a recurrence schedule.
     if ($zoom->recurring && $zoom->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
         // Get the next occurrence start time.
-        $starttime = zoom_get_next_occurrence($zoom);
+        $starttime = zoom_yt_get_next_occurrence($zoom);
     } else {
         // Get the meeting start time.
         $starttime = $zoom->start_time;
@@ -388,21 +388,21 @@ function zoom_get_state($zoom) {
  * @param bool $required If true, will error if the user doesn't have a Zoom account.
  * @return string
  */
-function zoom_get_user_id($required = true) {
+function zoom_yt_get_user_id($required = true) {
     global $USER;
 
-    $cache = cache::make('mod_zoom', 'zoomid');
+    $cache = cache::make('mod_zoom_yt', 'zoom_ytid');
     if (!($zoomuserid = $cache->get($USER->id))) {
         $zoomuserid = false;
         try {
-            $zoomuser = zoom_get_user(zoom_get_api_identifier($USER));
+            $zoomuser = zoom_yt_get_user(zoom_yt_get_api_identifier($USER));
             if ($zoomuser !== false && isset($zoomuser->id) && ($zoomuser->id !== false)) {
                 $zoomuserid = $zoomuser->id;
                 $cache->set($USER->id, $zoomuserid);
             }
             // If user does not have a Zoom account, throw an error.
             if ($required && $zoomuser === false) {
-                throw new moodle_exception('zoomerr_usernotfound', 'mod_zoom', '', get_config('zoom', 'zoomurl'));
+                throw new moodle_exception('zoomerr_usernotfound', 'mod_zoom_yt', '', get_config('zoom_yt', 'zoomurl'));
             }
         } catch (moodle_exception $error) {
             if ($required) {
@@ -420,11 +420,11 @@ function zoom_get_user_id($required = true) {
  * @param string|int $identifier The user's email or the user's ID per Zoom API.
  * @return stdClass
  */
-function zoom_get_meeting_security_settings($identifier) {
-    $cache = cache::make('mod_zoom', 'zoommeetingsecurity');
+function zoom_yt_get_meeting_security_settings($identifier) {
+    $cache = cache::make('mod_zoom_yt', 'zoom_ytmeetingsecurity');
     $zoommeetingsecurity = $cache->get($identifier);
     if (empty($zoommeetingsecurity)) {
-        $zoommeetingsecurity = zoom_webservice()->get_account_meeting_security_settings($identifier);
+        $zoommeetingsecurity = zoom_yt_webservice()->get_account_meeting_security_settings($identifier);
         $cache->set($identifier, $zoommeetingsecurity);
     }
 
@@ -437,9 +437,9 @@ function zoom_get_meeting_security_settings($identifier) {
  * @param moodle_exception $error
  * @return bool
  */
-function zoom_is_meeting_gone_error($error) {
+function zoom_yt_is_meeting_gone_error($error) {
     // If the meeting's owner/user cannot be found, we consider the meeting to be gone.
-    return ($error->zoomerrorcode === ZOOM_MEETING_NOT_FOUND_ERROR_CODE) || zoom_is_user_not_found_error($error);
+    return ($error->zoomerrorcode === ZOOM_MEETING_NOT_FOUND_ERROR_CODE) || zoom_yt_is_user_not_found_error($error);
 }
 
 /**
@@ -448,7 +448,7 @@ function zoom_is_meeting_gone_error($error) {
  * @param moodle_exception $error
  * @return bool
  */
-function zoom_is_user_not_found_error($error) {
+function zoom_yt_is_user_not_found_error($error) {
     return ($error->zoomerrorcode === ZOOM_USER_NOT_FOUND_ERROR_CODE) || ($error->zoomerrorcode === ZOOM_INVALID_USER_ERROR_CODE);
 }
 
@@ -458,9 +458,9 @@ function zoom_is_user_not_found_error($error) {
  * @param string $cmid
  * @return stdClass
  */
-function zoom_meetingnotfound_param($cmid) {
+function zoom_yt_meetingnotfound_param($cmid) {
     // Provide links to recreate and delete.
-    $recreate = new moodle_url('/mod/zoom/recreate.php', ['id' => $cmid, 'sesskey' => sesskey()]);
+    $recreate = new moodle_url('/mod/zoom_yt/recreate.php', ['id' => $cmid, 'sesskey' => sesskey()]);
     $delete = new moodle_url('/course/mod.php', ['delete' => $cmid, 'sesskey' => sesskey()]);
 
     // Convert links to strings and pass as error parameter.
@@ -476,7 +476,7 @@ function zoom_meetingnotfound_param($cmid) {
  * @param string $detailsid The meeting ID that you want to get the participants report for.
  * @return array The user data as an array of records (array of arrays).
  */
-function zoom_get_participants_report($detailsid) {
+function zoom_yt_get_participants_report($detailsid) {
     global $DB;
     $sql = 'SELECT zmp.id,
                    zmp.name,
@@ -486,7 +486,7 @@ function zoom_get_participants_report($detailsid) {
                    zmp.leave_time,
                    zmp.duration,
                    zmp.uuid
-              FROM {zoom_meeting_participants} zmp
+              FROM {zoom_yt_meeting_participants} zmp
              WHERE zmp.detailsid = :detailsid
     ';
     $params = [
@@ -502,7 +502,7 @@ function zoom_get_participants_report($detailsid) {
  * @param stdClass $meetingpasswordrequirement
  * @return string passcode
  */
-function zoom_create_default_passcode($meetingpasswordrequirement) {
+function zoom_yt_create_default_passcode($meetingpasswordrequirement) {
     $length = max($meetingpasswordrequirement->length, 6);
     $random = rand(0, pow(10, $length) - 1);
     $passcode = str_pad(strval($random), $length, '0', STR_PAD_LEFT);
@@ -532,41 +532,41 @@ function zoom_create_default_passcode($meetingpasswordrequirement) {
  * @param stdClass $meetingpasswordrequirement
  * @return string description of password requirements
  */
-function zoom_create_passcode_description($meetingpasswordrequirement) {
+function zoom_yt_create_passcode_description($meetingpasswordrequirement) {
     $description = '';
     if ($meetingpasswordrequirement->only_allow_numeric) {
-        $description .= get_string('password_only_numeric', 'mod_zoom') . ' ';
+        $description .= get_string('password_only_numeric', 'mod_zoom_yt') . ' ';
     } else {
         if ($meetingpasswordrequirement->have_letter && !$meetingpasswordrequirement->have_upper_and_lower_characters) {
-            $description .= get_string('password_letter', 'mod_zoom') . ' ';
+            $description .= get_string('password_letter', 'mod_zoom_yt') . ' ';
         } else if ($meetingpasswordrequirement->have_upper_and_lower_characters) {
-            $description .= get_string('password_lower_upper', 'mod_zoom') . ' ';
+            $description .= get_string('password_lower_upper', 'mod_zoom_yt') . ' ';
         }
 
         if ($meetingpasswordrequirement->have_number) {
-            $description .= get_string('password_number', 'mod_zoom') . ' ';
+            $description .= get_string('password_number', 'mod_zoom_yt') . ' ';
         }
 
         if ($meetingpasswordrequirement->have_special_character) {
-            $description .= get_string('password_special', 'mod_zoom') . ' ';
+            $description .= get_string('password_special', 'mod_zoom_yt') . ' ';
         } else {
-            $description .= get_string('password_allowed_char', 'mod_zoom') . ' ';
+            $description .= get_string('password_allowed_char', 'mod_zoom_yt') . ' ';
         }
     }
 
     if ($meetingpasswordrequirement->length) {
-        $description .= get_string('password_length', 'mod_zoom', $meetingpasswordrequirement->length) . ' ';
+        $description .= get_string('password_length', 'mod_zoom_yt', $meetingpasswordrequirement->length) . ' ';
     }
 
     if ($meetingpasswordrequirement->consecutive_characters_length > 0) {
         $description .= get_string(
             'password_consecutive',
-            'mod_zoom',
+            'mod_zoom_yt',
             $meetingpasswordrequirement->consecutive_characters_length - 1
         ) . ' ';
     }
 
-    $description .= get_string('password_max_length', 'mod_zoom');
+    $description .= get_string('password_max_length', 'mod_zoom_yt');
     return $description;
 }
 
@@ -577,9 +577,9 @@ function zoom_create_passcode_description($meetingpasswordrequirement) {
  *
  * @return array Array of users (mail => fullname).
  */
-function zoom_get_selectable_alternative_hosts_list(context $context) {
+function zoom_yt_get_selectable_alternative_hosts_list(context $context) {
     // Get selectable alternative host users based on the capability.
-    $users = get_enrolled_users($context, 'mod/zoom:eligiblealternativehost', 0, 'u.*', 'lastname');
+    $users = get_enrolled_users($context, 'mod/zoom_yt:eligiblealternativehost', 0, 'u.*', 'lastname');
 
     // Create array of users.
     $selectablealternativehosts = [];
@@ -596,7 +596,7 @@ function zoom_get_selectable_alternative_hosts_list(context $context) {
         // Verify that the user really has a Zoom account.
         // Furthermore, verify that the user's status is active. Adding a pending or inactive user as alternative host will result
         // in a Zoom API error otherwise.
-        $zoomuser = zoom_get_user($u->email);
+        $zoomuser = zoom_yt_get_user($u->email);
         if ($zoomuser !== false && $zoomuser->status === 'active') {
             // Add user to array of users.
             $selectablealternativehosts[strtolower($u->email)] = fullname($u);
@@ -613,9 +613,9 @@ function zoom_get_selectable_alternative_hosts_list(context $context) {
  *
  * @return string The string of roles.
  */
-function zoom_get_selectable_alternative_hosts_rolestring(context $context) {
+function zoom_yt_get_selectable_alternative_hosts_rolestring(context $context) {
     // Get selectable alternative host users based on the capability.
-    $roles = get_role_names_with_caps_in_context($context, ['mod/zoom:eligiblealternativehost']);
+    $roles = get_role_names_with_caps_in_context($context, ['mod/zoom_yt:eligiblealternativehost']);
 
     // Compose string.
     $rolestring = implode(', ', $roles);
@@ -630,7 +630,7 @@ function zoom_get_selectable_alternative_hosts_rolestring(context $context) {
  *
  * @return array The array of existing Moodle user objects.
  */
-function zoom_get_users_from_alternativehosts(array $alternativehosts) {
+function zoom_yt_get_users_from_alternativehosts(array $alternativehosts) {
     global $DB;
 
     // Get the existing Moodle user objects from the DB.
@@ -651,7 +651,7 @@ function zoom_get_users_from_alternativehosts(array $alternativehosts) {
  *
  * @return array The array of non-Moodle user mail addresses.
  */
-function zoom_get_nonusers_from_alternativehosts(array $alternativehosts) {
+function zoom_yt_get_nonusers_from_alternativehosts(array $alternativehosts) {
     global $DB;
 
     // Get the non-Moodle user mail addresses by checking which one does not exist in the DB.
@@ -681,12 +681,12 @@ function zoom_get_nonusers_from_alternativehosts(array $alternativehosts) {
  *
  * @return string The unavailability note.
  */
-function zoom_get_unavailability_note($zoom, $finished = null) {
+function zoom_yt_get_unavailability_note($zoom, $finished = null) {
     // Get config.
-    $config = get_config('zoom');
+    $config = get_config('zoom_yt');
 
     // Get the plain unavailable string.
-    $strunavailable = get_string('unavailable', 'mod_zoom');
+    $strunavailable = get_string('unavailable', 'mod_zoom_yt');
 
     // If this is a recurring meeting without fixed time, just use the plain unavailable string.
     if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
@@ -696,7 +696,7 @@ function zoom_get_unavailability_note($zoom, $finished = null) {
     } else {
         // If we don't have the finished information yet, get it with a small overhead.
         if ($finished === null) {
-            [$inprogress, $available, $finished] = zoom_get_state($zoom);
+            [$inprogress, $available, $finished] = zoom_yt_get_state($zoom);
         }
 
         // If this meeting is still pending.
@@ -704,16 +704,16 @@ function zoom_get_unavailability_note($zoom, $finished = null) {
             // If the admin wants to show the leadtime.
             if (!empty($config->displayleadtime) && $config->firstabletojoin > 0) {
                 $unavailabilitynote = $strunavailable . '<br />' .
-                        get_string('unavailablefirstjoin', 'mod_zoom', ['mins' => ($config->firstabletojoin)]);
+                        get_string('unavailablefirstjoin', 'mod_zoom_yt', ['mins' => ($config->firstabletojoin)]);
 
                 // Otherwise.
             } else {
-                $unavailabilitynote = $strunavailable . '<br />' . get_string('unavailablenotstartedyet', 'mod_zoom');
+                $unavailabilitynote = $strunavailable . '<br />' . get_string('unavailablenotstartedyet', 'mod_zoom_yt');
             }
 
             // Otherwise, the meeting has finished.
         } else {
-            $unavailabilitynote = $strunavailable . '<br />' . get_string('unavailablefinished', 'mod_zoom');
+            $unavailabilitynote = $strunavailable . '<br />' . get_string('unavailablefinished', 'mod_zoom_yt');
         }
     }
 
@@ -729,9 +729,9 @@ function zoom_get_unavailability_note($zoom, $finished = null) {
  *
  * @return int|bool The meeting capacity of the Zoom user or false if the user does not have any meeting capacity at all.
  */
-function zoom_get_meeting_capacity(string $zoomhostid, bool $iswebinar = false) {
+function zoom_yt_get_meeting_capacity(string $zoomhostid, bool $iswebinar = false) {
     // Get the 'feature' section of the user's Zoom settings.
-    $userfeatures = zoom_get_user_settings($zoomhostid)->feature;
+    $userfeatures = zoom_yt_get_user_settings($zoomhostid)->feature;
 
     $meetingcapacity = false;
 
@@ -767,11 +767,11 @@ function zoom_get_meeting_capacity(string $zoomhostid, bool $iswebinar = false) 
  *
  * @return int The number of eligible meeting participants.
  */
-function zoom_get_eligible_meeting_participants(context $context) {
+function zoom_yt_get_eligible_meeting_participants(context $context) {
     global $DB;
 
     // Compose SQL query.
-    $sqlsnippets = get_enrolled_with_capabilities_join($context, '', 'mod/zoom:view', 0, true);
+    $sqlsnippets = get_enrolled_with_capabilities_join($context, '', 'mod/zoom_yt:view', 0, true);
     $sql = 'SELECT count(DISTINCT u.id)
             FROM {user} u ' . $sqlsnippets->joins . ' WHERE ' . $sqlsnippets->wheres;
 
@@ -787,7 +787,7 @@ function zoom_get_eligible_meeting_participants(context $context) {
  * @param string $alternativehoststring Comma (or semicolon) separated list of alternative hosts.
  * @return string[] $alternativehostarray Array of alternative hosts.
  */
-function zoom_get_alternative_host_array_from_string($alternativehoststring) {
+function zoom_yt_get_alternative_host_array_from_string($alternativehoststring) {
     if (empty($alternativehoststring)) {
         return [];
     }
@@ -810,7 +810,7 @@ function zoom_get_alternative_host_array_from_string($alternativehoststring) {
  *
  * @return array list of user profile fields
  */
-function zoom_get_user_profile_fields() {
+function zoom_yt_get_user_profile_fields() {
     global $DB;
 
     $userfields = [];
@@ -827,14 +827,14 @@ function zoom_get_user_profile_fields() {
  *
  * @return array list of all valid options
  */
-function zoom_get_api_identifier_fields() {
+function zoom_yt_get_api_identifier_fields() {
     $options = [
         'email' => get_string('email'),
         'username' => get_string('username'),
         'idnumber' => get_string('idnumber'),
     ];
 
-    $userfields = zoom_get_user_profile_fields();
+    $userfields = zoom_yt_get_user_profile_fields();
     if (!empty($userfields)) {
         $options += $userfields;
     }
@@ -849,9 +849,9 @@ function zoom_get_api_identifier_fields() {
  *
  * @return string the value of the identifier
  */
-function zoom_get_api_identifier($user) {
+function zoom_yt_get_api_identifier($user) {
     // Get the value from the config first.
-    $field = get_config('zoom', 'apiidentifier');
+    $field = get_config('zoom_yt', 'apiidentifier');
 
     $identifier = '';
     if (isset($user->$field)) {
@@ -878,7 +878,7 @@ function zoom_get_api_identifier($user) {
  *
  * @return iCalendar_event
  */
-function zoom_helper_icalendar_event($event, $description) {
+function zoom_yt_helper_icalendar_event($event, $description) {
     global $CFG;
 
     // Match Moodle's uid format for iCal events.
@@ -902,9 +902,9 @@ function zoom_helper_icalendar_event($event, $description) {
  *
  * @return string The API URL.
  */
-function zoom_get_api_url() {
+function zoom_yt_get_api_url() {
     // Get the API endpoint setting.
-    $apiendpoint = get_config('zoom', 'apiendpoint');
+    $apiendpoint = get_config('zoom_yt', 'apiendpoint');
 
     // Pick the corresponding API URL.
     switch ($apiendpoint) {
@@ -931,27 +931,27 @@ function zoom_get_api_url() {
  * @param bool $usestarturl
  * @return array $returns contains url object 'nexturl' or string 'error'
  */
-function zoom_load_meeting($id, $context, $usestarturl = true) {
+function zoom_yt_load_meeting($id, $context, $usestarturl = true) {
     global $CFG, $DB, $USER;
     require_once($CFG->libdir . '/gradelib.php');
 
-    $cm = get_coursemodule_from_id('zoom', $id, 0, false, MUST_EXIST);
+    $cm = get_coursemodule_from_id('zoom_yt', $id, 0, false, MUST_EXIST);
     $course = get_course($cm->course);
-    $zoom = $DB->get_record('zoom', ['id' => $cm->instance], '*', MUST_EXIST);
+    $zoom = $DB->get_record('zoom_yt', ['id' => $cm->instance], '*', MUST_EXIST);
 
     require_login($course, true, $cm);
 
-    require_capability('mod/zoom:view', $context);
+    require_capability('mod/zoom_yt:view', $context);
 
     $returns = ['nexturl' => null, 'error' => null];
 
-    [$inprogress, $available, $finished] = zoom_get_state($zoom);
+    [$inprogress, $available, $finished] = zoom_yt_get_state($zoom);
 
     $userisregistered = false;
     $userisregistering = false;
     if ($zoom->registration != ZOOM_REGISTRATION_OFF) {
         // Check if user already registered.
-        $registrantjoinurl = zoom_get_registrant_join_url($USER->email, $zoom->meeting_id, $zoom->webinar);
+        $registrantjoinurl = zoom_yt_get_registrant_join_url($USER->email, $zoom->meeting_id, $zoom->webinar);
         $userisregistered = !empty($registrantjoinurl);
 
         // Allow unregistered users to register.
@@ -963,14 +963,14 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
     // If the meeting is not yet available, deny access.
     if (!$available && !$userisregistering) {
         // Get unavailability note.
-        $returns['error'] = zoom_get_unavailability_note($zoom, $finished);
+        $returns['error'] = zoom_yt_get_unavailability_note($zoom, $finished);
         return $returns;
     }
 
-    $userisrealhost = (zoom_get_user_id(false) === $zoom->host_id);
-    $alternativehosts = zoom_get_alternative_host_array_from_string($zoom->alternative_hosts);
+    $userisrealhost = (zoom_yt_get_user_id(false) === $zoom->host_id);
+    $alternativehosts = zoom_yt_get_alternative_host_array_from_string($zoom->alternative_hosts);
     // Lowercase email addresses so that we can do case-insensitive comparisons.
-    $userapiidentifier = zoom_get_api_identifier($USER);
+    $userapiidentifier = zoom_yt_get_api_identifier($USER);
     if (filter_var($userapiidentifier, FILTER_VALIDATE_EMAIL) !== false) {
         $userapiidentifier = strtolower($userapiidentifier);
     }
@@ -979,7 +979,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
     // Check if we should use the start meeting url.
     if ($userisrealhost && $usestarturl) {
         // Important: Only the real host can use this URL, because it joins the meeting as the host user.
-        $starturl = zoom_get_start_url($zoom->meeting_id, $zoom->webinar, $zoom->join_url);
+        $starturl = zoom_yt_get_start_url($zoom->meeting_id, $zoom->webinar, $zoom->join_url);
         $returns['nexturl'] = new moodle_url($starturl);
     } else {
         $url = $zoom->join_url;
@@ -987,7 +987,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
             $url = $registrantjoinurl;
         }
 
-        $unamesetting = get_config('zoom', 'unamedisplay');
+        $unamesetting = get_config('zoom_yt', 'unamedisplay');
         switch ($unamesetting) {
             case 'fullname':
             default:
@@ -1017,7 +1017,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
     }
 
     // Record user's clicking join.
-    \mod_zoom\event\join_meeting_button_clicked::create([
+    \mod_zoom_yt\event\join_meeting_button_clicked::create([
         'context' => $context,
         'objectid' => $zoom->id,
         'other' => [
@@ -1034,7 +1034,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
     // Check the grading method settings.
     if (!empty($zoom->grading_method)) {
         $gradingmethod = $zoom->grading_method;
-    } else if ($defaultgrading = get_config('gradingmethod', 'zoom')) {
+    } else if ($defaultgrading = get_config('gradingmethod', 'zoom_yt')) {
         $gradingmethod = $defaultgrading;
     } else {
         $gradingmethod = 'entry';
@@ -1042,7 +1042,7 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
 
     if ($gradingmethod === 'entry') {
         // Check whether user has a grade. If not, then assign full credit to them.
-        $gradelist = grade_get_grades($course->id, 'mod', 'zoom', $cm->instance, $USER->id);
+        $gradelist = grade_get_grades($course->id, 'mod', 'zoom_yt', $cm->instance, $USER->id);
 
         // Assign full credits for user who has no grade yet, if this meeting is gradable (i.e. the grade type is not "None").
         if (!empty($gradelist->items) && empty($gradelist->items[0]->grades[$USER->id]->grade)) {
@@ -1056,15 +1056,15 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
                 'feedback' => '',
             ];
 
-            zoom_grade_item_update($zoom, $grades);
+            zoom_yt_grade_item_update($zoom, $grades);
         }
     } // Otherwise, the get_meetings_report task calculates the grades according to duration.
 
     // Upgrade host upon joining meeting, if host is not Licensed.
     if ($userishost) {
-        $config = get_config('zoom');
+        $config = get_config('zoom_yt');
         if (!empty($config->recycleonjoin)) {
-            zoom_webservice()->provide_license($zoom->host_id);
+            zoom_yt_webservice()->provide_license($zoom->host_id);
         }
     }
 
@@ -1079,9 +1079,9 @@ function zoom_load_meeting($id, $context, $usestarturl = true) {
  * @param string $fallbackurl URL to use if the webservice call fails.
  * @return string Best available URL for starting the meeting.
  */
-function zoom_get_start_url($meetingid, $iswebinar, $fallbackurl) {
+function zoom_yt_get_start_url($meetingid, $iswebinar, $fallbackurl) {
     try {
-        $response = zoom_webservice()->get_meeting_webinar_info($meetingid, $iswebinar);
+        $response = zoom_yt_webservice()->get_meeting_webinar_info($meetingid, $iswebinar);
         return $response->start_url ?? $response->join_url;
     } catch (moodle_exception $e) {
         // If an exception was thrown, gracefully use the fallback URL.
@@ -1094,11 +1094,11 @@ function zoom_get_start_url($meetingid, $iswebinar, $fallbackurl) {
  *
  * @return array tracking fields, keys as lower case
  */
-function zoom_list_tracking_fields() {
+function zoom_yt_list_tracking_fields() {
     $trackingfields = [];
 
     // Get the tracking fields configured on the account.
-    $response = zoom_webservice()->list_tracking_fields();
+    $response = zoom_yt_webservice()->list_tracking_fields();
     if (isset($response->tracking_fields)) {
         foreach ($response->tracking_fields as $trackingfield) {
             $field = str_replace(' ', '_', strtolower($trackingfield->field));
@@ -1114,8 +1114,8 @@ function zoom_list_tracking_fields() {
  *
  * @return array tracking fields trimmed, keys as lower case
  */
-function zoom_clean_tracking_fields() {
-    $config = get_config('zoom');
+function zoom_yt_clean_tracking_fields() {
+    $config = get_config('zoom_yt');
     $defaulttrackingfields = explode(',', $config->defaulttrackingfields);
     $trackingfields = [];
 
@@ -1136,7 +1136,7 @@ function zoom_clean_tracking_fields() {
  * @param int $zoomid Zoom meeting ID
  * @param array $trackingfields Tracking fields configured in Zoom.
  */
-function zoom_sync_meeting_tracking_fields($zoomid, $trackingfields) {
+function zoom_yt_sync_meeting_tracking_fields($zoomid, $trackingfields) {
     global $DB;
 
     $tfvalues = [];
@@ -1145,29 +1145,29 @@ function zoom_sync_meeting_tracking_fields($zoomid, $trackingfields) {
         $tfvalues[$field] = $trackingfield->value;
     }
 
-    $tfrows = $DB->get_records('zoom_meeting_tracking_fields', ['meeting_id' => $zoomid]);
+    $tfrows = $DB->get_records('zoom_yt_meeting_tracking_fields', ['meeting_id' => $zoomid]);
     $tfobjects = [];
     foreach ($tfrows as $tfrow) {
         $tfobjects[$tfrow->tracking_field] = $tfrow;
     }
 
-    $defaulttrackingfields = zoom_clean_tracking_fields();
+    $defaulttrackingfields = zoom_yt_clean_tracking_fields();
     foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
         $value = $tfvalues[$key] ?? '';
         if (isset($tfobjects[$key])) {
             $tfobject = $tfobjects[$key];
             if ($value === '') {
-                $DB->delete_records('zoom_meeting_tracking_fields', ['meeting_id' => $zoomid, 'tracking_field' => $key]);
+                $DB->delete_records('zoom_yt_meeting_tracking_fields', ['meeting_id' => $zoomid, 'tracking_field' => $key]);
             } else if ($tfobject->value !== $value) {
                 $tfobject->value = $value;
-                $DB->update_record('zoom_meeting_tracking_fields', $tfobject);
+                $DB->update_record('zoom_yt_meeting_tracking_fields', $tfobject);
             }
         } else if ($value !== '') {
             $tfobject = new stdClass();
             $tfobject->meeting_id = $zoomid;
             $tfobject->tracking_field = $key;
             $tfobject->value = $value;
-            $DB->insert_record('zoom_meeting_tracking_fields', $tfobject);
+            $DB->insert_record('zoom_yt_meeting_tracking_fields', $tfobject);
         }
     }
 }
@@ -1177,12 +1177,12 @@ function zoom_sync_meeting_tracking_fields($zoomid, $trackingfields) {
  *
  * @return array All zoom meetings stored in the database.
  */
-function zoom_get_all_meeting_records() {
+function zoom_yt_get_all_meeting_records() {
     global $DB;
 
     $meetings = [];
     // Only get meetings that exist on zoom.
-    $records = $DB->get_records('zoom', ['exists_on_zoom' => ZOOM_MEETING_EXISTS]);
+    $records = $DB->get_records('zoom_yt', ['exists_on_zoom' => ZOOM_MEETING_EXISTS]);
     foreach ($records as $record) {
         $meetings[] = $record;
     }
@@ -1197,7 +1197,7 @@ function zoom_get_all_meeting_records() {
  *
  * @return array All the recordings for the zoom meeting.
  */
-function zoom_get_meeting_recordings($zoomid = null) {
+function zoom_yt_get_meeting_recordings($zoomid = null) {
     global $DB;
 
     $params = [];
@@ -1205,7 +1205,7 @@ function zoom_get_meeting_recordings($zoomid = null) {
         $params['zoomid'] = $zoomid;
     }
 
-    $records = $DB->get_records('zoom_meeting_recordings', $params);
+    $records = $DB->get_records('zoom_yt_meeting_recordings', $params);
     $recordings = [];
     foreach ($records as $recording) {
         $recordings[$recording->zoomrecordingid] = $recording;
@@ -1221,7 +1221,7 @@ function zoom_get_meeting_recordings($zoomid = null) {
  *
  * @return array All recordings for the zoom meeting grouped together.
  */
-function zoom_get_meeting_recordings_grouped($zoomid = null) {
+function zoom_yt_get_meeting_recordings_grouped($zoomid = null) {
     global $DB;
 
     $params = [];
@@ -1229,7 +1229,7 @@ function zoom_get_meeting_recordings_grouped($zoomid = null) {
         $params['zoomid'] = $zoomid;
     }
 
-    $records = $DB->get_records('zoom_meeting_recordings', $params, 'recordingstart ASC');
+    $records = $DB->get_records('zoom_yt_meeting_recordings', $params, 'recordingstart ASC');
     $recordings = [];
     foreach ($records as $recording) {
         $recordings[$recording->meetinguuid][$recording->zoomrecordingid] = $recording;
@@ -1241,13 +1241,13 @@ function zoom_get_meeting_recordings_grouped($zoomid = null) {
 /**
  * Singleton for Zoom webservice class.
  *
- * @return \mod_zoom\webservice
+ * @return \mod_zoom_yt\webservice
  */
-function zoom_webservice() {
+function zoom_yt_webservice() {
     static $service;
 
     if (empty($service)) {
-        $service = new \mod_zoom\webservice();
+        $service = new \mod_zoom_yt\webservice();
     }
 
     return $service;
@@ -1259,11 +1259,11 @@ function zoom_webservice() {
  * @param string|int $identifier The user's email or the user's ID per Zoom API.
  * @return stdClass|false If user is found, returns a Zoom user object. Otherwise, returns false.
  */
-function zoom_get_user($identifier) {
+function zoom_yt_get_user($identifier) {
     static $users = [];
 
     if (!isset($users[$identifier])) {
-        $users[$identifier] = zoom_webservice()->get_user($identifier);
+        $users[$identifier] = zoom_yt_webservice()->get_user($identifier);
     }
 
     return $users[$identifier];
@@ -1275,11 +1275,11 @@ function zoom_get_user($identifier) {
  * @param string|int $identifier The user's email or the user's ID per Zoom API.
  * @return stdClass|false If user is found, returns a Zoom user object. Otherwise, returns false.
  */
-function zoom_get_user_settings($identifier) {
+function zoom_yt_get_user_settings($identifier) {
     static $settings = [];
 
     if (!isset($settings[$identifier])) {
-        $settings[$identifier] = zoom_webservice()->get_user_settings($identifier);
+        $settings[$identifier] = zoom_yt_webservice()->get_user_settings($identifier);
     }
 
     return $settings[$identifier];
@@ -1292,8 +1292,8 @@ function zoom_get_user_settings($identifier) {
  * @param bool $iswebinar If the session is a webinar.
  * @return stdClass Returns a Zoom object containing the registrants (if found).
  */
-function zoom_get_meeting_registrants($meetingid, $iswebinar) {
-    $response = zoom_webservice()->get_meeting_registrants($meetingid, $iswebinar);
+function zoom_yt_get_meeting_registrants($meetingid, $iswebinar) {
+    $response = zoom_yt_webservice()->get_meeting_registrants($meetingid, $iswebinar);
     return $response;
 }
 
@@ -1305,8 +1305,8 @@ function zoom_get_meeting_registrants($meetingid, $iswebinar) {
  * @param bool $iswebinar If the session is a webinar.
  * @return bool Returns whether or not the user has registered for the zoom meeting/webinar based on their email address.
  */
-function zoom_is_user_registered_for_meeting($useremail, $meetingid, $iswebinar) {
-    $registrantjoinurl = zoom_get_registrant_join_url($useremail, $meetingid, $iswebinar);
+function zoom_yt_is_user_registered_for_meeting($useremail, $meetingid, $iswebinar) {
+    $registrantjoinurl = zoom_yt_get_registrant_join_url($useremail, $meetingid, $iswebinar);
     return !empty($registrantjoinurl);
 }
 
@@ -1318,8 +1318,8 @@ function zoom_is_user_registered_for_meeting($useremail, $meetingid, $iswebinar)
  * @param bool $iswebinar If the session is a webinar.
  * @return string|false Returns the join url for the user (based on email address) for the specified meeting (if found).
  */
-function zoom_get_registrant_join_url($useremail, $meetingid, $iswebinar) {
-    $response = zoom_get_meeting_registrants($meetingid, $iswebinar);
+function zoom_yt_get_registrant_join_url($useremail, $meetingid, $iswebinar) {
+    $response = zoom_yt_get_meeting_registrants($meetingid, $iswebinar);
     if (isset($response->registrants)) {
         foreach ($response->registrants as $registrant) {
             if (strcasecmp($useremail, $registrant->email) == 0) {
@@ -1338,9 +1338,9 @@ function zoom_get_registrant_join_url($useremail, $meetingid, $iswebinar) {
  * @param string $zoomuserid Zoom user ID.
  * @return ?string
  */
-function zoom_get_user_display_name($zoomuserid) {
+function zoom_yt_get_user_display_name($zoomuserid) {
     try {
-        $hostuser = zoom_get_user($zoomuserid);
+        $hostuser = zoom_yt_get_user($zoomuserid);
 
         // Compose Moodle user object for host.
         $hostmoodleuser = new stdClass();

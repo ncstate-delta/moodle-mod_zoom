@@ -17,12 +17,12 @@
 /**
  * Exception class for Zoom API errors.
  *
- * @package   mod_zoom
+ * @package   mod_zoom_yt
  * @copyright 2023 Jonathan Champ <jrchamp@ncsu.edu>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom;
+namespace mod_zoom_yt;
 
 use stdClass;
 
@@ -39,6 +39,6 @@ class retry_failed_exception extends webservice_exception {
         $a = new stdClass();
         $a->response = $response;
         $a->maxretries = webservice::MAX_RETRIES;
-        parent::__construct($response, $errorcode, 'zoomerr_maxretries', 'mod_zoom', '', $a);
+        parent::__construct($response, $errorcode, 'zoomerr_maxretries', 'mod_zoom_yt', '', $a);
     }
 }

@@ -89,9 +89,9 @@ Optional functionality can be enabled by granting additional scopes:
 1. [Install plugin](https://docs.moodle.org/en/Installing_plugins#Installing_a_plugin) to the /mod/zoom folder in Moodle.
 2. After installing the plugin, the following settings need to be configured to use the plugin:
 
-- Zoom account ID (mod_zoom | accountid)
-- Zoom client ID (mod_zoom | clientid)
-- Zoom client secret (mod_zoom | clientsecret)
+- Zoom account ID (mod_zoom_yt | accountid)
+- Zoom client ID (mod_zoom_yt | clientid)
+- Zoom client secret (mod_zoom_yt | clientsecret)
 
 If you get "Access token is expired" errors, make sure the date/time on your
 server is properly synchronized with the time servers.

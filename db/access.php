@@ -39,7 +39,7 @@
  *
  * The variable name for the capability definitions array is $capabilities
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -48,7 +48,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // Modify capabilities as needed and remove this comment.
 $capabilities = [
-    'mod/zoom:addinstance' => [
+    'mod/zoom_yt:addinstance' => [
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
@@ -59,7 +59,7 @@ $capabilities = [
         'clonepermissionsfrom' => 'moodle/course:manageactivities',
     ],
 
-    'mod/zoom:view' => [
+    'mod/zoom_yt:view' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => [
@@ -71,7 +71,7 @@ $capabilities = [
         ],
     ],
 
-    'mod/zoom:refreshsessions' => [
+    'mod/zoom_yt:refreshsessions' => [
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
@@ -80,7 +80,7 @@ $capabilities = [
         ],
     ],
 
-    'mod/zoom:eligiblealternativehost' => [
+    'mod/zoom_yt:eligiblealternativehost' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
@@ -90,7 +90,7 @@ $capabilities = [
         ],
     ],
 
-    'mod/zoom:viewjoinurl' => [
+    'mod/zoom_yt:viewjoinurl' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
@@ -101,7 +101,7 @@ $capabilities = [
         ],
     ],
 
-    'mod/zoom:viewdialin' => [
+    'mod/zoom_yt:viewdialin' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,

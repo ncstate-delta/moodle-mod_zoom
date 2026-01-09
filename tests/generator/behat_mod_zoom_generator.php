@@ -15,13 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Behat data generator for mod_zoom
+ * Behat data generator for mod_zoom_yt
  *
- * @package mod_zoom
+ * @package mod_zoom_yt
  * @copyright 2025 Alan McCoy
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class behat_mod_zoom_generator extends behat_generator_base {
+class behat_mod_zoom_yt_generator extends behat_generator_base {
     /**
      * Get a list of entities that can be created.
      *
@@ -48,7 +48,7 @@ class behat_mod_zoom_generator extends behat_generator_base {
     protected function get_zoom_id(string $zoomname): int {
         global $DB;
 
-        if (!$id = $DB->get_field('zoom', 'id', ['name' => $zoomname])) {
+        if (!$id = $DB->get_field('zoom_yt', 'id', ['name' => $zoomname])) {
             throw new Exception('There is no Zoom activity with name "' . $zoomname . '" does not exist');
         }
         return $id;
@@ -68,7 +68,7 @@ class behat_mod_zoom_generator extends behat_generator_base {
             SELECT cm.instance
               FROM {course_modules} cm
               JOIN {modules} m ON m.id = cm.module
-              JOIN {zoom} z ON z.id = cm.instance
+              JOIN {zoom_yt} z ON z.id = cm.instance
              WHERE cm.idnumber = :idnumber OR z.name = :name
 EOF;
         $id = $DB->get_field_sql($sql, ['idnumber' => $activityname, 'name' => $activityname]);

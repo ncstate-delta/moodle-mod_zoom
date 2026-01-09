@@ -17,12 +17,12 @@
 /**
  * Contains the event class for when a user clicks a 'Join Meeting' button.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom\event;
+namespace mod_zoom_yt\event;
 
 use coding_exception;
 use moodle_url;
@@ -37,7 +37,7 @@ class join_meeting_button_clicked extends \core\event\base {
     protected function init() {
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
         $this->data['crud'] = 'r';
-        $this->data['objecttable'] = 'zoom';
+        $this->data['objecttable'] = 'zoom_yt';
     }
 
     /**
@@ -60,7 +60,7 @@ class join_meeting_button_clicked extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('clickjoin', 'mod_zoom');
+        return get_string('clickjoin', 'mod_zoom_yt');
     }
 
     /**
@@ -79,6 +79,6 @@ class join_meeting_button_clicked extends \core\event\base {
      * @return moodle_url
      */
     public function get_url() {
-        return new moodle_url('/mod/zoom/view.php', ['id' => $this->other['cmid']]);
+        return new moodle_url('/mod/zoom_yt/view.php', ['id' => $this->other['cmid']]);
     }
 }

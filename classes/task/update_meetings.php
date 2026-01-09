@@ -17,22 +17,22 @@
 /**
  * Task: update_meetings
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2018 UC Regents
  * @author     Rohan Khajuria
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom\task;
+namespace mod_zoom_yt\task;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/modinfolib.php');
-require_once($CFG->dirroot . '/mod/zoom/lib.php');
-require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/lib.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
 
 use core\task\scheduled_task;
-use mod_zoom\not_found_exception;
+use mod_zoom_yt\not_found_exception;
 use moodle_exception;
 use moodle_url;
 
@@ -46,7 +46,7 @@ class update_meetings extends scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('updatemeetings', 'mod_zoom');
+        return get_string('updatemeetings', 'mod_zoom_yt');
     }
 
     /**
@@ -58,7 +58,7 @@ class update_meetings extends scheduled_task {
         global $DB;
 
         try {
-            $service = zoom_webservice();
+            $service = zoom_yt_webservice();
         } catch (moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
@@ -105,7 +105,7 @@ class update_meetings extends scheduled_task {
         mtrace('Starting to process existing Zoom meeting activities ...');
 
         // Check all meetings, in case they were deleted/changed on Zoom.
-        $zoomstoupdate = $DB->get_records('zoom', ['exists_on_zoom' => ZOOM_MEETING_EXISTS]);
+        $zoomstoupdate = $DB->get_records('zoom_yt', ['exists_on_zoom' => ZOOM_MEETING_EXISTS]);
         $courseidstoupdate = [];
         $calendarfields = ['intro', 'introformat', 'start_time', 'duration', 'recurring'];
 
@@ -114,7 +114,7 @@ class update_meetings extends scheduled_task {
             mtrace('Processing next Zoom meeting activity ...');
             mtrace('  Zoom meeting ID: ' . $zoom->meeting_id);
             mtrace('  Zoom meeting title: ' . $zoom->name);
-            $zoomactivityurl = new moodle_url('/mod/zoom/view.php', ['n' => $zoom->id]);
+            $zoomactivityurl = new moodle_url('/mod/zoom_yt/view.php', ['n' => $zoom->id]);
             mtrace('  Zoom meeting activity URL: ' . $zoomactivityurl->out());
             mtrace('  Moodle course ID: ' . $zoom->course);
 
@@ -124,7 +124,7 @@ class update_meetings extends scheduled_task {
                 $gotinfo = true;
             } catch (not_found_exception $error) {
                 $zoom->exists_on_zoom = ZOOM_MEETING_EXPIRED;
-                $DB->update_record('zoom', $zoom);
+                $DB->update_record('zoom_yt', $zoom);
 
                 // Show trace message.
                 mtrace('  => Marked Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id .
@@ -136,7 +136,7 @@ class update_meetings extends scheduled_task {
 
             if ($gotinfo) {
                 $changed = false;
-                $newzoom = populate_zoom_from_response($zoom, $response);
+                $newzoom = populate_zoom_yt_from_response($zoom, $response);
 
                 // Iterate over all Zoom meeting fields.
                 foreach ((array) $zoom as $field => $value) {
@@ -165,7 +165,7 @@ class update_meetings extends scheduled_task {
 
                 if ($changed) {
                     $newzoom->timemodified = time();
-                    $DB->update_record('zoom', $newzoom);
+                    $DB->update_record('zoom_yt', $newzoom);
 
                     // Show trace message.
                     mtrace('  => Updated Zoom meeting activity for Zoom meeting ID ' . $zoom->meeting_id);
@@ -184,7 +184,7 @@ class update_meetings extends scheduled_task {
                     // Check if calendar needs updating.
                     foreach ($calendarfields as $field) {
                         if ($zoom->$field != $newzoom->$field) {
-                            zoom_calendar_item_update($newzoom);
+                            zoom_yt_calendar_item_update($newzoom);
 
                             // Show trace message.
                             mtrace('  => Updated calendar item for Zoom meeting ID ' . $zoom->meeting_id);
@@ -195,12 +195,12 @@ class update_meetings extends scheduled_task {
                 } else if ($zoom->recurring) {
                     // Show trace message.
                     mtrace('  => Updated calendar items for recurring Zoom meeting ID ' . $zoom->meeting_id);
-                    zoom_calendar_item_update($newzoom);
+                    zoom_yt_calendar_item_update($newzoom);
                 }
 
                 // Update tracking fields for meeting.
                 mtrace('  => Updated tracking fields for Zoom meeting ID ' . $zoom->meeting_id);
-                zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields ?? []);
+                zoom_yt_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields ?? []);
             }
         }
 

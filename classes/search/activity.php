@@ -15,19 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Search area for mod_zoom activities.
+ * Search area for mod_zoom_yt activities.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2019 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom\search;
+namespace mod_zoom_yt\search;
 
 use core_search\base_activity;
 
 /**
- * Search area for mod_zoom activities.
+ * Search area for mod_zoom_yt activities.
  */
 class activity extends base_activity {
     /**

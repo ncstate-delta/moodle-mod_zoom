@@ -17,17 +17,17 @@
 /**
  * The task for getting recordings from Zoom to Moodle.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @author     Jwalit Shah <jwalitshah@catalyst-au.net>
  * @copyright  2021 Jwalit Shah <jwalitshah@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom\task;
+namespace mod_zoom_yt\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
 
 use core\task\scheduled_task;
 use moodle_exception;
@@ -43,7 +43,7 @@ class get_meeting_recordings extends scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('getmeetingrecordings', 'mod_zoom');
+        return get_string('getmeetingrecordings', 'mod_zoom_yt');
     }
 
     /**
@@ -55,15 +55,15 @@ class get_meeting_recordings extends scheduled_task {
         global $DB;
 
         try {
-            $service = zoom_webservice();
+            $service = zoom_yt_webservice();
         } catch (moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
         }
 
-        $config = get_config('zoom');
+        $config = get_config('zoom_yt');
         if (empty($config->viewrecordings)) {
-            mtrace('Skipping task - ', get_string('zoomerr_viewrecordings_off', 'zoom'));
+            mtrace('Skipping task - ', get_string('zoomerr_viewrecordings_off', 'zoom_yt'));
             return;
         }
 
@@ -88,7 +88,7 @@ class get_meeting_recordings extends scheduled_task {
         }
 
         // See if we cannot make anymore API calls.
-        $retryafter = get_config('zoom', 'retry-after');
+        $retryafter = get_config('zoom_yt', 'retry-after');
         if (!empty($retryafter) && time() < $retryafter) {
             mtrace('Out of API calls, retry after ' . userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig')));
             return;
@@ -96,7 +96,7 @@ class get_meeting_recordings extends scheduled_task {
 
         mtrace('Finding meeting recordings for this account...');
 
-        $localmeetings = zoom_get_all_meeting_records();
+        $localmeetings = zoom_yt_get_all_meeting_records();
 
         $now = time();
         $from = gmdate('Y-m-d', strtotime('-1 day', $now));
@@ -117,7 +117,7 @@ class get_meeting_recordings extends scheduled_task {
         }
 
         $meetingpasscodes = [];
-        $localrecordings = zoom_get_meeting_recordings_grouped();
+        $localrecordings = zoom_yt_get_meeting_recordings_grouped();
 
         foreach ($hostmeetings as $hostid => $meetings) {
             // Fetch all recordings for this user.
@@ -133,7 +133,7 @@ class get_meeting_recordings extends scheduled_task {
                             'id' => $localrecording->id,
                             'recordingtype' => $recording->recordingtype,
                         ];
-                        $DB->update_record('zoom_meeting_recordings', $updatemeeting);
+                        $DB->update_record('zoom_yt_meeting_recordings', $updatemeeting);
                     }
                     continue;
                 }
@@ -170,7 +170,7 @@ class get_meeting_recordings extends scheduled_task {
                 $record->timecreated = $now;
                 $record->timemodified = $now;
 
-                $record->id = $DB->insert_record('zoom_meeting_recordings', $record);
+                $record->id = $DB->insert_record('zoom_yt_meeting_recordings', $record);
                 mtrace('Recording id: ' . $recordingid . ' (' . $recordingtype . ') added to the database');
             }
         }

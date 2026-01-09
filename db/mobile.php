@@ -17,7 +17,7 @@
 /**
  * Zoom module capability definition
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2018 Nick Stefanski <nmstefanski@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,37 +25,37 @@
 defined('MOODLE_INTERNAL') || die;
 
 $addons = [
-    "mod_zoom" => [
+    "mod_zoom_yt" => [
         "handlers" => [
             'zoommeetingdetails' => [
                 'displaydata' => [
                 'title' => 'pluginname',
-                    'icon' => $CFG->wwwroot . '/mod/zoom/pix/icon.gif',
+                    'icon' => $CFG->wwwroot . '/mod/zoom_yt/pix/icon.gif',
                     'class' => '',
                 ],
 
                 'delegate' => 'CoreCourseModuleDelegate',
-                'method' => 'mobile_course_view', // Main function in \mod_zoom\output\mobile.
+                'method' => 'mobile_course_view', // Main function in \mod_zoom_yt\output\mobile.
                 'offlinefunctions' => [
                     'mobile_course_view' => [],
                 ],
             ],
         ],
         'lang' => [
-            ['pluginname', 'zoom'],
-            ['join_meeting', 'zoom'],
-            ['unavailable', 'zoom'],
-            ['meeting_time', 'zoom'],
-            ['duration', 'zoom'],
-            ['passwordprotected', 'zoom'],
-            ['password', 'zoom'],
-            ['joinlink', 'zoom'],
-            ['joinbeforehost', 'zoom'],
-            ['starthostjoins', 'zoom'],
-            ['startpartjoins', 'zoom'],
-            ['option_audio', 'zoom'],
-            ['status', 'zoom'],
-            ['recurringmeetinglong', 'zoom'],
+            ['pluginname', 'zoom_yt'],
+            ['join_meeting', 'zoom_yt'],
+            ['unavailable', 'zoom_yt'],
+            ['meeting_time', 'zoom_yt'],
+            ['duration', 'zoom_yt'],
+            ['passwordprotected', 'zoom_yt'],
+            ['password', 'zoom_yt'],
+            ['joinlink', 'zoom_yt'],
+            ['joinbeforehost', 'zoom_yt'],
+            ['starthostjoins', 'zoom_yt'],
+            ['startpartjoins', 'zoom_yt'],
+            ['option_audio', 'zoom_yt'],
+            ['status', 'zoom_yt'],
+            ['recurringmeetinglong', 'zoom_yt'],
         ],
     ],
 ];

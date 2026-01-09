@@ -17,7 +17,7 @@
 /**
  * English strings for zoom.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -248,9 +248,9 @@ $string['meetingparticipantsdeleted'] = 'Meeting participant user data deleted.'
 $string['meetingrecordingviewsdeleted'] = 'Meeting recording user view data deleted.';
 $string['messageprovider:ical_notifications'] = 'Send iCal invitations for a newly created Zoom event to participants.';
 $string['messageprovider:teacher_notification'] = 'Notify teachers about user grades (according to duration) in a Zoom session';
-$string['modulename'] = 'Zoom meeting';
-$string['modulename_help'] = 'Zoom is a video and web conferencing platform that gives authorized users the ability to host online meetings.';
-$string['modulenameplural'] = 'Zoom Meetings';
+$string['modulename => 'zoom_yt' meeting';
+$string['modulename => 'zoom_yt' is a video and web conferencing platform that gives authorized users the ability to host online meetings.';
+$string['modulename => 'zoom_yt' Meetings';
 $string['month'] = 'Month(s)';
 $string['month_day_text'] = 'of the month';
 $string['newmeetings'] = 'New Meetings';

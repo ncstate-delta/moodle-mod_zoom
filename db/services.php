@@ -17,7 +17,7 @@
 /**
  * Zoom external functions and service definitions.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @category   external
  * @author     Nick Stefanski
  * @copyright  2017 Auguste Escoffier School of Culinary Arts {@link https://www.escoffier.edu}
@@ -28,23 +28,23 @@
 defined('MOODLE_INTERNAL') || die;
 
 $functions = [
-    'mod_zoom_get_state' => [
-        'classname' => 'mod_zoom\external',
+    'mod_zoom_yt_get_state' => [
+        'classname' => 'mod_zoom_yt\external',
         'methodname' => 'get_state',
-        'classpath' => 'mod/zoom/classes/external.php',
+        'classpath' => 'mod/zoom_yt/classes/external.php',
         'description' => 'Determine if a zoom meeting is available, meeting '
         . 'status, and the start time, duration, and other meeting options.',
         'type' => 'read',
-        'capabilities' => 'mod/zoom:view',
+        'capabilities' => 'mod/zoom_yt:view',
         'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
-    'mod_zoom_grade_item_update' => [
-        'classname' => 'mod_zoom\external',
+    'mod_zoom_yt_grade_item_update' => [
+        'classname' => 'mod_zoom_yt\external',
         'methodname' => 'grade_item_update',
-        'classpath' => 'mod/zoom/classes/external.php',
+        'classpath' => 'mod/zoom_yt/classes/external.php',
         'description' => 'Creates or updates grade item for the given zoom instance and returns join url.',
         'type' => 'write',
-        'capabilities' => 'mod/zoom:view',
+        'capabilities' => 'mod/zoom_yt:view',
         'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
 ];

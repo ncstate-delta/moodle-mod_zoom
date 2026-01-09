@@ -17,7 +17,7 @@
 /**
  * List all zoom meetings.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,38 +29,38 @@ require_once($CFG->libdir . '/accesslib.php');
 require_once($CFG->libdir . '/moodlelib.php');
 
 require_login();
-// Additional access checks in zoom_get_instance_setup().
-[$course, $cm, $zoom] = zoom_get_instance_setup();
+// Additional access checks in zoom_yt_get_instance_setup().
+[$course, $cm, $zoom] = zoom_yt_get_instance_setup();
 
 global $DB;
 
 // Check capability.
 $context = context_module::instance($cm->id);
-require_capability('mod/zoom:addinstance', $context);
+require_capability('mod/zoom_yt:addinstance', $context);
 
 $uuid = required_param('uuid', PARAM_RAW);
 $export = optional_param('export', null, PARAM_ALPHA);
 
-$PAGE->set_url('/mod/zoom/participants.php', ['id' => $cm->id, 'uuid' => $uuid, 'export' => $export]);
+$PAGE->set_url('/mod/zoom_yt/participants.php', ['id' => $cm->id, 'uuid' => $uuid, 'export' => $export]);
 
 $strname = $zoom->name;
-$strtitle = get_string('participants', 'mod_zoom');
+$strtitle = get_string('participants', 'mod_zoom_yt');
 $PAGE->navbar->add($strtitle);
 $PAGE->set_title("$course->shortname: $strname");
 $PAGE->set_heading($course->fullname);
 $PAGE->set_pagelayout('incourse');
 
-$maskparticipantdata = get_config('zoom', 'maskparticipantdata');
+$maskparticipantdata = get_config('zoom_yt', 'maskparticipantdata');
 // If participant data is masked then display a message stating as such and be done with it.
 if ($maskparticipantdata) {
-    zoom_fatal_error(
+    zoom_yt_fatal_error(
         'participantdatanotavailable_help',
-        'mod_zoom',
-        new moodle_url('/mod/zoom/report.php', ['id' => $cm->id])
+        'mod_zoom_yt',
+        new moodle_url('/mod/zoom_yt/report.php', ['id' => $cm->id])
     );
 }
 
-$sessions = zoom_get_sessions_for_display($zoom->id);
+$sessions = zoom_yt_get_sessions_for_display($zoom->id);
 $participants = $sessions[$uuid]['participants'];
 
 // Display the headers/etc if we're not exporting, or if there is no data.
@@ -71,7 +71,7 @@ if (empty($export) || empty($participants)) {
 
     // Stop if there is no data.
     if (empty($participants)) {
-        notice(get_string('noparticipants', 'mod_zoom'), new moodle_url('/mod/zoom/report.php', ['id' => $cm->id]));
+        notice(get_string('noparticipants', 'mod_zoom_yt'), new moodle_url('/mod/zoom_yt/report.php', ['id' => $cm->id]));
         echo $OUTPUT->footer();
         exit();
     }
@@ -92,17 +92,17 @@ if (!empty($export)) {
         get_string('idnumber'),
         get_string('name'),
         get_string('email'),
-        get_string('jointime', 'mod_zoom'),
-        get_string('leavetime', 'mod_zoom'),
-        get_string('duration', 'mod_zoom'),
+        get_string('jointime', 'mod_zoom_yt'),
+        get_string('leavetime', 'mod_zoom_yt'),
+        get_string('duration', 'mod_zoom_yt'),
     ];
 } else {
     $table->head = [
         get_string('idnumber'),
         get_string('name'),
-        get_string('jointime', 'mod_zoom'),
-        get_string('leavetime', 'mod_zoom'),
-        get_string('duration', 'mod_zoom'),
+        get_string('jointime', 'mod_zoom_yt'),
+        get_string('leavetime', 'mod_zoom_yt'),
+        get_string('duration', 'mod_zoom_yt'),
     ];
 }
 
@@ -156,7 +156,7 @@ foreach ($participants as $p) {
 if ($export != 'xls') {
     echo html_writer::table($table);
 
-    $exporturl = new moodle_url('/mod/zoom/participants.php', [
+    $exporturl = new moodle_url('/mod/zoom_yt/participants.php', [
         'id' => $cm->id,
         'uuid' => $uuid,
         'export' => 'xls',
@@ -167,7 +167,7 @@ if ($export != 'xls') {
         $xlsstring,
         ['title' => $xlsstring, 'class' => 'mimetypeicon']
     );
-    echo get_string('export', 'mod_zoom') . ': ' . html_writer::link($exporturl, $xlsicon);
+    echo get_string('export', 'mod_zoom_yt') . ': ' . html_writer::link($exporturl, $xlsicon);
 
     echo $OUTPUT->footer();
 } else {

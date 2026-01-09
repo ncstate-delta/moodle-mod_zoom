@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_zoom instance list viewed event.
+ * The mod_zoom_yt instance list viewed event.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom\event;
+namespace mod_zoom_yt\event;
 
 /**
- * The mod_zoom instance list viewed event class.
+ * The mod_zoom_yt instance list viewed event class.
  */
 class course_module_instance_list_viewed extends \core\event\course_module_instance_list_viewed {
 }

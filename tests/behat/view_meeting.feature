@@ -1,4 +1,4 @@
-@mod @mod_zoom
+@mod @mod_zoom_yt
 Feature: View a meeting
 
   Background:
@@ -24,5 +24,5 @@ Feature: View a meeting
 
   @javascript
   Scenario: As a student, I should be able to view a Zoom meeting's details
-    When I am on the "Meeting 1" "mod_zoom > View" page logged in as "student1"
+    When I am on the "Meeting 1" "mod_zoom_yt > View" page logged in as "student1"
     Then I should see "Start Time"

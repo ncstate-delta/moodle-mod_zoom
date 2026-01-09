@@ -17,7 +17,7 @@
 /**
  * Adding, updating, and deleting zoom meeting recordings.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2020 UC Regents
  * @author     2021 Jwalit Shah <jwalitshah@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,18 +27,18 @@ require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 require_once(__DIR__ . '/locallib.php');
 
-[$course, $cm, $zoom] = zoom_get_instance_setup();
+[$course, $cm, $zoom] = zoom_yt_get_instance_setup();
 
 require_login($course, true, $cm);
 
-if (!get_config('zoom', 'viewrecordings')) {
-    throw new moodle_exception('recordingnotvisible', 'mod_zoom', get_string('recordingnotvisible', 'zoom'));
+if (!get_config('zoom_yt', 'viewrecordings')) {
+    throw new moodle_exception('recordingnotvisible', 'mod_zoom_yt', get_string('recordingnotvisible', 'zoom_yt'));
 }
 
 $context = context_module::instance($cm->id);
 // Set up the page.
 $params = ['id' => $cm->id];
-$url = new moodle_url('/mod/zoom/recordings.php', $params);
+$url = new moodle_url('/mod/zoom_yt/recordings.php', $params);
 $PAGE->set_url($url);
 
 $strname = $zoom->name;
@@ -49,7 +49,7 @@ $PAGE->set_pagelayout('incourse');
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strname);
 
-$iszoommanager = has_capability('mod/zoom:addinstance', $context);
+$iszoommanager = has_capability('mod/zoom_yt:addinstance', $context);
 
 // Set up html table.
 $table = new html_table();
@@ -57,26 +57,26 @@ $table->attributes['class'] = 'generaltable mod_view';
 if ($iszoommanager) {
     $table->align = ['left', 'left', 'left', 'left'];
     $table->head = [
-        get_string('recordingdate', 'mod_zoom'),
-        get_string('recordinglink', 'mod_zoom'),
-        get_string('recordingpasscode', 'mod_zoom'),
-        get_string('recordingshowtoggle', 'mod_zoom'),
+        get_string('recordingdate', 'mod_zoom_yt'),
+        get_string('recordinglink', 'mod_zoom_yt'),
+        get_string('recordingpasscode', 'mod_zoom_yt'),
+        get_string('recordingshowtoggle', 'mod_zoom_yt'),
     ];
 } else {
     $table->align = ['left', 'left', 'left'];
     $table->head = [
-        get_string('recordingdate', 'mod_zoom'),
-        get_string('recordinglink', 'mod_zoom'),
-        get_string('recordingpasscode', 'mod_zoom'),
+        get_string('recordingdate', 'mod_zoom_yt'),
+        get_string('recordinglink', 'mod_zoom_yt'),
+        get_string('recordingpasscode', 'mod_zoom_yt'),
     ];
 }
 
 // Find all entries for this meeting in the database.
-$recordings = zoom_get_meeting_recordings_grouped($zoom->id);
+$recordings = zoom_yt_get_meeting_recordings_grouped($zoom->id);
 if (empty($recordings)) {
     $cell = new html_table_cell();
     $cell->colspan = count($table->head);
-    $cell->text = get_string('norecordings', 'mod_zoom');
+    $cell->text = get_string('norecordings', 'mod_zoom_yt');
     $cell->style = 'text-align: center';
     $row = new html_table_row([$cell]);
     $table->data = [$row];
@@ -109,10 +109,10 @@ if (empty($recordings)) {
                         'sesskey' => sesskey(),
                     ];
                     // If the user is a zoom admin, show the button to toggle whether students can see the recording or not.
-                    $recordingshowurl = new moodle_url('/mod/zoom/showrecording.php', $urlparams);
-                    $recordingshowtext = get_string('recordinghide', 'mod_zoom');
+                    $recordingshowurl = new moodle_url('/mod/zoom_yt/showrecording.php', $urlparams);
+                    $recordingshowtext = get_string('recordinghide', 'mod_zoom_yt');
                     if ($isrecordinghidden) {
-                        $recordingshowtext = get_string('recordingshow', 'mod_zoom');
+                        $recordingshowtext = get_string('recordingshow', 'mod_zoom_yt');
                     }
 
                     $btnclass = 'btn btn-';
@@ -122,9 +122,9 @@ if (empty($recordings)) {
                     $recordingshowhtml = html_writer::div($recordingshowbuttonhtml);
                 }
 
-                $recordingname = trim($recording->name) . ' (' . zoom_get_recording_type_string($recording->recordingtype) . ')';
+                $recordingname = trim($recording->name) . ' (' . zoom_yt_get_recording_type_string($recording->recordingtype) . ')';
                 $params = ['id' => $cm->id, 'recordingid' => $recording->id];
-                $recordingurl = new moodle_url('/mod/zoom/loadrecording.php', $params);
+                $recordingurl = new moodle_url('/mod/zoom_yt/loadrecording.php', $params);
                 $recordinglink = html_writer::link($recordingurl, $recordingname);
                 $recordinglinkhtml = html_writer::span($recordinglink, 'recording-link', ['style' => 'margin-right:1rem']);
                 $recordinghtml .= html_writer::div($recordinglinkhtml, 'recording', ['style' => 'margin-bottom:.5rem']);
@@ -139,11 +139,11 @@ if (empty($recordings)) {
 /**
  * Get the display name for a Zoom recording type.
  *
- * @package mod_zoom
+ * @package mod_zoom_yt
  * @param string $recordingtype Zoom recording type.
  * @return string
  */
-function zoom_get_recording_type_string($recordingtype) {
+function zoom_yt_get_recording_type_string($recordingtype) {
     $recordingtypestringmap = [
         'active_speaker' => 'recordingtype_active_speaker',
         'audio_interpretation' => 'recordingtype_audio_interpretation',
@@ -171,7 +171,7 @@ function zoom_get_recording_type_string($recordingtype) {
         return $recordingtype;
     }
 
-    return get_string($recordingtypestringmap[$recordingtype], 'mod_zoom');
+    return get_string($recordingtypestringmap[$recordingtype], 'mod_zoom_yt');
 }
 
 echo html_writer::table($table);

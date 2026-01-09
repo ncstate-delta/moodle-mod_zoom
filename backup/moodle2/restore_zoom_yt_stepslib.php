@@ -17,17 +17,17 @@
 /**
  * Define all the restore steps that will be used by the restore_zoom_activity_task
  *
- * @package   mod_zoom
+ * @package   mod_zoom_yt
  * @category  backup
  * @copyright 2015 UC Regents
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom;
+namespace mod_zoom_yt;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
 
 use moodle_exception;
 use restore_path_element;
@@ -43,8 +43,8 @@ class restore_activity_structure_step extends \restore_activity_structure_step {
      */
     protected function define_structure() {
         $paths = [];
-        $paths[] = new restore_path_element('zoom', '/activity/zoom');
-        $paths[] = new restore_path_element('zoom_tracking_field', '/activity/zoom/trackingfields/trackingfield');
+        $paths[] = new restore_path_element('zoom_yt', '/activity/zoom_yt');
+        $paths[] = new restore_path_element('zoom_yt_tracking_field', '/activity/zoom_yt/trackingfields/trackingfield');
 
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
@@ -67,8 +67,8 @@ class restore_activity_structure_step extends \restore_activity_structure_step {
         try {
             // FIXME: Do we provide course context? That won't have the right activity names etc.
             $cmid = null;
-            $updateddata = zoom_webservice()->create_meeting($data, $cmid);
-            $data = populate_zoom_from_response($data, $updateddata);
+            $updateddata = zoom_yt_webservice()->create_meeting($data, $cmid);
+            $data = populate_zoom_yt_from_response($data, $updateddata);
             $data->exists_on_zoom = ZOOM_MEETING_EXISTS;
         } catch (moodle_exception $e) {
             $data->join_url = '';
@@ -88,12 +88,12 @@ class restore_activity_structure_step extends \restore_activity_structure_step {
         }
 
         // Create the zoom instance.
-        $newitemid = $DB->insert_record('zoom', $data);
+        $newitemid = $DB->insert_record('zoom_yt', $data);
         $this->apply_activity_instance($newitemid);
 
         // Create the calendar events for the new meeting.
         $data->id = $newitemid;
-        zoom_calendar_item_update($data);
+        zoom_yt_calendar_item_update($data);
     }
 
     /**
@@ -101,18 +101,18 @@ class restore_activity_structure_step extends \restore_activity_structure_step {
      *
      * @param array $data
      */
-    protected function process_zoom_tracking_field($data) {
+    protected function process_zoom_yt_tracking_field($data) {
         global $DB;
 
         $data = (object) $data;
         $oldid = $data->id;
 
-        $data->meeting_id = $this->get_new_parentid('zoom');
+        $data->meeting_id = $this->get_new_parentid('zoom_yt');
 
-        $defaulttrackingfields = zoom_clean_tracking_fields();
+        $defaulttrackingfields = zoom_yt_clean_tracking_fields();
 
         if (isset($defaulttrackingfields[$data->tracking_field])) {
-            $newitemid = $DB->insert_record('zoom_meeting_tracking_fields', $data);
+            $newitemid = $DB->insert_record('zoom_yt_meeting_tracking_fields', $data);
             $this->set_mapping('zoom_tracking_field', $oldid, $newitemid);
         }
     }
@@ -122,6 +122,6 @@ class restore_activity_structure_step extends \restore_activity_structure_step {
      */
     protected function after_execute() {
         // Add zoom related files, no need to match by itemname (just internally handled context).
-        $this->add_related_files('mod_zoom', 'intro', null);
+        $this->add_related_files('mod_zoom_yt', 'intro', null);
     }
 }

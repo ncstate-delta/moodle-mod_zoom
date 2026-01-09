@@ -17,7 +17,7 @@
 /**
  * Export ical file for a zoom meeting.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,11 +30,11 @@ require_once($CFG->libdir . '/bennu/bennu.inc.php');
 // Course_module ID.
 $id = required_param('id', PARAM_INT);
 if ($id) {
-    $cm = get_coursemodule_from_id('zoom', $id, 0, false, MUST_EXIST);
+    $cm = get_coursemodule_from_id('zoom_yt', $id, 0, false, MUST_EXIST);
     $course = get_course($cm->course);
-    $zoom = $DB->get_record('zoom', ['id' => $cm->instance], '*', MUST_EXIST);
+    $zoom = $DB->get_record('zoom_yt', ['id' => $cm->instance], '*', MUST_EXIST);
 } else {
-    throw new moodle_exception('zoomerr_id_missing', 'mod_zoom');
+    throw new moodle_exception('zoomerr_id_missing', 'mod_zoom_yt');
 }
 
 require_login($course, true, $cm);
@@ -42,21 +42,21 @@ require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 $PAGE->set_context($context);
 
-require_capability('mod/zoom:view', $context);
+require_capability('mod/zoom_yt:view', $context);
 
 // Get config.
-$config = get_config('zoom');
+$config = get_config('zoom_yt');
 
 // Check if the admin did not disable the feature.
 if ($config->showdownloadical == ZOOM_DOWNLOADICAL_DISABLE) {
-    $disabledredirecturl = new moodle_url('/mod/zoom/view.php', ['id' => $id]);
-    throw new moodle_exception('err_downloadicaldisabled', 'mod_zoom', $disabledredirecturl);
+    $disabledredirecturl = new moodle_url('/mod/zoom_yt/view.php', ['id' => $id]);
+    throw new moodle_exception('err_downloadicaldisabled', 'mod_zoom_yt', $disabledredirecturl);
 }
 
 // Check if we are dealing with a recurring meeting with no fixed time.
 if ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
-    $errorredirecturl = new moodle_url('/mod/zoom/view.php', ['id' => $id]);
-    throw new moodle_exception('err_downloadicalrecurringnofixed', 'mod_zoom', $errorredirecturl);
+    $errorredirecturl = new moodle_url('/mod/zoom_yt/view.php', ['id' => $id]);
+    throw new moodle_exception('err_downloadicalrecurringnofixed', 'mod_zoom_yt', $errorredirecturl);
 }
 
 // Start ical file.
@@ -65,13 +65,13 @@ $ical->add_property('method', 'PUBLISH');
 $ical->add_property('prodid', '-//Moodle Pty Ltd//NONSGML Moodle Version ' . $CFG->version . '//EN');
 
 // Get the meeting invite note to add to the description property.
-$meetinginvite = zoom_webservice()->get_meeting_invitation($zoom)->get_display_string($cm->id);
+$meetinginvite = zoom_yt_webservice()->get_meeting_invitation($zoom)->get_display_string($cm->id);
 
 // Compute and add description property to event.
 $convertedtext = html_to_text($zoom->intro);
-$descriptiontext = get_string('calendarjoinurl', 'mod_zoom', $CFG->wwwroot . '/mod/zoom/view.php?id=' . $cm->id);
+$descriptiontext = get_string('calendarjoinurl', 'mod_zoom_yt', $CFG->wwwroot . '/mod/zoom_yt/view.php?id=' . $cm->id);
 if (!empty($convertedtext)) {
-    $descriptiontext .= get_string('calendardescriptionintro', 'mod_zoom', $convertedtext);
+    $descriptiontext .= get_string('calendardescriptionintro', 'mod_zoom_yt', $convertedtext);
 }
 
 if (!empty($meetinginvite)) {
@@ -79,21 +79,21 @@ if (!empty($meetinginvite)) {
 }
 
 // Get all occurrences of the meeting from the DB.
-$params = ['modulename' => 'zoom', 'instance' => $zoom->id];
+$params = ['modulename => 'zoom_yt'->id];
 $events = $DB->get_records('event', $params, 'timestart ASC');
 
 // If we haven't got at least a single occurrence.
 if (empty($events)) {
     // We could handle this case in a nicer way ans return an empty iCal file without events,
     // but as this case should not happen in real life anyway, return a fatal error to make clear that something is wrong.
-    $errorredirecturl = new moodle_url('/mod/zoom/view.php', ['id' => $id]);
-    throw new moodle_exception('err_downloadicalrecurringempty', 'mod_zoom', $errorredirecturl);
+    $errorredirecturl = new moodle_url('/mod/zoom_yt/view.php', ['id' => $id]);
+    throw new moodle_exception('err_downloadicalrecurringempty', 'mod_zoom_yt', $errorredirecturl);
 }
 
 // Iterate over all events.
 // We will add each event as an individual iCal event.
 foreach ($events as $event) {
-    $icalevent = zoom_helper_icalendar_event($event, $descriptiontext);
+    $icalevent = zoom_yt_helper_icalendar_event($event, $descriptiontext);
     // Add the event to the iCal file.
     $ical->add_component($icalevent);
 }

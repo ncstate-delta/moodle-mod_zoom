@@ -17,17 +17,17 @@
 /**
  * Task: get_meeting_reports
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @copyright  2018 UC Regents
  * @author     Kubilay Agi
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom\task;
+namespace mod_zoom_yt\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
 
 use context_course;
 use core\message\message;
@@ -36,9 +36,9 @@ use core_user;
 use dml_exception;
 use Exception;
 use html_writer;
-use mod_zoom\not_found_exception;
-use mod_zoom\retry_failed_exception;
-use mod_zoom\webservice_exception;
+use mod_zoom_yt\not_found_exception;
+use mod_zoom_yt\retry_failed_exception;
+use mod_zoom_yt\webservice_exception;
 use moodle_exception;
 use moodle_url;
 use stdClass;
@@ -60,9 +60,9 @@ class get_meeting_reports extends scheduled_task {
     public $debuggingenabled = false;
 
     /**
-     * The mod_zoom\webservice instance used to query for data. Can be stubbed
+     * The mod_zoom_yt\webservice instance used to query for data. Can be stubbed
      * for unit testing.
-     * @var mod_zoom\webservice
+     * @var mod_zoom_yt\webservice
      */
     public $service = null;
 
@@ -89,14 +89,14 @@ class get_meeting_reports extends scheduled_task {
      */
     public function execute($paramstart = null, $paramend = null, $hostuuids = null) {
         try {
-            $this->service = zoom_webservice();
+            $this->service = zoom_yt_webservice();
         } catch (moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
         }
 
         // See if we cannot make anymore API calls.
-        $retryafter = get_config('zoom', 'retry-after');
+        $retryafter = get_config('zoom_yt', 'retry-after');
         if (!empty($retryafter) && time() < $retryafter) {
             mtrace('Out of API calls, retry after ' . userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig')));
             return;
@@ -116,7 +116,7 @@ class get_meeting_reports extends scheduled_task {
             $starttime = strtotime($paramstart);
             $runningastask = false;
         } else {
-            $starttime = get_config('zoom', 'last_call_made_at');
+            $starttime = get_config('zoom_yt', 'last_call_made_at');
         }
 
         if (empty($starttime)) {
@@ -186,7 +186,7 @@ class get_meeting_reports extends scheduled_task {
                     if ($runningastask) {
                         // Only want to resume if we were processing all reports.
                         $recordedallmeetings = false;
-                        set_config('last_call_made_at', $meetingtime - 1, 'zoom');
+                        set_config('last_call_made_at', $meetingtime - 1, 'zoom_yt');
                     }
 
                     break;
@@ -198,7 +198,7 @@ class get_meeting_reports extends scheduled_task {
                 // where we left off.
                 if ($runningastask) {
                     $recordedallmeetings = false;
-                    set_config('last_call_made_at', $meetingtime - 1, 'zoom');
+                    set_config('last_call_made_at', $meetingtime - 1, 'zoom_yt');
                     break;
                 }
             }
@@ -206,7 +206,7 @@ class get_meeting_reports extends scheduled_task {
 
         if ($recordedallmeetings && $runningastask) {
             // All finished, so save the time that we set end time for the initial query.
-            set_config('last_call_made_at', $endtime, 'zoom');
+            set_config('last_call_made_at', $endtime, 'zoom_yt');
         }
     }
 
@@ -245,7 +245,7 @@ class get_meeting_reports extends scheduled_task {
         if (!empty($participant->id)) {
             // Sometimes uuid is blank from Zoom.
             $participantmatches = $DB->get_records(
-                'zoom_meeting_participants',
+                'zoom_yt_meeting_participants',
                 ['uuid' => $participant->id],
                 null,
                 'id, userid, name'
@@ -332,7 +332,7 @@ class get_meeting_reports extends scheduled_task {
         foreach ($enrolled as $user) {
             $name = strtoupper(fullname($user));
             $names[$user->id] = $name;
-            $emails[$user->id] = strtoupper(zoom_get_api_identifier($user));
+            $emails[$user->id] = strtoupper(zoom_yt_get_api_identifier($user));
         }
 
         return [$names, $emails];
@@ -369,7 +369,7 @@ class get_meeting_reports extends scheduled_task {
         }
 
         $allmeetings = [];
-        $localhosts = $DB->get_records_menu('zoom', null, '', 'id, host_id');
+        $localhosts = $DB->get_records_menu('zoom_yt', null, '', 'id, host_id');
 
         mtrace("Processing " . count($activehostsuuids) . " active host uuids");
 
@@ -447,7 +447,7 @@ class get_meeting_reports extends scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('getmeetingreports', 'mod_zoom');
+        return get_string('getmeetingreports', 'mod_zoom_yt');
     }
 
     /**
@@ -529,7 +529,7 @@ class get_meeting_reports extends scheduled_task {
 
         // If meeting doesn't exist in the zoom database, the instance is
         // deleted, and we don't need reports for these.
-        if (!($zoomrecord = $DB->get_record('zoom', ['meeting_id' => $meeting->meeting_id], '*', IGNORE_MULTIPLE))) {
+        if (!($zoomrecord = $DB->get_record('zoom_yt', ['meeting_id' => $meeting->meeting_id], '*', IGNORE_MULTIPLE))) {
             mtrace('Meeting does not exist locally; skipping');
             return true;
         }
@@ -537,15 +537,15 @@ class get_meeting_reports extends scheduled_task {
         $meeting->zoomid = $zoomrecord->id;
 
         // Insert or update meeting details.
-        if (!($DB->record_exists('zoom_meeting_details', ['uuid' => $meeting->uuid]))) {
+        if (!($DB->record_exists('zoom_yt_meeting_details', ['uuid' => $meeting->uuid]))) {
             $this->debugmsg('Inserting zoom_meeting_details');
-            $detailsid = $DB->insert_record('zoom_meeting_details', $meeting);
+            $detailsid = $DB->insert_record('zoom_yt_meeting_details', $meeting);
         } else {
             // Details entry already exists, so update it.
             $this->debugmsg('Updating zoom_meeting_details');
-            $detailsid = $DB->get_field('zoom_meeting_details', 'id', ['uuid' => $meeting->uuid]);
+            $detailsid = $DB->get_field('zoom_yt_meeting_details', 'id', ['uuid' => $meeting->uuid]);
             $meeting->id = $detailsid;
-            $DB->update_record('zoom_meeting_details', $meeting);
+            $DB->update_record('zoom_yt_meeting_details', $meeting);
         }
 
         try {
@@ -568,7 +568,7 @@ class get_meeting_reports extends scheduled_task {
         try {
             $transaction = $DB->start_delegated_transaction();
 
-            $count = $DB->count_records('zoom_meeting_participants', ['detailsid' => $detailsid]);
+            $count = $DB->count_records('zoom_yt_meeting_participants', ['detailsid' => $detailsid]);
             if (!empty($count)) {
                 $this->debugmsg(sprintf('Existing participant records: %d', $count));
                 // No need to delete old records, we don't insert matching records.
@@ -596,12 +596,12 @@ class get_meeting_reports extends scheduled_task {
                 ];
 
                 // Check if the record already exists.
-                if ($record = $DB->get_record('zoom_meeting_participants', $conditions)) {
+                if ($record = $DB->get_record('zoom_yt_meeting_participants', $conditions)) {
                     // The exact record already exists, so do nothing.
                     $this->debugmsg('Record already exists ' . $record->id);
                 } else {
                     // Insert all new records.
-                    $recordid = $DB->insert_record('zoom_meeting_participants', $participant, true);
+                    $recordid = $DB->insert_record('zoom_yt_meeting_participants', $participant, true);
                     // At least one new record inserted.
                     $recordupdated = true;
                     $this->debugmsg('Inserted record ' . $recordid);
@@ -612,7 +612,7 @@ class get_meeting_reports extends scheduled_task {
             // Check the grading method settings.
             if (!empty($zoomrecord->grading_method)) {
                 $gradingmethod = $zoomrecord->grading_method;
-            } else if ($defaultgrading = get_config('gradingmethod', 'zoom')) {
+            } else if ($defaultgrading = get_config('gradingmethod', 'zoom_yt')) {
                 $gradingmethod = $defaultgrading;
             } else {
                 $gradingmethod = 'entry';
@@ -647,7 +647,7 @@ class get_meeting_reports extends scheduled_task {
         $courseid = $zoomrecord->course;
         $context = context_course::instance($courseid);
         // Get grade list for items.
-        $gradelist = grade_get_grades($courseid, 'mod', 'zoom', $zoomrecord->id);
+        $gradelist = grade_get_grades($courseid, 'mod', 'zoom_yt', $zoomrecord->id);
 
         // Is this meeting is not gradable, return.
         if (empty($gradelist->items)) {
@@ -661,8 +661,8 @@ class get_meeting_reports extends scheduled_task {
 
         // After check and testing, these timings are the actual meeting timings returned from zoom
         // ... (i.e.when the host start and end the meeting).
-        // Not like those on 'zoom' table which represent the settings from zoom activity.
-        $meetingtime = $DB->get_record('zoom_meeting_details', ['id' => $detailsid], 'start_time, end_time');
+        // Not like those on 'zoom_yt' table which represent the settings from zoom activity.
+        $meetingtime = $DB->get_record('zoom_yt_meeting_details', ['id' => $detailsid], 'start_time, end_time');
         if (empty($zoomrecord->recurring)) {
             $end = min($meetingtime->end_time, $zoomrecord->start_time + $zoomrecord->duration);
             $start = max($meetingtime->start_time, $zoomrecord->start_time);
@@ -672,7 +672,7 @@ class get_meeting_reports extends scheduled_task {
         }
 
         // Get the required records again.
-        $records = $DB->get_records('zoom_meeting_participants', ['detailsid' => $detailsid], 'join_time ASC');
+        $records = $DB->get_records('zoom_yt_meeting_participants', ['detailsid' => $detailsid], 'join_time ASC');
         // Initialize the data arrays, indexing them later with userids.
         $durations = [];
         $join = [];
@@ -753,7 +753,7 @@ class get_meeting_reports extends scheduled_task {
                             'feedback' => '',
                         ];
 
-                        zoom_grade_item_update($zoomrecord, $gradegrade);
+                        zoom_yt_grade_item_update($zoomrecord, $gradegrade);
                         $graded++;
                         $this->debugmsg('grade updated for user with id: ' . $userid
                                         . ', duration =' . $userduration
@@ -775,7 +775,7 @@ class get_meeting_reports extends scheduled_task {
                     'userid' => $userid,
                     'grade' => $newgrade,
                 ];
-                $needgrade[] = get_string('nonrecognizedusergrade', 'mod_zoom', $a);
+                $needgrade[] = get_string('nonrecognizedusergrade', 'mod_zoom_yt', $a);
             }
         }
 
@@ -866,7 +866,7 @@ class get_meeting_reports extends scheduled_task {
         // Number of users need to be graded.
         $needgradenumber = count($data['needgrade']);
         // List of users need grading.
-        $needstring = get_string('grading_needgrade', 'mod_zoom');
+        $needstring = get_string('grading_needgrade', 'mod_zoom_yt');
         $needgrade = (!empty($data['needgrade'])) ? $needstring . implode('<br>', $data['needgrade']) . "\n" : '';
 
         $zoomid = $data['zoomid'];
@@ -886,10 +886,10 @@ class get_meeting_reports extends scheduled_task {
                 'itemid' => $itemid,
             ]
         );
-        $gradeurl = html_writer::link($gurl, get_string('gradinglink', 'mod_zoom'));
+        $gradeurl = html_writer::link($gurl, get_string('gradinglink', 'mod_zoom_yt'));
 
         // Zoom instance url.
-        $zurl = new moodle_url('/mod/zoom/view.php', ['id' => $zoomid]);
+        $zurl = new moodle_url('/mod/zoom_yt/view.php', ['id' => $zoomid]);
         $zoomurl = html_writer::link($zurl, $name);
 
         // Data object used in lang strings.
@@ -908,7 +908,7 @@ class get_meeting_reports extends scheduled_task {
         // This helps the teacher to grade them manually.
         $notfound = $data['notfound'];
         if (!empty($notfound)) {
-            $a->notfound = get_string('grading_notfound', 'mod_zoom');
+            $a->notfound = get_string('grading_notfound', 'mod_zoom_yt');
             foreach ($notfound as $userid => $fullname) {
                 $params = ['item' => 'user', 'id' => $courseid, 'userid' => $userid];
                 $url = new moodle_url('/grade/report/singleview/index.php', $params);
@@ -919,7 +919,7 @@ class get_meeting_reports extends scheduled_task {
 
         $notenrolled = $data['notenrolled'];
         if (!empty($notenrolled)) {
-            $a->notenrolled = get_string('grading_notenrolled', 'mod_zoom');
+            $a->notenrolled = get_string('grading_notenrolled', 'mod_zoom_yt');
             foreach ($notenrolled as $userid => $fullname) {
                 $userurl = new moodle_url('/user/profile.php', ['id' => $userid]);
                 $profile = html_writer::link($userurl, $fullname);
@@ -929,21 +929,21 @@ class get_meeting_reports extends scheduled_task {
 
         // Prepare the message.
         $message = new message();
-        $message->component = 'mod_zoom';
+        $message->component = 'mod_zoom_yt';
         $message->name = 'teacher_notification'; // The notification name from message.php.
         $message->userfrom = core_user::get_noreply_user();
 
-        $message->subject = get_string('gradingmessagesubject', 'mod_zoom', $a);
+        $message->subject = get_string('gradingmessagesubject', 'mod_zoom_yt', $a);
 
-        $messagebody = get_string('gradingmessagebody', 'mod_zoom', $a);
+        $messagebody = get_string('gradingmessagebody', 'mod_zoom_yt', $a);
         $message->fullmessage = $messagebody;
 
         $message->fullmessageformat = FORMAT_MARKDOWN;
         $message->fullmessagehtml = "<p>$messagebody</p>";
-        $message->smallmessage = get_string('gradingsmallmeassage', 'mod_zoom', $a);
+        $message->smallmessage = get_string('gradingsmallmeassage', 'mod_zoom_yt', $a);
         $message->notification = 1;
         $message->contexturl = $gurl; // This link redirect the teacher to the page of item's grades.
-        $message->contexturlname = get_string('gradinglink', 'mod_zoom');
+        $message->contexturlname = get_string('gradinglink', 'mod_zoom_yt');
         // Email content.
         $content = ['*' => ['header' => $message->subject, 'footer' => '']];
         $message->set_additional_content('email', $content);
@@ -1030,7 +1030,7 @@ class get_meeting_reports extends scheduled_task {
             'courseid' => $zoomrecord->course,
             'objectid' => $zoomrecord->id,
         ];
-        $selectwhere = "eventname = '\\\\mod_zoom\\\\event\\\\join_meeting_button_clicked'
+        $selectwhere = "eventname = '\\\\mod_zoom_yt\\\\event\\\\join_meeting_button_clicked'
             AND courseid = :courseid
             AND objectid = :objectid";
         $events = $reader->get_events_select($selectwhere, $params, 'userid ASC', 0, 0);

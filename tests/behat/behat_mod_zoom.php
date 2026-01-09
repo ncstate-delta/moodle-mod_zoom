@@ -18,13 +18,13 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 use Behat\Behat\Context\Context;
 
 /**
- * Behat steps for mod_zoom.
+ * Behat steps for mod_zoom_yt.
  *
- * @package mod_zoom
+ * @package mod_zoom_yt
  * @copyright 2025 Alan McCoy
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class behat_mod_zoom extends behat_base implements Context {
+class behat_mod_zoom_yt extends behat_base implements Context {
     /**
      * Convert page names to URLs for steps like 'When I am on the "[page name]" page'.
      *
@@ -49,7 +49,7 @@ class behat_mod_zoom extends behat_base implements Context {
      * | pagetype   | name meaning       | description                    |
      * | View       | Zoom meeting name  | The Zoom meeting activity page |
      *
-     * @param string $type identifies which type of page this is, e.g. 'mod_zoom > View'.
+     * @param string $type identifies which type of page this is, e.g. 'mod_zoom_yt > View'.
      * @param string $identifier identifies the particular page, e.g. 'Test Meeting'.
      * @return moodle_url the corresponding URL.
      * @throws Exception with a meaningful error message if the specified page cannot be found.
@@ -59,7 +59,7 @@ class behat_mod_zoom extends behat_base implements Context {
 
         switch (strtolower($type)) {
             case 'view':
-                return new moodle_url('/mod/zoom/view.php', [
+                return new moodle_url('/mod/zoom_yt/view.php', [
                     'id' => $this->get_cm_by_meeting_name($identifier)->id,
                 ]);
             case 'edit':
@@ -80,7 +80,7 @@ class behat_mod_zoom extends behat_base implements Context {
      */
     protected function get_meeting_by_name(string $name): stdClass {
         global $DB;
-        return $DB->get_record('zoom', ['name' => $name]);
+        return $DB->get_record('zoom_yt', ['name' => $name]);
     }
 
     /**
@@ -91,6 +91,6 @@ class behat_mod_zoom extends behat_base implements Context {
      */
     protected function get_cm_by_meeting_name(string $name): stdClass {
         $meeting = $this->get_meeting_by_name($name);
-        return get_coursemodule_from_instance('zoom', $meeting->id, $meeting->course);
+        return get_coursemodule_from_instance('zoom_yt', $meeting->id, $meeting->course);
     }
 }

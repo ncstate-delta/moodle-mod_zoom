@@ -17,7 +17,7 @@
 /**
  * Zoom external API
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @category   external
  * @author     Nick Stefanski <nstefanski@escoffier.edu>
  * @copyright  2017 Auguste Escoffier School of Culinary Arts {@link https://www.escoffier.edu}
@@ -25,7 +25,7 @@
  * @since      Moodle 3.1
  */
 
-namespace mod_zoom;
+namespace mod_zoom_yt;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -59,7 +59,7 @@ class external extends external_api {
 
     /**
      * Determine if a zoom meeting is available, meeting status, and the start time, duration, and other meeting options.
-     * This function grabs most of the options to display for users in /mod/zoom/view.php
+     * This function grabs most of the options to display for users in /mod/zoom_yt/view.php
      * Host functions are not currently supported
      *
      * @param int $zoomid the zoom course module id
@@ -69,7 +69,7 @@ class external extends external_api {
      */
     public static function get_state($zoomid) {
         global $DB, $CFG;
-        require_once($CFG->dirroot . "/mod/zoom/locallib.php");
+        require_once($CFG->dirroot . "/mod/zoom_yt/locallib.php");
 
         $params = self::validate_parameters(
             self::get_state_parameters(),
@@ -81,15 +81,15 @@ class external extends external_api {
 
         // Request and permission validation.
         $cm = $DB->get_record('course_modules', ['id' => $params['zoomid']], '*', MUST_EXIST);
-        $zoom = $DB->get_record('zoom', ['id' => $cm->instance], '*', MUST_EXIST);
+        $zoom = $DB->get_record('zoom_yt', ['id' => $cm->instance], '*', MUST_EXIST);
 
         $context = context_module::instance($cm->id);
         self::validate_context($context);
 
-        require_capability('mod/zoom:view', $context);
+        require_capability('mod/zoom_yt:view', $context);
 
         // Call the zoom/locallib API.
-        [$inprogress, $available, $finished] = zoom_get_state($zoom);
+        [$inprogress, $available, $finished] = zoom_yt_get_state($zoom);
 
         $result = [];
         $result['available'] = $available;
@@ -110,16 +110,16 @@ class external extends external_api {
 
         if (!$zoom->recurring) {
             if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
-                $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
+                $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom_yt');
             } else if ($finished) {
-                $status = get_string('meeting_finished', 'mod_zoom');
+                $status = get_string('meeting_finished', 'mod_zoom_yt');
             } else if ($inprogress) {
-                $status = get_string('meeting_started', 'mod_zoom');
+                $status = get_string('meeting_started', 'mod_zoom_yt');
             } else {
-                $status = get_string('meeting_not_started', 'mod_zoom');
+                $status = get_string('meeting_not_started', 'mod_zoom_yt');
             }
         } else {
-            $status = get_string('recurringmeetinglong', 'mod_zoom');
+            $status = get_string('recurringmeetinglong', 'mod_zoom_yt');
         }
 
         $result['status'] = $status;
@@ -171,7 +171,7 @@ class external extends external_api {
 
     /**
      * Creates or updates grade item for the given zoom instance and returns join url.
-     * This function grabs most of the options to display for users in /mod/zoom/view.php
+     * This function grabs most of the options to display for users in /mod/zoom_yt/view.php
      *
      * @param int $zoomid the zoom course module id
      * @return array of warnings and status result
@@ -180,7 +180,7 @@ class external extends external_api {
      */
     public static function grade_item_update($zoomid) {
         global $CFG;
-        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+        require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
 
         $params = self::validate_parameters(
             self::get_state_parameters(),
@@ -194,7 +194,7 @@ class external extends external_api {
         self::validate_context($context);
 
         // Call load meeting function, do not use start url on mobile.
-        $meetinginfo = zoom_load_meeting($params['zoomid'], $context, $usestarturl = false);
+        $meetinginfo = zoom_yt_load_meeting($params['zoomid'], $context, $usestarturl = false);
 
         // Pass url to join zoom meeting in order to redirect user.
         $result = [];

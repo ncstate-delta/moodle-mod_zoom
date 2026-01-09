@@ -17,13 +17,13 @@
 /**
  * Tests for the invitation class.
  *
- * @package    mod_zoom
+ * @package    mod_zoom_yt
  * @author     Andrew Madden <andrewmadden@catalyst-au.net>
  * @copyright  2021 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom;
+namespace mod_zoom_yt;
 
 use advanced_testcase;
 use context_system;
@@ -32,9 +32,9 @@ use moodle_url;
 
 /**
  * PHPunit testcase class for invitations.
- * @covers \mod_zoom\invitation
+ * @covers \mod_zoom_yt\invitation
  */
-final class mod_zoom_invitation_test extends advanced_testcase {
+final class mod_zoom_yt_invitation_test extends advanced_testcase {
     /**
      * Setup to ensure that fixtures are loaded.
      */
@@ -49,7 +49,7 @@ final class mod_zoom_invitation_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
-        set_config('invitationregexenabled', 1, 'zoom');
+        set_config('invitationregexenabled', 1, 'zoom_yt');
     }
 
     /**
@@ -59,7 +59,7 @@ final class mod_zoom_invitation_test extends advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
         $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid);
@@ -112,7 +112,7 @@ final class mod_zoom_invitation_test extends advanced_testcase {
     }
 
     /**
-     * Test zoom invitation display message for user with only the mod/zoom:viewjoinurl capability.
+     * Test zoom invitation display message for user with only the mod/zoom_yt:viewjoinurl capability.
      */
     public function test_display_message_when_user_has_viewjoinurl_capability(): void {
         $this->resetAfterTest();
@@ -120,8 +120,8 @@ final class mod_zoom_invitation_test extends advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
         $role = $this->getDataGenerator()->create_role();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
-        assign_capability('mod/zoom:viewjoinurl', CAP_ALLOW, $role, context_system::instance()->id);
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
+        assign_capability('mod/zoom_yt:viewjoinurl', CAP_ALLOW, $role, context_system::instance()->id);
         role_assign($role, $user->id, context_course::instance($course->id));
         $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
@@ -140,7 +140,7 @@ final class mod_zoom_invitation_test extends advanced_testcase {
     }
 
     /**
-     * Test zoom invitation display message for user with only the mod/zoom:viewdialin capability.
+     * Test zoom invitation display message for user with only the mod/zoom_yt:viewdialin capability.
      */
     public function test_display_message_when_user_has_viewdialin_capability(): void {
         $this->resetAfterTest();
@@ -148,8 +148,8 @@ final class mod_zoom_invitation_test extends advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
         $role = $this->getDataGenerator()->create_role();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
-        assign_capability('mod/zoom:viewdialin', CAP_ALLOW, $role, context_system::instance());
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
+        assign_capability('mod/zoom_yt:viewdialin', CAP_ALLOW, $role, context_system::instance());
         role_assign($role, $user->id, context_course::instance($course->id));
         $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
@@ -205,7 +205,7 @@ final class mod_zoom_invitation_test extends advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
         $role = $this->getDataGenerator()->create_role();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
         role_assign($role, $user->id, context_course::instance($course->id));
         $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
@@ -224,14 +224,14 @@ final class mod_zoom_invitation_test extends advanced_testcase {
         global $PAGE;
         $this->resetAfterTest();
         $this->setAdminUser();
-        set_config('invitation_joinurl', '', 'zoom');
+        set_config('invitation_joinurl', '', 'zoom_yt');
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
         $role = $this->getDataGenerator()->create_role();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
         role_assign($role, $user->id, context_course::instance($course->id));
         // Set mock zoom activity URL for page as exception messages expect it.
-        $PAGE->set_url(new moodle_url('/mod/zoom/view.php?id=123'));
+        $PAGE->set_url(new moodle_url('/mod/zoom_yt/view.php?id=123'));
         $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid, $user->id);
@@ -245,14 +245,14 @@ final class mod_zoom_invitation_test extends advanced_testcase {
         global $PAGE;
         $this->resetAfterTest();
         $this->setAdminUser();
-        set_config('invitation_joinurl', '~', 'zoom');
+        set_config('invitation_joinurl', '~', 'zoom_yt');
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
         $role = $this->getDataGenerator()->create_role();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
         role_assign($role, $user->id, context_course::instance($course->id));
         // Set mock zoom activity URL for page as exception messages expect it.
-        $PAGE->set_url(new moodle_url('/mod/zoom/view.php?id=123'));
+        $PAGE->set_url(new moodle_url('/mod/zoom_yt/view.php?id=123'));
         $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid, $user->id);
@@ -265,11 +265,11 @@ final class mod_zoom_invitation_test extends advanced_testcase {
     public function test_display_message_when_a_regex_pattern_is_finds_no_match(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        set_config('invitation_joinurl', '/nomatch/mi', 'zoom');
+        set_config('invitation_joinurl', '/nomatch/mi', 'zoom_yt');
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
         $role = $this->getDataGenerator()->create_role();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
         role_assign($role, $user->id, context_course::instance($course->id));
         $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
@@ -283,9 +283,9 @@ final class mod_zoom_invitation_test extends advanced_testcase {
     public function test_display_message_has_invite_removed_if_setting_enabled(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        set_config('invitationremoveinvite', '1', 'zoom');
+        set_config('invitationremoveinvite', '1', 'zoom_yt');
         $course = $this->getDataGenerator()->create_course();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
         $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid);
@@ -341,9 +341,9 @@ final class mod_zoom_invitation_test extends advanced_testcase {
     public function test_display_message_does_not_have_invite_removed_if_setting_disabled(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        set_config('invitationremoveinvite', '0', 'zoom');
+        set_config('invitationremoveinvite', '0', 'zoom_yt');
         $course = $this->getDataGenerator()->create_course();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
         $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid);
@@ -401,9 +401,9 @@ final class mod_zoom_invitation_test extends advanced_testcase {
     public function test_display_message_has_icallink_removed_if_setting_enabled(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        set_config('invitationremoveicallink', '1', 'zoom');
+        set_config('invitationremoveicallink', '1', 'zoom_yt');
         $course = $this->getDataGenerator()->create_course();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
 
         // Test a scheduled meeting.
         $message = (new invitation(
@@ -574,9 +574,9 @@ final class mod_zoom_invitation_test extends advanced_testcase {
     public function test_display_message_does_not_have_icallink_removed_if_setting_disabled(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        set_config('invitationremoveicallink', '0', 'zoom');
+        set_config('invitationremoveicallink', '0', 'zoom_yt');
         $course = $this->getDataGenerator()->create_course();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
 
         // Test a scheduled meeting.
         $message = (new invitation(
@@ -744,7 +744,7 @@ final class mod_zoom_invitation_test extends advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
         $message = (new invitation(null))->get_display_string($zoom->cmid);
         $this->assertNull($message);
     }
@@ -753,13 +753,13 @@ final class mod_zoom_invitation_test extends advanced_testcase {
      * Test display message is returned in full regardless of capabilities if regex patterns are disabled.
      */
     public function test_display_message_when_user_has_no_capabilities_with_regex_disabled(): void {
-        set_config('invitationregexenabled', 0, 'zoom');
+        set_config('invitationregexenabled', 0, 'zoom_yt');
         $this->resetAfterTest();
         $this->setAdminUser();
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
         $role = $this->getDataGenerator()->create_role();
-        $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
+        $zoom = $this->getDataGenerator()->create_module('zoom_yt', ['course' => $course]);
         role_assign($role, $user->id, context_course::instance($course->id));
         $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()

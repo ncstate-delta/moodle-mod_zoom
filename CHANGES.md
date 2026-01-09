@@ -28,9 +28,9 @@
 
 - Feature: Send iCal Notifications #623 (thanks @paulandm, @OpenCollabZA)
   - New setting `zoom/sendicalnotifications`
-  - New message `mod_zoom/ical_notifications`
+  - New message `mod_zoom_yt/ical_notifications`
   - New table `zoom_ical_notifications`
-  - New task `mod_zoom\task\send_ical_notifications`
+  - New task `mod_zoom_yt\task\send_ical_notifications`
 - Bugfix: Create Zoom user webservice method used outdated action. #655 (thanks @yedidiaklein)
 - Bugfix: Detailed error messages when editing activities #656 (thanks @Chatharina)
 - Code quality: Check Moodle 5.0 #654
@@ -382,7 +382,7 @@
 #### v3.7 ####
 
 - Allow administrators to selectively remove Meeting Invitation details #235 (thanks @andrewmadden)
-  - New capabilities `mod/zoom:viewjoinurl` and `mod/zoom:viewdialin`
+  - New capabilities `mod/zoom_yt:viewjoinurl` and `mod/zoom_yt:viewdialin`
 - Track completion for mobile users #238 (thanks @nstefanski, @tzerafnx)
 - Fix backup and restore of several zoom activity-level fields #247 (thanks @abias)
 - Fix meeting reports task for some already-numeric end times #236 (thanks @lcollong)
