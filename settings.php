@@ -55,6 +55,16 @@ if ($ADMIN->fulltree) {
         $settings->add($connectionstatus);
     }
 
+    // Category Settings link.
+    $categorysettingsurl = new moodle_url('/mod/zoom_yt/categorylist.php');
+    $categorysettingslink = html_writer::link($categorysettingsurl, get_string('manage_category_settings', 'zoom_yt'),
+        ['class' => 'btn btn-secondary']);
+    $settings->add(new admin_setting_heading(
+        'zoom/categorysettingslink',
+        get_string('category_settings_header', 'zoom_yt'),
+        get_string('category_settings_header_desc', 'zoom_yt') . '<br><br>' . $categorysettingslink
+    ));
+
     // Connection settings.
     $settings->add(new admin_setting_heading(
         'zoom/connectionsettings',
