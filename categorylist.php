@@ -31,12 +31,13 @@ require_once($CFG->dirroot . '/mod/zoomyt/classes/category_settings.php');
 
 // Require site admin.
 require_login();
-require_capability('moodle/site:config', context_system::instance());
+$context = context_system::instance();
+require_capability('moodle/site:config', $context);
 
 // Set up the page.
-admin_externalpage_setup('modsettingzoomyt');
-
 $PAGE->set_url('/mod/zoomyt/categorylist.php');
+$PAGE->set_context($context);
+$PAGE->set_pagelayout('admin');
 $PAGE->set_title(get_string('category_settings_list', 'zoomyt'));
 $PAGE->set_heading(get_string('category_settings_list', 'zoomyt'));
 
