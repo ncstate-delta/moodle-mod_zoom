@@ -36,6 +36,9 @@ use curl;
 use moodle_exception;
 use stdClass;
 
+// Include category_settings class for the factory methods.
+require_once($CFG->dirroot . '/mod/zoom_yt/classes/category_settings.php');
+
 /**
  * Web service class.
  */
@@ -128,10 +131,25 @@ class webservice {
     protected $scopes;
 
     /**
+     * Category ID for category-level credentials (null for global).
+     * @var int|null
+     */
+    protected $categoryid = null;
+
+    /**
+     * Cache key prefix for category-specific OAuth tokens.
+     * @var string
+     */
+    protected $cachekeyprefix = '';
+
+    /**
      * The constructor for the webservice class.
+     *
+     * @param object|null $credentials Optional credentials object with accountid, clientid, clientsecret, apiendpoint.
+     *                                  If null, uses global config. Can also specify categoryid for cache key prefix.
      * @throws moodle_exception Moodle exception is thrown for missing config settings.
      */
-    public function __construct() {
+    public function __construct($credentials = null) {
         $config = get_config('zoom_yt');
 
         $requiredfields = [
@@ -141,17 +159,43 @@ class webservice {
         ];
 
         try {
-            // Get and remember each required field.
-            foreach ($requiredfields as $requiredfield) {
-                if (!empty($config->$requiredfield)) {
-                    $this->$requiredfield = $config->$requiredfield;
-                } else {
-                    throw new moodle_exception('zoomerr_field_missing', 'mod_zoom_yt', '', get_string($requiredfield, 'mod_zoom_yt'));
+            // If custom credentials provided, use them.
+            if ($credentials !== null) {
+                foreach ($requiredfields as $requiredfield) {
+                    if (!empty($credentials->$requiredfield)) {
+                        $this->$requiredfield = $credentials->$requiredfield;
+                    } else {
+                        throw new moodle_exception('zoomerr_field_missing', 'mod_zoom_yt', '', get_string($requiredfield, 'mod_zoom_yt'));
+                    }
                 }
-            }
 
-            // Get and remember the API URL.
-            $this->apiurl = zoom_yt_get_api_url();
+                // Set API URL based on credentials apiendpoint if available.
+                if (!empty($credentials->apiendpoint)) {
+                    $this->apiurl = ($credentials->apiendpoint === 'eu') 
+                        ? 'https://eu01api-www4local.zoom.us/v2/'
+                        : 'https://api.zoom.us/v2/';
+                } else {
+                    $this->apiurl = zoom_yt_get_api_url();
+                }
+
+                // Set category ID for cache key prefix.
+                if (!empty($credentials->categoryid)) {
+                    $this->categoryid = $credentials->categoryid;
+                    $this->cachekeyprefix = 'cat_' . $credentials->categoryid . '_';
+                }
+            } else {
+                // Get and remember each required field from global config.
+                foreach ($requiredfields as $requiredfield) {
+                    if (!empty($config->$requiredfield)) {
+                        $this->$requiredfield = $config->$requiredfield;
+                    } else {
+                        throw new moodle_exception('zoomerr_field_missing', 'mod_zoom_yt', '', get_string($requiredfield, 'mod_zoom_yt'));
+                    }
+                }
+
+                // Get and remember the API URL.
+                $this->apiurl = zoom_yt_get_api_url();
+            }
 
             // Get and remember the plugin settings to recycle licenses.
             if (!empty($config->utmost)) {
@@ -170,6 +214,54 @@ class webservice {
         } catch (moodle_exception $exception) {
             throw new moodle_exception('errorwebservice', 'mod_zoom_yt', '', $exception->getMessage());
         }
+    }
+
+    /**
+     * Get a webservice instance for a specific course.
+     *
+     * Uses category-level credentials if configured for the course's category,
+     * otherwise falls back to global credentials.
+     *
+     * @param int $courseid The course ID.
+     * @return self The webservice instance.
+     */
+    public static function get_instance_for_course(int $courseid): self {
+        $categorysettings = new category_settings($courseid);
+        
+        // Use category settings only if they have their own credentials.
+        if ($categorysettings->is_using_category_settings()) {
+            $credentials = $categorysettings->get_credentials();
+            $sourcecategoryid = $categorysettings->get_settings_source_category();
+            $credentials->categoryid = $sourcecategoryid;
+            return new self($credentials);
+        }
+
+        // Fall back to global credentials.
+        return new self();
+    }
+
+    /**
+     * Get a webservice instance for a specific category.
+     *
+     * Uses category-level credentials if configured,
+     * otherwise falls back to global credentials.
+     *
+     * @param int $categoryid The category ID.
+     * @return self The webservice instance.
+     */
+    public static function get_instance_for_category(int $categoryid): self {
+        $categorysettings = new category_settings($categoryid);
+        
+        // Use category settings only if they have their own credentials.
+        if ($categorysettings->is_using_category_settings()) {
+            $credentials = $categorysettings->get_credentials();
+            $sourcecategoryid = $categorysettings->get_settings_source_category();
+            $credentials->categoryid = $sourcecategoryid;
+            return new self($credentials);
+        }
+
+        // Fall back to global credentials.
+        return new self();
     }
 
     /**
@@ -1217,12 +1309,13 @@ class webservice {
      */
     protected function get_access_token() {
         $cache = cache::make('mod_zoom_yt', 'oauth');
-        $token = $cache->get('accesstoken');
-        $expires = $cache->get('expires');
+        $prefix = $this->cachekeyprefix;
+        $token = $cache->get($prefix . 'accesstoken');
+        $expires = $cache->get($prefix . 'expires');
         if (empty($token) || empty($expires) || time() >= $expires) {
             $token = $this->oauth($cache);
         } else {
-            $this->scopes = $cache->get('scopes');
+            $this->scopes = $cache->get($prefix . 'scopes');
         }
 
         return $token;
@@ -1347,10 +1440,11 @@ class webservice {
             $expires = 3599 + $timecalled;
         }
 
+        $prefix = $this->cachekeyprefix;
         $cache->set_many([
-            'accesstoken' => $token,
-            'expires' => $expires,
-            'scopes' => $scopes,
+            $prefix . 'accesstoken' => $token,
+            $prefix . 'expires' => $expires,
+            $prefix . 'scopes' => $scopes,
         ]);
 
         return $token;

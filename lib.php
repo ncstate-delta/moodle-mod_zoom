@@ -524,7 +524,7 @@ function zoom_yt_calendar_item_update(stdClass $zoom) {
 
     // Fetch all the events related to this zoom instance.
     $conditions = [
-        'modulename => 'zoom_yt'_yt',
+        'modulename' => 'zoom_yt',
         'instance' => $zoom->id,
     ];
     $events = $DB->get_records('event', $conditions);
@@ -602,7 +602,7 @@ function zoom_yt_get_monthweek_options() {
 function zoom_yt_populate_calender_item(stdClass $zoom, ?stdClass $occurrence = null) {
     $event = new stdClass();
     $event->type = CALENDAR_EVENT_TYPE_ACTION;
-    $event->modulename => 'zoom_yt'_yt';
+    $event->modulename = 'zoom_yt';
     $event->eventtype = 'zoom_yt';
     $event->courseid = $zoom->course;
     $event->instance = $zoom->id;
@@ -643,7 +643,7 @@ function zoom_yt_calendar_item_delete(stdClass $zoom) {
     require_once($CFG->dirroot . '/calendar/lib.php');
 
     $events = $DB->get_records('event', [
-        'modulename => 'zoom_yt'_yt',
+        'modulename' => 'zoom_yt',
         'instance' => $zoom->id,
     ]);
     foreach ($events as $event) {
@@ -841,7 +841,7 @@ function zoom_yt_reset_gradebook($courseid) {
 function zoom_yt_reset_userdata($data) {
     global $CFG, $DB;
 
-    $componentstr = get_string('modulename => 'zoom_yt'_yt');
+    $componentstr = get_string('modulename' => 'zoom_yt');
     $status = [];
 
     if (!empty($data->reset_zoom_all)) {
@@ -884,7 +884,7 @@ function zoom_yt_reset_userdata($data) {
  * @param object $mform the course reset form that is being built.
  */
 function zoom_yt_reset_course_form_definition($mform) {
-    $mform->addElement('header', 'zoomheader', get_string('modulename => 'zoom_yt'_yt'));
+    $mform->addElement('header', 'zoomheader', get_string('modulename' => 'zoom_yt'));
 
     $mform->addElement('checkbox', 'reset_zoom_all', get_string('resetzoomsall', 'zoom_yt'));
 }
@@ -986,6 +986,29 @@ function zoom_yt_extend_navigation(navigation_node $navref, stdClass $course, st
  * @param navigation_node|null $zoomnode zoom administration node
  */
 function zoom_yt_extend_settings_navigation(settings_navigation $settingsnav, ?navigation_node $zoomnode = null) {
+}
+
+/**
+ * Extends the category navigation with a link to Zoom YT category settings.
+ *
+ * This hook adds a "Zoom YT Settings" link to the category administration area
+ * for users who have the capability to manage category-level Zoom settings.
+ *
+ * @param navigation_node $navigation The navigation node to extend.
+ * @param context_coursecat $context The category context.
+ */
+function zoom_yt_extend_navigation_category_settings($navigation, $context) {
+    if (has_capability('mod/zoom_yt:managecategorysettings', $context)) {
+        $url = new moodle_url('/mod/zoom_yt/categorysettings.php', ['categoryid' => $context->instanceid]);
+        $navigation->add(
+            get_string('categorysettings_link', 'zoom_yt'),
+            $url,
+            navigation_node::TYPE_SETTING,
+            null,
+            'zoom_yt_category_settings',
+            new pix_icon('icon', '', 'mod_zoom_yt')
+        );
+    }
 }
 
 /**

@@ -191,5 +191,32 @@
         <KEY NAME="fk_zoomeventid" TYPE="foreign-unique" FIELDS="zoomeventid" REFTABLE="event" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
+    <TABLE NAME="zoom_yt_category_settings" COMMENT="Category-level Zoom account settings. Allows different categories to use different Zoom accounts.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The course category ID this setting applies to."/>
+        <FIELD NAME="accountid" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Zoom account ID for this category."/>
+        <FIELD NAME="clientid" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Zoom client ID for OAuth."/>
+        <FIELD NAME="clientsecret" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Zoom client secret for OAuth (encrypted)."/>
+        <FIELD NAME="apiendpoint" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="API endpoint: global or eu."/>
+        <FIELD NAME="zoomurl" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Custom Zoom URL for this category."/>
+        <FIELD NAME="inherit" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether to inherit settings from parent category. 1=inherit, 0=use own settings."/>
+        <FIELD NAME="defaultrecurring" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Default value for recurring meeting option."/>
+        <FIELD NAME="defaultwaitingroom" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Default value for waiting room option."/>
+        <FIELD NAME="defaultjoinbeforehost" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Default value for join before host option."/>
+        <FIELD NAME="defaultaudiooption" TYPE="char" LENGTH="15" NOTNULL="false" SEQUENCE="false" COMMENT="Default audio option."/>
+        <FIELD NAME="defaulthostvideo" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Default value for host video option."/>
+        <FIELD NAME="defaultparticipantsvideo" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Default value for participants video option."/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User who last modified the settings."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="categoryid_unique" TYPE="unique" FIELDS="categoryid"/>
+        <KEY NAME="fk_categoryid" TYPE="foreign" FIELDS="categoryid" REFTABLE="course_categories" REFFIELDS="id"/>
+        <KEY NAME="fk_usermodified" TYPE="foreign" FIELDS="usermodified" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
   </TABLES>
 </XMLDB>

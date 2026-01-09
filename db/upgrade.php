@@ -30,12 +30,12 @@
  */
 
 /**
- * Execute zoom upgrade from the given old version
+ * Execute zoom_yt upgrade from the given old version
  *
  * @param int $oldversion
  * @return bool
  */
-function xmldb_zoom_upgrade($oldversion) {
+function xmldb_zoom_yt_upgrade($oldversion) {
     global $DB;
 
     $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
@@ -1022,6 +1022,44 @@ function xmldb_zoom_upgrade($oldversion) {
 
         // Zoom savepoint reached.
         upgrade_mod_savepoint(true, 2025050900, 'zoom_yt');
+    }
+
+    if ($oldversion < 2025010900) {
+        // Define table zoom_yt_category_settings to be created.
+        $table = new xmldb_table('zoom_yt_category_settings');
+
+        // Adding fields to table zoom_yt_category_settings.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('categoryid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('accountid', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('clientid', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('clientsecret', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('apiendpoint', XMLDB_TYPE_CHAR, '10', null, null, null, null);
+        $table->add_field('zoomurl', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('inherit', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('defaultrecurring', XMLDB_TYPE_INTEGER, '1', null, null, null, null);
+        $table->add_field('defaultwaitingroom', XMLDB_TYPE_INTEGER, '1', null, null, null, null);
+        $table->add_field('defaultjoinbeforehost', XMLDB_TYPE_INTEGER, '1', null, null, null, null);
+        $table->add_field('defaultaudiooption', XMLDB_TYPE_CHAR, '15', null, null, null, null);
+        $table->add_field('defaulthostvideo', XMLDB_TYPE_INTEGER, '1', null, null, null, null);
+        $table->add_field('defaultparticipantsvideo', XMLDB_TYPE_INTEGER, '1', null, null, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table zoom_yt_category_settings.
+        $table->add_key('id_primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('categoryid_unique', XMLDB_KEY_UNIQUE, ['categoryid']);
+        $table->add_key('fk_categoryid', XMLDB_KEY_FOREIGN, ['categoryid'], 'course_categories', ['id']);
+        $table->add_key('fk_usermodified', XMLDB_KEY_FOREIGN, ['usermodified'], 'user', ['id']);
+
+        // Conditionally launch create table for zoom_yt_category_settings.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2025010900, 'zoom_yt');
     }
 
     return true;

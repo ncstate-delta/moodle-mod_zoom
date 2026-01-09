@@ -112,4 +112,24 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+
+    // Capability to manage category-level Zoom settings (account credentials, defaults).
+    'mod/zoom_yt:managecategorysettings' => [
+        'riskbitmask' => RISK_CONFIG,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSECAT,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+
+    // Capability to view category-level Zoom settings (read-only access).
+    'mod/zoom_yt:viewcategorysettings' => [
+        'riskbitmask' => RISK_CONFIG,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSECAT,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];
