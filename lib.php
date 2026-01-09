@@ -841,7 +841,7 @@ function zoom_yt_reset_gradebook($courseid) {
 function zoom_yt_reset_userdata($data) {
     global $CFG, $DB;
 
-    $componentstr = get_string('modulename' => 'zoom_yt');
+    $componentstr = get_string('modulename', 'zoom_yt');
     $status = [];
 
     if (!empty($data->reset_zoom_all)) {
@@ -884,7 +884,7 @@ function zoom_yt_reset_userdata($data) {
  * @param object $mform the course reset form that is being built.
  */
 function zoom_yt_reset_course_form_definition($mform) {
-    $mform->addElement('header', 'zoomheader', get_string('modulename' => 'zoom_yt'));
+    $mform->addElement('header', 'zoomheader', get_string('modulename', 'zoom_yt'));
 
     $mform->addElement('checkbox', 'reset_zoom_all', get_string('resetzoomsall', 'zoom_yt'));
 }
