@@ -514,3 +514,85 @@ $string['category_settings_list_desc'] = 'Configure category-level Zoom account 
 $string['configure'] = 'Configure';
 $string['no_categories_available'] = 'No categories available or you do not have permission to manage any category settings.';
 $string['back_to_settings'] = 'Back to Zoom YT Settings';
+
+// YouTube Integration strings.
+$string['youtube_settings'] = 'YouTube Integration';
+$string['youtube_settings_desc'] = 'Configure YouTube integration for automatic video uploads from Zoom recordings.';
+$string['youtube_client_id'] = 'YouTube Client ID';
+$string['youtube_client_id_help'] = 'The OAuth 2.0 Client ID from your Google Cloud Console project.';
+$string['youtube_client_secret'] = 'YouTube Client Secret';
+$string['youtube_client_secret_help'] = 'The OAuth 2.0 Client Secret from your Google Cloud Console project.';
+$string['youtube_channel'] = 'Connected YouTube Channel';
+$string['youtube_connect'] = 'Connect to YouTube';
+$string['youtube_disconnect'] = 'Disconnect YouTube';
+$string['youtube_connected_success'] = 'Successfully connected to YouTube channel: {$a}';
+$string['youtube_connection_ok'] = 'YouTube connected: {$a}';
+$string['youtube_connection_failed'] = 'YouTube connection failed.';
+$string['youtube_not_configured'] = 'YouTube is not configured for this category.';
+$string['youtube_credentials_required'] = 'Please enter YouTube Client ID and Client Secret before connecting.';
+$string['youtube_oauth_error'] = 'YouTube OAuth error: {$a}';
+$string['youtube_oauth_state_mismatch'] = 'Security validation failed. Please try again.';
+$string['youtube_api_error'] = 'YouTube API error: {$a}';
+$string['youtube_no_channel'] = 'No YouTube channel found for this account.';
+$string['youtube_video_not_found'] = 'YouTube video not found: {$a}';
+$string['youtube_file_not_found'] = 'Video file not found: {$a}';
+$string['youtube_upload_error'] = 'YouTube upload error: {$a}';
+$string['youtube_upload_init_error'] = 'Failed to initialize YouTube upload: {$a}';
+$string['youtube_upload_no_location'] = 'YouTube did not return an upload location.';
+$string['youtube_upload_chunk_error'] = 'Failed to upload video chunk: {$a}';
+$string['youtube_file_open_error'] = 'Cannot open file for upload: {$a}';
+$string['youtube_default_visibility'] = 'Default YouTube visibility';
+$string['youtube_default_visibility_desc'] = 'Default visibility setting for videos uploaded to YouTube.';
+$string['youtube_default_visibility_help'] = 'The default visibility for uploaded videos. This can be overridden at the activity level.';
+$string['youtube_visibility_public'] = 'Public';
+$string['youtube_visibility_unlisted'] = 'Unlisted';
+$string['youtube_visibility_private'] = 'Private';
+$string['zoom_recording_delete_days'] = 'Delete Zoom recordings after';
+$string['zoom_recording_delete_days_desc'] = 'Number of days after YouTube upload to automatically delete the Zoom cloud recording. Leave empty to never delete.';
+$string['zoom_recording_delete_days_help'] = 'After a recording has been successfully uploaded to YouTube, the original Zoom cloud recording can be automatically deleted after this many days to save storage.';
+$string['never_delete'] = 'Never delete';
+
+// Storage settings.
+$string['storage_settings'] = 'Video Storage Settings';
+$string['storage_settings_desc'] = 'Configure temporary storage for video downloads.';
+$string['temp_directory'] = 'Temporary directory';
+$string['temp_directory_desc'] = 'Directory for temporary video storage during download/upload. Leave empty to use Moodle default temp directory.';
+$string['temp_storage_limit'] = 'Storage space limit';
+$string['temp_storage_limit_desc'] = 'Maximum disk space to use for temporary video storage.';
+$string['insufficient_disk_space'] = 'Insufficient disk space for video download.';
+$string['cannot_create_file'] = 'Cannot create file: {$a}';
+$string['download_failed'] = 'Download failed: {$a}';
+
+// Scheduled tasks.
+$string['task_sync_recordings_youtube'] = 'Sync Zoom recordings to YouTube';
+
+// Events.
+$string['event_video_uploaded'] = 'Video uploaded to YouTube';
+$string['event_video_viewed'] = 'Video viewed';
+$string['event_youtube_connected'] = 'YouTube channel connected';
+
+// Video gallery.
+$string['video_gallery'] = 'Session Recordings';
+$string['no_videos'] = 'No recordings available for this activity.';
+$string['video_status_pending'] = 'Processing';
+$string['video_status_downloading'] = 'Downloading from Zoom';
+$string['video_status_uploading'] = 'Uploading to YouTube';
+$string['video_status_uploaded'] = 'Available';
+$string['video_status_failed'] = 'Upload failed';
+$string['view_on_youtube'] = 'View on YouTube';
+$string['session_date'] = 'Session date';
+$string['video_duration'] = 'Duration';
+$string['toggle_video_visibility'] = 'Toggle visibility';
+$string['video_visible'] = 'Visible to students';
+$string['video_hidden'] = 'Hidden from students';
+$string['view_tile'] = 'Tile view';
+$string['view_list'] = 'List view';
+$string['zoom_recording_status'] = 'Zoom recording';
+$string['youtube_status'] = 'YouTube status';
+$string['recording_available'] = 'Available';
+$string['recording_not_available'] = 'Not available';
+$string['recording_uploaded'] = 'Uploaded';
+$string['recording_pending'] = 'Pending upload';
+$string['manage_recordings'] = 'Manage Recordings';
+$string['activity_video_visibility'] = 'Default video visibility';
+$string['activity_video_visibility_help'] = 'Whether videos uploaded from this activity should be listed or unlisted on YouTube.';

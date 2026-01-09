@@ -695,4 +695,74 @@ if ($ADMIN->fulltree) {
         'entry',
         $options
     ));
+
+    // YouTube Integration Settings.
+    $settings->add(new admin_setting_heading(
+        'zoom/youtubesettings',
+        get_string('youtube_settings', 'zoom_yt'),
+        get_string('youtube_settings_desc', 'zoom_yt')
+    ));
+
+    // Default YouTube visibility.
+    $visibilityoptions = [
+        'unlisted' => get_string('youtube_visibility_unlisted', 'zoom_yt'),
+        'public' => get_string('youtube_visibility_public', 'zoom_yt'),
+        'private' => get_string('youtube_visibility_private', 'zoom_yt'),
+    ];
+    $settings->add(new admin_setting_configselect(
+        'zoom/youtube_default_visibility',
+        get_string('youtube_default_visibility', 'zoom_yt'),
+        get_string('youtube_default_visibility_desc', 'zoom_yt'),
+        'unlisted',
+        $visibilityoptions
+    ));
+
+    // Zoom recording delete days (global default).
+    $deleteoptions = [
+        '' => get_string('never_delete', 'zoom_yt'),
+        '7' => '7 ' . get_string('days'),
+        '14' => '14 ' . get_string('days'),
+        '30' => '30 ' . get_string('days'),
+        '60' => '60 ' . get_string('days'),
+        '90' => '90 ' . get_string('days'),
+    ];
+    $settings->add(new admin_setting_configselect(
+        'zoom/zoom_recording_delete_days',
+        get_string('zoom_recording_delete_days', 'zoom_yt'),
+        get_string('zoom_recording_delete_days_desc', 'zoom_yt'),
+        '',
+        $deleteoptions
+    ));
+
+    // Temporary storage settings.
+    $settings->add(new admin_setting_heading(
+        'zoom/storagesettings',
+        get_string('storage_settings', 'zoom_yt'),
+        get_string('storage_settings_desc', 'zoom_yt')
+    ));
+
+    // Temp directory path.
+    $settings->add(new admin_setting_configtext(
+        'zoom/temp_directory',
+        get_string('temp_directory', 'zoom_yt'),
+        get_string('temp_directory_desc', 'zoom_yt'),
+        ''
+    ));
+
+    // Temp storage limit in GB.
+    $storagelimitoptions = [
+        '1073741824' => '1 GB',
+        '2147483648' => '2 GB',
+        '5368709120' => '5 GB',
+        '10737418240' => '10 GB',
+        '21474836480' => '20 GB',
+        '53687091200' => '50 GB',
+    ];
+    $settings->add(new admin_setting_configselect(
+        'zoom/temp_storage_limit',
+        get_string('temp_storage_limit', 'zoom_yt'),
+        get_string('temp_storage_limit_desc', 'zoom_yt'),
+        '5368709120',
+        $storagelimitoptions
+    ));
 }

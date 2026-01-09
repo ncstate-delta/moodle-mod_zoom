@@ -617,6 +617,30 @@ if ($zoom->show_media) {
     echo $OUTPUT->box_end();
 }
 
+// Video Gallery Section - Show YouTube videos from this activity.
+require_once($CFG->dirroot . '/mod/zoom_yt/classes/output/video_gallery.php');
+$videogallery = new \mod_zoom_yt\output\video_gallery($zoom->id, $cm->id, $iszoommanager);
+$gallerydata = $videogallery->export_for_template($OUTPUT);
+
+if ($gallerydata->hasvideos || $iszoommanager) {
+    echo $OUTPUT->box_start('', 'zoom_section-videos');
+
+    // Add JSON data for JavaScript.
+    $gallerydata->videos_json = json_encode($gallerydata->videos);
+
+    echo $OUTPUT->render_from_template('mod_zoom_yt/video_gallery', $gallerydata);
+
+    // Show manage recordings link for teachers.
+    if ($iszoommanager) {
+        $manageurl = new moodle_url('/mod/zoom_yt/manage_recordings.php', ['id' => $cm->id]);
+        echo html_writer::start_div('text-center mt-3');
+        echo html_writer::link($manageurl, get_string('manage_recordings', 'zoom_yt'), ['class' => 'btn btn-outline-secondary']);
+        echo html_writer::end_div();
+    }
+
+    echo $OUTPUT->box_end();
+}
+
 // Supplementary feature: All meetings link.
 // Only show if the admin did not disable this feature completely.
 if ($config->showallmeetings != ZOOM_ALLMEETINGS_DISABLE) {

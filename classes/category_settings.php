@@ -210,12 +210,46 @@ class category_settings {
         $record->defaultaudiooption = $data->defaultaudiooption ?? null;
         $record->defaulthostvideo = $data->defaulthostvideo ?? null;
         $record->defaultparticipantsvideo = $data->defaultparticipantsvideo ?? null;
+
+        // YouTube settings.
+        if (isset($data->yt_client_id)) {
+            $record->yt_client_id = $data->yt_client_id;
+        }
+        if (isset($data->yt_client_secret)) {
+            $record->yt_client_secret = $data->yt_client_secret;
+        }
+        if (isset($data->yt_refresh_token)) {
+            $record->yt_refresh_token = $data->yt_refresh_token;
+        }
+        if (isset($data->yt_channel_id)) {
+            $record->yt_channel_id = $data->yt_channel_id;
+        }
+        if (isset($data->yt_channel_name)) {
+            $record->yt_channel_name = $data->yt_channel_name;
+        }
+        if (isset($data->yt_default_visibility)) {
+            $record->yt_default_visibility = $data->yt_default_visibility;
+        }
+        if (isset($data->zoom_recording_delete_days)) {
+            $record->zoom_recording_delete_days = $data->zoom_recording_delete_days ?: null;
+        }
+
         $record->timemodified = $now;
         $record->usermodified = $USER->id;
 
         if ($existing) {
             $record->id = $existing->id;
             $record->timecreated = $existing->timecreated;
+            // Preserve existing YouTube tokens if not provided.
+            if (!isset($record->yt_refresh_token) && !empty($existing->yt_refresh_token)) {
+                $record->yt_refresh_token = $existing->yt_refresh_token;
+            }
+            if (!isset($record->yt_channel_id) && !empty($existing->yt_channel_id)) {
+                $record->yt_channel_id = $existing->yt_channel_id;
+            }
+            if (!isset($record->yt_channel_name) && !empty($existing->yt_channel_name)) {
+                $record->yt_channel_name = $existing->yt_channel_name;
+            }
             $DB->update_record('zoom_yt_category_settings', $record);
         } else {
             $record->timecreated = $now;
@@ -230,6 +264,53 @@ class category_settings {
         $this->clear_oauth_cache();
 
         return true;
+    }
+
+    /**
+     * Get YouTube service for this category.
+     *
+     * @return \mod_zoom_yt\youtube_service|null The YouTube service or null if not configured.
+     */
+    public function get_youtube_service(): ?\mod_zoom_yt\youtube_service {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/zoom_yt/classes/youtube_service.php');
+
+        $settings = $this->get_effective_settings();
+
+        if (empty($settings->yt_client_id) || empty($settings->yt_client_secret) || empty($settings->yt_refresh_token)) {
+            return null;
+        }
+
+        return new \mod_zoom_yt\youtube_service($settings, $this->settingssourcecategoryid);
+    }
+
+    /**
+     * Check if YouTube is configured for this category.
+     *
+     * @return bool True if YouTube is configured.
+     */
+    public function has_youtube_configured(): bool {
+        $settings = $this->get_effective_settings();
+        return !empty($settings->yt_client_id) && !empty($settings->yt_client_secret) && !empty($settings->yt_refresh_token);
+    }
+
+    /**
+     * Get YouTube settings for this category.
+     *
+     * @return object Object with YouTube settings.
+     */
+    public function get_youtube_settings(): object {
+        $settings = $this->get_effective_settings();
+
+        return (object)[
+            'client_id' => $settings->yt_client_id ?? '',
+            'client_secret' => $settings->yt_client_secret ?? '',
+            'refresh_token' => $settings->yt_refresh_token ?? '',
+            'channel_id' => $settings->yt_channel_id ?? '',
+            'channel_name' => $settings->yt_channel_name ?? '',
+            'default_visibility' => $settings->yt_default_visibility ?? 'unlisted',
+            'zoom_recording_delete_days' => $settings->zoom_recording_delete_days ?? null,
+        ];
     }
 
     /**

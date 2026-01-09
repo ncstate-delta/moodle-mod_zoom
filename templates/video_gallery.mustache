@@ -1,0 +1,321 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_zoom_yt/video_gallery
+
+    Video gallery for displaying YouTube videos from Zoom recordings.
+
+    Context variables required for this template:
+    * hasvideos - boolean - Whether there are any videos
+    * videos - array - The videos to display
+    * canmanage - boolean - Whether user can manage videos
+    * istileview - boolean - Whether to show tile view
+    * islistview - boolean - Whether to show list view
+    * cmid - int - Course module ID
+    * zoomid - int - Zoom activity ID
+}}
+
+<div class="zoom-yt-video-gallery" data-cmid="{{cmid}}" data-zoomid="{{zoomid}}">
+    {{#hasvideos}}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>{{#str}}video_gallery, zoom_yt{{/str}}</h4>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-sm {{#istileview}}btn-primary{{/istileview}}{{^istileview}}btn-outline-secondary{{/istileview}} view-toggle" data-view="tile">
+                <i class="fa fa-th-large"></i> {{#str}}view_tile, zoom_yt{{/str}}
+            </button>
+            <button type="button" class="btn btn-sm {{#islistview}}btn-primary{{/islistview}}{{^islistview}}btn-outline-secondary{{/islistview}} view-toggle" data-view="list">
+                <i class="fa fa-list"></i> {{#str}}view_list, zoom_yt{{/str}}
+            </button>
+        </div>
+    </div>
+
+    {{! Tile View }}
+    <div class="video-tile-container {{^istileview}}d-none{{/istileview}}" id="tile-view">
+        <div class="row">
+            {{#videos}}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 video-card {{^visible}}video-hidden{{/visible}}" data-videoid="{{id}}">
+                    <div class="video-thumbnail-wrapper position-relative">
+                        <img src="{{thumbnail_url}}" class="card-img-top video-thumbnail" alt="{{title}}">
+                        <div class="video-duration-badge">{{duration}}</div>
+                        <div class="video-play-overlay">
+                            <i class="fa fa-play-circle fa-3x"></i>
+                        </div>
+                        {{#canmanage}}
+                        {{^visible}}
+                        <div class="video-hidden-badge">
+                            <i class="fa fa-eye-slash"></i> {{#str}}video_hidden, zoom_yt{{/str}}
+                        </div>
+                        {{/visible}}
+                        {{/canmanage}}
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-title video-title" title="{{title}}">{{title}}</h6>
+                        <p class="card-text text-muted small">
+                            <i class="fa fa-calendar"></i> {{session_date}}
+                        </p>
+                    </div>
+                    {{#canmanage}}
+                    <div class="card-footer bg-transparent">
+                        <button class="btn btn-sm btn-outline-secondary toggle-visibility" 
+                                data-videoid="{{id}}" 
+                                data-visible="{{visible}}"
+                                title="{{#str}}toggle_video_visibility, zoom_yt{{/str}}">
+                            <i class="fa {{#visible}}fa-eye{{/visible}}{{^visible}}fa-eye-slash{{/visible}}"></i>
+                        </button>
+                        <a href="{{youtube_url}}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fa fa-external-link"></i> {{#str}}view_on_youtube, zoom_yt{{/str}}
+                        </a>
+                    </div>
+                    {{/canmanage}}
+                </div>
+            </div>
+            {{/videos}}
+        </div>
+    </div>
+
+    {{! List View }}
+    <div class="video-list-container {{^islistview}}d-none{{/islistview}}" id="list-view">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th style="width: 120px;"></th>
+                    <th>{{#str}}name{{/str}}</th>
+                    <th>{{#str}}session_date, zoom_yt{{/str}}</th>
+                    <th>{{#str}}video_duration, zoom_yt{{/str}}</th>
+                    {{#canmanage}}
+                    <th>{{#str}}actions{{/str}}</th>
+                    {{/canmanage}}
+                </tr>
+            </thead>
+            <tbody>
+                {{#videos}}
+                <tr class="video-row {{^visible}}video-hidden{{/visible}}" data-videoid="{{id}}">
+                    <td>
+                        <div class="video-thumbnail-wrapper-small position-relative">
+                            <img src="{{thumbnail_url}}" class="video-thumbnail-small" alt="{{title}}">
+                            <div class="video-play-overlay-small">
+                                <i class="fa fa-play-circle"></i>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="video-title" title="{{title}}">{{title}}</span>
+                        {{#canmanage}}{{^visible}}<span class="badge badge-secondary ml-2">{{#str}}video_hidden, zoom_yt{{/str}}</span>{{/visible}}{{/canmanage}}
+                    </td>
+                    <td>{{session_date}}</td>
+                    <td>{{duration}}</td>
+                    {{#canmanage}}
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary toggle-visibility" 
+                                data-videoid="{{id}}" 
+                                data-visible="{{visible}}">
+                            <i class="fa {{#visible}}fa-eye{{/visible}}{{^visible}}fa-eye-slash{{/visible}}"></i>
+                        </button>
+                        <a href="{{youtube_url}}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fa fa-external-link"></i>
+                        </a>
+                    </td>
+                    {{/canmanage}}
+                </tr>
+                {{/videos}}
+            </tbody>
+        </table>
+    </div>
+
+    {{! Video Player Modal }}
+    <div class="modal fade" id="videoPlayerModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="videoPlayerTitle"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <iframe id="videoPlayerFrame" class="embed-responsive-item" 
+                                src="" allowfullscreen allow="autoplay"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{/hasvideos}}
+    {{^hasvideos}}
+    <div class="alert alert-info">
+        <i class="fa fa-info-circle"></i> {{#str}}no_videos, zoom_yt{{/str}}
+    </div>
+    {{/hasvideos}}
+</div>
+
+<style>
+.zoom-yt-video-gallery .video-thumbnail-wrapper {
+    cursor: pointer;
+    overflow: hidden;
+}
+.zoom-yt-video-gallery .video-thumbnail {
+    transition: transform 0.3s ease;
+}
+.zoom-yt-video-gallery .video-thumbnail-wrapper:hover .video-thumbnail {
+    transform: scale(1.05);
+}
+.zoom-yt-video-gallery .video-play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    text-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+.zoom-yt-video-gallery .video-thumbnail-wrapper:hover .video-play-overlay {
+    opacity: 1;
+}
+.zoom-yt-video-gallery .video-duration-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+.zoom-yt-video-gallery .video-hidden-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+.zoom-yt-video-gallery .video-card.video-hidden {
+    opacity: 0.6;
+}
+.zoom-yt-video-gallery .video-row.video-hidden {
+    opacity: 0.6;
+}
+.zoom-yt-video-gallery .video-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.zoom-yt-video-gallery .video-thumbnail-small {
+    width: 100px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.zoom-yt-video-gallery .video-thumbnail-wrapper-small {
+    cursor: pointer;
+    position: relative;
+}
+.zoom-yt-video-gallery .video-play-overlay-small {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.zoom-yt-video-gallery .video-thumbnail-wrapper-small:hover .video-play-overlay-small {
+    opacity: 1;
+}
+</style>
+
+{{#js}}
+require(['jquery'], function($) {
+    var cmid = {{cmid}};
+    var videos = {{{videos_json}}};
+    
+    // View toggle
+    $('.view-toggle').on('click', function() {
+        var view = $(this).data('view');
+        $('.view-toggle').removeClass('btn-primary').addClass('btn-outline-secondary');
+        $(this).removeClass('btn-outline-secondary').addClass('btn-primary');
+        
+        if (view === 'tile') {
+            $('#tile-view').removeClass('d-none');
+            $('#list-view').addClass('d-none');
+        } else {
+            $('#tile-view').addClass('d-none');
+            $('#list-view').removeClass('d-none');
+        }
+    });
+    
+    // Video click to play
+    $('.video-thumbnail-wrapper, .video-thumbnail-wrapper-small, .video-title').on('click', function() {
+        var card = $(this).closest('.video-card, .video-row');
+        var videoid = card.data('videoid');
+        var video = videos.find(function(v) { return v.id == videoid; });
+        
+        if (video) {
+            $('#videoPlayerTitle').text(video.title);
+            $('#videoPlayerFrame').attr('src', video.embed_url + '?autoplay=1');
+            $('#videoPlayerModal').modal('show');
+            
+            // Record view via AJAX
+            $.ajax({
+                url: M.cfg.wwwroot + '/mod/zoom_yt/ajax.php',
+                method: 'POST',
+                data: {
+                    action: 'record_view',
+                    videoid: videoid,
+                    cmid: cmid,
+                    sesskey: M.cfg.sesskey
+                }
+            });
+        }
+    });
+    
+    // Stop video when modal closes
+    $('#videoPlayerModal').on('hidden.bs.modal', function() {
+        $('#videoPlayerFrame').attr('src', '');
+    });
+    
+    // Toggle visibility
+    $('.toggle-visibility').on('click', function(e) {
+        e.stopPropagation();
+        var btn = $(this);
+        var videoid = btn.data('videoid');
+        var currentlyVisible = btn.data('visible');
+        
+        $.ajax({
+            url: M.cfg.wwwroot + '/mod/zoom_yt/ajax.php',
+            method: 'POST',
+            data: {
+                action: 'toggle_visibility',
+                videoid: videoid,
+                visible: currentlyVisible ? 0 : 1,
+                cmid: cmid,
+                sesskey: M.cfg.sesskey
+            },
+            success: function() {
+                location.reload();
+            }
+        });
+    });
+});
+{{/js}}

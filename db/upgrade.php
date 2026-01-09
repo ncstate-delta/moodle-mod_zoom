@@ -1062,5 +1062,111 @@ function xmldb_zoom_yt_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2025010900, 'zoom_yt');
     }
 
+    if ($oldversion < 2025010901) {
+        // Add YouTube fields to category settings table.
+        $table = new xmldb_table('zoom_yt_category_settings');
+
+        // YouTube client ID.
+        $field = new xmldb_field('yt_client_id', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'defaultparticipantsvideo');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // YouTube client secret.
+        $field = new xmldb_field('yt_client_secret', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'yt_client_id');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // YouTube refresh token.
+        $field = new xmldb_field('yt_refresh_token', XMLDB_TYPE_TEXT, null, null, null, null, null, 'yt_client_secret');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // YouTube channel ID.
+        $field = new xmldb_field('yt_channel_id', XMLDB_TYPE_CHAR, '50', null, null, null, null, 'yt_refresh_token');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // YouTube channel name.
+        $field = new xmldb_field('yt_channel_name', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'yt_channel_id');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // YouTube default visibility.
+        $field = new xmldb_field('yt_default_visibility', XMLDB_TYPE_CHAR, '20', null, null, null, 'unlisted', 'yt_channel_name');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Zoom recording delete days.
+        $field = new xmldb_field('zoom_recording_delete_days', XMLDB_TYPE_INTEGER, '4', null, null, null, null, 'yt_default_visibility');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define table zoom_yt_videos to be created.
+        $table = new xmldb_table('zoom_yt_videos');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('zoomid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('recordingid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('meetinguuid', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('zoom_recording_id', XMLDB_TYPE_CHAR, '50', null, null, null, null);
+        $table->add_field('youtube_video_id', XMLDB_TYPE_CHAR, '20', null, null, null, null);
+        $table->add_field('youtube_url', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('title', XMLDB_TYPE_CHAR, '300', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('thumbnail_url', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('duration', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('visibility', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'unlisted');
+        $table->add_field('status', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'pending');
+        $table->add_field('error_message', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('zoom_recording_deleted', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('zoom_session_time', XMLDB_TYPE_INTEGER, '12', null, null, null, null);
+        $table->add_field('visible', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
+
+        $table->add_key('id_primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('fk_zoomid', XMLDB_KEY_FOREIGN, ['zoomid'], 'zoom_yt', ['id']);
+        $table->add_key('fk_recordingid', XMLDB_KEY_FOREIGN, ['recordingid'], 'zoom_yt_meeting_recordings', ['id']);
+
+        $table->add_index('youtube_video_id_idx', XMLDB_INDEX_UNIQUE, ['youtube_video_id']);
+        $table->add_index('meetinguuid_idx', XMLDB_INDEX_NOTUNIQUE, ['meetinguuid']);
+        $table->add_index('status_idx', XMLDB_INDEX_NOTUNIQUE, ['status']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table zoom_yt_video_views to be created.
+        $table = new xmldb_table('zoom_yt_video_views');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('videoid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('viewcount', XMLDB_TYPE_INTEGER, '6', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('firstviewed', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('lastviewed', XMLDB_TYPE_INTEGER, '12', null, XMLDB_NOTNULL, null, null);
+
+        $table->add_key('id_primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('fk_videoid', XMLDB_KEY_FOREIGN, ['videoid'], 'zoom_yt_videos', ['id']);
+        $table->add_key('fk_userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+        $table->add_key('videoid_userid_unique', XMLDB_KEY_UNIQUE, ['videoid', 'userid']);
+
+        $table->add_index('userid_idx', XMLDB_INDEX_NOTUNIQUE, ['userid']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2025010901, 'zoom_yt');
+    }
+
     return true;
 }

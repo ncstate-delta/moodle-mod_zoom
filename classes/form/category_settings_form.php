@@ -131,6 +131,71 @@ class category_settings_form extends \moodleform {
         $mform->setDefault('defaultparticipantsvideo', 0);
         $mform->hideIf('defaultparticipantsvideo', 'inherit', 'checked');
 
+        // Header: YouTube Integration.
+        $mform->addElement('header', 'youtubeheader', get_string('youtube_settings', 'zoom_yt'));
+        $mform->setExpanded('youtubeheader', true);
+
+        // YouTube Client ID.
+        $mform->addElement('text', 'yt_client_id', get_string('youtube_client_id', 'zoom_yt'), ['size' => 60]);
+        $mform->setType('yt_client_id', PARAM_RAW);
+        $mform->addHelpButton('yt_client_id', 'youtube_client_id', 'zoom_yt');
+        $mform->hideIf('yt_client_id', 'inherit', 'checked');
+
+        // YouTube Client Secret.
+        $mform->addElement('passwordunmask', 'yt_client_secret', get_string('youtube_client_secret', 'zoom_yt'), ['size' => 60]);
+        $mform->setType('yt_client_secret', PARAM_RAW);
+        $mform->addHelpButton('yt_client_secret', 'youtube_client_secret', 'zoom_yt');
+        $mform->hideIf('yt_client_secret', 'inherit', 'checked');
+
+        // YouTube Refresh Token (hidden, set via OAuth flow).
+        $mform->addElement('hidden', 'yt_refresh_token');
+        $mform->setType('yt_refresh_token', PARAM_RAW);
+
+        // YouTube Channel ID (display only).
+        if (!empty($this->_customdata['yt_channel_name'])) {
+            $mform->addElement('static', 'yt_channel_display', get_string('youtube_channel', 'zoom_yt'),
+                $this->_customdata['yt_channel_name']);
+        }
+
+        $mform->addElement('hidden', 'yt_channel_id');
+        $mform->setType('yt_channel_id', PARAM_RAW);
+
+        $mform->addElement('hidden', 'yt_channel_name');
+        $mform->setType('yt_channel_name', PARAM_RAW);
+
+        // Connect to YouTube button (shown if client credentials exist but no refresh token).
+        if (!empty($this->_customdata['show_youtube_connect'])) {
+            $connecturl = new \moodle_url('/mod/zoom_yt/youtube_oauth.php', ['categoryid' => $categoryid]);
+            $mform->addElement('static', 'youtube_connect', '',
+                \html_writer::link($connecturl, get_string('youtube_connect', 'zoom_yt'), ['class' => 'btn btn-primary']));
+        }
+
+        // Default YouTube visibility.
+        $visibilityoptions = [
+            'unlisted' => get_string('youtube_visibility_unlisted', 'zoom_yt'),
+            'public' => get_string('youtube_visibility_public', 'zoom_yt'),
+            'private' => get_string('youtube_visibility_private', 'zoom_yt'),
+        ];
+        $mform->addElement('select', 'yt_default_visibility', get_string('youtube_default_visibility', 'zoom_yt'), $visibilityoptions);
+        $mform->setDefault('yt_default_visibility', 'unlisted');
+        $mform->addHelpButton('yt_default_visibility', 'youtube_default_visibility', 'zoom_yt');
+        $mform->hideIf('yt_default_visibility', 'inherit', 'checked');
+
+        // Days to keep Zoom recordings after upload.
+        $deleteoptions = [
+            '' => get_string('never_delete', 'zoom_yt'),
+            '1' => '1 ' . get_string('day'),
+            '7' => '7 ' . get_string('days'),
+            '14' => '14 ' . get_string('days'),
+            '30' => '30 ' . get_string('days'),
+            '60' => '60 ' . get_string('days'),
+            '90' => '90 ' . get_string('days'),
+        ];
+        $mform->addElement('select', 'zoom_recording_delete_days', get_string('zoom_recording_delete_days', 'zoom_yt'), $deleteoptions);
+        $mform->setDefault('zoom_recording_delete_days', '');
+        $mform->addHelpButton('zoom_recording_delete_days', 'zoom_recording_delete_days', 'zoom_yt');
+        $mform->hideIf('zoom_recording_delete_days', 'inherit', 'checked');
+
         // Buttons.
         $this->add_action_buttons(true, get_string('savechanges'));
     }

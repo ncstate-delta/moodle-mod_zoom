@@ -207,6 +207,13 @@
         <FIELD NAME="defaultaudiooption" TYPE="char" LENGTH="15" NOTNULL="false" SEQUENCE="false" COMMENT="Default audio option."/>
         <FIELD NAME="defaulthostvideo" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Default value for host video option."/>
         <FIELD NAME="defaultparticipantsvideo" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Default value for participants video option."/>
+        <FIELD NAME="yt_client_id" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="YouTube OAuth client ID."/>
+        <FIELD NAME="yt_client_secret" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="YouTube OAuth client secret."/>
+        <FIELD NAME="yt_refresh_token" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="YouTube OAuth refresh token."/>
+        <FIELD NAME="yt_channel_id" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="YouTube channel ID."/>
+        <FIELD NAME="yt_channel_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="YouTube channel name for display."/>
+        <FIELD NAME="yt_default_visibility" TYPE="char" LENGTH="20" NOTNULL="false" DEFAULT="unlisted" SEQUENCE="false" COMMENT="Default YouTube visibility: public, unlisted, private."/>
+        <FIELD NAME="zoom_recording_delete_days" TYPE="int" LENGTH="4" NOTNULL="false" SEQUENCE="false" COMMENT="Days after upload to delete Zoom cloud recording. Null means do not delete."/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User who last modified the settings."/>
@@ -217,6 +224,58 @@
         <KEY NAME="fk_categoryid" TYPE="foreign" FIELDS="categoryid" REFTABLE="course_categories" REFFIELDS="id"/>
         <KEY NAME="fk_usermodified" TYPE="foreign" FIELDS="usermodified" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
+    </TABLE>
+    <TABLE NAME="zoom_yt_videos" COMMENT="YouTube videos uploaded from Zoom recordings.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="zoomid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Link to zoom_yt table (the activity instance)."/>
+        <FIELD NAME="recordingid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Link to zoom_yt_meeting_recordings table."/>
+        <FIELD NAME="meetinguuid" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="Zoom meeting UUID this video came from."/>
+        <FIELD NAME="zoom_recording_id" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Zoom cloud recording ID."/>
+        <FIELD NAME="youtube_video_id" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="YouTube video ID once uploaded."/>
+        <FIELD NAME="youtube_url" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Full YouTube video URL."/>
+        <FIELD NAME="title" TYPE="char" LENGTH="300" NOTNULL="true" SEQUENCE="false" COMMENT="Video title (from Zoom session)."/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Video description."/>
+        <FIELD NAME="thumbnail_url" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="YouTube thumbnail URL."/>
+        <FIELD NAME="duration" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Video duration in seconds."/>
+        <FIELD NAME="visibility" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="unlisted" SEQUENCE="false" COMMENT="YouTube visibility: public, unlisted, private."/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="pending" SEQUENCE="false" COMMENT="Status: pending, downloading, uploading, uploaded, failed."/>
+        <FIELD NAME="error_message" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Error message if status is failed."/>
+        <FIELD NAME="zoom_recording_deleted" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether Zoom recording has been deleted."/>
+        <FIELD NAME="zoom_session_time" TYPE="int" LENGTH="12" NOTNULL="false" SEQUENCE="false" COMMENT="Original Zoom session start time."/>
+        <FIELD NAME="visible" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether video is visible to students."/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_zoomid" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoom_yt" REFFIELDS="id"/>
+        <KEY NAME="fk_recordingid" TYPE="foreign" FIELDS="recordingid" REFTABLE="zoom_yt_meeting_recordings" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="youtube_video_id_idx" UNIQUE="true" FIELDS="youtube_video_id"/>
+        <INDEX NAME="meetinguuid_idx" UNIQUE="false" FIELDS="meetinguuid"/>
+        <INDEX NAME="status_idx" UNIQUE="false" FIELDS="status"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="zoom_yt_video_views" COMMENT="Tracks user views of YouTube videos embedded in activities.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="videoid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Link to zoom_yt_videos table."/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User who viewed the video."/>
+        <FIELD NAME="viewcount" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Number of times user opened the video."/>
+        <FIELD NAME="firstviewed" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp of first view."/>
+        <FIELD NAME="lastviewed" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp of most recent view."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_videoid" TYPE="foreign" FIELDS="videoid" REFTABLE="zoom_yt_videos" REFFIELDS="id"/>
+        <KEY NAME="fk_userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="videoid_userid_unique" TYPE="unique" FIELDS="videoid, userid"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid_idx" UNIQUE="false" FIELDS="userid"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

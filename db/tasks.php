@@ -79,4 +79,13 @@ $tasks = [
         'dayofweek' => '*',
         'month' => '*',
     ],
+    [
+        'classname' => 'mod_zoom_yt\task\sync_recordings_to_youtube',
+        'blocking' => 0,
+        'minute' => '15',
+        'hour' => '*/2',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*',
+    ],
 ];
