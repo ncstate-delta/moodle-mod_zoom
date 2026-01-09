@@ -17,17 +17,17 @@
 /**
  * Scheduled task for updating Zoom tracking fields
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2021 Michelle Melton <meltonml@appstate.edu>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt\task;
+namespace mod_zoomyt\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/zoom_yt/lib.php');
-require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
+require_once($CFG->dirroot . '/mod/zoomyt/lib.php');
+require_once($CFG->dirroot . '/mod/zoomyt/locallib.php');
 
 use core\task\scheduled_task;
 use moodle_exception;
@@ -42,7 +42,7 @@ class update_tracking_fields extends scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('updatetrackingfields', 'mod_zoom_yt');
+        return get_string('updatetrackingfields', 'mod_zoomyt');
     }
 
     /**
@@ -52,7 +52,7 @@ class update_tracking_fields extends scheduled_task {
      */
     public function execute() {
         try {
-            $service = zoom_yt_webservice();
+            $service = zoomyt_webservice();
         } catch (moodle_exception $exception) {
             mtrace('Skipping task - ', $exception->getMessage());
             return;
@@ -80,7 +80,7 @@ class update_tracking_fields extends scheduled_task {
         // Show trace message.
         mtrace('Starting to process existing Zoom tracking fields ...');
 
-        if (!mod_zoom_yt_update_tracking_fields()) {
+        if (!mod_zoomyt_update_tracking_fields()) {
             mtrace('Error: Failed to update tracking fields.');
         }
 

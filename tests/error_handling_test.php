@@ -17,12 +17,12 @@
 /**
  * Unit tests for error handling for zoom exceptions.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2019 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt;
+namespace mod_zoomyt;
 
 use basic_testcase;
 
@@ -61,7 +61,7 @@ final class error_handling_test extends basic_testcase {
      */
     public static function setUpBeforeClass(): void {
         global $CFG;
-        require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
+        require_once($CFG->dirroot . '/mod/zoomyt/locallib.php');
         parent::setUpBeforeClass();
     }
 
@@ -78,20 +78,20 @@ final class error_handling_test extends basic_testcase {
 
     /**
      * Tests that uuid are encoded properly for use in web service calls.
-     * @covers ::zoom_yt_is_meeting_gone_error
-     * @covers ::zoom_yt_is_user_not_found_error
+     * @covers ::zoomyt_is_meeting_gone_error
+     * @covers ::zoomyt_is_user_not_found_error
      */
     public function test_correct_error_recognition(): void {
         // Check meeting not found behavior.
-        $this->assertTrue(zoom_yt_is_meeting_gone_error($this->meetingnotfoundexception));
-        $this->assertTrue(zoom_yt_is_meeting_gone_error($this->usernotfoundexception));
-        $this->assertTrue(zoom_yt_is_meeting_gone_error($this->invaliduserexception));
-        $this->assertFalse(zoom_yt_is_meeting_gone_error($this->othererrorcodeexception));
+        $this->assertTrue(zoomyt_is_meeting_gone_error($this->meetingnotfoundexception));
+        $this->assertTrue(zoomyt_is_meeting_gone_error($this->usernotfoundexception));
+        $this->assertTrue(zoomyt_is_meeting_gone_error($this->invaliduserexception));
+        $this->assertFalse(zoomyt_is_meeting_gone_error($this->othererrorcodeexception));
 
         // Check user not found behavior.
-        $this->assertTrue(zoom_yt_is_user_not_found_error($this->usernotfoundexception));
-        $this->assertTrue(zoom_yt_is_user_not_found_error($this->invaliduserexception));
-        $this->assertFalse(zoom_yt_is_user_not_found_error($this->meetingnotfoundexception));
-        $this->assertFalse(zoom_yt_is_user_not_found_error($this->othererrorcodeexception));
+        $this->assertTrue(zoomyt_is_user_not_found_error($this->usernotfoundexception));
+        $this->assertTrue(zoomyt_is_user_not_found_error($this->invaliduserexception));
+        $this->assertFalse(zoomyt_is_user_not_found_error($this->meetingnotfoundexception));
+        $this->assertFalse(zoomyt_is_user_not_found_error($this->othererrorcodeexception));
     }
 }

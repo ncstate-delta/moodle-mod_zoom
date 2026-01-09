@@ -19,7 +19,7 @@
  *
  * Shows all Zoom sessions and their recording/YouTube status.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2025
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -33,39 +33,39 @@ $action = optional_param('action', '', PARAM_ALPHA);
 $videoid = optional_param('videoid', 0, PARAM_INT);
 
 // Get course module.
-$cm = get_coursemodule_from_id('zoom_yt', $id, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id('zoomyt', $id, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
-$zoom = $DB->get_record('zoom_yt', ['id' => $cm->instance], '*', MUST_EXIST);
+$zoom = $DB->get_record('zoomyt', ['id' => $cm->instance], '*', MUST_EXIST);
 
 $context = context_module::instance($cm->id);
 
 // Require login and capability.
 require_login($course, true, $cm);
-require_capability('mod/zoom_yt:addinstance', $context);
+require_capability('mod/zoomyt:addinstance', $context);
 
 // Set up the page.
-$PAGE->set_url('/mod/zoom_yt/manage_recordings.php', ['id' => $id]);
-$PAGE->set_title(format_string($zoom->name) . ' - ' . get_string('manage_recordings', 'zoom_yt'));
+$PAGE->set_url('/mod/zoomyt/manage_recordings.php', ['id' => $id]);
+$PAGE->set_title(format_string($zoom->name) . ' - ' . get_string('manage_recordings', 'zoomyt'));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
 
 // Handle actions.
 if ($action === 'togglevisibility' && $videoid) {
     require_sesskey();
-    $video = $DB->get_record('zoom_yt_videos', ['id' => $videoid, 'zoomid' => $zoom->id], '*', MUST_EXIST);
-    $DB->set_field('zoom_yt_videos', 'visible', $video->visible ? 0 : 1, ['id' => $videoid]);
-    redirect(new moodle_url('/mod/zoom_yt/manage_recordings.php', ['id' => $id]));
+    $video = $DB->get_record('zoomyt_videos', ['id' => $videoid, 'zoomid' => $zoom->id], '*', MUST_EXIST);
+    $DB->set_field('zoomyt_videos', 'visible', $video->visible ? 0 : 1, ['id' => $videoid]);
+    redirect(new moodle_url('/mod/zoomyt/manage_recordings.php', ['id' => $id]));
 }
 
 // Get all videos for this activity.
-require_once($CFG->dirroot . '/mod/zoom_yt/classes/output/video_gallery.php');
-$videos = \mod_zoom_yt\output\video_gallery::get_all_videos_for_management($zoom->id);
+require_once($CFG->dirroot . '/mod/zoomyt/classes/output/video_gallery.php');
+$videos = \mod_zoomyt\output\video_gallery::get_all_videos_for_management($zoom->id);
 
 // Get Zoom meeting recordings that haven't been synced yet.
 $sql = "SELECT zmd.*, zmr.id as recordingid, zmr.recordingtype, zmr.recordingstart
-        FROM {zoom_yt_meeting_details} zmd
-        JOIN {zoom_yt} z ON z.id = zmd.zoomid
-        LEFT JOIN {zoom_yt_meeting_recordings} zmr ON zmr.meetinguuid = zmd.meetinguuid
+        FROM {zoomyt_meeting_details} zmd
+        JOIN {zoomyt} z ON z.id = zmd.zoomid
+        LEFT JOIN {zoomyt_meeting_recordings} zmr ON zmr.meetinguuid = zmd.meetinguuid
         WHERE z.id = ?
         ORDER BY zmd.start_time DESC";
 $meetings = $DB->get_records_sql($sql, [$zoom->id]);
@@ -92,23 +92,23 @@ foreach ($meetings as $meeting) {
 
 // Output starts here.
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('manage_recordings', 'zoom_yt'));
+echo $OUTPUT->heading(get_string('manage_recordings', 'zoomyt'));
 
 // Back link.
-$backurl = new moodle_url('/mod/zoom_yt/view.php', ['id' => $cm->id]);
+$backurl = new moodle_url('/mod/zoomyt/view.php', ['id' => $cm->id]);
 echo html_writer::tag('p', html_writer::link($backurl, '&laquo; ' . get_string('back')));
 
 // YouTube Videos Section.
-echo $OUTPUT->heading(get_string('video_gallery', 'zoom_yt'), 3);
+echo $OUTPUT->heading(get_string('video_gallery', 'zoomyt'), 3);
 
 if (empty($videos)) {
-    echo html_writer::tag('p', get_string('no_videos', 'zoom_yt'), ['class' => 'alert alert-info']);
+    echo html_writer::tag('p', get_string('no_videos', 'zoomyt'), ['class' => 'alert alert-info']);
 } else {
     $table = new html_table();
     $table->head = [
         get_string('name'),
-        get_string('session_date', 'zoom_yt'),
-        get_string('youtube_status', 'zoom_yt'),
+        get_string('session_date', 'zoomyt'),
+        get_string('youtube_status', 'zoomyt'),
         get_string('visibility'),
         get_string('actions'),
     ];
@@ -139,20 +139,20 @@ if (empty($videos)) {
         }
 
         // Visibility.
-        $visibletext = $video->visible ? get_string('video_visible', 'zoom_yt') : get_string('video_hidden', 'zoom_yt');
+        $visibletext = $video->visible ? get_string('video_visible', 'zoomyt') : get_string('video_hidden', 'zoomyt');
         $visibleclass = $video->visible ? 'text-success' : 'text-muted';
         $visiblecell = html_writer::span($visibletext, $visibleclass);
 
         // Actions.
         $actions = [];
-        $toggleurl = new moodle_url('/mod/zoom_yt/manage_recordings.php', [
+        $toggleurl = new moodle_url('/mod/zoomyt/manage_recordings.php', [
             'id' => $id,
             'action' => 'togglevisibility',
             'videoid' => $video->id,
             'sesskey' => sesskey(),
         ]);
         $toggleicon = $video->visible ? 'fa-eye-slash' : 'fa-eye';
-        $toggletitle = get_string('toggle_video_visibility', 'zoom_yt');
+        $toggletitle = get_string('toggle_video_visibility', 'zoomyt');
         $actions[] = html_writer::link($toggleurl, '<i class="fa ' . $toggleicon . '"></i>', [
             'title' => $toggletitle,
             'class' => 'btn btn-sm btn-outline-secondary',
@@ -161,7 +161,7 @@ if (empty($videos)) {
         if ($video->has_youtube) {
             $actions[] = html_writer::link($video->youtube_url, '<i class="fa fa-external-link"></i>', [
                 'target' => '_blank',
-                'title' => get_string('view_on_youtube', 'zoom_yt'),
+                'title' => get_string('view_on_youtube', 'zoomyt'),
                 'class' => 'btn btn-sm btn-outline-primary',
             ]);
         }
@@ -181,17 +181,17 @@ if (empty($videos)) {
 }
 
 // Past Zoom Sessions Section.
-echo $OUTPUT->heading(get_string('sessions', 'zoom_yt'), 3);
+echo $OUTPUT->heading(get_string('sessions', 'zoomyt'), 3);
 
 if (empty($meetingdata)) {
-    echo html_writer::tag('p', get_string('nosessions', 'zoom_yt'), ['class' => 'alert alert-info']);
+    echo html_writer::tag('p', get_string('nosessions', 'zoomyt'), ['class' => 'alert alert-info']);
 } else {
     $table = new html_table();
     $table->head = [
         get_string('name'),
         get_string('date'),
         get_string('duration'),
-        get_string('zoom_recording_status', 'zoom_yt'),
+        get_string('zoom_recording_status', 'zoomyt'),
     ];
     $table->attributes['class'] = 'table table-striped';
 
@@ -201,11 +201,11 @@ if (empty($meetingdata)) {
         // Recording status.
         if ($meeting['has_recording']) {
             $recstatus = html_writer::span(
-                get_string('recording_available', 'zoom_yt') . ' (' . implode(', ', array_unique($meeting['recording_types'])) . ')',
+                get_string('recording_available', 'zoomyt') . ' (' . implode(', ', array_unique($meeting['recording_types'])) . ')',
                 'badge badge-success'
             );
         } else {
-            $recstatus = html_writer::span(get_string('recording_not_available', 'zoom_yt'), 'badge badge-secondary');
+            $recstatus = html_writer::span(get_string('recording_not_available', 'zoomyt'), 'badge badge-secondary');
         }
 
         $row->cells = [

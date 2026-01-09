@@ -17,7 +17,7 @@
 /**
  * Zoom cache definitions.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,10 +25,10 @@
 defined('MOODLE_INTERNAL') || die;
 
 $definitions = [
-    'zoom_ytid' => [
+    'zoomytid' => [
         'mode' => cache_store::MODE_SESSION,
     ],
-    'zoom_ytmeetingsecurity' => [
+    'zoomytmeetingsecurity' => [
         'mode' => cache_store::MODE_APPLICATION,
     ],
     'oauth' => [

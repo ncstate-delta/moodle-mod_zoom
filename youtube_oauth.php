@@ -19,14 +19,14 @@
  *
  * Handles the OAuth flow for connecting a YouTube channel to a category.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2025
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot . '/mod/zoom_yt/classes/youtube_service.php');
-require_once($CFG->dirroot . '/mod/zoom_yt/classes/category_settings.php');
+require_once($CFG->dirroot . '/mod/zoomyt/classes/youtube_service.php');
+require_once($CFG->dirroot . '/mod/zoomyt/classes/category_settings.php');
 
 $categoryid = required_param('categoryid', PARAM_INT);
 $code = optional_param('code', '', PARAM_RAW);
@@ -39,46 +39,46 @@ $context = context_coursecat::instance($categoryid);
 
 // Require login and capability.
 require_login();
-require_capability('mod/zoom_yt:managecategorysettings', $context);
+require_capability('mod/zoomyt:managecategorysettings', $context);
 
 // Set up the page.
 $PAGE->set_context($context);
-$PAGE->set_url('/mod/zoom_yt/youtube_oauth.php', ['categoryid' => $categoryid]);
+$PAGE->set_url('/mod/zoomyt/youtube_oauth.php', ['categoryid' => $categoryid]);
 $PAGE->set_pagelayout('admin');
-$PAGE->set_title(get_string('youtube_connect', 'zoom_yt'));
+$PAGE->set_title(get_string('youtube_connect', 'zoomyt'));
 $PAGE->set_heading($category->name);
 
-$returnurl = new moodle_url('/mod/zoom_yt/categorysettings.php', ['categoryid' => $categoryid]);
+$returnurl = new moodle_url('/mod/zoomyt/categorysettings.php', ['categoryid' => $categoryid]);
 
 // Handle error from Google.
 if (!empty($error)) {
-    \core\notification::error(get_string('youtube_oauth_error', 'zoom_yt', $error));
+    \core\notification::error(get_string('youtube_oauth_error', 'zoomyt', $error));
     redirect($returnurl);
 }
 
 // Get category settings.
-$settingsmanager = new \mod_zoom_yt\category_settings($categoryid);
+$settingsmanager = new \mod_zoomyt\category_settings($categoryid);
 $settings = $settingsmanager->get_raw_settings();
 
 if (!$settings || empty($settings->yt_client_id) || empty($settings->yt_client_secret)) {
-    \core\notification::error(get_string('youtube_credentials_required', 'zoom_yt'));
+    \core\notification::error(get_string('youtube_credentials_required', 'zoomyt'));
     redirect($returnurl);
 }
 
-$redirecturi = (new moodle_url('/mod/zoom_yt/youtube_oauth.php', ['categoryid' => $categoryid]))->out(false);
+$redirecturi = (new moodle_url('/mod/zoomyt/youtube_oauth.php', ['categoryid' => $categoryid]))->out(false);
 
 // Handle OAuth callback with code.
 if (!empty($code)) {
     // Verify state.
     $expectedstate = sesskey() . '_' . $categoryid;
     if ($state !== $expectedstate) {
-        \core\notification::error(get_string('youtube_oauth_state_mismatch', 'zoom_yt'));
+        \core\notification::error(get_string('youtube_oauth_state_mismatch', 'zoomyt'));
         redirect($returnurl);
     }
 
     try {
         // Exchange code for tokens.
-        $tokens = \mod_zoom_yt\youtube_service::exchange_code_for_tokens(
+        $tokens = \mod_zoomyt\youtube_service::exchange_code_for_tokens(
             $code,
             $redirecturi,
             $settings->yt_client_id,
@@ -100,11 +100,11 @@ if (!empty($code)) {
         ];
 
         // Store access token temporarily for channel lookup.
-        $cache = \cache::make('mod_zoom_yt', 'oauth');
+        $cache = \cache::make('mod_zoomyt', 'oauth');
         $cache->set('yt_' . $categoryid . '_accesstoken', $tokens->access_token);
         $cache->set('yt_' . $categoryid . '_expires', time() + ($tokens->expires_in ?? 3600) - 60);
 
-        $ytservice = new \mod_zoom_yt\youtube_service($credentials, $categoryid);
+        $ytservice = new \mod_zoomyt\youtube_service($credentials, $categoryid);
         $channel = $ytservice->get_channel_info();
 
         $updatedata->yt_channel_id = $channel->id;
@@ -113,7 +113,7 @@ if (!empty($code)) {
         $settingsmanager->save_settings($updatedata);
 
         // Log the connection event.
-        $event = \mod_zoom_yt\event\youtube_connected::create([
+        $event = \mod_zoomyt\event\youtube_connected::create([
             'context' => $context,
             'other' => [
                 'channel_id' => $channel->id,
@@ -122,16 +122,16 @@ if (!empty($code)) {
         ]);
         $event->trigger();
 
-        \core\notification::success(get_string('youtube_connected_success', 'zoom_yt', $channel->title));
+        \core\notification::success(get_string('youtube_connected_success', 'zoomyt', $channel->title));
         redirect($returnurl);
 
     } catch (Exception $e) {
-        \core\notification::error(get_string('youtube_oauth_error', 'zoom_yt', $e->getMessage()));
+        \core\notification::error(get_string('youtube_oauth_error', 'zoomyt', $e->getMessage()));
         redirect($returnurl);
     }
 }
 
 // Start OAuth flow - redirect to Google.
 $state = sesskey() . '_' . $categoryid;
-$authurl = \mod_zoom_yt\youtube_service::get_auth_url($settings->yt_client_id, $redirecturi, $state);
+$authurl = \mod_zoomyt\youtube_service::get_auth_url($settings->yt_client_id, $redirecturi, $state);
 redirect($authurl);

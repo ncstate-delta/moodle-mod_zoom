@@ -269,7 +269,7 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
 
         // Add room event.
         this.init = function() {
-            var stringkeys = [{key: 'room', component: 'zoom_yt'}];
+            var stringkeys = [{key: 'room', component: 'zoomyt'}];
             str.get_strings(stringkeys).then(function() {
                 return null;
             }).fail(notification.exception);
@@ -292,7 +292,7 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
             thisObject.addBtn.click(function() {
                 thisObject.tabsComponent.countTabs++;
 
-                var newRoomName = M.util.get_string('room', 'zoom_yt') + ' ' + thisObject.tabsComponent.countTabs;
+                var newRoomName = M.util.get_string('room', 'zoomyt') + ' ' + thisObject.tabsComponent.countTabs;
                 var newRoomElement = $(thisObject.roomItemToClone);
                 var newRoomDataElement = $(thisObject.roomItemDataToClone);
                 var newRoomIndex = thisObject.tabsComponent.countTabs;
@@ -391,7 +391,7 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'], fu
          * @param {string} placeholder
          */
         this.buildAutocompleteComponent = function(id, placeholder) {
-            var stringkeys = [{key: placeholder, component: 'zoom_yt'}, {key: 'selectionarea', component: 'zoom_yt'}];
+            var stringkeys = [{key: placeholder, component: 'zoomyt'}, {key: 'selectionarea', component: 'zoomyt'}];
             str.get_strings(stringkeys).then(function(langstrings) {
                 var placeholderString = langstrings[0];
                 var noSelectionString = langstrings[1];

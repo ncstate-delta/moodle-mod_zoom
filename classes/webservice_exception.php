@@ -17,12 +17,12 @@
 /**
  * Exception class for Zoom API errors.
  *
- * @package   mod_zoom_yt
+ * @package   mod_zoomyt
  * @copyright 2023 Jonathan Champ <jrchamp@ncsu.edu>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt;
+namespace mod_zoomyt;
 
 use moodle_exception;
 

@@ -17,7 +17,7 @@
 /**
  * English strings for zoom.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -309,7 +309,7 @@ $string['password_only_numeric'] = 'Passcode may only contain numbers and no oth
 $string['password_special'] = 'Passcode must have at least 1 special character (@-_*).';
 $string['passwordprotected'] = 'Passcode Protected';
 $string['pluginadministration'] = 'Manage Zoom meeting';
-$string['pluginname'] = 'Zoom meeting';
+$string['pluginname'] = 'Zoom YT meeting';
 $string['privacy:metadata:zoom_breakout_participants'] = 'The database table to store a list of zoom meeting breakout rooms participants';
 $string['privacy:metadata:zoom_breakout_participants:userid'] = 'The id of the participant user';
 $string['privacy:metadata:zoom_meeting_details'] = 'The database table that stores information about each meeting instance.';
@@ -501,8 +501,8 @@ $string['error_missing_credentials'] = 'Please provide all required credentials 
 $string['apiendpoint'] = 'Zoom API endpoint';
 $string['apiendpoint_global'] = 'Global (api.zoom.us)';
 $string['apiendpoint_eu'] = 'EU (eu01api-www4local.zoom.us)';
-$string['zoom_yt:managecategorysettings'] = 'Manage category-level Zoom YT settings';
-$string['zoom_yt:viewcategorysettings'] = 'View category-level Zoom YT settings';
+$string['zoomyt:managecategorysettings'] = 'Manage category-level Zoom YT settings';
+$string['zoomyt:viewcategorysettings'] = 'View category-level Zoom YT settings';
 $string['categorysettings_link'] = 'Zoom YT Settings';
 $string['categoryzooomyt_settings'] = 'Manage Zoom YT account settings for this category';
 $string['no_category_settings_access'] = 'You do not have permission to manage category settings.';

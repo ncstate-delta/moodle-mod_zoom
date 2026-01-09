@@ -17,17 +17,17 @@
 /**
  * Handles API calls to Zoom REST API.
  *
- * @package   mod_zoom_yt
+ * @package   mod_zoomyt
  * @copyright 2015 UC Regents
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt;
+namespace mod_zoomyt;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/zoom_yt/lib.php');
-require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
+require_once($CFG->dirroot . '/mod/zoomyt/lib.php');
+require_once($CFG->dirroot . '/mod/zoomyt/locallib.php');
 require_once($CFG->libdir . '/filelib.php');
 
 use cache;
@@ -37,7 +37,7 @@ use moodle_exception;
 use stdClass;
 
 // Include category_settings class for the factory methods.
-require_once($CFG->dirroot . '/mod/zoom_yt/classes/category_settings.php');
+require_once($CFG->dirroot . '/mod/zoomyt/classes/category_settings.php');
 
 /**
  * Web service class.
@@ -150,7 +150,7 @@ class webservice {
      * @throws moodle_exception Moodle exception is thrown for missing config settings.
      */
     public function __construct($credentials = null) {
-        $config = get_config('zoom_yt');
+        $config = get_config('zoomyt');
 
         $requiredfields = [
             'clientid',
@@ -165,7 +165,7 @@ class webservice {
                     if (!empty($credentials->$requiredfield)) {
                         $this->$requiredfield = $credentials->$requiredfield;
                     } else {
-                        throw new moodle_exception('zoomerr_field_missing', 'mod_zoom_yt', '', get_string($requiredfield, 'mod_zoom_yt'));
+                        throw new moodle_exception('zoomerr_field_missing', 'mod_zoomyt', '', get_string($requiredfield, 'mod_zoomyt'));
                     }
                 }
 
@@ -175,7 +175,7 @@ class webservice {
                         ? 'https://eu01api-www4local.zoom.us/v2/'
                         : 'https://api.zoom.us/v2/';
                 } else {
-                    $this->apiurl = zoom_yt_get_api_url();
+                    $this->apiurl = zoomyt_get_api_url();
                 }
 
                 // Set category ID for cache key prefix.
@@ -189,12 +189,12 @@ class webservice {
                     if (!empty($config->$requiredfield)) {
                         $this->$requiredfield = $config->$requiredfield;
                     } else {
-                        throw new moodle_exception('zoomerr_field_missing', 'mod_zoom_yt', '', get_string($requiredfield, 'mod_zoom_yt'));
+                        throw new moodle_exception('zoomerr_field_missing', 'mod_zoomyt', '', get_string($requiredfield, 'mod_zoomyt'));
                     }
                 }
 
                 // Get and remember the API URL.
-                $this->apiurl = zoom_yt_get_api_url();
+                $this->apiurl = zoomyt_get_api_url();
             }
 
             // Get and remember the plugin settings to recycle licenses.
@@ -208,11 +208,11 @@ class webservice {
                 if (!empty($config->licensesnumber)) {
                     $this->numlicenses = $config->licensesnumber;
                 } else {
-                    throw new moodle_exception('zoomerr_licensesnumber_missing', 'mod_zoom_yt');
+                    throw new moodle_exception('zoomerr_licensesnumber_missing', 'mod_zoomyt');
                 }
             }
         } catch (moodle_exception $exception) {
-            throw new moodle_exception('errorwebservice', 'mod_zoom_yt', '', $exception->getMessage());
+            throw new moodle_exception('errorwebservice', 'mod_zoomyt', '', $exception->getMessage());
         }
     }
 
@@ -286,7 +286,7 @@ class webservice {
     protected function get_curl_object() {
         global $CFG;
 
-        $proxyhost = get_config('zoom_yt', 'proxyhost');
+        $proxyhost = get_config('zoomyt', 'proxyhost');
 
         if (!empty($proxyhost)) {
             $cfg = new stdClass();
@@ -358,7 +358,7 @@ class webservice {
         } while ($curl->get_errno() === 35 && $attempts <= self::MAX_RETRIES);
 
         if ($curl->get_errno()) {
-            throw new moodle_exception('errorwebservice', 'mod_zoom_yt', '', $curl->error);
+            throw new moodle_exception('errorwebservice', 'mod_zoomyt', '', $curl->error);
         }
 
         $response = json_decode($rawresponse);
@@ -404,7 +404,7 @@ class webservice {
                         $timediff = $retryafter - time();
                         // If we have no API calls remaining, save retry-after.
                         if ($header['x-ratelimit-remaining'] == 0 && !empty($retryafter)) {
-                            set_config('retry-after', $retryafter, 'zoom_yt');
+                            set_config('retry-after', $retryafter, 'zoomyt');
                             throw new api_limit_exception($response->message, $response->code, $retryafter);
                         } else if (!((defined('PHPUNIT_TEST') && PHPUNIT_TEST) || (defined('BEHAT_TEST') && BEHAT_TEST))) {
                             // When running CLI we might want to know how many calls remaining.
@@ -425,12 +425,12 @@ class webservice {
                             $response->message,
                             $response->code,
                             'errorwebservice',
-                            'mod_zoom_yt',
+                            'mod_zoomyt',
                             '',
                             $response->message
                         );
                     } else {
-                        throw new moodle_exception('errorwebservice', 'mod_zoom_yt', '', "HTTP Status $httpstatus");
+                        throw new moodle_exception('errorwebservice', 'mod_zoomyt', '', "HTTP Status $httpstatus");
                     }
             }
         }
@@ -480,7 +480,7 @@ class webservice {
      * @param string $action The account create action: create, autoCreate, custCreate or ssoCreate.
      * @param int $type The user type number.
      * @return bool Whether the user was succesfully created.
-     * @see https://github.com/yedidiaklein/moodle-local_zoomsyncusers An external plugin that depends on mod_zoom_yt uses this method.
+     * @see https://github.com/yedidiaklein/moodle-local_zoomsyncusers An external plugin that depends on mod_zoomyt uses this method.
      */
     public function autocreate_user($user, $action = 'autoCreate', $type = ZOOM_USER_TYPE_PRO) {
         // Classic: user:write:admin.
@@ -488,7 +488,7 @@ class webservice {
         $url = 'users';
         $data = ['action' => $action];
         $data['user_info'] = [
-            'email' => zoom_yt_get_api_identifier($user),
+            'email' => zoomyt_get_api_identifier($user),
             'type' => $type,
             'first_name' => $user->firstname,
             'last_name' => $user->lastname,
@@ -677,7 +677,7 @@ class webservice {
         try {
             $founduser = $this->make_call($url);
         } catch (webservice_exception $error) {
-            if (zoom_yt_is_user_not_found_error($error)) {
+            if (zoomyt_is_user_not_found_error($error)) {
                 return false;
             } else {
                 throw $error;
@@ -737,7 +737,7 @@ class webservice {
 
         $data = [
             // Process the meeting topic with proper filter.
-            'topic' => zoom_yt_apply_filter_on_meeting_name($zoom->name, $options),
+            'topic' => zoomyt_apply_filter_on_meeting_name($zoom->name, $options),
             'settings' => [
                 'host_video' => (bool) ($zoom->option_host_video),
                 'audio' => $zoom->option_audio,
@@ -806,16 +806,16 @@ class webservice {
         if (!empty($zoom->option_auto_recording)) {
             $data['settings']['auto_recording'] = $zoom->option_auto_recording;
         } else {
-            $recordingoption = get_config('zoom_yt', 'recordingoption');
+            $recordingoption = get_config('zoomyt', 'recordingoption');
             if ($recordingoption === ZOOM_AUTORECORDING_USERDEFAULT) {
                 if (isset($zoom->schedule_for)) {
-                    $zoomuser = zoom_yt_get_user($zoom->schedule_for);
+                    $zoomuser = zoomyt_get_user($zoom->schedule_for);
                     $zoomuserid = $zoomuser->id;
                 } else {
                     $zoomuserid = $zoom->host_id;
                 }
 
-                $autorecording = zoom_yt_get_user_settings($zoomuserid)->recording->auto_recording;
+                $autorecording = zoomyt_get_user_settings($zoomuserid)->recording->auto_recording;
                 $data['settings']['auto_recording'] = $autorecording;
             } else {
                 $data['settings']['auto_recording'] = $recordingoption;
@@ -869,7 +869,7 @@ class webservice {
         }
 
         // Add tracking field to data.
-        $defaulttrackingfields = zoom_yt_clean_tracking_fields();
+        $defaulttrackingfields = zoomyt_clean_tracking_fields();
         $tfarray = [];
         foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
             if (isset($zoom->$key)) {
@@ -993,11 +993,11 @@ class webservice {
      * Get the meeting invite note that was sent for a specific meeting from Zoom.
      *
      * @param stdClass $zoom The zoom meeting
-     * @return \mod_zoom_yt\invitation The meeting's invitation.
+     * @return \mod_zoomyt\invitation The meeting's invitation.
      */
     public function get_meeting_invitation($zoom) {
         global $CFG;
-        require_once($CFG->dirroot . '/mod/zoom_yt/classes/invitation.php');
+        require_once($CFG->dirroot . '/mod/zoomyt/classes/invitation.php');
 
         // Webinar does not have meeting invite info.
         if ($zoom->webinar) {
@@ -1308,7 +1308,7 @@ class webservice {
      * @return string access token
      */
     protected function get_access_token() {
-        $cache = cache::make('mod_zoom_yt', 'oauth');
+        $cache = cache::make('mod_zoomyt', 'oauth');
         $prefix = $this->cachekeyprefix;
         $token = $cache->get($prefix . 'accesstoken');
         $expires = $cache->get($prefix . 'expires');
@@ -1392,13 +1392,13 @@ class webservice {
         $response = $this->make_curl_call($curl, 'post', 'https://zoom.us/oauth/token', $data);
 
         if ($curl->get_errno()) {
-            throw new moodle_exception('errorwebservice', 'mod_zoom_yt', '', $curl->error);
+            throw new moodle_exception('errorwebservice', 'mod_zoomyt', '', $curl->error);
         }
 
         $response = json_decode($response);
 
         if (empty($response->access_token)) {
-            throw new moodle_exception('errorwebservice', 'mod_zoom_yt', '', get_string('zoomerr_no_access_token', 'mod_zoom_yt'));
+            throw new moodle_exception('errorwebservice', 'mod_zoomyt', '', get_string('zoomerr_no_access_token', 'mod_zoomyt'));
         }
 
         $scopes = explode(' ', $response->scope);
@@ -1429,7 +1429,7 @@ class webservice {
 
         if (!empty($missingscopes)) {
             $missingscopes = implode(', ', $missingscopes);
-            throw new moodle_exception('errorwebservice', 'mod_zoom_yt', '', get_string('zoomerr_scopes', 'mod_zoom_yt', $missingscopes));
+            throw new moodle_exception('errorwebservice', 'mod_zoomyt', '', get_string('zoomerr_scopes', 'mod_zoomyt', $missingscopes));
         }
 
         $token = $response->access_token;
@@ -1487,7 +1487,7 @@ class webservice {
      */
     public function is_user_permitted_to_require_registration() {
         global $USER;
-        $zoomuser = zoom_yt_get_user(zoom_yt_get_api_identifier($USER));
+        $zoomuser = zoomyt_get_user(zoomyt_get_api_identifier($USER));
         if ($zoomuser && $zoomuser->type == ZOOM_USER_TYPE_PRO) {
             return true;
         }

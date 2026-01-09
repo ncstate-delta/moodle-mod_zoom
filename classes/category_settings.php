@@ -20,12 +20,12 @@
  * Handles retrieval and management of category-level Zoom account settings
  * with inheritance from parent categories and fallback to global settings.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2025
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt;
+namespace mod_zoomyt;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -90,7 +90,7 @@ class category_settings {
 
         // Look for settings in each category, starting with the most specific.
         foreach ($categoryids as $catid) {
-            $settings = $DB->get_record('zoom_yt_category_settings', ['categoryid' => $catid]);
+            $settings = $DB->get_record('zoomyt_category_settings', ['categoryid' => $catid]);
 
             if ($settings) {
                 // Check if this category inherits from parent.
@@ -135,7 +135,7 @@ class category_settings {
     public function has_own_settings(): bool {
         global $DB;
 
-        $settings = $DB->get_record('zoom_yt_category_settings', ['categoryid' => $this->categoryid]);
+        $settings = $DB->get_record('zoomyt_category_settings', ['categoryid' => $this->categoryid]);
         return $settings && !$settings->inherit;
     }
 
@@ -194,7 +194,7 @@ class category_settings {
         global $DB, $USER;
 
         $now = time();
-        $existing = $DB->get_record('zoom_yt_category_settings', ['categoryid' => $this->categoryid]);
+        $existing = $DB->get_record('zoomyt_category_settings', ['categoryid' => $this->categoryid]);
 
         $record = new \stdClass();
         $record->categoryid = $this->categoryid;
@@ -250,10 +250,10 @@ class category_settings {
             if (!isset($record->yt_channel_name) && !empty($existing->yt_channel_name)) {
                 $record->yt_channel_name = $existing->yt_channel_name;
             }
-            $DB->update_record('zoom_yt_category_settings', $record);
+            $DB->update_record('zoomyt_category_settings', $record);
         } else {
             $record->timecreated = $now;
-            $DB->insert_record('zoom_yt_category_settings', $record);
+            $DB->insert_record('zoomyt_category_settings', $record);
         }
 
         // Clear cached settings.
@@ -269,11 +269,11 @@ class category_settings {
     /**
      * Get YouTube service for this category.
      *
-     * @return \mod_zoom_yt\youtube_service|null The YouTube service or null if not configured.
+     * @return \mod_zoomyt\youtube_service|null The YouTube service or null if not configured.
      */
-    public function get_youtube_service(): ?\mod_zoom_yt\youtube_service {
+    public function get_youtube_service(): ?\mod_zoomyt\youtube_service {
         global $CFG;
-        require_once($CFG->dirroot . '/mod/zoom_yt/classes/youtube_service.php');
+        require_once($CFG->dirroot . '/mod/zoomyt/classes/youtube_service.php');
 
         $settings = $this->get_effective_settings();
 
@@ -281,7 +281,7 @@ class category_settings {
             return null;
         }
 
-        return new \mod_zoom_yt\youtube_service($settings, $this->settingssourcecategoryid);
+        return new \mod_zoomyt\youtube_service($settings, $this->settingssourcecategoryid);
     }
 
     /**
@@ -321,7 +321,7 @@ class category_settings {
     public function delete_settings(): bool {
         global $DB;
 
-        $DB->delete_records('zoom_yt_category_settings', ['categoryid' => $this->categoryid]);
+        $DB->delete_records('zoomyt_category_settings', ['categoryid' => $this->categoryid]);
 
         // Clear cached settings.
         $this->settings = null;
@@ -338,7 +338,7 @@ class category_settings {
     public function get_raw_settings(): ?object {
         global $DB;
 
-        $settings = $DB->get_record('zoom_yt_category_settings', ['categoryid' => $this->categoryid]);
+        $settings = $DB->get_record('zoomyt_category_settings', ['categoryid' => $this->categoryid]);
         return $settings ?: null;
     }
 
@@ -346,7 +346,7 @@ class category_settings {
      * Clear the OAuth token cache for this category.
      */
     protected function clear_oauth_cache(): void {
-        $cache = \cache::make('mod_zoom_yt', 'oauth');
+        $cache = \cache::make('mod_zoomyt', 'oauth');
         $cache->delete('accesstoken_cat_' . $this->categoryid);
         $cache->delete('expires_cat_' . $this->categoryid);
         $cache->delete('scopes_cat_' . $this->categoryid);
@@ -358,7 +358,7 @@ class category_settings {
      * @return object The global settings.
      */
     protected function get_global_settings(): object {
-        $config = get_config('zoom_yt');
+        $config = get_config('zoomyt');
 
         return (object)[
             'categoryid' => null,
@@ -409,7 +409,7 @@ class category_settings {
         global $DB;
 
         $sql = "SELECT cs.*, cc.name as categoryname, cc.path
-                FROM {zoom_yt_category_settings} cs
+                FROM {zoomyt_category_settings} cs
                 JOIN {course_categories} cc ON cc.id = cs.categoryid
                 WHERE cs.inherit = 0
                 ORDER BY cc.sortorder";
@@ -428,25 +428,25 @@ class category_settings {
         if (empty($credentials->accountid) || empty($credentials->clientid) || empty($credentials->clientsecret)) {
             return [
                 'success' => false,
-                'message' => get_string('error_missing_credentials', 'zoom_yt'),
+                'message' => get_string('error_missing_credentials', 'zoomyt'),
             ];
         }
 
         try {
             // Create a webservice instance with these credentials.
-            $service = new \mod_zoom_yt\webservice($credentials);
+            $service = new \mod_zoomyt\webservice($credentials);
             // Try to get the current user to test the connection.
             global $USER;
-            $service->get_user(zoom_yt_get_api_identifier($USER));
+            $service->get_user(zoomyt_get_api_identifier($USER));
 
             return [
                 'success' => true,
-                'message' => get_string('connectionok', 'zoom_yt'),
+                'message' => get_string('connectionok', 'zoomyt'),
             ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => get_string('connectionfailed', 'zoom_yt') . ' ' . $e->getMessage(),
+                'message' => get_string('connectionfailed', 'zoomyt') . ' ' . $e->getMessage(),
             ];
         }
     }

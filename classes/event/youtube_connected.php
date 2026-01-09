@@ -17,12 +17,12 @@
 /**
  * Event for when YouTube is connected to a category.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2025
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt\event;
+namespace mod_zoomyt\event;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -45,7 +45,7 @@ class youtube_connected extends \core\event\base {
      * @return string
      */
     public static function get_name(): string {
-        return get_string('event_youtube_connected', 'zoom_yt');
+        return get_string('event_youtube_connected', 'zoomyt');
     }
 
     /**

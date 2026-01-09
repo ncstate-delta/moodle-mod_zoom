@@ -17,20 +17,20 @@
 /**
  * Unit tests for get_meeting_reports task class.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2019 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt;
+namespace mod_zoomyt;
 
 use advanced_testcase;
 
 /**
  * PHPunit testcase class.
- * @covers \mod_zoom_yt\webservice
+ * @covers \mod_zoomyt\webservice
  */
-final class mod_zoom_yt_webservice_test extends advanced_testcase {
+final class mod_zoomyt_webservice_test extends advanced_testcase {
     /**
      * @var object Anonymous class to mock \curl.
      */
@@ -41,7 +41,7 @@ final class mod_zoom_yt_webservice_test extends advanced_testcase {
      */
     public static function setUpBeforeClass(): void {
         global $CFG;
-        require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
+        require_once($CFG->dirroot . '/mod/zoomyt/locallib.php');
         parent::setUpBeforeClass();
     }
 
@@ -81,9 +81,9 @@ final class mod_zoom_yt_webservice_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         // Set fake values so we can test methods in class.
-        set_config('clientid', 'test', 'zoom_yt');
-        set_config('clientsecret', 'test', 'zoom_yt');
-        set_config('accountid', 'test', 'zoom_yt');
+        set_config('clientid', 'test', 'zoomyt');
+        set_config('clientsecret', 'test', 'zoomyt');
+        set_config('accountid', 'test', 'zoomyt');
 
         $this->notfoundmockcurl = new class {
             // phpcs:disable moodle.NamingConventions.ValidFunctionName.LowercaseMethod
@@ -117,7 +117,7 @@ final class mod_zoom_yt_webservice_test extends advanced_testcase {
      * Tests that uuid are encoded properly for use in web service calls.
      */
     public function test_encode_uuid(): void {
-        $service = zoom_yt_webservice();
+        $service = zoomyt_webservice();
 
         // If uuid includes / or // it needs to be double encoded.
         $uuid = $service->encode_uuid('/u2F0gUNSqqC7DT+08xKrw==');
@@ -146,7 +146,7 @@ final class mod_zoom_yt_webservice_test extends advanced_testcase {
             $response = $mockservice->get_meeting_webinar_info('-1', false);
         } catch (webservice_exception $error) {
             $this->assertEquals(3001, $error->zoomerrorcode);
-            $this->assertTrue(zoom_yt_is_meeting_gone_error($error));
+            $this->assertTrue(zoomyt_is_meeting_gone_error($error));
             $foundexception = true;
         }
 
@@ -168,8 +168,8 @@ final class mod_zoom_yt_webservice_test extends advanced_testcase {
             $founduser = $mockservice->get_user('-1');
         } catch (webservice_exception $error) {
             $this->assertEquals(1001, $error->zoomerrorcode);
-            $this->assertTrue(zoom_yt_is_meeting_gone_error($error));
-            $this->assertTrue(zoom_yt_is_user_not_found_error($error));
+            $this->assertTrue(zoomyt_is_meeting_gone_error($error));
+            $this->assertTrue(zoomyt_is_user_not_found_error($error));
             $foundexception = true;
         }
 
@@ -218,8 +218,8 @@ final class mod_zoom_yt_webservice_test extends advanced_testcase {
             $founduser = $mockservice->get_user('-1');
         } catch (webservice_exception $error) {
             $this->assertEquals(1120, $error->zoomerrorcode);
-            $this->assertTrue(zoom_yt_is_meeting_gone_error($error));
-            $this->assertTrue(zoom_yt_is_user_not_found_error($error));
+            $this->assertTrue(zoomyt_is_meeting_gone_error($error));
+            $this->assertTrue(zoomyt_is_user_not_found_error($error));
             $foundexception = true;
         }
 

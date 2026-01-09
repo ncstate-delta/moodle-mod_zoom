@@ -17,19 +17,19 @@
 /**
  * Task: send_ical_notification
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2025 OPENCOLLAB <info@opencollab.co.za>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt\task;
+namespace mod_zoomyt\task;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/calendar/lib.php');
 require_once($CFG->libdir . '/bennu/bennu.inc.php');
 require_once($CFG->libdir . '/bennu/iCalendar_components.php');
-require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
+require_once($CFG->dirroot . '/mod/zoomyt/locallib.php');
 
 use context_module;
 use context_user;
@@ -50,7 +50,7 @@ class send_ical_notifications extends scheduled_task {
      * @return void nothing.
      */
     public function execute() {
-        if (get_config('zoom_yt', 'sendicalnotifications')) {
+        if (get_config('zoomyt', 'sendicalnotifications')) {
             mtrace('Zoom ical Notifications - Starting cron job.');
             $zoomevents = $this->get_zoom_events_to_notify();
             if ($zoomevents) {
@@ -91,8 +91,8 @@ class send_ical_notifications extends scheduled_task {
         AND timemodified <= :tenminutesago';
 
         return $DB->get_records_sql($sql, [
-            'zoommodulename' => 'zoom_yt',
-            'zoomeventtype' => 'zoom_yt',
+            'zoommodulename' => 'zoomyt',
+            'zoomeventtype' => 'zoomyt',
             'onehourago' => time() - (60 * 60),
             'tenminutesago' => time() - (60 * 10),
         ]);
@@ -106,7 +106,7 @@ class send_ical_notifications extends scheduled_task {
     private function get_notification_time(int $zoomeventid) {
         global $DB;
 
-        $notificationtime = $DB->get_field('zoom_yt_ical_notifications', 'notificationtime', ['zoomeventid' => $zoomeventid]);
+        $notificationtime = $DB->get_field('zoomyt_ical_notifications', 'notificationtime', ['zoomeventid' => $zoomeventid]);
         if (!$notificationtime) {
             $notificationtime = 0;
         }
@@ -124,7 +124,7 @@ class send_ical_notifications extends scheduled_task {
         $icalnotifojb->zoomeventid = $zoomeventid;
         $icalnotifojb->notificationtime = time();
 
-        $DB->insert_record('zoom_yt_ical_notifications', $icalnotifojb);
+        $DB->insert_record('zoomyt_ical_notifications', $icalnotifojb);
     }
 
     /**
@@ -136,23 +136,23 @@ class send_ical_notifications extends scheduled_task {
 
         $users = $this->get_users_to_notify((int) $zoomevent->instance, (int) $zoomevent->courseid);
 
-        $zoom = $DB->get_record('zoom_yt', ['id' => $zoomevent->instance], 'id,registration,join_url,meeting_id,webinar');
+        $zoom = $DB->get_record('zoomyt', ['id' => $zoomevent->instance], 'id,registration,join_url,meeting_id,webinar');
 
         $filestorage = get_file_storage();
 
         // Apply filters to event name and description.
-        $cminfo = get_coursemodule_from_instance('zoom_yt', (int) $zoomevent->instance, (int) $zoomevent->courseid);
+        $cminfo = get_coursemodule_from_instance('zoomyt', (int) $zoomevent->instance, (int) $zoomevent->courseid);
         $formatoptions = [];
         if ($cminfo && !empty($cminfo->id)) {
             $formatoptions['context'] = context_module::instance($cminfo->id);
         }
-        $zoomeventname = zoom_yt_apply_filter_on_meeting_name($zoomevent->name, $formatoptions);
+        $zoomeventname = zoomyt_apply_filter_on_meeting_name($zoomevent->name, $formatoptions);
         $zoomeventhtmldesc = format_text($zoomevent->description, FORMAT_HTML, $formatoptions);
         $zoomeventhtmldesc .= format_text(
             get_string(
                 'meetingactivityurl',
-                'mod_zoom_yt',
-                $CFG->wwwroot . '/mod/zoom_yt/view.php?id=' . $cminfo->id
+                'mod_zoomyt',
+                $CFG->wwwroot . '/mod/zoomyt/view.php?id=' . $cminfo->id
             ),
             FORMAT_HTML,
             $formatoptions
@@ -160,7 +160,7 @@ class send_ical_notifications extends scheduled_task {
         $zoomeventplaindesc = strip_tags($zoomevent->description);
 
         // Setup zoom event url.
-        $zoomurlwrapper = new moodle_url('/mod/zoom_yt/view.php', ['id' => $cminfo->id]);
+        $zoomurlwrapper = new moodle_url('/mod/zoomyt/view.php', ['id' => $cminfo->id]);
         $zoomurl = $zoomurlwrapper->out(false);
 
         foreach ($users as $user) {
@@ -190,7 +190,7 @@ class send_ical_notifications extends scheduled_task {
             $icalfileattachment = $filestorage->create_file_from_string($filerecord, $serializedical);
 
             $messagedata = new message();
-            $messagedata->component = 'mod_zoom_yt';
+            $messagedata->component = 'mod_zoomyt';
             $messagedata->name = 'ical_notifications';
             $messagedata->userfrom = core_user::get_noreply_user();
             $messagedata->userto = $user;
@@ -237,12 +237,12 @@ class send_ical_notifications extends scheduled_task {
         $ical->add_property('method', 'PUBLISH');
         $ical->add_property('prodid', '-//Moodle Pty Ltd//NONSGML Moodle Version ' . $CFG->version . '//EN');
 
-        $icalevent = zoom_yt_helper_icalendar_event($zoomevent, $zoomeventdescription);
+        $icalevent = zoomyt_helper_icalendar_event($zoomevent, $zoomeventdescription);
 
         if ($zoom->registration == ZOOM_REGISTRATION_OFF) {
             $icalevent->add_property('location', $zoomurl);
         } else {
-            $registrantjoinurl = zoom_yt_get_registrant_join_url($email, $zoom->meeting_id, $zoom->webinar);
+            $registrantjoinurl = zoomyt_get_registrant_join_url($email, $zoom->meeting_id, $zoom->webinar);
             if ($registrantjoinurl) {
                 $icalevent->add_property('location', $registrantjoinurl);
             } else {
@@ -271,8 +271,8 @@ class send_ical_notifications extends scheduled_task {
      * @return array An array of users.
      */
     private function get_users_to_notify(int $zoomid, int $courseid) {
-        $cminfo = get_fast_modinfo($courseid)->instances['zoom_yt'][$zoomid];
-        $users = get_users_by_capability($cminfo->context, 'mod/zoom_yt:view');
+        $cminfo = get_fast_modinfo($courseid)->instances['zoomyt'][$zoomid];
+        $users = get_users_by_capability($cminfo->context, 'mod/zoomyt:view');
 
         if (empty($users)) {
             return [];
@@ -288,6 +288,6 @@ class send_ical_notifications extends scheduled_task {
      * @return string task name.
      */
     public function get_name() {
-        return get_string('sendicalnotifications', 'mod_zoom_yt');
+        return get_string('sendicalnotifications', 'mod_zoomyt');
     }
 }

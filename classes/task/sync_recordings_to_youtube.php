@@ -17,16 +17,16 @@
 /**
  * Scheduled task to sync Zoom cloud recordings to YouTube.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2025
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt\task;
+namespace mod_zoomyt\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
+require_once($CFG->dirroot . '/mod/zoomyt/locallib.php');
 
 /**
  * Sync Zoom recordings to YouTube task.
@@ -42,7 +42,7 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
      * @return string
      */
     public function get_name(): string {
-        return get_string('task_sync_recordings_youtube', 'zoom_yt');
+        return get_string('task_sync_recordings_youtube', 'zoomyt');
     }
 
     /**
@@ -51,8 +51,8 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
     public function execute() {
         global $CFG, $DB;
 
-        require_once($CFG->dirroot . '/mod/zoom_yt/classes/youtube_service.php');
-        require_once($CFG->dirroot . '/mod/zoom_yt/classes/category_settings.php');
+        require_once($CFG->dirroot . '/mod/zoomyt/classes/youtube_service.php');
+        require_once($CFG->dirroot . '/mod/zoomyt/classes/category_settings.php');
 
         mtrace('Starting Zoom to YouTube sync task...');
 
@@ -63,7 +63,7 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
             return;
         }
 
-        $maxspace = get_config('zoom_yt', 'temp_storage_limit') ?: 5368709120; // 5GB default.
+        $maxspace = get_config('zoomyt', 'temp_storage_limit') ?: 5368709120; // 5GB default.
         $availablespace = disk_free_space($tempdir);
 
         if ($availablespace < 1073741824) { // Less than 1GB.
@@ -107,9 +107,9 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
     protected function get_temp_directory(): ?string {
         global $CFG;
 
-        $tempdir = get_config('zoom_yt', 'temp_directory');
+        $tempdir = get_config('zoomyt', 'temp_directory');
         if (empty($tempdir)) {
-            $tempdir = $CFG->tempdir . '/zoom_yt_videos';
+            $tempdir = $CFG->tempdir . '/zoomyt_videos';
         }
 
         if (!is_dir($tempdir)) {
@@ -136,10 +136,10 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
         // Find Zoom recordings that haven't been uploaded to YouTube yet.
         $sql = "SELECT zmr.*, z.id as zoomid, z.course, z.name as session_name,
                        zmd.start_time as session_time
-                FROM {zoom_yt_meeting_recordings} zmr
-                JOIN {zoom_yt} z ON z.id = zmr.zoomid
-                JOIN {zoom_yt_meeting_details} zmd ON zmd.meetinguuid = zmr.meetinguuid
-                LEFT JOIN {zoom_yt_videos} zyv ON zyv.recordingid = zmr.id
+                FROM {zoomyt_meeting_recordings} zmr
+                JOIN {zoomyt} z ON z.id = zmr.zoomid
+                JOIN {zoomyt_meeting_details} zmd ON zmd.meetinguuid = zmr.meetinguuid
+                LEFT JOIN {zoomyt_videos} zyv ON zyv.recordingid = zmr.id
                 WHERE zyv.id IS NULL
                   AND zmr.recordingtype IN ('active_speaker', 'shared_screen_with_speaker_view', 
                                              'shared_screen_with_gallery_view', 'gallery_view')
@@ -191,8 +191,8 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
     protected function process_recording(object $recording, string $tempdir): void {
         global $CFG, $DB;
 
-        require_once($CFG->dirroot . '/mod/zoom_yt/classes/youtube_service.php');
-        require_once($CFG->dirroot . '/mod/zoom_yt/classes/category_settings.php');
+        require_once($CFG->dirroot . '/mod/zoomyt/classes/youtube_service.php');
+        require_once($CFG->dirroot . '/mod/zoomyt/classes/category_settings.php');
 
         mtrace('Processing recording: ' . $recording->name . ' (ID: ' . $recording->id . ')');
 
@@ -200,7 +200,7 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
         $course = $DB->get_record('course', ['id' => $recording->course], 'id, category', MUST_EXIST);
 
         // Get YouTube service for this course.
-        $ytservice = \mod_zoom_yt\youtube_service::get_instance_for_course($recording->course);
+        $ytservice = \mod_zoomyt\youtube_service::get_instance_for_course($recording->course);
         if (!$ytservice || !$ytservice->is_configured()) {
             mtrace('  YouTube not configured for course ' . $recording->course . ', skipping.');
             return;
@@ -220,11 +220,11 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
         $video->timemodified = time();
 
         // Get visibility setting.
-        $catsettings = new \mod_zoom_yt\category_settings($course->category);
+        $catsettings = new \mod_zoomyt\category_settings($course->category);
         $settings = $catsettings->get_effective_settings();
-        $video->visibility = $settings->yt_default_visibility ?? get_config('zoom_yt', 'youtube_default_visibility') ?? 'unlisted';
+        $video->visibility = $settings->yt_default_visibility ?? get_config('zoomyt', 'youtube_default_visibility') ?? 'unlisted';
 
-        $videoid = $DB->insert_record('zoom_yt_videos', $video);
+        $videoid = $DB->insert_record('zoomyt_videos', $video);
         $video->id = $videoid;
 
         // Download the recording.
@@ -237,14 +237,14 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
             $video->status = 'failed';
             $video->error_message = 'Download failed: ' . $e->getMessage();
             $video->timemodified = time();
-            $DB->update_record('zoom_yt_videos', $video);
+            $DB->update_record('zoomyt_videos', $video);
             throw $e;
         }
 
         // Update status to uploading.
         $video->status = 'uploading';
         $video->timemodified = time();
-        $DB->update_record('zoom_yt_videos', $video);
+        $DB->update_record('zoomyt_videos', $video);
 
         // Upload to YouTube.
         mtrace('  Uploading to YouTube...');
@@ -262,12 +262,12 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
             $video->duration = $result->duration;
             $video->status = 'uploaded';
             $video->timemodified = time();
-            $DB->update_record('zoom_yt_videos', $video);
+            $DB->update_record('zoomyt_videos', $video);
 
             mtrace('  Uploaded successfully: ' . $result->url);
 
             // Log the event.
-            $event = \mod_zoom_yt\event\video_uploaded_to_youtube::create([
+            $event = \mod_zoomyt\event\video_uploaded_to_youtube::create([
                 'context' => \context_course::instance($recording->course),
                 'objectid' => $video->id,
                 'other' => [
@@ -281,7 +281,7 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
             $video->status = 'failed';
             $video->error_message = 'Upload failed: ' . $e->getMessage();
             $video->timemodified = time();
-            $DB->update_record('zoom_yt_videos', $video);
+            $DB->update_record('zoomyt_videos', $video);
             throw $e;
         } finally {
             // Delete local file.
@@ -301,15 +301,15 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
     protected function download_zoom_recording(object $recording, string $localpath): void {
         global $CFG;
 
-        require_once($CFG->dirroot . '/mod/zoom_yt/classes/webservice.php');
+        require_once($CFG->dirroot . '/mod/zoomyt/classes/webservice.php');
 
         // Check available space.
         $tempdir = dirname($localpath);
-        $maxspace = get_config('zoom_yt', 'temp_storage_limit') ?: 5368709120;
+        $maxspace = get_config('zoomyt', 'temp_storage_limit') ?: 5368709120;
         $availablespace = disk_free_space($tempdir);
 
         if ($availablespace < $maxspace * 0.1) {
-            throw new \moodle_exception('insufficient_disk_space', 'zoom_yt');
+            throw new \moodle_exception('insufficient_disk_space', 'zoomyt');
         }
 
         // Get download URL from Zoom.
@@ -329,7 +329,7 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
 
         $fp = fopen($localpath, 'w');
         if (!$fp) {
-            throw new \moodle_exception('cannot_create_file', 'zoom_yt', '', $localpath);
+            throw new \moodle_exception('cannot_create_file', 'zoomyt', '', $localpath);
         }
 
         $curl->setopt(['CURLOPT_FILE' => $fp]);
@@ -338,13 +338,13 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
 
         if ($curl->get_errno()) {
             unlink($localpath);
-            throw new \moodle_exception('download_failed', 'zoom_yt', '', $curl->error);
+            throw new \moodle_exception('download_failed', 'zoomyt', '', $curl->error);
         }
 
         $info = $curl->get_info();
         if ($info['http_code'] !== 200) {
             unlink($localpath);
-            throw new \moodle_exception('download_failed', 'zoom_yt', '', 'HTTP ' . $info['http_code']);
+            throw new \moodle_exception('download_failed', 'zoomyt', '', 'HTTP ' . $info['http_code']);
         }
 
         mtrace('  Downloaded ' . round(filesize($localpath) / 1048576, 2) . ' MB');
@@ -360,13 +360,13 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
         global $DB;
 
         // Check if there's already a video record.
-        $video = $DB->get_record('zoom_yt_videos', ['recordingid' => $recording->id]);
+        $video = $DB->get_record('zoomyt_videos', ['recordingid' => $recording->id]);
 
         if ($video) {
             $video->status = 'failed';
             $video->error_message = $message;
             $video->timemodified = time();
-            $DB->update_record('zoom_yt_videos', $video);
+            $DB->update_record('zoomyt_videos', $video);
         }
     }
 
@@ -380,10 +380,10 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
 
         // Get videos that have been uploaded and are past the retention period.
         $sql = "SELECT zyv.*, zcs.zoom_recording_delete_days, z.course
-                FROM {zoom_yt_videos} zyv
-                JOIN {zoom_yt} z ON z.id = zyv.zoomid
+                FROM {zoomyt_videos} zyv
+                JOIN {zoomyt} z ON z.id = zyv.zoomid
                 JOIN {course} c ON c.id = z.course
-                LEFT JOIN {zoom_yt_category_settings} zcs ON zcs.categoryid = c.category AND zcs.inherit = 0
+                LEFT JOIN {zoomyt_category_settings} zcs ON zcs.categoryid = c.category AND zcs.inherit = 0
                 WHERE zyv.status = 'uploaded'
                   AND zyv.zoom_recording_deleted = 0
                   AND zyv.youtube_video_id IS NOT NULL";
@@ -395,7 +395,7 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
             // Get effective delete days setting.
             $deletedays = $video->zoom_recording_delete_days;
             if ($deletedays === null) {
-                $deletedays = get_config('zoom_yt', 'zoom_recording_delete_days');
+                $deletedays = get_config('zoomyt', 'zoom_recording_delete_days');
             }
 
             if (empty($deletedays)) {
@@ -410,7 +410,7 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
                     // For now, just mark it as deleted.
                     $video->zoom_recording_deleted = 1;
                     $video->timemodified = time();
-                    $DB->update_record('zoom_yt_videos', $video);
+                    $DB->update_record('zoomyt_videos', $video);
                     $deleted++;
                     mtrace('  Marked recording as deleted for video ID: ' . $video->id);
                 } catch (\Exception $e) {

@@ -1,5 +1,5 @@
 {
-    "name": "ucla/moodle-mod_zoom_yt",
+    "name": "ucla/moodle-mod_zoomyt",
     "type": "moodle-mod",
     "require": {
         "composer/installers": "~1.0"

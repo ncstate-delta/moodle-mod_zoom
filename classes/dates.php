@@ -15,28 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Contains the class for fetching the important dates in mod_zoom_yt for a given module instance and a user.
+ * Contains the class for fetching the important dates in mod_zoomyt for a given module instance and a user.
  *
- * @package   mod_zoom_yt
+ * @package   mod_zoomyt
  * @copyright 2021 Shamim Rezaie <shamim@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 declare(strict_types=1);
 
-namespace mod_zoom_yt;
+namespace mod_zoomyt;
 
 use core\activity_dates;
 
 /**
- * Class for fetching the important dates in mod_zoom_yt for a given module instance and a user.
+ * Class for fetching the important dates in mod_zoomyt for a given module instance and a user.
  *
  * @copyright 2021 Shamim Rezaie <shamim@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dates extends activity_dates {
     /**
-     * Returns a list of important dates in mod_zoom_yt
+     * Returns a list of important dates in mod_zoomyt
      *
      * @return array
      */
@@ -69,7 +69,7 @@ class dates extends activity_dates {
 
             $dates[] = [
                 'dataid' => $dataid,
-                'label' => get_string($labelid, 'mod_zoom_yt'),
+                'label' => get_string($labelid, 'mod_zoomyt'),
                 'timestamp' => $meetimgtimestamp,
             ];
         }

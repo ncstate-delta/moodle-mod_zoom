@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_zoom_yt/video_gallery
+    @template mod_zoomyt/video_gallery
 
     Video gallery for displaying YouTube videos from Zoom recordings.
 
@@ -32,13 +32,13 @@
 <div class="zoom-yt-video-gallery" data-cmid="{{cmid}}" data-zoomid="{{zoomid}}">
     {{#hasvideos}}
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4>{{#str}}video_gallery, zoom_yt{{/str}}</h4>
+        <h4>{{#str}}video_gallery, zoomyt{{/str}}</h4>
         <div class="btn-group" role="group">
             <button type="button" class="btn btn-sm {{#istileview}}btn-primary{{/istileview}}{{^istileview}}btn-outline-secondary{{/istileview}} view-toggle" data-view="tile">
-                <i class="fa fa-th-large"></i> {{#str}}view_tile, zoom_yt{{/str}}
+                <i class="fa fa-th-large"></i> {{#str}}view_tile, zoomyt{{/str}}
             </button>
             <button type="button" class="btn btn-sm {{#islistview}}btn-primary{{/islistview}}{{^islistview}}btn-outline-secondary{{/islistview}} view-toggle" data-view="list">
-                <i class="fa fa-list"></i> {{#str}}view_list, zoom_yt{{/str}}
+                <i class="fa fa-list"></i> {{#str}}view_list, zoomyt{{/str}}
             </button>
         </div>
     </div>
@@ -58,7 +58,7 @@
                         {{#canmanage}}
                         {{^visible}}
                         <div class="video-hidden-badge">
-                            <i class="fa fa-eye-slash"></i> {{#str}}video_hidden, zoom_yt{{/str}}
+                            <i class="fa fa-eye-slash"></i> {{#str}}video_hidden, zoomyt{{/str}}
                         </div>
                         {{/visible}}
                         {{/canmanage}}
@@ -74,11 +74,11 @@
                         <button class="btn btn-sm btn-outline-secondary toggle-visibility" 
                                 data-videoid="{{id}}" 
                                 data-visible="{{visible}}"
-                                title="{{#str}}toggle_video_visibility, zoom_yt{{/str}}">
+                                title="{{#str}}toggle_video_visibility, zoomyt{{/str}}">
                             <i class="fa {{#visible}}fa-eye{{/visible}}{{^visible}}fa-eye-slash{{/visible}}"></i>
                         </button>
                         <a href="{{youtube_url}}" target="_blank" class="btn btn-sm btn-outline-primary">
-                            <i class="fa fa-external-link"></i> {{#str}}view_on_youtube, zoom_yt{{/str}}
+                            <i class="fa fa-external-link"></i> {{#str}}view_on_youtube, zoomyt{{/str}}
                         </a>
                     </div>
                     {{/canmanage}}
@@ -95,8 +95,8 @@
                 <tr>
                     <th style="width: 120px;"></th>
                     <th>{{#str}}name{{/str}}</th>
-                    <th>{{#str}}session_date, zoom_yt{{/str}}</th>
-                    <th>{{#str}}video_duration, zoom_yt{{/str}}</th>
+                    <th>{{#str}}session_date, zoomyt{{/str}}</th>
+                    <th>{{#str}}video_duration, zoomyt{{/str}}</th>
                     {{#canmanage}}
                     <th>{{#str}}actions{{/str}}</th>
                     {{/canmanage}}
@@ -115,7 +115,7 @@
                     </td>
                     <td>
                         <span class="video-title" title="{{title}}">{{title}}</span>
-                        {{#canmanage}}{{^visible}}<span class="badge badge-secondary ml-2">{{#str}}video_hidden, zoom_yt{{/str}}</span>{{/visible}}{{/canmanage}}
+                        {{#canmanage}}{{^visible}}<span class="badge badge-secondary ml-2">{{#str}}video_hidden, zoomyt{{/str}}</span>{{/visible}}{{/canmanage}}
                     </td>
                     <td>{{session_date}}</td>
                     <td>{{duration}}</td>
@@ -160,7 +160,7 @@
     {{/hasvideos}}
     {{^hasvideos}}
     <div class="alert alert-info">
-        <i class="fa fa-info-circle"></i> {{#str}}no_videos, zoom_yt{{/str}}
+        <i class="fa fa-info-circle"></i> {{#str}}no_videos, zoomyt{{/str}}
     </div>
     {{/hasvideos}}
 </div>
@@ -278,7 +278,7 @@ require(['jquery'], function($) {
             
             // Record view via AJAX
             $.ajax({
-                url: M.cfg.wwwroot + '/mod/zoom_yt/ajax.php',
+                url: M.cfg.wwwroot + '/mod/zoomyt/ajax.php',
                 method: 'POST',
                 data: {
                     action: 'record_view',
@@ -303,7 +303,7 @@ require(['jquery'], function($) {
         var currentlyVisible = btn.data('visible');
         
         $.ajax({
-            url: M.cfg.wwwroot + '/mod/zoom_yt/ajax.php',
+            url: M.cfg.wwwroot + '/mod/zoomyt/ajax.php',
             method: 'POST',
             data: {
                 action: 'toggle_visibility',

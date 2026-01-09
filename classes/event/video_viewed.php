@@ -17,12 +17,12 @@
 /**
  * Event for when a user views a YouTube video.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2025
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt\event;
+namespace mod_zoomyt\event;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -35,7 +35,7 @@ class video_viewed extends \core\event\base {
      * Init method.
      */
     protected function init() {
-        $this->data['objecttable'] = 'zoom_yt_videos';
+        $this->data['objecttable'] = 'zoomyt_videos';
         $this->data['crud'] = 'r';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
     }
@@ -46,7 +46,7 @@ class video_viewed extends \core\event\base {
      * @return string
      */
     public static function get_name(): string {
-        return get_string('event_video_viewed', 'zoom_yt');
+        return get_string('event_video_viewed', 'zoomyt');
     }
 
     /**
@@ -65,6 +65,6 @@ class video_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url(): \moodle_url {
-        return new \moodle_url('/mod/zoom_yt/view.php', ['id' => $this->contextinstanceid]);
+        return new \moodle_url('/mod/zoomyt/view.php', ['id' => $this->contextinstanceid]);
     }
 }

@@ -17,15 +17,15 @@
 /**
  * Category-level Zoom YT settings management page.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2025
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
-require_once($CFG->dirroot . '/mod/zoom_yt/classes/category_settings.php');
-require_once($CFG->dirroot . '/mod/zoom_yt/classes/form/category_settings_form.php');
+require_once($CFG->dirroot . '/mod/zoomyt/locallib.php');
+require_once($CFG->dirroot . '/mod/zoomyt/classes/category_settings.php');
+require_once($CFG->dirroot . '/mod/zoomyt/classes/form/category_settings_form.php');
 
 $categoryid = required_param('categoryid', PARAM_INT);
 $action = optional_param('action', '', PARAM_ALPHA);
@@ -36,22 +36,22 @@ $context = context_coursecat::instance($categoryid);
 
 // Require login and capability.
 require_login();
-require_capability('mod/zoom_yt:managecategorysettings', $context);
+require_capability('mod/zoomyt:managecategorysettings', $context);
 
 // Set up the page.
 $PAGE->set_context($context);
-$PAGE->set_url('/mod/zoom_yt/categorysettings.php', ['categoryid' => $categoryid]);
+$PAGE->set_url('/mod/zoomyt/categorysettings.php', ['categoryid' => $categoryid]);
 $PAGE->set_pagelayout('admin');
-$PAGE->set_title(get_string('categorysettings', 'zoom_yt') . ': ' . $category->name);
+$PAGE->set_title(get_string('categorysettings', 'zoomyt') . ': ' . $category->name);
 $PAGE->set_heading($category->name);
 
 // Navigation.
 $PAGE->navbar->add(get_string('categories'), new moodle_url('/course/index.php'));
 $PAGE->navbar->add($category->name, new moodle_url('/course/index.php', ['categoryid' => $categoryid]));
-$PAGE->navbar->add(get_string('categorysettings', 'zoom_yt'));
+$PAGE->navbar->add(get_string('categorysettings', 'zoomyt'));
 
 // Create settings manager.
-$settingsmanager = new \mod_zoom_yt\category_settings($categoryid);
+$settingsmanager = new \mod_zoomyt\category_settings($categoryid);
 
 // Handle test connection action.
 if ($action === 'test' && confirm_sesskey()) {
@@ -61,18 +61,18 @@ if ($action === 'test' && confirm_sesskey()) {
     } else {
         \core\notification::error($result['message']);
     }
-    redirect(new moodle_url('/mod/zoom_yt/categorysettings.php', ['categoryid' => $categoryid]));
+    redirect(new moodle_url('/mod/zoomyt/categorysettings.php', ['categoryid' => $categoryid]));
 }
 
 // Handle delete action.
 if ($action === 'delete' && confirm_sesskey()) {
     $settingsmanager->delete_settings();
-    \core\notification::success(get_string('categorysettings_deleted', 'zoom_yt'));
-    redirect(new moodle_url('/mod/zoom_yt/categorysettings.php', ['categoryid' => $categoryid]));
+    \core\notification::success(get_string('categorysettings_deleted', 'zoomyt'));
+    redirect(new moodle_url('/mod/zoomyt/categorysettings.php', ['categoryid' => $categoryid]));
 }
 
 // Create the form.
-$form = new \mod_zoom_yt\form\category_settings_form(null, [
+$form = new \mod_zoomyt\form\category_settings_form(null, [
     'categoryid' => $categoryid,
     'category' => $category,
 ]);
@@ -88,28 +88,28 @@ if ($form->is_cancelled()) {
     redirect(new moodle_url('/course/index.php', ['categoryid' => $categoryid]));
 } else if ($data = $form->get_data()) {
     $settingsmanager->save_settings($data);
-    \core\notification::success(get_string('categorysettings_saved', 'zoom_yt'));
-    redirect(new moodle_url('/mod/zoom_yt/categorysettings.php', ['categoryid' => $categoryid]));
+    \core\notification::success(get_string('categorysettings_saved', 'zoomyt'));
+    redirect(new moodle_url('/mod/zoomyt/categorysettings.php', ['categoryid' => $categoryid]));
 }
 
 // Output the page.
 echo $OUTPUT->header();
 
-echo $OUTPUT->heading(get_string('categorysettings', 'zoom_yt'));
+echo $OUTPUT->heading(get_string('categorysettings', 'zoomyt'));
 
 // Show current inheritance info.
 $effectivesettings = $settingsmanager->get_effective_settings();
 $sourcecategoryid = $settingsmanager->get_settings_source_category();
 
 if ($sourcecategoryid === null) {
-    $inheritanceinfo = get_string('using_global_settings', 'zoom_yt');
+    $inheritanceinfo = get_string('using_global_settings', 'zoomyt');
     $inheritanceclass = 'alert-info';
 } else if ($sourcecategoryid === $categoryid) {
-    $inheritanceinfo = get_string('using_own_settings', 'zoom_yt');
+    $inheritanceinfo = get_string('using_own_settings', 'zoomyt');
     $inheritanceclass = 'alert-success';
 } else {
     $sourcecategory = $DB->get_record('course_categories', ['id' => $sourcecategoryid], 'name');
-    $inheritanceinfo = get_string('inheriting_from_category', 'zoom_yt', $sourcecategory->name);
+    $inheritanceinfo = get_string('inheriting_from_category', 'zoomyt', $sourcecategory->name);
     $inheritanceclass = 'alert-warning';
 }
 
@@ -117,13 +117,13 @@ echo html_writer::div($inheritanceinfo, 'alert ' . $inheritanceclass);
 
 // Show connection test button if settings exist.
 if ($existingsettings && !$existingsettings->inherit) {
-    $testurl = new moodle_url('/mod/zoom_yt/categorysettings.php', [
+    $testurl = new moodle_url('/mod/zoomyt/categorysettings.php', [
         'categoryid' => $categoryid,
         'action' => 'test',
         'sesskey' => sesskey(),
     ]);
     echo html_writer::div(
-        html_writer::link($testurl, get_string('testconnection', 'zoom_yt'), ['class' => 'btn btn-secondary mb-3']),
+        html_writer::link($testurl, get_string('testconnection', 'zoomyt'), ['class' => 'btn btn-secondary mb-3']),
         'mb-3'
     );
 }
@@ -134,17 +134,17 @@ $form->display();
 // Show delete button if settings exist.
 if ($existingsettings) {
     echo html_writer::start_div('mt-4 pt-3 border-top');
-    $deleteurl = new moodle_url('/mod/zoom_yt/categorysettings.php', [
+    $deleteurl = new moodle_url('/mod/zoomyt/categorysettings.php', [
         'categoryid' => $categoryid,
         'action' => 'delete',
         'sesskey' => sesskey(),
     ]);
     echo html_writer::link(
         $deleteurl,
-        get_string('deletecategorysettings', 'zoom_yt'),
+        get_string('deletecategorysettings', 'zoomyt'),
         [
             'class' => 'btn btn-danger',
-            'onclick' => "return confirm('" . get_string('deletecategorysettings_confirm', 'zoom_yt') . "');",
+            'onclick' => "return confirm('" . get_string('deletecategorysettings_confirm', 'zoomyt') . "');",
         ]
     );
     echo html_writer::end_div();

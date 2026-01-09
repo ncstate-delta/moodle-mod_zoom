@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_zoom_yt/mobile_view_page_ionic3
+    @template mod_zoomyt/mobile_view_page_ionic3
 
     Page to view a zoom meeting
 
@@ -47,70 +47,70 @@
 }}
 {{=<% %>=}}
 <div>
-    <core-course-module-description description="<% zoom.intro %>" component="mod_zoom_yt" componentId="<% cmid %>"></core-course-module-description>
+    <core-course-module-description description="<% zoom.intro %>" component="mod_zoomyt" componentId="<% cmid %>"></core-course-module-description>
 
     <ion-list>
         <%#available%>
             <ion-item>
-                <button ion-button block color="light" core-site-plugins-call-ws name="mod_zoom_yt_grade_item_update" [params]="{zoomid: <% cmid %>}" [preSets]="{getFromCache: 0, saveToCache: 0}" (onSuccess)="loadMeeting($event)">
-                    {{ 'plugin.mod_zoom_yt.join_meeting' | translate }}
+                <button ion-button block color="light" core-site-plugins-call-ws name="mod_zoomyt_grade_item_update" [params]="{zoomid: <% cmid %>}" [preSets]="{getFromCache: 0, saveToCache: 0}" (onSuccess)="loadMeeting($event)">
+                    {{ 'plugin.mod_zoomyt.join_meeting' | translate }}
                 </button>
             </ion-item>
         <%/available%>
         <%^available%>
             <ion-item>
-                <p>{{ 'plugin.mod_zoom_yt.unavailable' | translate }}</p>
+                <p>{{ 'plugin.mod_zoomyt.unavailable' | translate }}</p>
             </ion-item>
         <%/available%>
 
         <%#zoom.recurring%>
             <ion-item>
-                <p class="item-heading">{{ 'plugin.mod_zoom_yt.recurringmeetinglong' | translate }}</p>
+                <p class="item-heading">{{ 'plugin.mod_zoomyt.recurringmeetinglong' | translate }}</p>
             </ion-item>
         <%/zoom.recurring%>
         <%^zoom.recurring%>
             <ion-item>
-                <p class="item-heading">{{ 'plugin.mod_zoom_yt.meeting_time' | translate }}</p>
+                <p class="item-heading">{{ 'plugin.mod_zoomyt.meeting_time' | translate }}</p>
                 <p><% start_time %></p>
             </ion-item>
             <ion-item>
-                <p class="item-heading">{{ 'plugin.mod_zoom_yt.duration' | translate }}</p>
+                <p class="item-heading">{{ 'plugin.mod_zoomyt.duration' | translate }}</p>
                 <p><% duration %></p>
             </ion-item>
         <%/zoom.recurring%>
 
         <ion-item>
-            <p class="item-heading">{{ 'plugin.mod_zoom_yt.passwordprotected' | translate }}</p>
+            <p class="item-heading">{{ 'plugin.mod_zoomyt.passwordprotected' | translate }}</p>
             <%#zoom.password%><p>{{ 'core.yes' | translate }}</p><%/zoom.password%>
             <%^zoom.password%><p>{{ 'core.no' | translate }}</p><%/zoom.password%>
         </ion-item>
 
         <%^zoom.webinar%>
             <ion-item>
-                <p class="item-heading">{{ 'plugin.mod_zoom_yt.joinbeforehost' | translate }}</p>
+                <p class="item-heading">{{ 'plugin.mod_zoomyt.joinbeforehost' | translate }}</p>
                 <%#zoom.option_jbh%><p>{{ 'core.yes' | translate }}</p><%/zoom.option_jbh%>
                 <%^zoom.option_jbh%><p>{{ 'core.no' | translate }}</p><%/zoom.option_jbh%>
             </ion-item>
             <ion-item>
-                <p class="item-heading">{{ 'plugin.mod_zoom_yt.starthostjoins' | translate }}</p>
+                <p class="item-heading">{{ 'plugin.mod_zoomyt.starthostjoins' | translate }}</p>
                 <%#zoom.option_host_video%><p>{{ 'core.yes' | translate }}</p><%/zoom.option_host_video%>
                 <%^zoom.option_host_video%><p>{{ 'core.no' | translate }}</p><%/zoom.option_host_video%>
             </ion-item>
             <ion-item>
-                <p class="item-heading">{{ 'plugin.mod_zoom_yt.startpartjoins' | translate }}</p>
+                <p class="item-heading">{{ 'plugin.mod_zoomyt.startpartjoins' | translate }}</p>
                 <%#zoom.option_participants_video%><p>{{ 'core.yes' | translate }}</p><%/zoom.option_participants_video%>
                 <%^zoom.option_participants_video%><p>{{ 'core.no' | translate }}</p><%/zoom.option_participants_video%>
             </ion-item>
         <%/zoom.webinar%>
 
         <ion-item>
-            <p class="item-heading">{{ 'plugin.mod_zoom_yt.option_audio' | translate }}</p>
+            <p class="item-heading">{{ 'plugin.mod_zoomyt.option_audio' | translate }}</p>
             <p><% option_audio %></p>
         </ion-item>
 
         <%^zoom.recurring%>
             <ion-item>
-                <p class="item-heading">{{ 'plugin.mod_zoom_yt.status' | translate }}</p>
+                <p class="item-heading">{{ 'plugin.mod_zoomyt.status' | translate }}</p>
                 <p><% status %></p>
             </ion-item>
         <%/zoom.recurring%>

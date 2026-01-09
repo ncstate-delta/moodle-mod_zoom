@@ -17,7 +17,7 @@
 /**
  * Defines backup_zoom_activity_task class
  *
- * @package   mod_zoom_yt
+ * @package   mod_zoomyt
  * @category  backup
  * @copyright 2015 UC Regents
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,9 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once($CFG->dirroot . '/mod/zoom_yt/backup/moodle2/backup_zoom_stepslib.php');
+require_once($CFG->dirroot . '/mod/zoomyt/backup/moodle2/backup_zoom_stepslib.php');
 
-use mod_zoom_yt\backup_activity_structure_step;
+use mod_zoomyt\backup_activity_structure_step;
 
 /**
  * Provides the steps to perform one complete backup of the zoom instance
@@ -58,11 +58,11 @@ class backup_zoom_activity_task extends backup_activity_task {
         $base = preg_quote($CFG->wwwroot, '/');
 
         // Link to the list of zooms.
-        $search = '/(' . $base . '\/mod\/zoom_yt\/index.php\?id\=)([0-9]+)/';
+        $search = '/(' . $base . '\/mod\/zoomyt\/index.php\?id\=)([0-9]+)/';
         $content = preg_replace($search, '$@ZOOMYTINDEX*$2@$', $content);
 
         // Link to zoom view by moduleid.
-        $search = '/(' . $base . '\/mod\/zoom_yt\/view.php\?id\=)([0-9]+)/';
+        $search = '/(' . $base . '\/mod\/zoomyt\/view.php\?id\=)([0-9]+)/';
         $content = preg_replace($search, '$@ZOOMYTVIEWBYID*$2@$', $content);
 
         return $content;

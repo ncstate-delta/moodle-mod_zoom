@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines message providers for mod_zoom_yt.
+ * Defines message providers for mod_zoomyt.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2023 Mo Farouk <phun.for.physics@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

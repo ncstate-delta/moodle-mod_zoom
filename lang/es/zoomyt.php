@@ -17,7 +17,7 @@
 /**
  * Spanish strings for Zoom YT.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2025
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -450,8 +450,8 @@ $string['deletecategorysettings'] = 'Eliminar configuración de categoría';
 $string['deletecategorysettings_confirm'] = '¿Está seguro de que desea eliminar la configuración de categoría? Esta categoría heredará de su padre.';
 $string['connectionok'] = '¡Conexión exitosa! Las credenciales de Zoom son válidas.';
 $string['error_missing_credentials'] = 'Por favor proporcione todas las credenciales requeridas (ID de cuenta, ID de cliente y Secreto de cliente).';
-$string['zoom_yt:managecategorysettings'] = 'Gestionar configuración de Zoom YT a nivel de categoría';
-$string['zoom_yt:viewcategorysettings'] = 'Ver configuración de Zoom YT a nivel de categoría';
+$string['zoomyt:managecategorysettings'] = 'Gestionar configuración de Zoom YT a nivel de categoría';
+$string['zoomyt:viewcategorysettings'] = 'Ver configuración de Zoom YT a nivel de categoría';
 $string['categorysettings_link'] = 'Configuración de Zoom YT';
 $string['categoryzooomyt_settings'] = 'Gestionar configuración de cuenta Zoom YT para esta categoría';
 $string['no_category_settings_access'] = 'No tiene permiso para gestionar la configuración de categoría.';

@@ -17,12 +17,12 @@
 /**
  * Video gallery renderable for Zoom YT.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2025
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt\output;
+namespace mod_zoomyt\output;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -80,7 +80,7 @@ class video_gallery implements renderable, templatable {
             $conditions['visible'] = 1;
         }
 
-        $videos = $DB->get_records('zoom_yt_videos', $conditions, 'zoom_session_time DESC');
+        $videos = $DB->get_records('zoomyt_videos', $conditions, 'zoom_session_time DESC');
 
         $result = [];
         foreach ($videos as $video) {
@@ -167,8 +167,8 @@ class video_gallery implements renderable, templatable {
         global $DB;
 
         $sql = "SELECT zyv.*, zmr.recordingtype, zmr.externalurl as zoom_url
-                FROM {zoom_yt_videos} zyv
-                LEFT JOIN {zoom_yt_meeting_recordings} zmr ON zmr.id = zyv.recordingid
+                FROM {zoomyt_videos} zyv
+                LEFT JOIN {zoomyt_meeting_recordings} zmr ON zmr.id = zyv.recordingid
                 WHERE zyv.zoomid = ?
                 ORDER BY zyv.zoom_session_time DESC";
 
@@ -183,7 +183,7 @@ class video_gallery implements renderable, templatable {
             $item->youtube_url = $video->youtube_url;
             $item->thumbnail_url = $video->thumbnail_url;
             $item->status = $video->status;
-            $item->status_label = get_string('video_status_' . $video->status, 'zoom_yt');
+            $item->status_label = get_string('video_status_' . $video->status, 'zoomyt');
             $item->error_message = $video->error_message;
             $item->visible = (bool)$video->visible;
             $item->session_date = userdate($video->zoom_session_time, get_string('strftimedatetime'));
@@ -208,7 +208,7 @@ class video_gallery implements renderable, templatable {
     public static function toggle_visibility(int $videoid, bool $visible): bool {
         global $DB;
 
-        return $DB->set_field('zoom_yt_videos', 'visible', $visible ? 1 : 0, ['id' => $videoid]);
+        return $DB->set_field('zoomyt_videos', 'visible', $visible ? 1 : 0, ['id' => $videoid]);
     }
 
     /**
@@ -225,7 +225,7 @@ class video_gallery implements renderable, templatable {
         $now = time();
 
         // Check for existing view record.
-        $existing = $DB->get_record('zoom_yt_video_views', [
+        $existing = $DB->get_record('zoomyt_video_views', [
             'videoid' => $videoid,
             'userid' => $userid,
         ]);
@@ -233,7 +233,7 @@ class video_gallery implements renderable, templatable {
         if ($existing) {
             $existing->viewcount++;
             $existing->lastviewed = $now;
-            $DB->update_record('zoom_yt_video_views', $existing);
+            $DB->update_record('zoomyt_video_views', $existing);
         } else {
             $view = new stdClass();
             $view->videoid = $videoid;
@@ -241,14 +241,14 @@ class video_gallery implements renderable, templatable {
             $view->viewcount = 1;
             $view->firstviewed = $now;
             $view->lastviewed = $now;
-            $DB->insert_record('zoom_yt_video_views', $view);
+            $DB->insert_record('zoomyt_video_views', $view);
         }
 
         // Get video for event data.
-        $video = $DB->get_record('zoom_yt_videos', ['id' => $videoid]);
+        $video = $DB->get_record('zoomyt_videos', ['id' => $videoid]);
 
         // Log the event.
-        $event = \mod_zoom_yt\event\video_viewed::create([
+        $event = \mod_zoomyt\event\video_viewed::create([
             'context' => $context,
             'objectid' => $videoid,
             'other' => [

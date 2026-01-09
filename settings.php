@@ -17,22 +17,22 @@
 /**
  * Settings.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
+require_once($CFG->dirroot . '/mod/zoomyt/locallib.php');
 require_once($CFG->libdir . '/environmentlib.php');
 
 if ($ADMIN->fulltree) {
-    require_once($CFG->dirroot . '/mod/zoom_yt/classes/invitation.php');
+    require_once($CFG->dirroot . '/mod/zoomyt/classes/invitation.php');
 
     $moodlehashideif = version_compare(normalize_version($CFG->release), '3.7.0', '>=');
 
-    $settings = new admin_settingpage('modsettingzoom', get_string('pluginname', 'mod_zoom_yt'));
+    $settings = new admin_settingpage('modsettingzoom', get_string('pluginname', 'mod_zoomyt'));
 
     // Test whether connection works and display result to user.
     if (!CLI_SCRIPT && $PAGE->url == $CFG->wwwroot . '/' . $CFG->admin . '/settings.php?section=modsettingzoom') {
@@ -40,42 +40,42 @@ if ($ADMIN->fulltree) {
         $notifyclass = 'notifyproblem';
         $errormessage = '';
         try {
-            zoom_yt_get_user(zoom_yt_get_api_identifier($USER));
+            zoomyt_get_user(zoomyt_get_api_identifier($USER));
             $status = 'connectionok';
             $notifyclass = 'notifysuccess';
-        } catch (\mod_zoom_yt\webservice_exception $error) {
+        } catch (\mod_zoomyt\webservice_exception $error) {
             $errormessage = $error->response;
         } catch (moodle_exception $error) {
             $errormessage = $error->a;
         }
 
-        $statusmessage = $OUTPUT->notification(get_string('connectionstatus', 'mod_zoom_yt') .
-                ': ' . get_string($status, 'mod_zoom_yt') . $errormessage, $notifyclass);
+        $statusmessage = $OUTPUT->notification(get_string('connectionstatus', 'mod_zoomyt') .
+                ': ' . get_string($status, 'mod_zoomyt') . $errormessage, $notifyclass);
         $connectionstatus = new admin_setting_heading('zoom/connectionstatus', $statusmessage, '');
         $settings->add($connectionstatus);
     }
 
     // Category Settings link.
-    $categorysettingsurl = new moodle_url('/mod/zoom_yt/categorylist.php');
-    $categorysettingslink = html_writer::link($categorysettingsurl, get_string('manage_category_settings', 'zoom_yt'),
+    $categorysettingsurl = new moodle_url('/mod/zoomyt/categorylist.php');
+    $categorysettingslink = html_writer::link($categorysettingsurl, get_string('manage_category_settings', 'zoomyt'),
         ['class' => 'btn btn-secondary']);
     $settings->add(new admin_setting_heading(
         'zoom/categorysettingslink',
-        get_string('category_settings_header', 'zoom_yt'),
-        get_string('category_settings_header_desc', 'zoom_yt') . '<br><br>' . $categorysettingslink
+        get_string('category_settings_header', 'zoomyt'),
+        get_string('category_settings_header_desc', 'zoomyt') . '<br><br>' . $categorysettingslink
     ));
 
     // Connection settings.
     $settings->add(new admin_setting_heading(
         'zoom/connectionsettings',
-        get_string('connectionsettings', 'mod_zoom_yt'),
-        get_string('connectionsettings_desc', 'mod_zoom_yt')
+        get_string('connectionsettings', 'mod_zoomyt'),
+        get_string('connectionsettings_desc', 'mod_zoomyt')
     ));
 
     $accountid = new admin_setting_configtext(
         'zoom/accountid',
-        get_string('accountid', 'mod_zoom_yt'),
-        get_string('accountid_desc', 'mod_zoom_yt'),
+        get_string('accountid', 'mod_zoomyt'),
+        get_string('accountid_desc', 'mod_zoomyt'),
         '',
         PARAM_ALPHANUMEXT
     );
@@ -83,8 +83,8 @@ if ($ADMIN->fulltree) {
 
     $clientid = new admin_setting_configtext(
         'zoom/clientid',
-        get_string('clientid', 'mod_zoom_yt'),
-        get_string('clientid_desc', 'mod_zoom_yt'),
+        get_string('clientid', 'mod_zoomyt'),
+        get_string('clientid_desc', 'mod_zoomyt'),
         '',
         PARAM_ALPHANUMEXT
     );
@@ -92,29 +92,29 @@ if ($ADMIN->fulltree) {
 
     $clientsecret = new admin_setting_configpasswordunmask(
         'zoom/clientsecret',
-        get_string('clientsecret', 'mod_zoom_yt'),
-        get_string('clientsecret_desc', 'mod_zoom_yt'),
+        get_string('clientsecret', 'mod_zoomyt'),
+        get_string('clientsecret_desc', 'mod_zoomyt'),
         ''
     );
     $settings->add($clientsecret);
 
     $zoomurl = new admin_setting_configtext(
         'zoom/zoomurl',
-        get_string('zoomurl', 'mod_zoom_yt'),
-        get_string('zoomurl_desc', 'mod_zoom_yt'),
+        get_string('zoomurl', 'mod_zoomyt'),
+        get_string('zoomurl_desc', 'mod_zoomyt'),
         '',
         PARAM_URL
     );
     $settings->add($zoomurl);
 
     $apiendpointchoices = [
-        ZOOM_API_ENDPOINT_GLOBAL => get_string('apiendpoint_global', 'mod_zoom_yt'),
-        ZOOM_API_ENDPOINT_EU => get_string('apiendpoint_eu', 'mod_zoom_yt'),
+        ZOOM_API_ENDPOINT_GLOBAL => get_string('apiendpoint_global', 'mod_zoomyt'),
+        ZOOM_API_ENDPOINT_EU => get_string('apiendpoint_eu', 'mod_zoomyt'),
     ];
     $apiendpoint = new admin_setting_configselect(
         'zoom/apiendpoint',
-        get_string('apiendpoint', 'mod_zoom_yt'),
-        get_string('apiendpoint_desc', 'mod_zoom_yt'),
+        get_string('apiendpoint', 'mod_zoomyt'),
+        get_string('apiendpoint_desc', 'mod_zoomyt'),
         ZOOM_API_ENDPOINT_GLOBAL,
         $apiendpointchoices
     );
@@ -122,8 +122,8 @@ if ($ADMIN->fulltree) {
 
     $proxyhost = new admin_setting_configtext(
         'zoom/proxyhost',
-        get_string('option_proxyhost', 'mod_zoom_yt'),
-        get_string('option_proxyhost_desc', 'mod_zoom_yt'),
+        get_string('option_proxyhost', 'mod_zoomyt'),
+        get_string('option_proxyhost_desc', 'mod_zoomyt'),
         '',
         '/^[a-zA-Z0-9.-]+:[0-9]+$|^$/'
     );
@@ -131,23 +131,23 @@ if ($ADMIN->fulltree) {
 
     $apiidentifier = new admin_setting_configselect(
         'zoom/apiidentifier',
-        get_string('apiidentifier', 'mod_zoom_yt'),
-        get_string('apiidentifier_desc', 'mod_zoom_yt'),
+        get_string('apiidentifier', 'mod_zoomyt'),
+        get_string('apiidentifier_desc', 'mod_zoomyt'),
         'email',
-        zoom_yt_get_api_identifier_fields()
+        zoomyt_get_api_identifier_fields()
     );
     $settings->add($apiidentifier);
 
     // License settings.
     $settings->add(new admin_setting_heading(
         'zoom/licensesettings',
-        get_string('licensesettings', 'mod_zoom_yt'),
-        get_string('licensesettings_desc', 'mod_zoom_yt')
+        get_string('licensesettings', 'mod_zoomyt'),
+        get_string('licensesettings_desc', 'mod_zoomyt')
     ));
 
     $licensescount = new admin_setting_configtext(
         'zoom/licensesnumber',
-        get_string('licensesnumber', 'mod_zoom_yt'),
+        get_string('licensesnumber', 'mod_zoomyt'),
         null,
         0,
         PARAM_INT
@@ -156,8 +156,8 @@ if ($ADMIN->fulltree) {
 
     $utmost = new admin_setting_configcheckbox(
         'zoom/utmost',
-        get_string('redefinelicenses', 'mod_zoom_yt'),
-        get_string('lowlicenses', 'mod_zoom_yt'),
+        get_string('redefinelicenses', 'mod_zoomyt'),
+        get_string('lowlicenses', 'mod_zoomyt'),
         0,
         1
     );
@@ -165,8 +165,8 @@ if ($ADMIN->fulltree) {
 
     $instanceusers = new admin_setting_configcheckbox(
         'zoom/instanceusers',
-        get_string('instanceusers', 'mod_zoom_yt'),
-        get_string('instanceusers_desc', 'mod_zoom_yt'),
+        get_string('instanceusers', 'mod_zoomyt'),
+        get_string('instanceusers_desc', 'mod_zoomyt'),
         0,
         1,
         0
@@ -175,8 +175,8 @@ if ($ADMIN->fulltree) {
 
     $recycleonjoin = new admin_setting_configcheckbox(
         'zoom/recycleonjoin',
-        get_string('recycleonjoin', 'mod_zoom_yt'),
-        get_string('licenseonjoin', 'mod_zoom_yt'),
+        get_string('recycleonjoin', 'mod_zoomyt'),
+        get_string('licenseonjoin', 'mod_zoomyt'),
         0,
         1
     );
@@ -185,15 +185,15 @@ if ($ADMIN->fulltree) {
     // Only call to the web services and load the setting if the connection is OK.
     if (isset($status) && $status === 'connectionok') {
         $zoomgroups = [];
-        $groups = zoom_yt_webservice()->get_groups();
+        $groups = zoomyt_webservice()->get_groups();
         foreach ($groups as $group) {
             $zoomgroups[$group->id] = $group->name;
         }
 
         $protectedgroups = new admin_setting_configmultiselect(
             'zoom/protectedgroups',
-            get_string('protectedgroups', 'mod_zoom_yt'),
-            get_string('protectedgroups_desc', 'mod_zoom_yt'),
+            get_string('protectedgroups', 'mod_zoomyt'),
+            get_string('protectedgroups_desc', 'mod_zoomyt'),
             [],
             $zoomgroups
         );
@@ -203,8 +203,8 @@ if ($ADMIN->fulltree) {
     // Global settings.
     $settings->add(new admin_setting_heading(
         'zoom/globalsettings',
-        get_string('globalsettings', 'mod_zoom_yt'),
-        get_string('globalsettings_desc', 'mod_zoom_yt')
+        get_string('globalsettings', 'mod_zoomyt'),
+        get_string('globalsettings_desc', 'mod_zoomyt')
     ));
 
     $jointimechoices = [0, 5, 10, 15, 20, 30, 45, 60];
@@ -215,8 +215,8 @@ if ($ADMIN->fulltree) {
 
     $firstabletojoin = new admin_setting_configselect(
         'zoom/firstabletojoin',
-        get_string('firstjoin', 'mod_zoom_yt'),
-        get_string('firstjoin_desc', 'mod_zoom_yt'),
+        get_string('firstjoin', 'mod_zoomyt'),
+        get_string('firstjoin_desc', 'mod_zoomyt'),
         15,
         $jointimeselect
     );
@@ -225,8 +225,8 @@ if ($ADMIN->fulltree) {
     if ($moodlehashideif) {
         $displayleadtime = new admin_setting_configcheckbox(
             'zoom/displayleadtime',
-            get_string('displayleadtime', 'mod_zoom_yt'),
-            get_string('displayleadtime_desc', 'mod_zoom_yt'),
+            get_string('displayleadtime', 'mod_zoomyt'),
+            get_string('displayleadtime_desc', 'mod_zoomyt'),
             0,
             1,
             0
@@ -236,9 +236,9 @@ if ($ADMIN->fulltree) {
     } else {
         $displayleadtime = new admin_setting_configcheckbox(
             'zoom/displayleadtime',
-            get_string('displayleadtime', 'mod_zoom_yt'),
-            get_string('displayleadtime_desc', 'mod_zoom_yt') . '<br />' .
-                        get_string('displayleadtime_nohideif', 'mod_zoom_yt', get_string('firstjoin', 'mod_zoom_yt')),
+            get_string('displayleadtime', 'mod_zoomyt'),
+            get_string('displayleadtime_desc', 'mod_zoomyt') . '<br />' .
+                        get_string('displayleadtime_nohideif', 'mod_zoomyt', get_string('firstjoin', 'mod_zoomyt')),
             0,
             1,
             0
@@ -248,8 +248,8 @@ if ($ADMIN->fulltree) {
 
     $displaypassword = new admin_setting_configcheckbox(
         'zoom/displaypassword',
-        get_string('displaypassword', 'mod_zoom_yt'),
-        get_string('displaypassword_help', 'mod_zoom_yt'),
+        get_string('displaypassword', 'mod_zoomyt'),
+        get_string('displaypassword_help', 'mod_zoomyt'),
         0,
         1,
         0
@@ -258,8 +258,8 @@ if ($ADMIN->fulltree) {
 
     $maskparticipantdata = new admin_setting_configcheckbox(
         'zoom/maskparticipantdata',
-        get_string('maskparticipantdata', 'mod_zoom_yt'),
-        get_string('maskparticipantdata_help', 'mod_zoom_yt'),
+        get_string('maskparticipantdata', 'mod_zoomyt'),
+        get_string('maskparticipantdata_help', 'mod_zoomyt'),
         0,
         1
     );
@@ -267,7 +267,7 @@ if ($ADMIN->fulltree) {
 
     $viewrecordings = new admin_setting_configcheckbox(
         'zoom/viewrecordings',
-        get_string('option_view_recordings', 'mod_zoom_yt'),
+        get_string('option_view_recordings', 'mod_zoomyt'),
         '',
         0,
         1,
@@ -277,15 +277,15 @@ if ($ADMIN->fulltree) {
 
     // Adding options for the display name using uname parameter in zoom join_url.
     $options = [
-        'fullname' => get_string('displayfullname', 'mod_zoom_yt'),
-        'firstname' => get_string('displayfirstname', 'mod_zoom_yt'),
-        'idfullname' => get_string('displayidfullname', 'mod_zoom_yt'),
-        'id' => get_string('displayid', 'mod_zoom_yt'),
+        'fullname' => get_string('displayfullname', 'mod_zoomyt'),
+        'firstname' => get_string('displayfirstname', 'mod_zoomyt'),
+        'idfullname' => get_string('displayidfullname', 'mod_zoomyt'),
+        'id' => get_string('displayid', 'mod_zoomyt'),
     ];
     $settings->add(new admin_setting_configselect(
         'zoom/unamedisplay',
-        get_string('unamedisplay', 'mod_zoom_yt'),
-        get_string('unamedisplay_help', 'mod_zoom_yt'),
+        get_string('unamedisplay', 'mod_zoomyt'),
+        get_string('unamedisplay_help', 'mod_zoomyt'),
         'fullname',
         $options
     ));
@@ -293,19 +293,19 @@ if ($ADMIN->fulltree) {
     // Supplementary features settings.
     $settings->add(new admin_setting_heading(
         'zoom/supplementaryfeaturessettings',
-        get_string('supplementaryfeaturessettings', 'mod_zoom_yt'),
-        get_string('supplementaryfeaturessettings_desc', 'mod_zoom_yt')
+        get_string('supplementaryfeaturessettings', 'mod_zoomyt'),
+        get_string('supplementaryfeaturessettings_desc', 'mod_zoomyt')
     ));
 
     $webinarchoices = [
-        ZOOM_WEBINAR_DISABLE => get_string('webinar_disable', 'mod_zoom_yt'),
-        ZOOM_WEBINAR_SHOWONLYIFLICENSE => get_string('webinar_showonlyiflicense', 'mod_zoom_yt'),
-        ZOOM_WEBINAR_ALWAYSSHOW => get_string('webinar_alwaysshow', 'mod_zoom_yt'),
+        ZOOM_WEBINAR_DISABLE => get_string('webinar_disable', 'mod_zoomyt'),
+        ZOOM_WEBINAR_SHOWONLYIFLICENSE => get_string('webinar_showonlyiflicense', 'mod_zoomyt'),
+        ZOOM_WEBINAR_ALWAYSSHOW => get_string('webinar_alwaysshow', 'mod_zoomyt'),
     ];
     $offerwebinar = new admin_setting_configselect(
         'zoom/showwebinars',
-        get_string('webinar', 'mod_zoom_yt'),
-        get_string('webinar_desc', 'mod_zoom_yt'),
+        get_string('webinar', 'mod_zoomyt'),
+        get_string('webinar_desc', 'mod_zoomyt'),
         ZOOM_WEBINAR_ALWAYSSHOW,
         $webinarchoices
     );
@@ -313,8 +313,8 @@ if ($ADMIN->fulltree) {
 
     $webinardefault = new admin_setting_configcheckbox(
         'zoom/webinardefault',
-        get_string('webinar_by_default', 'mod_zoom_yt'),
-        get_string('webinar_by_default_desc', 'mod_zoom_yt'),
+        get_string('webinar_by_default', 'mod_zoomyt'),
+        get_string('webinar_by_default_desc', 'mod_zoomyt'),
         0,
         1,
         0
@@ -322,95 +322,95 @@ if ($ADMIN->fulltree) {
     $settings->add($webinardefault);
 
     $encryptionchoices = [
-        ZOOM_ENCRYPTION_DISABLE => get_string('encryptiontype_disable', 'mod_zoom_yt'),
-        ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE => get_string('encryptiontype_showonlyife2epossible', 'mod_zoom_yt'),
-        ZOOM_ENCRYPTION_ALWAYSSHOW => get_string('encryptiontype_alwaysshow', 'mod_zoom_yt'),
+        ZOOM_ENCRYPTION_DISABLE => get_string('encryptiontype_disable', 'mod_zoomyt'),
+        ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE => get_string('encryptiontype_showonlyife2epossible', 'mod_zoomyt'),
+        ZOOM_ENCRYPTION_ALWAYSSHOW => get_string('encryptiontype_alwaysshow', 'mod_zoomyt'),
     ];
     $offerencryption = new admin_setting_configselect(
         'zoom/showencryptiontype',
-        get_string('encryptiontype', 'mod_zoom_yt'),
-        get_string('encryptiontype_desc', 'mod_zoom_yt'),
+        get_string('encryptiontype', 'mod_zoomyt'),
+        get_string('encryptiontype_desc', 'mod_zoomyt'),
         ZOOM_ENCRYPTION_SHOWONLYIFPOSSIBLE,
         $encryptionchoices
     );
     $settings->add($offerencryption);
 
     $schedulingprivilegechoices = [
-        ZOOM_SCHEDULINGPRIVILEGE_DISABLE => get_string('schedulingprivilege_disable', 'mod_zoom_yt'),
-        ZOOM_SCHEDULINGPRIVILEGE_ENABLE => get_string('schedulingprivilege_enable', 'mod_zoom_yt'),
+        ZOOM_SCHEDULINGPRIVILEGE_DISABLE => get_string('schedulingprivilege_disable', 'mod_zoomyt'),
+        ZOOM_SCHEDULINGPRIVILEGE_ENABLE => get_string('schedulingprivilege_enable', 'mod_zoomyt'),
     ];
     $offerschedulingprivilege = new admin_setting_configselect(
         'zoom/showschedulingprivilege',
-        get_string('schedulingprivilege', 'mod_zoom_yt'),
-        get_string('schedulingprivilege_desc', 'mod_zoom_yt'),
+        get_string('schedulingprivilege', 'mod_zoomyt'),
+        get_string('schedulingprivilege_desc', 'mod_zoomyt'),
         ZOOM_SCHEDULINGPRIVILEGE_ENABLE,
         $schedulingprivilegechoices
     );
     $settings->add($offerschedulingprivilege);
 
     $alternativehostschoices = [
-        ZOOM_ALTERNATIVEHOSTS_DISABLE => get_string('alternative_hosts_disable', 'mod_zoom_yt'),
-        ZOOM_ALTERNATIVEHOSTS_INPUTFIELD => get_string('alternative_hosts_inputfield', 'mod_zoom_yt'),
-        ZOOM_ALTERNATIVEHOSTS_PICKER => get_string('alternative_hosts_picker', 'mod_zoom_yt'),
+        ZOOM_ALTERNATIVEHOSTS_DISABLE => get_string('alternative_hosts_disable', 'mod_zoomyt'),
+        ZOOM_ALTERNATIVEHOSTS_INPUTFIELD => get_string('alternative_hosts_inputfield', 'mod_zoomyt'),
+        ZOOM_ALTERNATIVEHOSTS_PICKER => get_string('alternative_hosts_picker', 'mod_zoomyt'),
     ];
-    $alternativehostsroles = zoom_yt_get_selectable_alternative_hosts_rolestring(context_system::instance());
+    $alternativehostsroles = zoomyt_get_selectable_alternative_hosts_rolestring(context_system::instance());
     $offeralternativehosts = new admin_setting_configselect(
         'zoom/showalternativehosts',
-        get_string('alternative_hosts', 'mod_zoom_yt'),
-        get_string('alternative_hosts_desc', 'mod_zoom_yt', ['roles' => $alternativehostsroles]),
+        get_string('alternative_hosts', 'mod_zoomyt'),
+        get_string('alternative_hosts_desc', 'mod_zoomyt', ['roles' => $alternativehostsroles]),
         ZOOM_ALTERNATIVEHOSTS_INPUTFIELD,
         $alternativehostschoices
     );
     $settings->add($offeralternativehosts);
 
     $capacitywarningchoices = [
-        ZOOM_CAPACITYWARNING_DISABLE => get_string('meetingcapacitywarning_disable', 'mod_zoom_yt'),
-        ZOOM_CAPACITYWARNING_ENABLE => get_string('meetingcapacitywarning_enable', 'mod_zoom_yt'),
+        ZOOM_CAPACITYWARNING_DISABLE => get_string('meetingcapacitywarning_disable', 'mod_zoomyt'),
+        ZOOM_CAPACITYWARNING_ENABLE => get_string('meetingcapacitywarning_enable', 'mod_zoomyt'),
     ];
     $offercapacitywarning = new admin_setting_configselect(
         'zoom/showcapacitywarning',
-        get_string('meetingcapacitywarning', 'mod_zoom_yt'),
-        get_string('meetingcapacitywarning_desc', 'mod_zoom_yt'),
+        get_string('meetingcapacitywarning', 'mod_zoomyt'),
+        get_string('meetingcapacitywarning_desc', 'mod_zoomyt'),
         ZOOM_CAPACITYWARNING_ENABLE,
         $capacitywarningchoices
     );
     $settings->add($offercapacitywarning);
 
     $allmeetingschoices = [
-        ZOOM_ALLMEETINGS_DISABLE => get_string('allmeetings_disable', 'mod_zoom_yt'),
-        ZOOM_ALLMEETINGS_ENABLE => get_string('allmeetings_enable', 'mod_zoom_yt'),
+        ZOOM_ALLMEETINGS_DISABLE => get_string('allmeetings_disable', 'mod_zoomyt'),
+        ZOOM_ALLMEETINGS_ENABLE => get_string('allmeetings_enable', 'mod_zoomyt'),
     ];
     $offerallmeetings = new admin_setting_configselect(
         'zoom/showallmeetings',
-        get_string('allmeetings', 'mod_zoom_yt'),
-        get_string('allmeetings_desc', 'mod_zoom_yt'),
+        get_string('allmeetings', 'mod_zoomyt'),
+        get_string('allmeetings_desc', 'mod_zoomyt'),
         ZOOM_ALLMEETINGS_ENABLE,
         $allmeetingschoices
     );
     $settings->add($offerallmeetings);
 
     $downloadicalchoices = [
-        ZOOM_DOWNLOADICAL_DISABLE => get_string('downloadical_disable', 'mod_zoom_yt'),
-        ZOOM_DOWNLOADICAL_ENABLE => get_string('downloadical_enable', 'mod_zoom_yt'),
+        ZOOM_DOWNLOADICAL_DISABLE => get_string('downloadical_disable', 'mod_zoomyt'),
+        ZOOM_DOWNLOADICAL_ENABLE => get_string('downloadical_enable', 'mod_zoomyt'),
     ];
     $offerdownloadical = new admin_setting_configselect(
         'zoom/showdownloadical',
-        get_string('downloadical', 'mod_zoom_yt'),
-        get_string('downloadical_desc', 'mod_zoom_yt'),
+        get_string('downloadical', 'mod_zoomyt'),
+        get_string('downloadical_desc', 'mod_zoomyt'),
         ZOOM_DOWNLOADICAL_ENABLE,
         $downloadicalchoices
     );
     $settings->add($offerdownloadical);
 
-    $sendicalnotificationshelp = get_string('sendicalnotifications_help', 'mod_zoom_yt');
+    $sendicalnotificationshelp = get_string('sendicalnotifications_help', 'mod_zoomyt');
     if (empty($CFG->allowattachments)) {
         $sendicalnotificationshelp .= '<div class="alert alert-block alert-warning" role="alert">'
-                                      . get_string('sendicalnotifications_warning', 'mod_zoom_yt') . '</div>';
+                                      . get_string('sendicalnotifications_warning', 'mod_zoomyt') . '</div>';
     }
 
     $sendicalnotifications = new admin_setting_configcheckbox(
         'zoom/sendicalnotifications',
-        get_string('sendicalnotifications', 'mod_zoom_yt'),
+        get_string('sendicalnotifications', 'mod_zoomyt'),
         $sendicalnotificationshelp,
         0,
         1,
@@ -421,14 +421,14 @@ if ($ADMIN->fulltree) {
     // Default Zoom settings.
     $settings->add(new admin_setting_heading(
         'zoom/defaultsettings',
-        get_string('defaultsettings', 'mod_zoom_yt'),
-        get_string('defaultsettings_help', 'mod_zoom_yt')
+        get_string('defaultsettings', 'mod_zoomyt'),
+        get_string('defaultsettings_help', 'mod_zoomyt')
     ));
 
     $defaultrecurring = new admin_setting_configcheckbox(
         'zoom/defaultrecurring',
-        get_string('recurringmeeting', 'mod_zoom_yt'),
-        get_string('recurringmeeting_help', 'mod_zoom_yt'),
+        get_string('recurringmeeting', 'mod_zoomyt'),
+        get_string('recurringmeeting_help', 'mod_zoomyt'),
         0,
         1,
         0
@@ -437,8 +437,8 @@ if ($ADMIN->fulltree) {
 
     $defaultshowschedule = new admin_setting_configcheckbox(
         'zoom/defaultshowschedule',
-        get_string('showschedule', 'mod_zoom_yt'),
-        get_string('showschedule_help', 'mod_zoom_yt'),
+        get_string('showschedule', 'mod_zoomyt'),
+        get_string('showschedule_help', 'mod_zoomyt'),
         1,
         1,
         0
@@ -447,8 +447,8 @@ if ($ADMIN->fulltree) {
 
     $defaultregistration = new admin_setting_configcheckbox(
         'zoom/defaultregistration',
-        get_string('registration', 'mod_zoom_yt'),
-        get_string('registration_help', 'mod_zoom_yt'),
+        get_string('registration', 'mod_zoomyt'),
+        get_string('registration_help', 'mod_zoomyt'),
         ZOOM_REGISTRATION_OFF,
         ZOOM_REGISTRATION_AUTOMATIC,
         ZOOM_REGISTRATION_OFF
@@ -457,21 +457,21 @@ if ($ADMIN->fulltree) {
 
     $defaultrequirepasscode = new admin_setting_configcheckbox(
         'zoom/requirepasscode',
-        get_string('requirepasscode', 'mod_zoom_yt'),
-        get_string('requirepasscode_help', 'mod_zoom_yt'),
+        get_string('requirepasscode', 'mod_zoomyt'),
+        get_string('requirepasscode_help', 'mod_zoomyt'),
         1
     );
     $defaultrequirepasscode->set_locked_flag_options(admin_setting_flag::ENABLED, true);
     $settings->add($defaultrequirepasscode);
 
     $encryptionchoices = [
-        ZOOM_ENCRYPTION_TYPE_ENHANCED => get_string('option_encryption_type_enhancedencryption', 'mod_zoom_yt'),
-        ZOOM_ENCRYPTION_TYPE_E2EE => get_string('option_encryption_type_endtoendencryption', 'mod_zoom_yt'),
+        ZOOM_ENCRYPTION_TYPE_ENHANCED => get_string('option_encryption_type_enhancedencryption', 'mod_zoomyt'),
+        ZOOM_ENCRYPTION_TYPE_E2EE => get_string('option_encryption_type_endtoendencryption', 'mod_zoomyt'),
     ];
     $defaultencryptiontypeoption = new admin_setting_configselect(
         'zoom/defaultencryptiontypeoption',
-        get_string('option_encryption_type', 'mod_zoom_yt'),
-        get_string('option_encryption_type_help', 'mod_zoom_yt'),
+        get_string('option_encryption_type', 'mod_zoomyt'),
+        get_string('option_encryption_type_help', 'mod_zoomyt'),
         ZOOM_ENCRYPTION_TYPE_ENHANCED,
         $encryptionchoices
     );
@@ -479,8 +479,8 @@ if ($ADMIN->fulltree) {
 
     $defaultwaitingroomoption = new admin_setting_configcheckbox(
         'zoom/defaultwaitingroomoption',
-        get_string('option_waiting_room', 'mod_zoom_yt'),
-        get_string('option_waiting_room_help', 'mod_zoom_yt'),
+        get_string('option_waiting_room', 'mod_zoomyt'),
+        get_string('option_waiting_room_help', 'mod_zoomyt'),
         1,
         1,
         0
@@ -489,8 +489,8 @@ if ($ADMIN->fulltree) {
 
     $defaultjoinbeforehost = new admin_setting_configcheckbox(
         'zoom/defaultjoinbeforehost',
-        get_string('option_jbh', 'mod_zoom_yt'),
-        get_string('option_jbh_help', 'mod_zoom_yt'),
+        get_string('option_jbh', 'mod_zoomyt'),
+        get_string('option_jbh_help', 'mod_zoomyt'),
         0,
         1,
         0
@@ -499,8 +499,8 @@ if ($ADMIN->fulltree) {
 
     $defaultauthusersoption = new admin_setting_configcheckbox(
         'zoom/defaultauthusersoption',
-        get_string('option_authenticated_users', 'mod_zoom_yt'),
-        get_string('option_authenticated_users_help', 'mod_zoom_yt'),
+        get_string('option_authenticated_users', 'mod_zoomyt'),
+        get_string('option_authenticated_users_help', 'mod_zoomyt'),
         0,
         1,
         0
@@ -509,8 +509,8 @@ if ($ADMIN->fulltree) {
 
     $defaultshowsecurity = new admin_setting_configcheckbox(
         'zoom/defaultshowsecurity',
-        get_string('showsecurity', 'mod_zoom_yt'),
-        get_string('showsecurity_help', 'mod_zoom_yt'),
+        get_string('showsecurity', 'mod_zoomyt'),
+        get_string('showsecurity_help', 'mod_zoomyt'),
         1,
         1,
         0
@@ -519,8 +519,8 @@ if ($ADMIN->fulltree) {
 
     $defaulthostvideo = new admin_setting_configcheckbox(
         'zoom/defaulthostvideo',
-        get_string('option_host_video', 'mod_zoom_yt'),
-        get_string('option_host_video_help', 'mod_zoom_yt'),
+        get_string('option_host_video', 'mod_zoomyt'),
+        get_string('option_host_video_help', 'mod_zoomyt'),
         0,
         1,
         0
@@ -529,8 +529,8 @@ if ($ADMIN->fulltree) {
 
     $defaultparticipantsvideo = new admin_setting_configcheckbox(
         'zoom/defaultparticipantsvideo',
-        get_string('option_participants_video', 'mod_zoom_yt'),
-        get_string('option_participants_video_help', 'mod_zoom_yt'),
+        get_string('option_participants_video', 'mod_zoomyt'),
+        get_string('option_participants_video_help', 'mod_zoomyt'),
         0,
         1,
         0
@@ -538,14 +538,14 @@ if ($ADMIN->fulltree) {
     $settings->add($defaultparticipantsvideo);
 
     $audiochoices = [
-        ZOOM_AUDIO_TELEPHONY => get_string('audio_telephony', 'mod_zoom_yt'),
-        ZOOM_AUDIO_VOIP => get_string('audio_voip', 'mod_zoom_yt'),
-        ZOOM_AUDIO_BOTH => get_string('audio_both', 'mod_zoom_yt'),
+        ZOOM_AUDIO_TELEPHONY => get_string('audio_telephony', 'mod_zoomyt'),
+        ZOOM_AUDIO_VOIP => get_string('audio_voip', 'mod_zoomyt'),
+        ZOOM_AUDIO_BOTH => get_string('audio_both', 'mod_zoomyt'),
     ];
     $defaultaudiooption = new admin_setting_configselect(
         'zoom/defaultaudiooption',
-        get_string('option_audio', 'mod_zoom_yt'),
-        get_string('option_audio_help', 'mod_zoom_yt'),
+        get_string('option_audio', 'mod_zoomyt'),
+        get_string('option_audio_help', 'mod_zoomyt'),
         ZOOM_AUDIO_BOTH,
         $audiochoices
     );
@@ -553,8 +553,8 @@ if ($ADMIN->fulltree) {
 
     $defaultmuteuponentryoption = new admin_setting_configcheckbox(
         'zoom/defaultmuteuponentryoption',
-        get_string('option_mute_upon_entry', 'mod_zoom_yt'),
-        get_string('option_mute_upon_entry_help', 'mod_zoom_yt'),
+        get_string('option_mute_upon_entry', 'mod_zoomyt'),
+        get_string('option_mute_upon_entry_help', 'mod_zoomyt'),
         1,
         1,
         0
@@ -562,15 +562,15 @@ if ($ADMIN->fulltree) {
     $settings->add($defaultmuteuponentryoption);
 
     $autorecordingchoices = [
-        ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'mod_zoom_yt'),
-        ZOOM_AUTORECORDING_USERDEFAULT => get_string('autorecording_userdefault', 'mod_zoom_yt'),
-        ZOOM_AUTORECORDING_LOCAL => get_string('autorecording_local', 'mod_zoom_yt'),
-        ZOOM_AUTORECORDING_CLOUD => get_string('autorecording_cloud', 'mod_zoom_yt'),
+        ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'mod_zoomyt'),
+        ZOOM_AUTORECORDING_USERDEFAULT => get_string('autorecording_userdefault', 'mod_zoomyt'),
+        ZOOM_AUTORECORDING_LOCAL => get_string('autorecording_local', 'mod_zoomyt'),
+        ZOOM_AUTORECORDING_CLOUD => get_string('autorecording_cloud', 'mod_zoomyt'),
     ];
     $recordingoption = new admin_setting_configselect(
         'zoom/recordingoption',
-        get_string('option_auto_recording', 'mod_zoom_yt'),
-        get_string('option_auto_recording_help', 'mod_zoom_yt'),
+        get_string('option_auto_recording', 'mod_zoomyt'),
+        get_string('option_auto_recording_help', 'mod_zoomyt'),
         ZOOM_AUTORECORDING_USERDEFAULT,
         $autorecordingchoices
     );
@@ -578,8 +578,8 @@ if ($ADMIN->fulltree) {
 
     $allowrecordingchangeoption = new admin_setting_configcheckbox(
         'zoom/allowrecordingchangeoption',
-        get_string('option_allow_recording_change', 'mod_zoom_yt'),
-        get_string('option_allow_recording_change_help', 'mod_zoom_yt'),
+        get_string('option_allow_recording_change', 'mod_zoomyt'),
+        get_string('option_allow_recording_change_help', 'mod_zoomyt'),
         1,
         1,
         0
@@ -588,8 +588,8 @@ if ($ADMIN->fulltree) {
 
     $defaultshowmedia = new admin_setting_configcheckbox(
         'zoom/defaultshowmedia',
-        get_string('showmedia', 'mod_zoom_yt'),
-        get_string('showmedia_help', 'mod_zoom_yt'),
+        get_string('showmedia', 'mod_zoomyt'),
+        get_string('showmedia_help', 'mod_zoomyt'),
         1,
         1,
         0
@@ -598,32 +598,32 @@ if ($ADMIN->fulltree) {
 
     $defaulttrackingfields = new admin_setting_configtextarea(
         'zoom/defaulttrackingfields',
-        get_string('trackingfields', 'mod_zoom_yt'),
-        get_string('trackingfields_help', 'mod_zoom_yt'),
+        get_string('trackingfields', 'mod_zoomyt'),
+        get_string('trackingfields_help', 'mod_zoomyt'),
         ''
     );
-    $defaulttrackingfields->set_updatedcallback('mod_zoom_yt_update_tracking_fields');
+    $defaulttrackingfields->set_updatedcallback('mod_zoomyt_update_tracking_fields');
     $settings->add($defaulttrackingfields);
 
-    $invitationregexhelp = get_string('invitationregex_help', 'mod_zoom_yt');
+    $invitationregexhelp = get_string('invitationregex_help', 'mod_zoomyt');
     if (!$moodlehashideif) {
         $invitationregexhelp .= "\n\n" . get_string(
             'invitationregex_nohideif',
-            'mod_zoom_yt',
-            get_string('invitationregexenabled', 'mod_zoom_yt')
+            'mod_zoomyt',
+            get_string('invitationregexenabled', 'mod_zoomyt')
         );
     }
 
     $settings->add(new admin_setting_heading(
         'zoom/invitationregex',
-        get_string('invitationregex', 'mod_zoom_yt'),
+        get_string('invitationregex', 'mod_zoomyt'),
         $invitationregexhelp
     ));
 
     $settings->add(new admin_setting_configcheckbox(
         'zoom/invitationregexenabled',
-        get_string('invitationregexenabled', 'mod_zoom_yt'),
-        get_string('invitationregexenabled_help', 'mod_zoom_yt'),
+        get_string('invitationregexenabled', 'mod_zoomyt'),
+        get_string('invitationregexenabled_help', 'mod_zoomyt'),
         0,
         1,
         0
@@ -631,8 +631,8 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configcheckbox(
         'zoom/invitationremoveinvite',
-        get_string('invitationremoveinvite', 'mod_zoom_yt'),
-        get_string('invitationremoveinvite_help', 'mod_zoom_yt'),
+        get_string('invitationremoveinvite', 'mod_zoomyt'),
+        get_string('invitationremoveinvite_help', 'mod_zoomyt'),
         0,
         1,
         0
@@ -643,8 +643,8 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configcheckbox(
         'zoom/invitationremoveicallink',
-        get_string('invitationremoveicallink', 'mod_zoom_yt'),
-        get_string('invitationremoveicallink_help', 'mod_zoom_yt'),
+        get_string('invitationremoveicallink', 'mod_zoomyt'),
+        get_string('invitationremoveicallink_help', 'mod_zoomyt'),
         0,
         1,
         0
@@ -654,14 +654,14 @@ if ($ADMIN->fulltree) {
     }
 
     // Allow admin to modify regex for invitation parts if zoom api changes.
-    foreach (\mod_zoom_yt\invitation::get_default_invitation_regex() as $element => $pattern) {
-        $name = 'zoom/' . \mod_zoom_yt\invitation::PREFIX . $element;
-        $visiblename = get_string(\mod_zoom_yt\invitation::PREFIX . $element, 'mod_zoom_yt');
-        $description = get_string(\mod_zoom_yt\invitation::PREFIX . $element . '_help', 'mod_zoom_yt');
+    foreach (\mod_zoomyt\invitation::get_default_invitation_regex() as $element => $pattern) {
+        $name = 'zoom/' . \mod_zoomyt\invitation::PREFIX . $element;
+        $visiblename = get_string(\mod_zoomyt\invitation::PREFIX . $element, 'mod_zoomyt');
+        $description = get_string(\mod_zoomyt\invitation::PREFIX . $element . '_help', 'mod_zoomyt');
         $settings->add(new admin_setting_configtext($name, $visiblename, $description, $pattern));
         if ($moodlehashideif) {
             $settings->hide_if(
-                'zoom/' . \mod_zoom_yt\invitation::PREFIX . $element,
+                'zoom/' . \mod_zoomyt\invitation::PREFIX . $element,
                 'zoom/invitationregexenabled',
                 'eq',
                 0
@@ -678,20 +678,20 @@ if ($ADMIN->fulltree) {
     // Adding options for grading methods.
     $settings->add(new admin_setting_heading(
         'zoom/gradingmethod',
-        get_string('gradingmethod_heading', 'mod_zoom_yt'),
-        get_string('gradingmethod_heading_help', 'mod_zoom_yt')
+        get_string('gradingmethod_heading', 'mod_zoomyt'),
+        get_string('gradingmethod_heading_help', 'mod_zoomyt')
     ));
 
     // Grading method upon entry: the user gets the full score when clicking to join the session through Moodle.
     // Grading method upon period: the user is graded based on how long they attended the actual session.
     $options = [
-        'entry' => get_string('gradingentry', 'mod_zoom_yt'),
-        'period' => get_string('gradingperiod', 'mod_zoom_yt'),
+        'entry' => get_string('gradingentry', 'mod_zoomyt'),
+        'period' => get_string('gradingperiod', 'mod_zoomyt'),
     ];
     $settings->add(new admin_setting_configselect(
         'zoom/gradingmethod',
-        get_string('gradingmethod', 'mod_zoom_yt'),
-        get_string('gradingmethod_help', 'mod_zoom_yt'),
+        get_string('gradingmethod', 'mod_zoomyt'),
+        get_string('gradingmethod_help', 'mod_zoomyt'),
         'entry',
         $options
     ));
@@ -699,27 +699,27 @@ if ($ADMIN->fulltree) {
     // YouTube Integration Settings.
     $settings->add(new admin_setting_heading(
         'zoom/youtubesettings',
-        get_string('youtube_settings', 'zoom_yt'),
-        get_string('youtube_settings_desc', 'zoom_yt')
+        get_string('youtube_settings', 'zoomyt'),
+        get_string('youtube_settings_desc', 'zoomyt')
     ));
 
     // Default YouTube visibility.
     $visibilityoptions = [
-        'unlisted' => get_string('youtube_visibility_unlisted', 'zoom_yt'),
-        'public' => get_string('youtube_visibility_public', 'zoom_yt'),
-        'private' => get_string('youtube_visibility_private', 'zoom_yt'),
+        'unlisted' => get_string('youtube_visibility_unlisted', 'zoomyt'),
+        'public' => get_string('youtube_visibility_public', 'zoomyt'),
+        'private' => get_string('youtube_visibility_private', 'zoomyt'),
     ];
     $settings->add(new admin_setting_configselect(
         'zoom/youtube_default_visibility',
-        get_string('youtube_default_visibility', 'zoom_yt'),
-        get_string('youtube_default_visibility_desc', 'zoom_yt'),
+        get_string('youtube_default_visibility', 'zoomyt'),
+        get_string('youtube_default_visibility_desc', 'zoomyt'),
         'unlisted',
         $visibilityoptions
     ));
 
     // Zoom recording delete days (global default).
     $deleteoptions = [
-        '' => get_string('never_delete', 'zoom_yt'),
+        '' => get_string('never_delete', 'zoomyt'),
         '7' => '7 ' . get_string('days'),
         '14' => '14 ' . get_string('days'),
         '30' => '30 ' . get_string('days'),
@@ -728,8 +728,8 @@ if ($ADMIN->fulltree) {
     ];
     $settings->add(new admin_setting_configselect(
         'zoom/zoom_recording_delete_days',
-        get_string('zoom_recording_delete_days', 'zoom_yt'),
-        get_string('zoom_recording_delete_days_desc', 'zoom_yt'),
+        get_string('zoom_recording_delete_days', 'zoomyt'),
+        get_string('zoom_recording_delete_days_desc', 'zoomyt'),
         '',
         $deleteoptions
     ));
@@ -737,15 +737,15 @@ if ($ADMIN->fulltree) {
     // Temporary storage settings.
     $settings->add(new admin_setting_heading(
         'zoom/storagesettings',
-        get_string('storage_settings', 'zoom_yt'),
-        get_string('storage_settings_desc', 'zoom_yt')
+        get_string('storage_settings', 'zoomyt'),
+        get_string('storage_settings_desc', 'zoomyt')
     ));
 
     // Temp directory path.
     $settings->add(new admin_setting_configtext(
         'zoom/temp_directory',
-        get_string('temp_directory', 'zoom_yt'),
-        get_string('temp_directory_desc', 'zoom_yt'),
+        get_string('temp_directory', 'zoomyt'),
+        get_string('temp_directory_desc', 'zoomyt'),
         ''
     ));
 
@@ -760,8 +760,8 @@ if ($ADMIN->fulltree) {
     ];
     $settings->add(new admin_setting_configselect(
         'zoom/temp_storage_limit',
-        get_string('temp_storage_limit', 'zoom_yt'),
-        get_string('temp_storage_limit_desc', 'zoom_yt'),
+        get_string('temp_storage_limit', 'zoomyt'),
+        get_string('temp_storage_limit_desc', 'zoomyt'),
         '5368709120',
         $storagelimitoptions
     ));

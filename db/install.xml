@@ -1,6 +1,6 @@
-<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="mod/zoom_yt/db" VERSION="20250509" COMMENT="Zoom module" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="mod/zoomyt/db" VERSION="20250509" COMMENT="Zoom module" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
-    <TABLE NAME="zoom_yt" COMMENT="Zoom meetings and webinars">
+    <TABLE NAME="zoomyt" COMMENT="Zoom meetings and webinars">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Moodle course that this meeting belongs to."/>
@@ -55,7 +55,7 @@
         <INDEX NAME="meeting_id_idx" UNIQUE="false" FIELDS="meeting_id"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="zoom_yt_meeting_details" COMMENT="A queue for the Cron to add meeting report info to zoom_meetings_participants table.">
+    <TABLE NAME="zoomyt_meeting_details" COMMENT="A queue for the Cron to add meeting report info to zoom_meetings_participants table.">
       <FIELDS>
         <FIELD NAME="uuid" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting UUID or webinar UUID per Zoom API."/>
         <FIELD NAME="meeting_id" TYPE="int" LENGTH="15" NOTNULL="true" SEQUENCE="false" COMMENT="The meeting_id or webinar_id per Zoom API."/>
@@ -71,10 +71,10 @@
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key. Most database actions will be performed using meeting_webinar_instance_id."/>
         <KEY NAME="uuid_unique" TYPE="unique" FIELDS="uuid"/>
-        <KEY NAME="zoomid_foreign" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoom_yt" REFFIELDS="id"/>
+        <KEY NAME="zoomid_foreign" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoomyt" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoom_yt_meeting_participants" COMMENT="A list of each meeting existing on Moodle and when its participants entered/left.">
+    <TABLE NAME="zoomyt_meeting_participants" COMMENT="A list of each meeting existing on Moodle and when its participants entered/left.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field. Other than that it's useless."/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The user id from moodle"/>
@@ -89,14 +89,14 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key. Most database actions will be performed using participant_universal_id."/>
-        <KEY NAME="detailsid_foreign" TYPE="foreign" FIELDS="detailsid" REFTABLE="zoom_yt_meeting_details" REFFIELDS="id" COMMENT="there is no index built on this because making it a foreign key does that automatically"/>
+        <KEY NAME="detailsid_foreign" TYPE="foreign" FIELDS="detailsid" REFTABLE="zoomyt_meeting_details" REFFIELDS="id" COMMENT="there is no index built on this because making it a foreign key does that automatically"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
         <INDEX NAME="uuid" UNIQUE="false" FIELDS="uuid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="zoom_yt_meeting_tracking_fields" COMMENT="A list of tracking field values for meetings in Zoom.">
+    <TABLE NAME="zoomyt_meeting_tracking_fields" COMMENT="A list of tracking field values for meetings in Zoom.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="meeting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The id of the meeting from the DB table."/>
@@ -111,7 +111,7 @@
         <INDEX NAME="tracking_field" UNIQUE="false" FIELDS="tracking_field"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="zoom_yt_meeting_recordings" COMMENT="A list of recording links for Zoom meeting activities.">
+    <TABLE NAME="zoomyt_meeting_recordings" COMMENT="A list of recording links for Zoom meeting activities.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field."/>
         <FIELD NAME="zoomid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="link to mdl_zoom table"/>
@@ -128,10 +128,10 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key."/>
-        <KEY NAME="zoomid_foreign" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoom_yt" REFFIELDS="id"/>
+        <KEY NAME="zoomid_foreign" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoomyt" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoom_yt_meeting_recordings_view" COMMENT="A list to track when users view Zoom meeting recordings.">
+    <TABLE NAME="zoomyt_meeting_recordings_view" COMMENT="A list to track when users view Zoom meeting recordings.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="This field exists only because Moodle requires us to have a unique 'id' field."/>
         <FIELD NAME="recordingsid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="link to zoom_meeting_recordings table"/>
@@ -141,13 +141,13 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id" COMMENT="Moodle forces us to use id as a primary key."/>
-        <KEY NAME="recordingsid_foreign" TYPE="foreign" FIELDS="recordingsid" REFTABLE="zoom_yt_meeting_recordings" REFFIELDS="id"/>
+        <KEY NAME="recordingsid_foreign" TYPE="foreign" FIELDS="recordingsid" REFTABLE="zoomyt_meeting_recordings" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="zoom_yt_meeting_breakout_rooms" COMMENT="A list of zoom meeting breakout rooms.">
+    <TABLE NAME="zoomyt_meeting_breakout_rooms" COMMENT="A list of zoom meeting breakout rooms.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false"/>
@@ -155,10 +155,10 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_zoomid" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoom_yt" REFFIELDS="id"/>
+        <KEY NAME="fk_zoomid" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoomyt" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoom_yt_breakout_participants" COMMENT="A list of zoom meeting breakout rooms participants.">
+    <TABLE NAME="zoomyt_breakout_participants" COMMENT="A list of zoom meeting breakout rooms participants.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -166,10 +166,10 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_breakoutroomid" TYPE="foreign" FIELDS="breakoutroomid" REFTABLE="zoom_yt_meeting_breakout_rooms" REFFIELDS="id"/>
+        <KEY NAME="fk_breakoutroomid" TYPE="foreign" FIELDS="breakoutroomid" REFTABLE="zoomyt_meeting_breakout_rooms" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoom_yt_breakout_groups" COMMENT="A list of zoom meeting breakout rooms groups.">
+    <TABLE NAME="zoomyt_breakout_groups" COMMENT="A list of zoom meeting breakout rooms groups.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -177,10 +177,10 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_breakoutroomid" TYPE="foreign" FIELDS="breakoutroomid" REFTABLE="zoom_yt_meeting_breakout_rooms" REFFIELDS="id"/>
+        <KEY NAME="fk_breakoutroomid" TYPE="foreign" FIELDS="breakoutroomid" REFTABLE="zoomyt_meeting_breakout_rooms" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoom_yt_ical_notifications" COMMENT="Identifies the zoom event for which ical notifications have been emailed.">
+    <TABLE NAME="zoomyt_ical_notifications" COMMENT="Identifies the zoom event for which ical notifications have been emailed.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="zoomeventid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -191,7 +191,7 @@
         <KEY NAME="fk_zoomeventid" TYPE="foreign-unique" FIELDS="zoomeventid" REFTABLE="event" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoom_yt_category_settings" COMMENT="Category-level Zoom account settings. Allows different categories to use different Zoom accounts.">
+    <TABLE NAME="zoomyt_category_settings" COMMENT="Category-level Zoom account settings. Allows different categories to use different Zoom accounts.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The course category ID this setting applies to."/>
@@ -225,11 +225,11 @@
         <KEY NAME="fk_usermodified" TYPE="foreign" FIELDS="usermodified" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="zoom_yt_videos" COMMENT="YouTube videos uploaded from Zoom recordings.">
+    <TABLE NAME="zoomyt_videos" COMMENT="YouTube videos uploaded from Zoom recordings.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="zoomid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Link to zoom_yt table (the activity instance)."/>
-        <FIELD NAME="recordingid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Link to zoom_yt_meeting_recordings table."/>
+        <FIELD NAME="zoomid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Link to zoomyt table (the activity instance)."/>
+        <FIELD NAME="recordingid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Link to zoomyt_meeting_recordings table."/>
         <FIELD NAME="meetinguuid" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="Zoom meeting UUID this video came from."/>
         <FIELD NAME="zoom_recording_id" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Zoom cloud recording ID."/>
         <FIELD NAME="youtube_video_id" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="YouTube video ID once uploaded."/>
@@ -249,8 +249,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_zoomid" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoom_yt" REFFIELDS="id"/>
-        <KEY NAME="fk_recordingid" TYPE="foreign" FIELDS="recordingid" REFTABLE="zoom_yt_meeting_recordings" REFFIELDS="id"/>
+        <KEY NAME="fk_zoomid" TYPE="foreign" FIELDS="zoomid" REFTABLE="zoomyt" REFFIELDS="id"/>
+        <KEY NAME="fk_recordingid" TYPE="foreign" FIELDS="recordingid" REFTABLE="zoomyt_meeting_recordings" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="youtube_video_id_idx" UNIQUE="true" FIELDS="youtube_video_id"/>
@@ -258,10 +258,10 @@
         <INDEX NAME="status_idx" UNIQUE="false" FIELDS="status"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="zoom_yt_video_views" COMMENT="Tracks user views of YouTube videos embedded in activities.">
+    <TABLE NAME="zoomyt_video_views" COMMENT="Tracks user views of YouTube videos embedded in activities.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="videoid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Link to zoom_yt_videos table."/>
+        <FIELD NAME="videoid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Link to zoomyt_videos table."/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User who viewed the video."/>
         <FIELD NAME="viewcount" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Number of times user opened the video."/>
         <FIELD NAME="firstviewed" TYPE="int" LENGTH="12" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp of first view."/>
@@ -269,7 +269,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id_primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_videoid" TYPE="foreign" FIELDS="videoid" REFTABLE="zoom_yt_videos" REFFIELDS="id"/>
+        <KEY NAME="fk_videoid" TYPE="foreign" FIELDS="videoid" REFTABLE="zoomyt_videos" REFFIELDS="id"/>
         <KEY NAME="fk_userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
         <KEY NAME="videoid_userid_unique" TYPE="unique" FIELDS="videoid, userid"/>
       </KEYS>

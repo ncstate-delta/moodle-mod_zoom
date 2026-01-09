@@ -17,7 +17,7 @@
 /**
  * Provides the restore activity task class
  *
- * @package   mod_zoom_yt
+ * @package   mod_zoomyt
  * @category  backup
  * @copyright 2015 UC Regents
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,16 +25,16 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/zoom_yt/backup/moodle2/restore_zoom_yt_stepslib.php');
+require_once($CFG->dirroot . '/mod/zoomyt/backup/moodle2/restore_zoomyt_stepslib.php');
 
-use mod_zoom_yt\restore_activity_structure_step;
+use mod_zoomyt\restore_activity_structure_step;
 
 /**
- * Restore task for the zoom_yt activity module
+ * Restore task for the zoomyt activity module
  *
  * Provides all the settings and steps to perform complete restore of the activity.
  */
-class restore_zoom_yt_activity_task extends restore_activity_task {
+class restore_zoomyt_activity_task extends restore_activity_task {
     /**
      * Define (add) particular settings this activity can have
      */
@@ -47,7 +47,7 @@ class restore_zoom_yt_activity_task extends restore_activity_task {
      */
     protected function define_my_steps() {
         // We have just one structure step here.
-        $this->add_step(new restore_activity_structure_step('zoom_yt_structure', 'zoom_yt.xml'));
+        $this->add_step(new restore_activity_structure_step('zoomyt_structure', 'zoomyt.xml'));
     }
 
     /**
@@ -57,7 +57,7 @@ class restore_zoom_yt_activity_task extends restore_activity_task {
     public static function define_decode_contents() {
         $contents = [];
 
-        $contents[] = new restore_decode_content('zoom_yt', ['intro'], 'zoom_yt');
+        $contents[] = new restore_decode_content('zoomyt', ['intro'], 'zoomyt');
 
         return $contents;
     }
@@ -69,8 +69,8 @@ class restore_zoom_yt_activity_task extends restore_activity_task {
     public static function define_decode_rules() {
         $rules = [];
 
-        $rules[] = new restore_decode_rule('ZOOMYTVIEWBYID', '/mod/zoom_yt/view.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('ZOOMYTINDEX', '/mod/zoom_yt/index.php?id=$1', 'course_module');
+        $rules[] = new restore_decode_rule('ZOOMYTVIEWBYID', '/mod/zoomyt/view.php?id=$1', 'course_module');
+        $rules[] = new restore_decode_rule('ZOOMYTINDEX', '/mod/zoomyt/index.php?id=$1', 'course_module');
 
         return $rules;
     }
@@ -83,9 +83,9 @@ class restore_zoom_yt_activity_task extends restore_activity_task {
     public static function define_restore_log_rules() {
         $rules = [];
 
-        $rules[] = new restore_log_rule('zoom_yt', 'add', 'view.php?id={course_module}', '{zoom_yt}');
-        $rules[] = new restore_log_rule('zoom_yt', 'update', 'view.php?id={course_module}', '{zoom_yt}');
-        $rules[] = new restore_log_rule('zoom_yt', 'view', 'view.php?id={course_module}', '{zoom_yt}');
+        $rules[] = new restore_log_rule('zoomyt', 'add', 'view.php?id={course_module}', '{zoomyt}');
+        $rules[] = new restore_log_rule('zoomyt', 'update', 'view.php?id={course_module}', '{zoomyt}');
+        $rules[] = new restore_log_rule('zoomyt', 'view', 'view.php?id={course_module}', '{zoomyt}');
 
         return $rules;
     }
@@ -102,7 +102,7 @@ class restore_zoom_yt_activity_task extends restore_activity_task {
     public static function define_restore_log_rules_for_course() {
         $rules = [];
 
-        $rules[] = new restore_log_rule('zoom_yt', 'view all', 'index.php?id={course}', null);
+        $rules[] = new restore_log_rule('zoomyt', 'view all', 'index.php?id={course}', null);
 
         return $rules;
     }

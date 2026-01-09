@@ -17,7 +17,7 @@
 /**
  * Definition of Zoom scheduled tasks.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die;
 
 $tasks = [
     [
-        'classname' => 'mod_zoom_yt\task\update_meetings',
+        'classname' => 'mod_zoomyt\task\update_meetings',
         'blocking' => 0,
         'minute' => '30',
         'hour' => '4',
@@ -35,7 +35,7 @@ $tasks = [
         'dayofweek' => '*',
     ],
     [
-        'classname' => 'mod_zoom_yt\task\get_meeting_reports',
+        'classname' => 'mod_zoomyt\task\get_meeting_reports',
         'blocking' => 0,
         'minute' => '0',
         'hour' => '*/6',
@@ -44,7 +44,7 @@ $tasks = [
         'month' => '*',
     ],
     [
-        'classname' => 'mod_zoom_yt\task\update_tracking_fields',
+        'classname' => 'mod_zoomyt\task\update_tracking_fields',
         'blocking' => 0,
         'minute' => '0',
         'hour' => '*/6',
@@ -53,7 +53,7 @@ $tasks = [
         'month' => '*',
     ],
     [
-        'classname' => 'mod_zoom_yt\task\get_meeting_recordings',
+        'classname' => 'mod_zoomyt\task\get_meeting_recordings',
         'blocking' => 0,
         'minute' => '0',
         'hour' => '*/3',
@@ -62,7 +62,7 @@ $tasks = [
         'month' => '*',
     ],
     [
-        'classname' => 'mod_zoom_yt\task\delete_meeting_recordings',
+        'classname' => 'mod_zoomyt\task\delete_meeting_recordings',
         'blocking' => 0,
         'minute' => '0',
         'hour' => '0',
@@ -71,7 +71,7 @@ $tasks = [
         'month' => '*',
     ],
     [
-        'classname' => 'mod_zoom_yt\task\send_ical_notifications',
+        'classname' => 'mod_zoomyt\task\send_ical_notifications',
         'blocking' => 0,
         'minute' => '*/5',
         'hour' => '*',
@@ -80,7 +80,7 @@ $tasks = [
         'month' => '*',
     ],
     [
-        'classname' => 'mod_zoom_yt\task\sync_recordings_to_youtube',
+        'classname' => 'mod_zoomyt\task\sync_recordings_to_youtube',
         'blocking' => 0,
         'minute' => '15',
         'hour' => '*/2',

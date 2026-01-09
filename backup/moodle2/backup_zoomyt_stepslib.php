@@ -17,13 +17,13 @@
 /**
  * Defines backup_activity_structure_step class.
  *
- * @package   mod_zoom_yt
+ * @package   mod_zoomyt
  * @category  backup
  * @copyright 2015 UC Regents
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt;
+namespace mod_zoomyt;
 
 use backup;
 use backup_nested_element;
@@ -39,7 +39,7 @@ class backup_activity_structure_step extends \backup_activity_structure_step {
      */
     protected function define_structure() {
         // Define the root element describing the zoom instance.
-        $zoom = new backup_nested_element('zoom_yt', ['id'], [
+        $zoom = new backup_nested_element('zoomyt', ['id'], [
             'intro', 'introformat', 'grade', 'grading_method', 'meeting_id', 'join_url', 'created_at', 'host_id', 'name',
             'start_time', 'timemodified', 'recurring', 'recurrence_type', 'repeat_interval', 'weekly_days', 'monthly_day',
             'monthly_week', 'monthly_week_day', 'monthly_repeat_option', 'end_times', 'end_date_time', 'end_date_option',
@@ -59,15 +59,15 @@ class backup_activity_structure_step extends \backup_activity_structure_step {
         $trackingfields->add_child($trackingfield);
 
         // Define data sources.
-        $zoom->set_source_table('zoom_yt', ['id' => backup::VAR_ACTIVITYID]);
-        $trackingfield->set_source_table('zoom_yt_meeting_tracking_fields', ['meeting_id' => backup::VAR_ACTIVITYID]);
+        $zoom->set_source_table('zoomyt', ['id' => backup::VAR_ACTIVITYID]);
+        $trackingfield->set_source_table('zoomyt_meeting_tracking_fields', ['meeting_id' => backup::VAR_ACTIVITYID]);
 
         // If we were referring to other tables, we would annotate the relation
         // with the element's annotate_ids() method.
 
         // Define file annotations.
         // Intro does not need itemid.
-        $zoom->annotate_files('mod_zoom_yt', 'intro', null);
+        $zoom->annotate_files('mod_zoomyt', 'intro', null);
 
         // Return the root element (zoom), wrapped into standard activity structure.
         return $this->prepare_activity_structure($zoom);

@@ -17,7 +17,7 @@
 /**
  * Load zoom meeting recording and add a record of the view.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2020 Nick Stefanski <nmstefanski@gmail.com>
  * @author     2021 Jwalit Shah <jwalitshah@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,17 +29,17 @@ require_once(__DIR__ . '/locallib.php');
 
 $recordingid = required_param('recordingid', PARAM_INT);
 
-if (!get_config('zoom_yt', 'viewrecordings')) {
-    throw new moodle_exception('recordingnotvisible', 'mod_zoom_yt', get_string('recordingnotvisible', 'zoom_yt'));
+if (!get_config('zoomyt', 'viewrecordings')) {
+    throw new moodle_exception('recordingnotvisible', 'mod_zoomyt', get_string('recordingnotvisible', 'zoomyt'));
 }
 
-[$course, $cm, $zoom] = zoom_yt_get_instance_setup();
+[$course, $cm, $zoom] = zoomyt_get_instance_setup();
 require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
 $PAGE->set_context($context);
 
-require_capability('mod/zoom_yt:view', $context);
+require_capability('mod/zoomyt:view', $context);
 
 // Only show recording that is visble and valid.
 $params = [
@@ -47,21 +47,21 @@ $params = [
     'showrecording' => 1,
     'zoomid' => $zoom->id,
 ];
-$rec = $DB->get_record('zoom_yt_meeting_recordings', $params);
+$rec = $DB->get_record('zoomyt_meeting_recordings', $params);
 if (empty($rec)) {
-    throw new moodle_exception('recordingnotfound', 'mod_zoom_yt', '', get_string('recordingnotfound', 'zoom_yt'));
+    throw new moodle_exception('recordingnotfound', 'mod_zoomyt', '', get_string('recordingnotfound', 'zoomyt'));
 }
 
 $params = ['recordingsid' => $rec->id, 'userid' => $USER->id];
 $now = time();
 
 // Keep track of whether someone has viewed the recording or not.
-$view = $DB->get_record('zoom_yt_meeting_recordings_view', $params);
+$view = $DB->get_record('zoomyt_meeting_recordings_view', $params);
 if (!empty($view)) {
     if (empty($view->viewed)) {
         $view->viewed = 1;
         $view->timemodified = $now;
-        $DB->update_record('zoom_yt_meeting_recordings_view', $view);
+        $DB->update_record('zoomyt_meeting_recordings_view', $view);
     }
 } else {
     $view = new stdClass();
@@ -69,7 +69,7 @@ if (!empty($view)) {
     $view->userid = $USER->id;
     $view->viewed = 1;
     $view->timemodified = $now;
-    $view->id = $DB->insert_record('zoom_yt_meeting_recordings_view', $view);
+    $view->id = $DB->insert_record('zoomyt_meeting_recordings_view', $view);
 }
 
 $nexturl = new moodle_url($rec->externalurl);

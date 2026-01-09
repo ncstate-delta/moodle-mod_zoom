@@ -101,7 +101,7 @@ To enable YouTube integration, you need Google Cloud credentials and a YouTube c
 3. Enable the **YouTube Data API v3**
 4. Go to **Credentials** → **Create Credentials** → **OAuth client ID**
 5. Select **Web application**
-6. Add your Moodle's OAuth redirect URL: `https://your-moodle-site/mod/zoom_yt/youtube_oauth.php`
+6. Add your Moodle's OAuth redirect URL: `https://your-moodle-site/mod/zoomyt/youtube_oauth.php`
 7. Save the **Client ID** and **Client Secret**
 
 #### Connecting YouTube Channels
@@ -116,12 +116,12 @@ This creates a unique refresh token for each channel, stored securely in Moodle.
 
 ## Installation
 
-1. [Install the plugin](https://docs.moodle.org/en/Installing_plugins#Installing_a_plugin) to the `/mod/zoom_yt` folder in Moodle.
+1. [Install the plugin](https://docs.moodle.org/en/Installing_plugins#Installing_a_plugin) to the `/mod/zoomyt` folder in Moodle.
 
 2. Configure the global Zoom settings:
-   - Zoom account ID (`mod_zoom_yt | accountid`)
-   - Zoom client ID (`mod_zoom_yt | clientid`)
-   - Zoom client secret (`mod_zoom_yt | clientsecret`)
+   - Zoom account ID (`mod_zoomyt | accountid`)
+   - Zoom client ID (`mod_zoomyt | clientid`)
+   - Zoom client secret (`mod_zoomyt | clientsecret`)
 
 3. (Optional) Configure YouTube integration:
    - Default visibility for YouTube videos
@@ -190,7 +190,7 @@ The plugin includes several scheduled tasks:
 
 When uploading videos to YouTube, the plugin temporarily stores video files on the server:
 
-- **Default location**: Moodle's temp directory (`$CFG->tempdir/zoom_yt_videos`)
+- **Default location**: Moodle's temp directory (`$CFG->tempdir/zoomyt_videos`)
 - **Storage limit**: Configurable (default 5GB)
 - **Cleanup**: Files are deleted immediately after successful upload
 

@@ -17,14 +17,14 @@
 /**
  * Defines the version and other meta-info about the plugin.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'mod_zoom_yt';
+$plugin->component = 'mod_zoomyt';
 $plugin->version = 2025010901;
 $plugin->release = 'v1.1.0';
 $plugin->requires = 2019052000;

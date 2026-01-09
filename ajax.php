@@ -17,7 +17,7 @@
 /**
  * AJAX handler for Zoom YT plugin.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2025
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,7 +25,7 @@
 define('AJAX_SCRIPT', true);
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
+require_once($CFG->dirroot . '/mod/zoomyt/locallib.php');
 
 $action = required_param('action', PARAM_ALPHA);
 $cmid = required_param('cmid', PARAM_INT);
@@ -34,7 +34,7 @@ $cmid = required_param('cmid', PARAM_INT);
 require_sesskey();
 
 // Get course module and context.
-$cm = get_coursemodule_from_id('zoom_yt', $cmid, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id('zoomyt', $cmid, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
@@ -47,28 +47,28 @@ try {
         case 'record_view':
             $videoid = required_param('videoid', PARAM_INT);
             
-            require_once($CFG->dirroot . '/mod/zoom_yt/classes/output/video_gallery.php');
-            \mod_zoom_yt\output\video_gallery::record_view($videoid, $USER->id, $context);
+            require_once($CFG->dirroot . '/mod/zoomyt/classes/output/video_gallery.php');
+            \mod_zoomyt\output\video_gallery::record_view($videoid, $USER->id, $context);
             
             $result['success'] = true;
             break;
 
         case 'toggle_visibility':
             // Require editing capability.
-            require_capability('mod/zoom_yt:addinstance', $context);
+            require_capability('mod/zoomyt:addinstance', $context);
             
             $videoid = required_param('videoid', PARAM_INT);
             $visible = required_param('visible', PARAM_BOOL);
             
-            require_once($CFG->dirroot . '/mod/zoom_yt/classes/output/video_gallery.php');
-            \mod_zoom_yt\output\video_gallery::toggle_visibility($videoid, $visible);
+            require_once($CFG->dirroot . '/mod/zoomyt/classes/output/video_gallery.php');
+            \mod_zoomyt\output\video_gallery::toggle_visibility($videoid, $visible);
             
             $result['success'] = true;
             $result['visible'] = $visible;
             break;
 
         default:
-            throw new moodle_exception('invalid_action', 'zoom_yt');
+            throw new moodle_exception('invalid_action', 'zoomyt');
     }
 } catch (Exception $e) {
     $result['success'] = false;

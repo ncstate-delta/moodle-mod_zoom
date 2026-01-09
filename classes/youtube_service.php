@@ -19,12 +19,12 @@
  *
  * Handles OAuth authentication and video uploads to YouTube.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2025
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt;
+namespace mod_zoomyt;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -80,7 +80,7 @@ class youtube_service {
      */
     public static function get_instance_for_course(int $courseid): ?self {
         global $CFG;
-        require_once($CFG->dirroot . '/mod/zoom_yt/classes/category_settings.php');
+        require_once($CFG->dirroot . '/mod/zoomyt/classes/category_settings.php');
 
         $catsettings = new category_settings($courseid);
         $settings = $catsettings->get_effective_settings();
@@ -151,13 +151,13 @@ class youtube_service {
         $response = $curl->post(self::TOKEN_URL, $data);
 
         if ($curl->get_errno()) {
-            throw new \moodle_exception('youtube_oauth_error', 'zoom_yt', '', $curl->error);
+            throw new \moodle_exception('youtube_oauth_error', 'zoomyt', '', $curl->error);
         }
 
         $result = json_decode($response);
 
         if (isset($result->error)) {
-            throw new \moodle_exception('youtube_oauth_error', 'zoom_yt', '', $result->error_description ?? $result->error);
+            throw new \moodle_exception('youtube_oauth_error', 'zoomyt', '', $result->error_description ?? $result->error);
         }
 
         return $result;
@@ -175,7 +175,7 @@ class youtube_service {
         }
 
         // Check cache.
-        $cache = \cache::make('mod_zoom_yt', 'oauth');
+        $cache = \cache::make('mod_zoomyt', 'oauth');
         $cachekey = 'yt_' . ($this->categoryid ?? 'global') . '_accesstoken';
         $expireskey = 'yt_' . ($this->categoryid ?? 'global') . '_expires';
 
@@ -200,13 +200,13 @@ class youtube_service {
         $response = $curl->post(self::TOKEN_URL, $data);
 
         if ($curl->get_errno()) {
-            throw new \moodle_exception('youtube_oauth_error', 'zoom_yt', '', $curl->error);
+            throw new \moodle_exception('youtube_oauth_error', 'zoomyt', '', $curl->error);
         }
 
         $result = json_decode($response);
 
         if (isset($result->error)) {
-            throw new \moodle_exception('youtube_oauth_error', 'zoom_yt', '', $result->error_description ?? $result->error);
+            throw new \moodle_exception('youtube_oauth_error', 'zoomyt', '', $result->error_description ?? $result->error);
         }
 
         $this->accesstoken = $result->access_token;
@@ -234,17 +234,17 @@ class youtube_service {
         $response = $curl->get($url);
 
         if ($curl->get_errno()) {
-            throw new \moodle_exception('youtube_api_error', 'zoom_yt', '', $curl->error);
+            throw new \moodle_exception('youtube_api_error', 'zoomyt', '', $curl->error);
         }
 
         $result = json_decode($response);
 
         if (isset($result->error)) {
-            throw new \moodle_exception('youtube_api_error', 'zoom_yt', '', $result->error->message ?? 'Unknown error');
+            throw new \moodle_exception('youtube_api_error', 'zoomyt', '', $result->error->message ?? 'Unknown error');
         }
 
         if (empty($result->items)) {
-            throw new \moodle_exception('youtube_no_channel', 'zoom_yt');
+            throw new \moodle_exception('youtube_no_channel', 'zoomyt');
         }
 
         $channel = $result->items[0];
@@ -275,7 +275,7 @@ class youtube_service {
         ?callable $progresscallback = null
     ): object {
         if (!file_exists($filepath)) {
-            throw new \moodle_exception('youtube_file_not_found', 'zoom_yt', '', $filepath);
+            throw new \moodle_exception('youtube_file_not_found', 'zoomyt', '', $filepath);
         }
 
         $token = $this->get_access_token();
@@ -306,7 +306,7 @@ class youtube_service {
 
         if ($info['http_code'] !== 200) {
             $error = json_decode($response);
-            throw new \moodle_exception('youtube_upload_init_error', 'zoom_yt', '', 
+            throw new \moodle_exception('youtube_upload_init_error', 'zoomyt', '', 
                 $error->error->message ?? 'HTTP ' . $info['http_code']);
         }
 
@@ -315,13 +315,13 @@ class youtube_service {
         $uploadurl = $headers['location'] ?? $headers['Location'] ?? null;
 
         if (empty($uploadurl)) {
-            throw new \moodle_exception('youtube_upload_no_location', 'zoom_yt');
+            throw new \moodle_exception('youtube_upload_no_location', 'zoomyt');
         }
 
         // Step 2: Upload the video file.
         $handle = fopen($filepath, 'rb');
         if (!$handle) {
-            throw new \moodle_exception('youtube_file_open_error', 'zoom_yt', '', $filepath);
+            throw new \moodle_exception('youtube_file_open_error', 'zoomyt', '', $filepath);
         }
 
         $chunksize = 10 * 1024 * 1024; // 10MB chunks.
@@ -353,7 +353,7 @@ class youtube_service {
             if ($info['http_code'] !== 308 && $info['http_code'] !== 200 && $info['http_code'] !== 201) {
                 fclose($handle);
                 $error = json_decode($response);
-                throw new \moodle_exception('youtube_upload_chunk_error', 'zoom_yt', '', 
+                throw new \moodle_exception('youtube_upload_chunk_error', 'zoomyt', '', 
                     $error->error->message ?? 'HTTP ' . $info['http_code']);
             }
 
@@ -368,7 +368,7 @@ class youtube_service {
         $result = json_decode($response);
 
         if (isset($result->error)) {
-            throw new \moodle_exception('youtube_upload_error', 'zoom_yt', '', $result->error->message);
+            throw new \moodle_exception('youtube_upload_error', 'zoomyt', '', $result->error->message);
         }
 
         // Get video details including thumbnail.
@@ -401,17 +401,17 @@ class youtube_service {
         $response = $curl->get($url);
 
         if ($curl->get_errno()) {
-            throw new \moodle_exception('youtube_api_error', 'zoom_yt', '', $curl->error);
+            throw new \moodle_exception('youtube_api_error', 'zoomyt', '', $curl->error);
         }
 
         $result = json_decode($response);
 
         if (isset($result->error)) {
-            throw new \moodle_exception('youtube_api_error', 'zoom_yt', '', $result->error->message ?? 'Unknown error');
+            throw new \moodle_exception('youtube_api_error', 'zoomyt', '', $result->error->message ?? 'Unknown error');
         }
 
         if (empty($result->items)) {
-            throw new \moodle_exception('youtube_video_not_found', 'zoom_yt', '', $videoid);
+            throw new \moodle_exception('youtube_video_not_found', 'zoomyt', '', $videoid);
         }
 
         $video = $result->items[0];
@@ -468,13 +468,13 @@ class youtube_service {
         $response = $curl->put($url, json_encode($data));
 
         if ($curl->get_errno()) {
-            throw new \moodle_exception('youtube_api_error', 'zoom_yt', '', $curl->error);
+            throw new \moodle_exception('youtube_api_error', 'zoomyt', '', $curl->error);
         }
 
         $result = json_decode($response);
 
         if (isset($result->error)) {
-            throw new \moodle_exception('youtube_api_error', 'zoom_yt', '', $result->error->message ?? 'Unknown error');
+            throw new \moodle_exception('youtube_api_error', 'zoomyt', '', $result->error->message ?? 'Unknown error');
         }
 
         return true;
@@ -489,7 +489,7 @@ class youtube_service {
         if (!$this->is_configured()) {
             return [
                 'success' => false,
-                'message' => get_string('youtube_not_configured', 'zoom_yt'),
+                'message' => get_string('youtube_not_configured', 'zoomyt'),
                 'channel' => null,
             ];
         }
@@ -498,13 +498,13 @@ class youtube_service {
             $channel = $this->get_channel_info();
             return [
                 'success' => true,
-                'message' => get_string('youtube_connection_ok', 'zoom_yt', $channel->title),
+                'message' => get_string('youtube_connection_ok', 'zoomyt', $channel->title),
                 'channel' => $channel,
             ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => get_string('youtube_connection_failed', 'zoom_yt') . ' ' . $e->getMessage(),
+                'message' => get_string('youtube_connection_failed', 'zoomyt') . ' ' . $e->getMessage(),
                 'channel' => null,
             ];
         }

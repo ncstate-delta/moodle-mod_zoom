@@ -39,7 +39,7 @@
  *
  * The variable name for the capability definitions array is $capabilities
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -48,7 +48,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // Modify capabilities as needed and remove this comment.
 $capabilities = [
-    'mod/zoom_yt:addinstance' => [
+    'mod/zoomyt:addinstance' => [
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
@@ -59,7 +59,7 @@ $capabilities = [
         'clonepermissionsfrom' => 'moodle/course:manageactivities',
     ],
 
-    'mod/zoom_yt:view' => [
+    'mod/zoomyt:view' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => [
@@ -71,7 +71,7 @@ $capabilities = [
         ],
     ],
 
-    'mod/zoom_yt:refreshsessions' => [
+    'mod/zoomyt:refreshsessions' => [
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
@@ -80,7 +80,7 @@ $capabilities = [
         ],
     ],
 
-    'mod/zoom_yt:eligiblealternativehost' => [
+    'mod/zoomyt:eligiblealternativehost' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
@@ -90,7 +90,7 @@ $capabilities = [
         ],
     ],
 
-    'mod/zoom_yt:viewjoinurl' => [
+    'mod/zoomyt:viewjoinurl' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
@@ -101,7 +101,7 @@ $capabilities = [
         ],
     ],
 
-    'mod/zoom_yt:viewdialin' => [
+    'mod/zoomyt:viewdialin' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
@@ -114,7 +114,7 @@ $capabilities = [
     ],
 
     // Capability to manage category-level Zoom settings (account credentials, defaults).
-    'mod/zoom_yt:managecategorysettings' => [
+    'mod/zoomyt:managecategorysettings' => [
         'riskbitmask' => RISK_CONFIG,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSECAT,
@@ -124,7 +124,7 @@ $capabilities = [
     ],
 
     // Capability to view category-level Zoom settings (read-only access).
-    'mod/zoom_yt:viewcategorysettings' => [
+    'mod/zoomyt:viewcategorysettings' => [
         'riskbitmask' => RISK_CONFIG,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSECAT,

@@ -17,7 +17,7 @@
 /**
  * CLI script to manually get the meeting report.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2020 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -57,7 +57,7 @@ Options:
 --courseid          Optional. If given, will find all hosts for course and get meeting reports.
 
 Example:
-\$sudo -u www-data /usr/bin/php mod/zoom_yt/cli/get_meeting_report.php --start=2020-03-31 --end=2020-04-01
+\$sudo -u www-data /usr/bin/php mod/zoomyt/cli/get_meeting_report.php --start=2020-03-31 --end=2020-04-01
 ";
     cli_error($help);
 }
@@ -67,9 +67,9 @@ if (!empty($options['hostuuid'])) {
     $hostuuids = [$options['hostuuid']];
 } else if (!empty($options['courseid'])) {
     // Find all hosts for course.
-    $hostuuids = $DB->get_fieldset_select('zoom_yt', 'DISTINCT host_id', 'course=:courseid', ['courseid' => $options['courseid']]);
+    $hostuuids = $DB->get_fieldset_select('zoomyt', 'DISTINCT host_id', 'course=:courseid', ['courseid' => $options['courseid']]);
     if (empty($hostuuids)) {
-        cli_writeln(get_string('nozoomsfound', 'mod_zoom_yt'));
+        cli_writeln(get_string('nozoomsfound', 'mod_zoomyt'));
         cli_error('No hosts found for course');
     }
 }
@@ -77,7 +77,7 @@ if (!empty($options['hostuuid'])) {
 // Turn on debugging so we can see the detailed progress.
 set_debugging(DEBUG_DEVELOPER, true);
 
-$meetingtask = new mod_zoom_yt\task\get_meeting_reports();
+$meetingtask = new mod_zoomyt\task\get_meeting_reports();
 $meetingtask->execute($options['start'], $options['end'], $hostuuids);
 
 cli_writeln('DONE!');

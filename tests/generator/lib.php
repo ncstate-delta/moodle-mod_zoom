@@ -17,11 +17,11 @@
 /**
  * Zoom module test data generator class
  *
- * @package mod_zoom_yt
+ * @package mod_zoomyt
  * @copyright 2020 UC Regents
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_zoom_yt_generator extends testing_module_generator {
+class mod_zoomyt_generator extends testing_module_generator {
     /**
      * Creates new Zoom module instance.
      * @param array|stdClass $record
@@ -30,11 +30,11 @@ class mod_zoom_yt_generator extends testing_module_generator {
      */
     public function create_instance($record = null, ?array $options = null) {
         global $CFG;
-        require_once($CFG->dirroot . '/mod/zoom_yt/locallib.php');
+        require_once($CFG->dirroot . '/mod/zoomyt/locallib.php');
 
-        set_config('clientid', 'test', 'zoom_yt');
-        set_config('clientsecret', 'test', 'zoom_yt');
-        set_config('accountid', 'test', 'zoom_yt');
+        set_config('clientid', 'test', 'zoomyt');
+        set_config('clientsecret', 'test', 'zoomyt');
+        set_config('accountid', 'test', 'zoomyt');
 
         // Mock Zoom data for testing.
         $defaultzoomsettings = [

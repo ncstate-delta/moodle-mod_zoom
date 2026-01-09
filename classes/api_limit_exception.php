@@ -17,12 +17,12 @@
 /**
  * Exception class for Zoom API errors.
  *
- * @package   mod_zoom_yt
+ * @package   mod_zoomyt
  * @copyright 2023 Jonathan Champ <jrchamp@ncsu.edu>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt;
+namespace mod_zoomyt;
 
 use stdClass;
 
@@ -51,7 +51,7 @@ class api_limit_exception extends webservice_exception {
             $response,
             $errorcode,
             'zoomerr_apilimit',
-            'mod_zoom_yt',
+            'mod_zoomyt',
             '',
             userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig'))
         );

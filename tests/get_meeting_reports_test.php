@@ -17,12 +17,12 @@
 /**
  * Unit tests for get_meeting_reports task class.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2019 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt;
+namespace mod_zoomyt;
 
 use advanced_testcase;
 use context_course;
@@ -32,12 +32,12 @@ use stdClass;
 
 /**
  * PHPunit testcase class.
- * @covers \mod_zoom_yt\task\get_meeting_reports
+ * @covers \mod_zoomyt\task\get_meeting_reports
  */
 final class get_meeting_reports_test extends advanced_testcase {
     /**
      * Scheduled task object.
-     * @var \mod_zoom_yt\task\get_meeting_reports
+     * @var \mod_zoomyt\task\get_meeting_reports
      */
     private $meetingtask;
 
@@ -54,7 +54,7 @@ final class get_meeting_reports_test extends advanced_testcase {
     private $zoomdata;
 
     /**
-     * Mocks the mod_zoom_yt\webservice->get_meeting_participants() call, so we
+     * Mocks the mod_zoomyt\webservice->get_meeting_participants() call, so we
      * don't actually call the real Zoom API.
      *
      * @param string $meetinguuid The meeting or webinar's UUID.
@@ -73,7 +73,7 @@ final class get_meeting_reports_test extends advanced_testcase {
 
         $this->resetAfterTest(true);
 
-        $this->meetingtask = new \mod_zoom_yt\task\get_meeting_reports();
+        $this->meetingtask = new \mod_zoomyt\task\get_meeting_reports();
 
         $data = [
             'id' => 'ARANDOMSTRINGFORUUID',
@@ -176,7 +176,7 @@ final class get_meeting_reports_test extends advanced_testcase {
         $participant['uuid'] = $this->zoomdata->id;
         // Set userid to a given value so we know we got a match.
         $participant['userid'] = 999;
-        $recordid = $DB->insert_record('zoom_yt_meeting_participants', $participant);
+        $recordid = $DB->insert_record('zoomyt_meeting_participants', $participant);
 
         // Should return the found entry in zoom_meeting_participants.
         $newparticipant = $this->meetingtask->format_participant($this->zoomdata, 1, $names, $emails);
@@ -261,13 +261,13 @@ final class get_meeting_reports_test extends advanced_testcase {
         global $DB, $SITE;
 
         // Make sure we start with nothing.
-        $this->assertEquals(0, $DB->count_records('zoom_yt_meeting_details'));
-        $this->assertEquals(0, $DB->count_records('zoom_yt_meeting_participants'));
+        $this->assertEquals(0, $DB->count_records('zoomyt_meeting_details'));
+        $this->assertEquals(0, $DB->count_records('zoomyt_meeting_participants'));
         $this->mockparticipantsdata = [];
 
         // First mock the webservice object, so we can inject the return values
         // for get_meeting_participants.
-        $mockwwebservice = $this->createMock('\mod_zoom_yt\webservice');
+        $mockwwebservice = $this->createMock('\mod_zoomyt\webservice');
 
         // What we want get_meeting_participants to return.
         $participant1 = new stdClass();
@@ -311,10 +311,10 @@ final class get_meeting_reports_test extends advanced_testcase {
         $meeting->participants = 3;
 
         // Insert stub data for zoom table.
-        $DB->insert_record('zoom_yt', [
+        $DB->insert_record('zoomyt', [
             'course' => $SITE->id,
             'meeting_id' => $meeting->id,
-            'name' => 'zoom_yt',
+            'name' => 'zoomyt',
             'exists_on_zoom' => ZOOM_MEETING_EXISTS,
         ]);
 
@@ -324,8 +324,8 @@ final class get_meeting_reports_test extends advanced_testcase {
         $this->assertTrue($this->meetingtask->process_meeting_reports($meeting));
 
         // Make sure that only one details is added and two participants.
-        $this->assertEquals(1, $DB->count_records('zoom_yt_meeting_details'));
-        $this->assertEquals(2, $DB->count_records('zoom_yt_meeting_participants'));
+        $this->assertEquals(1, $DB->count_records('zoomyt_meeting_details'));
+        $this->assertEquals(2, $DB->count_records('zoomyt_meeting_participants'));
 
         // Add in one more participant, make sure we update details and added
         // one more participant.
@@ -339,8 +339,8 @@ final class get_meeting_reports_test extends advanced_testcase {
         $participant3->duration = 30 * 60;
         $this->mockparticipantsdata['someuuid'][] = $participant3;
         $this->assertTrue($this->meetingtask->process_meeting_reports($meeting));
-        $this->assertEquals(1, $DB->count_records('zoom_yt_meeting_details'));
-        $this->assertEquals(3, $DB->count_records('zoom_yt_meeting_participants'));
+        $this->assertEquals(1, $DB->count_records('zoomyt_meeting_details'));
+        $this->assertEquals(3, $DB->count_records('zoomyt_meeting_participants'));
     }
 
     /**
@@ -419,12 +419,12 @@ final class get_meeting_reports_test extends advanced_testcase {
         $this->setAdminUser();
         // Make sure we start with nothing.
         // Deleting all records from previous tests.
-        if ($DB->count_records('zoom_yt_meeting_details') > 0) {
-            $DB->delete_records('zoom_yt_meeting_details');
+        if ($DB->count_records('zoomyt_meeting_details') > 0) {
+            $DB->delete_records('zoomyt_meeting_details');
         }
 
-        if ($DB->count_records('zoom_yt_meeting_participants') > 0) {
-            $DB->delete_records('zoom_yt_meeting_participants');
+        if ($DB->count_records('zoomyt_meeting_participants') > 0) {
+            $DB->delete_records('zoomyt_meeting_participants');
         }
 
         // Generate fake course.
@@ -452,22 +452,22 @@ final class get_meeting_reports_test extends advanced_testcase {
             'course' => $course->id,
             'meeting_id' => $meeting->id,
             'grade' => 60,
-            'name' => 'zoom_yt',
+            'name' => 'zoomyt',
             'exists_on_zoom' => ZOOM_MEETING_EXISTS,
             'start_time' => strtotime('2020-04-01T15:00:00Z'),
             'duration' => 120 * 60, // In seconds.
         ];
 
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_zoom_yt');
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_zoomyt');
         $instance = $generator->create_instance($params);
         $id = $instance->id;
         // Normalize the meeting.
         $meeting = $this->meetingtask->normalize_meeting($meeting);
         $meeting->zoomid = $id;
 
-        $detailsid = $DB->insert_record('zoom_yt_meeting_details', $meeting);
+        $detailsid = $DB->insert_record('zoomyt_meeting_details', $meeting);
 
-        $zoomrecord = $DB->get_record('zoom_yt', ['id' => $id]);
+        $zoomrecord = $DB->get_record('zoomyt', ['id' => $id]);
         // Create users and corresponding meeting participants.
         $rawparticipants = [];
         $participants = [];
@@ -612,7 +612,7 @@ final class get_meeting_reports_test extends advanced_testcase {
         $this->mockparticipantsdata['someuuid123'] = $rawparticipants;
         // First mock the webservice object, so we can inject the return values
         // for get_meeting_participants.
-        $mockwwebservice = $this->createMock('\mod_zoom_yt\webservice');
+        $mockwwebservice = $this->createMock('\mod_zoomyt\webservice');
         $this->meetingtask->service = $mockwwebservice;
         // Make get_meeting_participants() return our results array.
         $mockwwebservice->method('get_meeting_participants')
@@ -624,7 +624,7 @@ final class get_meeting_reports_test extends advanced_testcase {
         );
 
         // Now let's test the grades.
-        $DB->set_field('zoom_yt', 'grading_method', 'period', ['id' => $zoomrecord->id]);
+        $DB->set_field('zoomyt', 'grading_method', 'period', ['id' => $zoomrecord->id]);
 
         // Prepare messages.
         $this->preventResetByRollback(); // Messaging does not like transactions...
@@ -632,15 +632,15 @@ final class get_meeting_reports_test extends advanced_testcase {
         // Process meeting reports should call the function grading_participant_upon_duration
         // and insert grades.
         $this->assertTrue($this->meetingtask->process_meeting_reports($meeting));
-        $this->assertEquals(1, $DB->count_records('zoom_yt_meeting_details'));
-        $this->assertEquals(8, $DB->count_records('zoom_yt_meeting_participants'));
+        $this->assertEquals(1, $DB->count_records('zoomyt_meeting_details'));
+        $this->assertEquals(8, $DB->count_records('zoomyt_meeting_participants'));
 
         $usersids = [];
         foreach ($users as $user) {
             $usersids[] = $user->id;
         }
         // Get the gradelist for all users created.
-        $gradelist = grade_get_grades($course->id, 'mod', 'zoom_yt', $zoomrecord->id, $usersids);
+        $gradelist = grade_get_grades($course->id, 'mod', 'zoomyt', $zoomrecord->id, $usersids);
 
         $gradelistitems = $gradelist->items;
         $grades = $gradelistitems[0]->grades;
@@ -675,13 +675,13 @@ final class get_meeting_reports_test extends advanced_testcase {
                 'itemid' => $gradelistitems[0]->id,
             ]
         );
-        $gradeurl = html_writer::link($gurl, get_string('gradinglink', 'mod_zoom_yt'));
+        $gradeurl = html_writer::link($gurl, get_string('gradinglink', 'mod_zoomyt'));
 
         // Zoom instance url.
-        $zurl = new moodle_url('/mod/zoom_yt/view.php', ['id' => $id]);
+        $zurl = new moodle_url('/mod/zoomyt/view.php', ['id' => $id]);
         $zoomurl = html_writer::link($zurl, $zoomrecord->name);
         // The user need grading.
-        $needgradestr = get_string('grading_needgrade', 'mod_zoom_yt');
+        $needgradestr = get_string('grading_needgrade', 'mod_zoomyt');
         $needgrade[] = '(Name: Farouk, grade: 55)';
         $needgrade = $needgradestr . implode('<br>', $needgrade) . "\n";
 
@@ -696,14 +696,14 @@ final class get_meeting_reports_test extends advanced_testcase {
             'notfound' => '',
             'notenrolled' => '',
         ];
-        $messagecontent = get_string('gradingmessagebody', 'mod_zoom_yt', $a);
+        $messagecontent = get_string('gradingmessagebody', 'mod_zoomyt', $a);
         $this->assertStringContainsString($messagecontent, $messages[0]->fullmessage);
 
         // Redo the process again to be sure that no grades have been changed.
         $this->assertTrue($this->meetingtask->process_meeting_reports($meeting));
-        $this->assertEquals(1, $DB->count_records('zoom_yt_meeting_details'));
-        $this->assertEquals(8, $DB->count_records('zoom_yt_meeting_participants'));
-        $gradelist = grade_get_grades($course->id, 'mod', 'zoom_yt', $zoomrecord->id, $usersids);
+        $this->assertEquals(1, $DB->count_records('zoomyt_meeting_details'));
+        $this->assertEquals(8, $DB->count_records('zoomyt_meeting_participants'));
+        $gradelist = grade_get_grades($course->id, 'mod', 'zoomyt', $zoomrecord->id, $usersids);
         $gradelistitems = $gradelist->items;
         $grades = $gradelistitems[0]->grades;
         // Check grade for first user.

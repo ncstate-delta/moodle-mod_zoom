@@ -17,7 +17,7 @@
 /**
  * List all zoom meetings.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2015 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,17 +29,17 @@ require_once(__DIR__ . '/mod_form.php');
 require_once($CFG->libdir . '/moodlelib.php');
 
 require_login();
-// Additional access checks in zoom_yt_get_instance_setup().
-[$course, $cm, $zoom] = zoom_yt_get_instance_setup();
+// Additional access checks in zoomyt_get_instance_setup().
+[$course, $cm, $zoom] = zoomyt_get_instance_setup();
 
 // Check capability.
 $context = context_module::instance($cm->id);
-require_capability('mod/zoom_yt:addinstance', $context);
+require_capability('mod/zoomyt:addinstance', $context);
 
-$PAGE->set_url('/mod/zoom_yt/report.php', ['id' => $cm->id]);
+$PAGE->set_url('/mod/zoomyt/report.php', ['id' => $cm->id]);
 
 $strname = $zoom->name;
-$strtitle = get_string('sessions', 'mod_zoom_yt');
+$strtitle = get_string('sessions', 'mod_zoomyt');
 $PAGE->navbar->add($strtitle);
 $PAGE->set_title("$course->shortname: $strname");
 $PAGE->set_heading($course->fullname);
@@ -49,16 +49,16 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading($strname);
 echo $OUTPUT->heading($strtitle, 4);
 
-$sessions = zoom_yt_get_sessions_for_display($zoom->id);
+$sessions = zoomyt_get_sessions_for_display($zoom->id);
 if (!empty($sessions)) {
-    $maskparticipantdata = get_config('zoom_yt', 'maskparticipantdata');
+    $maskparticipantdata = get_config('zoomyt', 'maskparticipantdata');
     $table = new html_table();
     $table->head = [
-        get_string('title', 'mod_zoom_yt'),
-        get_string('starttime', 'mod_zoom_yt'),
-        get_string('endtime', 'mod_zoom_yt'),
-        get_string('duration', 'mod_zoom_yt'),
-        get_string('participants', 'mod_zoom_yt'),
+        get_string('title', 'mod_zoomyt'),
+        get_string('starttime', 'mod_zoomyt'),
+        get_string('endtime', 'mod_zoomyt'),
+        get_string('duration', 'mod_zoomyt'),
+        get_string('participants', 'mod_zoomyt'),
     ];
     $table->align = ['left', 'left', 'left', 'left', 'left'];
     $format = get_string('strftimedatetimeshort', 'langconfig');
@@ -74,11 +74,11 @@ if (!empty($sessions)) {
             if ($maskparticipantdata) {
                 $row[] = $meet['count']
                          . ' ['
-                         . get_string('participantdatanotavailable', 'mod_zoom_yt')
+                         . get_string('participantdatanotavailable', 'mod_zoomyt')
                          . '] '
-                         . $OUTPUT->help_icon('participantdatanotavailable', 'mod_zoom_yt');
+                         . $OUTPUT->help_icon('participantdatanotavailable', 'mod_zoomyt');
             } else {
-                $url = new moodle_url('/mod/zoom_yt/participants.php', ['id' => $cm->id, 'uuid' => $uuid]);
+                $url = new moodle_url('/mod/zoomyt/participants.php', ['id' => $cm->id, 'uuid' => $uuid]);
                 $row[] = html_writer::link($url, $meet['count']);
             }
         } else {
@@ -92,7 +92,7 @@ if (!empty($sessions)) {
 if (!empty($table->data)) {
     echo html_writer::table($table);
 } else {
-    echo $OUTPUT->notification(get_string('nomeetinginstances', 'mod_zoom_yt'), 'notifymessage');
+    echo $OUTPUT->notification(get_string('nomeetinginstances', 'mod_zoomyt'), 'notifymessage');
 }
 
 echo $OUTPUT->footer();

@@ -17,12 +17,12 @@
 /**
  * Exception class for Zoom API errors.
  *
- * @package   mod_zoom_yt
+ * @package   mod_zoomyt
  * @copyright 2023 Jonathan Champ <jrchamp@ncsu.edu>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_zoom_yt;
+namespace mod_zoomyt;
 
 /**
  * Bad request received by Zoom.
@@ -34,6 +34,6 @@ class bad_request_exception extends webservice_exception {
      * @param int $errorcode     Web service response error code
      */
     public function __construct($response, $errorcode) {
-        parent::__construct($response, $errorcode, 'errorwebservice_badrequest', 'mod_zoom_yt', '', $response);
+        parent::__construct($response, $errorcode, 'errorwebservice_badrequest', 'mod_zoomyt', '', $response);
     }
 }

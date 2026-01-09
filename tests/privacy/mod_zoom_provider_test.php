@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_zoom_yt\privacy;
+namespace mod_zoomyt\privacy;
 
 use context_module;
 use core_privacy\local\metadata\collection;
@@ -24,18 +24,18 @@ use core_privacy\local\request\deletion_criteria;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 use core_privacy\tests\provider_testcase;
-use mod_zoom_yt\privacy\provider;
+use mod_zoomyt\privacy\provider;
 
 /**
  * Privacy provider tests class.
  *
- * @package    mod_zoom_yt
+ * @package    mod_zoomyt
  * @copyright  2022 Catalyst IT Australia Pty Ltd
  * @author     2022 Ghaly Marc-Alexandre <marc-alexandreghaly@catalyst-ca.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @coversDefaultClass \mod_zoom_yt\privacy\provider
+ * @coversDefaultClass \mod_zoomyt\privacy\provider
  */
-final class mod_zoom_yt_provider_test extends provider_testcase {
+final class mod_zoomyt_provider_test extends provider_testcase {
     /** @var object The zoom instance object. */
     protected $zoominstance;
 
@@ -68,7 +68,7 @@ final class mod_zoom_yt_provider_test extends provider_testcase {
             'showpreview' => 0,
         ];
 
-        $plugingenerator = $generator->get_plugin_generator('mod_zoom_yt');
+        $plugingenerator = $generator->get_plugin_generator('mod_zoomyt');
         // The zoom activity.
         $zoom = $plugingenerator->create_instance($params);
         // Create a student enrolled in zoom activity.
@@ -90,7 +90,7 @@ final class mod_zoom_yt_provider_test extends provider_testcase {
             'zoomid' => $zoom->id,
         ];
 
-        $zmid = $DB->insert_record('zoom_yt_meeting_details', $meeting, true);
+        $zmid = $DB->insert_record('zoomyt_meeting_details', $meeting, true);
         $participant = (object) [
             'zoomuserid' => 9999,
             'userid' => $student->id,
@@ -109,8 +109,8 @@ final class mod_zoom_yt_provider_test extends provider_testcase {
             'name' => 'John',
             'detailsid' => $zmid,
         ];
-        $zmparticipantsid = $DB->insert_record('zoom_yt_meeting_participants', $participant, true);
-        $zmparticipantsid2 = $DB->insert_record('zoom_yt_meeting_participants', $participant2, true);
+        $zmparticipantsid = $DB->insert_record('zoomyt_meeting_participants', $participant, true);
+        $zmparticipantsid2 = $DB->insert_record('zoomyt_meeting_participants', $participant2, true);
         $meetingrecording = (object) [
             'zoomid' => $zoom->id,
             'meetinguuid' => 'meetinguuid',
@@ -121,7 +121,7 @@ final class mod_zoom_yt_provider_test extends provider_testcase {
             'recordingstart' => 1646769061,
             'showrecording' => 1,
         ];
-        $meetingrecordingid = $DB->insert_record('zoom_yt_meeting_recordings', $meetingrecording, true);
+        $meetingrecordingid = $DB->insert_record('zoomyt_meeting_recordings', $meetingrecording, true);
         $meetingrecordingsview = (object) [
             'recordingsid' => $meetingrecordingid,
             'userid' => $student->id,
@@ -132,10 +132,10 @@ final class mod_zoom_yt_provider_test extends provider_testcase {
             'userid' => $student2->id,
             'viewed' => 1,
         ];
-        $DB->insert_record('zoom_yt_meeting_recordings_view', $meetingrecordingsview, true);
-        $DB->insert_record('zoom_yt_meeting_recordings_view', $meetingrecordingsview2, true);
+        $DB->insert_record('zoomyt_meeting_recordings_view', $meetingrecordingsview, true);
+        $DB->insert_record('zoomyt_meeting_recordings_view', $meetingrecordingsview2, true);
 
-        $cm = get_coursemodule_from_instance('zoom_yt', $zoom->id);
+        $cm = get_coursemodule_from_instance('zoomyt', $zoom->id);
 
         $this->zoominstance = $zoom;
         $this->course = $course;
@@ -149,7 +149,7 @@ final class mod_zoom_yt_provider_test extends provider_testcase {
      * @covers ::get_metadata
      */
     public function test_get_metadata(): void {
-        $collection = new collection('mod_zoom_yt');
+        $collection = new collection('mod_zoomyt');
         $newcollection = provider::get_metadata($collection);
         $itemcollection = $newcollection->get_collection();
 
@@ -158,10 +158,10 @@ final class mod_zoom_yt_provider_test extends provider_testcase {
         $table2 = $itemcollection[1];
         $table3 = $itemcollection[2];
         $table4 = $itemcollection[3];
-        $this->assertEquals('zoom_yt_meeting_participants', $table->get_name());
-        $this->assertEquals('zoom_yt_meeting_details', $table2->get_name());
-        $this->assertEquals('zoom_yt_meeting_recordings_view', $table3->get_name());
-        $this->assertEquals('zoom_yt_breakout_participants', $table4->get_name());
+        $this->assertEquals('zoomyt_meeting_participants', $table->get_name());
+        $this->assertEquals('zoomyt_meeting_details', $table2->get_name());
+        $this->assertEquals('zoomyt_meeting_recordings_view', $table3->get_name());
+        $this->assertEquals('zoomyt_breakout_participants', $table4->get_name());
 
         $privacyfields1 = $table->get_privacy_fields();
         $this->assertArrayHasKey('name', $privacyfields1);
@@ -213,7 +213,7 @@ final class mod_zoom_yt_provider_test extends provider_testcase {
     public function test_get_users_in_context(): void {
         $cmcontext = context_module::instance($this->cm->id);
 
-        $userlist = new userlist($cmcontext, 'mod_zoom_yt');
+        $userlist = new userlist($cmcontext, 'mod_zoomyt');
         provider::get_users_in_context($userlist);
 
         $this->assertEquals([$this->student->id, $this->student2->id], $userlist->get_userids());
@@ -227,7 +227,7 @@ final class mod_zoom_yt_provider_test extends provider_testcase {
         $cmcontext = context_module::instance($this->cm->id);
 
         // Export all of the data for the context.
-        $this->export_context_data_for_user($this->student->id, $cmcontext, 'mod_zoom_yt');
+        $this->export_context_data_for_user($this->student->id, $cmcontext, 'mod_zoomyt');
         $writer = writer::with_context($cmcontext);
         $this->assertTrue($writer->has_any_data());
     }
@@ -239,32 +239,32 @@ final class mod_zoom_yt_provider_test extends provider_testcase {
     public function test_delete_data_for_all_users_in_context(): void {
         global $DB;
 
-        $zoommeetingcount = $DB->count_records('zoom_yt_meeting_details');
+        $zoommeetingcount = $DB->count_records('zoomyt_meeting_details');
         $this->assertEquals(1, $zoommeetingcount);
 
-        $zmparticipants = $DB->count_records('zoom_yt_meeting_participants');
+        $zmparticipants = $DB->count_records('zoomyt_meeting_participants');
         $this->assertEquals(2, $zmparticipants);
 
-        $zmrecordingcount = $DB->count_records('zoom_yt_meeting_recordings');
+        $zmrecordingcount = $DB->count_records('zoomyt_meeting_recordings');
         $this->assertEquals(1, $zmrecordingcount);
 
-        $zmrecordingviewcount = $DB->count_records('zoom_yt_meeting_recordings_view');
+        $zmrecordingviewcount = $DB->count_records('zoomyt_meeting_recordings_view');
         $this->assertEquals(2, $zmrecordingviewcount);
 
         // Delete data based on context.
         $cmcontext = context_module::instance($this->cm->id);
         provider::delete_data_for_all_users_in_context($cmcontext);
 
-        $newzoommeetingcount = $DB->count_records('zoom_yt_meeting_details');
+        $newzoommeetingcount = $DB->count_records('zoomyt_meeting_details');
         $this->assertEquals(0, $newzoommeetingcount);
 
-        $newzmparticipants = $DB->count_records('zoom_yt_meeting_participants');
+        $newzmparticipants = $DB->count_records('zoomyt_meeting_participants');
         $this->assertEquals(0, $newzmparticipants);
 
-        $newzmrecordingcount = $DB->count_records('zoom_yt_meeting_recordings');
+        $newzmrecordingcount = $DB->count_records('zoomyt_meeting_recordings');
         $this->assertEquals(0, $newzmrecordingcount);
 
-        $newzmrecordingviewcount = $DB->count_records('zoom_yt_meeting_recordings_view');
+        $newzmrecordingviewcount = $DB->count_records('zoomyt_meeting_recordings_view');
         $this->assertEquals(0, $newzmrecordingviewcount);
     }
 
@@ -275,21 +275,21 @@ final class mod_zoom_yt_provider_test extends provider_testcase {
     public function test_delete_data_for_user(): void {
         global $DB;
 
-        $zmparticipants = $DB->count_records('zoom_yt_meeting_participants');
+        $zmparticipants = $DB->count_records('zoomyt_meeting_participants');
         $this->assertEquals(2, $zmparticipants);
 
-        $zmrecordingviewcount = $DB->count_records('zoom_yt_meeting_recordings_view');
+        $zmrecordingviewcount = $DB->count_records('zoomyt_meeting_recordings_view');
         $this->assertEquals(2, $zmrecordingviewcount);
         // Delete data based on specific context.
         $context = context_module::instance($this->cm->id);
-        $contextlist = new approved_contextlist($this->student, 'mod_zoom_yt', [$context->id]);
+        $contextlist = new approved_contextlist($this->student, 'mod_zoomyt', [$context->id]);
 
         provider::delete_data_for_user($contextlist);
 
-        $newzmparticipants = $DB->count_records('zoom_yt_meeting_participants');
+        $newzmparticipants = $DB->count_records('zoomyt_meeting_participants');
         $this->assertEquals(1, $newzmparticipants);
 
-        $newzmrecordingviewcount = $DB->count_records('zoom_yt_meeting_recordings_view');
+        $newzmrecordingviewcount = $DB->count_records('zoomyt_meeting_recordings_view');
         $this->assertEquals(1, $newzmrecordingviewcount);
     }
 
@@ -300,24 +300,24 @@ final class mod_zoom_yt_provider_test extends provider_testcase {
     public function test_delete_data_for_users(): void {
         global $DB;
 
-        $zmparticipants = $DB->count_records('zoom_yt_meeting_participants');
+        $zmparticipants = $DB->count_records('zoomyt_meeting_participants');
         $this->assertEquals(2, $zmparticipants);
 
-        $zmrecordingviewcount = $DB->count_records('zoom_yt_meeting_recordings_view');
+        $zmrecordingviewcount = $DB->count_records('zoomyt_meeting_recordings_view');
         $this->assertEquals(2, $zmrecordingviewcount);
         // Delete data based on specific context.
         $context = context_module::instance($this->cm->id);
         $approveduserlist = new approved_userlist(
             $context,
-            'zoom_yt',
+            'zoomyt',
             [$this->student->id, $this->student2->id]
         );
         provider::delete_data_for_users($approveduserlist);
 
-        $newzmparticipants = $DB->count_records('zoom_yt_meeting_participants');
+        $newzmparticipants = $DB->count_records('zoomyt_meeting_participants');
         $this->assertEquals(0, $newzmparticipants);
 
-        $newzmrecordingviewcount = $DB->count_records('zoom_yt_meeting_recordings_view');
+        $newzmrecordingviewcount = $DB->count_records('zoomyt_meeting_recordings_view');
         $this->assertEquals(0, $newzmrecordingviewcount);
     }
 }
