@@ -33,13 +33,27 @@ This plugin is designed for Educational or Business Zoom accounts.
 
 To connect to the Zoom APIs, this plugin requires a Server-to-Server OAuth app.
 
+#### How Many OAuth Apps Do I Need?
+
+**One OAuth app per Zoom account (subscription).** The OAuth app is created *within* a Zoom account and authenticates API calls for that account.
+
+| Scenario | OAuth Apps Needed |
+|----------|------------------|
+| One Zoom account for entire Moodle site | 1 app (configure in global settings) |
+| 3 departments, each with their own Zoom subscription | 3 apps (one per Zoom account, each configured at category level) |
+| 3 departments sharing one Zoom account | 1 app (credentials can be reused across categories) |
+
+**Example:** If your university has separate Zoom subscriptions for the Business School and Engineering School, each school's Zoom admin would create an OAuth app in their respective Zoom accounts. The credentials would then be entered in the Moodle category settings for each school's course category.
+
 #### Creating the OAuth App
-[Create an account-level Server-to-Server OAuth app](https://developers.zoom.us/docs/internal-apps/create/) with the required permissions. Create a separate app for each Moodle install.
+[Create an account-level Server-to-Server OAuth app](https://developers.zoom.us/docs/internal-apps/create/) with the required permissions. 
+
+> **Note:** You only need to create the app once per Zoom account, regardless of how many Moodle sites or categories use that account.
 
 The Server-to-Server OAuth app will generate:
-- Client ID
-- Client secret
-- Account ID
+- **Account ID** - Identifies the Zoom account
+- **Client ID** - Used for OAuth authentication
+- **Client Secret** - Keep this secure!
 
 #### Required Scopes (Granular)
 
@@ -63,7 +77,24 @@ See the full list of optional scopes for additional features like webinars, repo
 
 ### YouTube API Setup
 
-To enable YouTube integration:
+To enable YouTube integration, you need Google Cloud credentials and a YouTube channel.
+
+#### How Many YouTube OAuth Setups Do I Need?
+
+**One Google Cloud project can serve all YouTube channels.** Unlike Zoom, YouTube OAuth works differently:
+
+- Create **one Google Cloud project** for your Moodle installation
+- The OAuth credentials from that project can be used for **any YouTube channel**
+- Each department connects their own YouTube channel using those same credentials
+- The channel-specific authorization is handled when the admin clicks "Connect to YouTube"
+
+| Component | How Many? |
+|-----------|-----------|
+| Google Cloud Project | 1 per Moodle installation |
+| OAuth Client ID/Secret | 1 pair (reused across all categories) |
+| YouTube Channel connections | 1 per category that wants YouTube uploads |
+
+#### Creating Google Cloud Credentials
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select an existing one
@@ -72,6 +103,16 @@ To enable YouTube integration:
 5. Select **Web application**
 6. Add your Moodle's OAuth redirect URL: `https://your-moodle-site/mod/zoom_yt/youtube_oauth.php`
 7. Save the **Client ID** and **Client Secret**
+
+#### Connecting YouTube Channels
+
+Each department/category that wants YouTube uploads will:
+1. Enter the same Google Cloud Client ID and Secret in their category settings
+2. Click "Connect to YouTube"
+3. Sign in with the Google account that owns their department's YouTube channel
+4. Authorize the connection
+
+This creates a unique refresh token for each channel, stored securely in Moodle.
 
 ## Installation
 
@@ -194,4 +235,4 @@ This plugin is licensed under the [GNU GPL v3 or later](http://www.gnu.org/copyl
 ## Credits
 
 Based on the original mod_zoom plugin by UC Regents.
-YouTube integration and category-level settings by the Zoom YT team.
+YouTube integration and category-level settings by the Innovative Minitry Centre of Toronto United Church Council.
