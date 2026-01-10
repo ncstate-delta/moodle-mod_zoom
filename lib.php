@@ -1372,6 +1372,55 @@ function zoomyt_cm_info_dynamic(cm_info $cm) {
 }
 
 /**
+ * Sets view information about a course module.
+ *
+ * This function is called from cm_info when displaying the module on the course page.
+ * It adds the Join Now button if the setting is enabled.
+ *
+ * @param cm_info $cm
+ */
+function zoomyt_cm_info_view(cm_info $cm) {
+    global $CFG, $DB;
+
+    require_once($CFG->dirroot . '/mod/zoomyt/locallib.php');
+
+    $moduleinstance = $DB->get_record('zoomyt', ['id' => $cm->instance]);
+    if (!$moduleinstance) {
+        return;
+    }
+
+    // Check if show_join_button is enabled.
+    if (empty($moduleinstance->show_join_button)) {
+        return;
+    }
+
+    // Get meeting state from Zoom.
+    [$inprogress, $available, $finished] = zoomyt_get_state($moduleinstance);
+
+    // Build the button HTML.
+    $viewurl = new moodle_url('/mod/zoomyt/view.php', ['id' => $cm->id]);
+
+    if ($available && !$finished) {
+        // Meeting is available to join.
+        $buttonhtml = html_writer::link(
+            $viewurl,
+            get_string('joinnow', 'zoomyt'),
+            ['class' => 'btn btn-primary mt-2']
+        );
+    } else {
+        // Meeting not yet available or already finished.
+        $buttonhtml = html_writer::link(
+            $viewurl,
+            get_string('meetingnotyetavailable', 'zoomyt'),
+            ['class' => 'btn btn-outline-secondary mt-2']
+        );
+    }
+
+    // Append the button after the content.
+    $cm->set_after_link($buttonhtml);
+}
+
+/**
  * Apply filter(s) on Zoom activity name if applicable.
  *
  * @param string $name Original name to be processed

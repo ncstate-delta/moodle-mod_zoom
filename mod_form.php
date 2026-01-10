@@ -400,6 +400,16 @@ class mod_zoomyt_mod_form extends moodleform_mod {
         $mform->setDefault('show_schedule', $config->defaultshowschedule);
         $mform->addHelpButton('show_schedule', 'showschedule', 'zoomyt');
 
+        // Add show join button on course page.
+        $mform->addElement(
+            'advcheckbox',
+            'show_join_button',
+            get_string('showjoinbutton', 'zoomyt'),
+            get_string('showjoinbuttondesc', 'zoomyt')
+        );
+        $mform->setDefault('show_join_button', 0);
+        $mform->addHelpButton('show_join_button', 'showjoinbutton', 'zoomyt');
+
         // Add registration widget.
         $registrationoptions = [
             ZOOM_REGISTRATION_OFF => get_string('no'),
