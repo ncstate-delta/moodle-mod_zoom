@@ -202,8 +202,9 @@ if (!$showrecreate && $config->showcapacitywarning == true) {
     }
 }
 
-// Get meeting state from Zoom.
-[$inprogress, $available, $finished] = zoomyt_get_state($zoom);
+// Get meeting state from Zoom - pass user role for different early access times.
+$isteacher = has_capability('mod/zoomyt:addinstance', $context);
+[$inprogress, $available, $finished] = zoomyt_get_state($zoom, $userishost, $isteacher);
 
 // Show join meeting button or unavailability note.
 if (!$showrecreate) {
@@ -235,8 +236,8 @@ if (!$showrecreate) {
         $buttonhtml .= html_writer::input_hidden_params($aurl);
         $link = html_writer::tag('form', $buttonhtml, ['action' => $aurl->out_omit_querystring(), 'target' => '_blank']);
     } else {
-        // Get unavailability note.
-        $unavailabilitynote = zoomyt_get_unavailability_note($zoom, $finished);
+        // Get unavailability note with user role context.
+        $unavailabilitynote = zoomyt_get_unavailability_note($zoom, $finished, $userishost, $isteacher);
 
         // Show unavailability note.
         // Ideally, this would use $OUTPUT->notification(), but this renderer adds a close icon to the notification which does not

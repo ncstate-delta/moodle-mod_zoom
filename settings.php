@@ -222,6 +222,16 @@ if ($ADMIN->fulltree) {
     );
     $settings->add($firstabletojoin);
 
+    // Host/teacher early access time (fixed at 15 minutes before meeting start).
+    $hostearlymins = new admin_setting_configselect(
+        'zoomyt/hostearlyaccess',
+        get_string('hostearlyaccess', 'mod_zoomyt'),
+        get_string('hostearlyaccess_desc', 'mod_zoomyt'),
+        15,
+        $jointimeselect
+    );
+    $settings->add($hostearlymins);
+
     if ($moodlehashideif) {
         $displayleadtime = new admin_setting_configcheckbox(
             'zoomyt/displayleadtime',
@@ -596,6 +606,16 @@ if ($ADMIN->fulltree) {
     );
     $settings->add($defaultshowmedia);
 
+    $defaultshowjoinbutton = new admin_setting_configcheckbox(
+        'zoomyt/defaultshowjoinbutton',
+        get_string('showjoinbutton', 'zoomyt'),
+        get_string('showjoinbutton_help', 'zoomyt'),
+        1,
+        1,
+        0
+    );
+    $settings->add($defaultshowjoinbutton);
+
     $defaulttrackingfields = new admin_setting_configtextarea(
         'zoomyt/defaulttrackingfields',
         get_string('trackingfields', 'mod_zoomyt'),
@@ -717,6 +737,36 @@ if ($ADMIN->fulltree) {
         get_string('youtube_client_secret', 'zoomyt'),
         get_string('youtube_client_secret_desc', 'zoomyt'),
         ''
+    ));
+
+    // Site-wide default YouTube channel connection.
+    $currentchannelname = get_config('zoomyt', 'youtube_default_channel_name');
+    $manageurl = new moodle_url('/mod/zoomyt/youtube_oauth_site.php');
+    if (!empty($currentchannelname)) {
+        $channelhtml = html_writer::tag('span',
+            get_string('youtube_site_channel_connected', 'zoomyt', $currentchannelname),
+            ['class' => 'text-success mr-2']
+        );
+        $channelhtml .= html_writer::link($manageurl, get_string('youtube_manage_connection', 'zoomyt'),
+            ['class' => 'btn btn-sm btn-outline-secondary']);
+    } else {
+        $channelhtml = html_writer::tag('span',
+            get_string('youtube_site_channel_not_connected', 'zoomyt'),
+            ['class' => 'text-muted mr-2']
+        );
+        if (!empty($config->youtube_client_id) && !empty($config->youtube_client_secret)) {
+            $channelhtml .= html_writer::link($manageurl, get_string('youtube_connect', 'zoomyt'),
+                ['class' => 'btn btn-sm btn-primary']);
+        } else {
+            $channelhtml .= html_writer::tag('span',
+                get_string('youtube_credentials_required', 'zoomyt'),
+                ['class' => 'text-warning']);
+        }
+    }
+    $settings->add(new admin_setting_heading(
+        'zoomyt/youtube_default_channel_status',
+        get_string('youtube_site_default_channel', 'zoomyt'),
+        $channelhtml
     ));
 
     // Default YouTube visibility.

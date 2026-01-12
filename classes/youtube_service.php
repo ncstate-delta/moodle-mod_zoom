@@ -82,7 +82,8 @@ class youtube_service {
         global $CFG;
         require_once($CFG->dirroot . '/mod/zoomyt/classes/category_settings.php');
 
-        $catsettings = new category_settings($courseid);
+        // Use get_for_course to properly convert course ID to category settings.
+        $catsettings = category_settings::get_for_course($courseid);
         $settings = $catsettings->get_effective_settings();
 
         if (empty($settings->yt_client_id) || empty($settings->yt_client_secret) || empty($settings->yt_refresh_token)) {
@@ -90,6 +91,88 @@ class youtube_service {
         }
 
         return new self($settings, $catsettings->get_settings_source_category());
+    }
+
+    /**
+     * Get a YouTube service instance for a specific activity.
+     * Checks activity -> category -> site settings in that order.
+     *
+     * @param int $zoomid The zoom activity instance ID.
+     * @return self|null The YouTube service or null if not configured.
+     */
+    public static function get_instance_for_activity(int $zoomid): ?self {
+        global $CFG, $DB;
+
+        // Get the zoom activity record.
+        $zoom = $DB->get_record('zoomyt', ['id' => $zoomid]);
+        if (!$zoom) {
+            return null;
+        }
+
+        // Site-wide client credentials (always used).
+        $clientid = get_config('zoomyt', 'youtube_client_id');
+        $clientsecret = get_config('zoomyt', 'youtube_client_secret');
+
+        // If no site-wide credentials, YouTube is not configured at all.
+        if (empty($clientid) || empty($clientsecret)) {
+            return null;
+        }
+
+        $refreshtoken = null;
+        $categoryid = null;
+
+        // 1. Check activity-level settings first.
+        if (empty($zoom->yt_use_category) && !empty($zoom->yt_refresh_token)) {
+            // Activity has its own YouTube channel configured.
+            $refreshtoken = $zoom->yt_refresh_token;
+        }
+
+        // 2. If not, check category-level settings (walk up the category tree).
+        if (empty($refreshtoken)) {
+            $course = $DB->get_record('course', ['id' => $zoom->course], 'category', MUST_EXIST);
+
+            // Get category path and walk up looking for YouTube settings.
+            $category = $DB->get_record('course_categories', ['id' => $course->category], 'id, path');
+            if ($category) {
+                $pathparts = array_filter(explode('/', $category->path));
+                $categoryids = array_reverse($pathparts); // Most specific first.
+
+                foreach ($categoryids as $catid) {
+                    $catsettings = $DB->get_record('zoomyt_category_settings', ['categoryid' => $catid]);
+
+                    if ($catsettings && !empty($catsettings->yt_refresh_token)) {
+                        // Check if this category inherits YouTube settings.
+                        if (!empty($catsettings->inherit_youtube) && $catid != end($categoryids)) {
+                            // This category inherits YouTube, continue looking up.
+                            continue;
+                        }
+
+                        // Found YouTube settings at this category level.
+                        $refreshtoken = $catsettings->yt_refresh_token;
+                        $categoryid = (int)$catid;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 3. If still not found, check site-wide settings.
+        if (empty($refreshtoken)) {
+            $refreshtoken = get_config('zoomyt', 'youtube_default_refresh_token');
+        }
+
+        // If no refresh token at any level, YouTube is not configured.
+        if (empty($refreshtoken)) {
+            return null;
+        }
+
+        // Create credentials object.
+        $credentials = new \stdClass();
+        $credentials->yt_client_id = $clientid;
+        $credentials->yt_client_secret = $clientsecret;
+        $credentials->yt_refresh_token = $refreshtoken;
+
+        return new self($credentials, $categoryid);
     }
 
     /**

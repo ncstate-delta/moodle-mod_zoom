@@ -340,7 +340,39 @@ function zoomyt_get_next_occurrence($zoom) {
  * @param stdClass $zoom
  * @return array Array of booleans: [in progress, available, finished].
  */
-function zoomyt_get_state($zoom) {
+/**
+ * Get the effective join before start time for a zoom activity.
+ *
+ * Checks instance setting first, then category setting, then global setting.
+ *
+ * @param object $zoom The zoom activity record.
+ * @return int Minutes before start that participants can join.
+ */
+function zoomyt_get_effective_joinbeforestart($zoom) {
+    global $CFG, $DB;
+
+    // Check instance-level setting first.
+    if (isset($zoom->joinbeforestart) && $zoom->joinbeforestart !== null && $zoom->joinbeforestart !== '') {
+        return (int)$zoom->joinbeforestart;
+    }
+
+    // Check category-level setting.
+    require_once($CFG->dirroot . '/mod/zoomyt/classes/category_settings.php');
+    $course = $DB->get_record('course', ['id' => $zoom->course], 'category');
+    if ($course) {
+        $catsettings = \mod_zoomyt\category_settings::get_for_course($zoom->course);
+        $rawsettings = $catsettings->get_raw_settings();
+        if ($rawsettings && isset($rawsettings->joinbeforestart) && $rawsettings->joinbeforestart !== null) {
+            return (int)$rawsettings->joinbeforestart;
+        }
+    }
+
+    // Fall back to global setting.
+    $config = get_config('zoomyt');
+    return (int)($config->firstabletojoin ?? 15);
+}
+
+function zoomyt_get_state($zoom, $ishost = false, $isteacher = false) {
     // Get plugin config.
     $config = get_config('zoomyt');
 
@@ -356,26 +388,45 @@ function zoomyt_get_state($zoom) {
         $starttime = $zoom->start_time;
     }
 
-    // Calculate the time when the recurring meeting becomes available next,
-    // based on the next occurrence start time and the general meeting lead time.
-    $firstavailable = $starttime - ($config->firstabletojoin * 60);
+    // Check if "join before host" / "join anytime" is enabled.
+    $joinbeforehost = !empty($zoom->option_jbh);
+
+    // Determine early access time based on user role.
+    if ($ishost || $isteacher) {
+        // Hosts and teachers get early access (configurable, default 15 minutes).
+        $earlyaccessmins = (int)($config->hostearlyaccess ?? 15);
+    } else {
+        // Participants use the effective join before start setting.
+        $participantaccess = zoomyt_get_effective_joinbeforestart($zoom);
+
+        // If "join before host" is enabled OR early access is set to "anytime" (-1),
+        // students get the same early access as teachers.
+        if ($joinbeforehost || $participantaccess == -1) {
+            $earlyaccessmins = (int)($config->hostearlyaccess ?? 15);
+        } else {
+            $earlyaccessmins = $participantaccess;
+        }
+    }
+
+    // Calculate the time when the meeting becomes available.
+    $firstavailable = $starttime - ($earlyaccessmins * 60);
 
     // Calculate the time when the meeting ends to be available,
-    // based on the next occurrence start time and the meeting duration.
+    // based on the start time and the meeting duration.
     $lastavailable = $starttime + $zoom->duration;
 
-    // Determine if the meeting is in progress.
+    // Determine if the meeting is in progress (within the availability window).
     $inprogress = ($firstavailable <= $now && $now <= $lastavailable);
 
     // Determine if its a recurring meeting with no fixed time.
     $isrecurringnotime = $zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME;
 
-    // Determine if the meeting is available,
-    // based on the fact if it is recurring or in progress.
+    // Determine if the meeting is available.
+    // - Recurring meetings with no fixed time are always available.
+    // - Otherwise, the meeting must be in progress.
     $available = $isrecurringnotime || $inprogress;
 
-    // Determine if the meeting is finished,
-    // based on the fact if it is recurring or the meeting end time is still in the future.
+    // Determine if the meeting is finished.
     $finished = !$isrecurringnotime && $now > $lastavailable;
 
     // Return the requested information.
@@ -681,7 +732,7 @@ function zoomyt_get_nonusers_from_alternativehosts(array $alternativehosts) {
  *
  * @return string The unavailability note.
  */
-function zoomyt_get_unavailability_note($zoom, $finished = null) {
+function zoomyt_get_unavailability_note($zoom, $finished = null, $ishost = false, $isteacher = false) {
     // Get config.
     $config = get_config('zoomyt');
 
@@ -696,19 +747,25 @@ function zoomyt_get_unavailability_note($zoom, $finished = null) {
     } else {
         // If we don't have the finished information yet, get it with a small overhead.
         if ($finished === null) {
-            [$inprogress, $available, $finished] = zoomyt_get_state($zoom);
+            [$inprogress, $available, $finished] = zoomyt_get_state($zoom, $ishost, $isteacher);
         }
 
         // If this meeting is still pending.
         if ($finished !== true) {
-            // If the admin wants to show the leadtime.
-            if (!empty($config->displayleadtime) && $config->firstabletojoin > 0) {
+            // For hosts/teachers, show when they can start.
+            if ($ishost || $isteacher) {
+                $earlyaccessmins = (int)($config->hostearlyaccess ?? 15);
                 $unavailabilitynote = $strunavailable . '<br />' .
-                        get_string('unavailablefirstjoin', 'mod_zoomyt', ['mins' => ($config->firstabletojoin)]);
-
-                // Otherwise.
+                    get_string('unavailableteacherearly', 'mod_zoomyt', ['mins' => $earlyaccessmins]);
             } else {
-                $unavailabilitynote = $strunavailable . '<br />' . get_string('unavailablenotstartedyet', 'mod_zoomyt');
+                // For participants, show when they can join.
+                $joinbeforemins = zoomyt_get_effective_joinbeforestart($zoom);
+                if (!empty($config->displayleadtime) && $joinbeforemins > 0) {
+                    $unavailabilitynote = $strunavailable . '<br />' .
+                        get_string('unavailablefirstjoin', 'mod_zoomyt', ['mins' => $joinbeforemins]);
+                } else {
+                    $unavailabilitynote = $strunavailable . '<br />' . get_string('unavailablenotstartedyet', 'mod_zoomyt');
+                }
             }
 
             // Otherwise, the meeting has finished.
@@ -945,7 +1002,18 @@ function zoomyt_load_meeting($id, $context, $usestarturl = true) {
 
     $returns = ['nexturl' => null, 'error' => null];
 
-    [$inprogress, $available, $finished] = zoomyt_get_state($zoom);
+    // Determine user role for early access.
+    $userisrealhost = (zoomyt_get_user_id(false) === $zoom->host_id);
+    $alternativehosts = zoomyt_get_alternative_host_array_from_string($zoom->alternative_hosts);
+    $userapiidentifier = zoomyt_get_api_identifier($USER);
+    if (filter_var($userapiidentifier, FILTER_VALIDATE_EMAIL) !== false) {
+        $userapiidentifier = strtolower($userapiidentifier);
+    }
+    $userishost = ($userisrealhost || in_array($userapiidentifier, $alternativehosts, true));
+    $isteacher = has_capability('mod/zoomyt:addinstance', $context);
+
+    // Get meeting state with user role context.
+    [$inprogress, $available, $finished] = zoomyt_get_state($zoom, $userishost, $isteacher);
 
     $userisregistered = false;
     $userisregistering = false;
@@ -962,19 +1030,10 @@ function zoomyt_load_meeting($id, $context, $usestarturl = true) {
 
     // If the meeting is not yet available, deny access.
     if (!$available && !$userisregistering) {
-        // Get unavailability note.
-        $returns['error'] = zoomyt_get_unavailability_note($zoom, $finished);
+        // Get unavailability note with user role context.
+        $returns['error'] = zoomyt_get_unavailability_note($zoom, $finished, $userishost, $isteacher);
         return $returns;
     }
-
-    $userisrealhost = (zoomyt_get_user_id(false) === $zoom->host_id);
-    $alternativehosts = zoomyt_get_alternative_host_array_from_string($zoom->alternative_hosts);
-    // Lowercase email addresses so that we can do case-insensitive comparisons.
-    $userapiidentifier = zoomyt_get_api_identifier($USER);
-    if (filter_var($userapiidentifier, FILTER_VALIDATE_EMAIL) !== false) {
-        $userapiidentifier = strtolower($userapiidentifier);
-    }
-    $userishost = ($userisrealhost || in_array($userapiidentifier, $alternativehosts, true));
 
     // Check if we should use the start meeting url.
     if ($userisrealhost && $usestarturl) {

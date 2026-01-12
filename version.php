@@ -18,15 +18,15 @@
  * Defines the version and other meta-info about the plugin.
  *
  * @package    mod_zoomyt
- * @copyright  2015 UC Regents
+ * @copyright  2026 TUCC
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_zoomyt';
-$plugin->version = 2025050905;
-$plugin->release = 'v1.1.4';
+$plugin->version = 2026011141;
+$plugin->release = 'v1.6.23';
 $plugin->requires = 2019052000;
 $plugin->maturity = MATURITY_ALPHA;
 $plugin->cron = 0;

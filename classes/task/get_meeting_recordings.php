@@ -52,18 +52,28 @@ class get_meeting_recordings extends scheduled_task {
      * @return void
      */
     public function execute() {
+        $this->execute_for_instance(null);
+    }
+
+    /**
+     * Execute recordings sync for a specific instance or all instances.
+     *
+     * @param int|null $instanceid Specific zoom instance ID, or null for all.
+     * @return void
+     */
+    public function execute_for_instance(?int $instanceid = null) {
         global $DB;
 
         try {
             $service = zoomyt_webservice();
         } catch (moodle_exception $exception) {
-            mtrace('Skipping task - ', $exception->getMessage());
+            mtrace('Skipping task - ' . $exception->getMessage());
             return;
         }
 
         $config = get_config('zoomyt');
         if (empty($config->viewrecordings)) {
-            mtrace('Skipping task - ', get_string('zoomerr_viewrecordings_off', 'zoomyt'));
+            mtrace('Skipping task - ' . get_string('zoomerr_viewrecordings_off', 'zoomyt'));
             return;
         }
 
@@ -94,25 +104,43 @@ class get_meeting_recordings extends scheduled_task {
             return;
         }
 
-        mtrace('Finding meeting recordings for this account...');
+        mtrace('Finding meeting recordings...');
 
-        $localmeetings = zoomyt_get_all_meeting_records();
-
-        $now = time();
-        $from = gmdate('Y-m-d', strtotime('-1 day', $now));
-        $to = gmdate('Y-m-d', strtotime('+1 day', $now));
+        // Get meetings - either specific instance or all.
+        if ($instanceid !== null) {
+            $localmeetings = $DB->get_records('zoomyt', ['id' => $instanceid]);
+            // For manual sync, use a wider date range (last 30 days).
+            $now = time();
+            $from = gmdate('Y-m-d', strtotime('-30 days', $now));
+            $to = gmdate('Y-m-d', strtotime('+1 day', $now));
+        } else {
+            $localmeetings = zoomyt_get_all_meeting_records();
+            $now = time();
+            $from = gmdate('Y-m-d', strtotime('-1 day', $now));
+            $to = gmdate('Y-m-d', strtotime('+1 day', $now));
+        }
 
         $hostmeetings = [];
 
         foreach ($localmeetings as $zoom) {
-            // Only get recordings for this meeting if its recurring or already finished.
-            if ($zoom->recurring || $now > (intval($zoom->start_time) + intval($zoom->duration))) {
+            // For manual sync (specific instance), always include the meeting.
+            // For scheduled task, only include if recurring or if the meeting start time has passed.
+            if ($instanceid !== null) {
+                // Manual sync - always include.
+                $hostmeetings[$zoom->host_id][$zoom->meeting_id] = $zoom;
+                mtrace('Processing meeting: ' . $zoom->name . ' (ID: ' . $zoom->meeting_id . ')');
+            } else if ($zoom->recurring || $now > intval($zoom->start_time)) {
+                // Scheduled task - include if recurring or if the meeting has started.
+                // Note: We check start_time, not start_time + duration, because meetings can end early.
                 $hostmeetings[$zoom->host_id][$zoom->meeting_id] = $zoom;
             }
         }
 
         if (empty($hostmeetings)) {
             mtrace('No meetings need to be processed.');
+            if ($instanceid !== null) {
+                mtrace('Check that the activity exists and has a valid Zoom meeting ID.');
+            }
             return;
         }
 

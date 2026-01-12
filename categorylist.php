@@ -97,7 +97,7 @@ foreach ($categories as $category) {
 
     // Configure link.
     $configureurl = new moodle_url('/mod/zoomyt/categorysettings.php', ['categoryid' => $category->id]);
-    $configurelink = html_writer::link($configureurl, get_string('configure'), ['class' => 'btn btn-sm btn-primary']);
+    $configurelink = html_writer::link($configureurl, get_string('configure', 'zoomyt'), ['class' => 'btn btn-sm btn-primary']);
 
     $table->data[] = [
         $categoryname,

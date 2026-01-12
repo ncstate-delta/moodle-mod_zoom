@@ -49,6 +49,15 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
      * Execute the task.
      */
     public function execute() {
+        $this->execute_for_instance(null);
+    }
+
+    /**
+     * Execute YouTube sync for a specific instance or all instances.
+     *
+     * @param int|null $instanceid Specific zoom instance ID, or null for all.
+     */
+    public function execute_for_instance(?int $instanceid = null) {
         global $CFG, $DB;
 
         require_once($CFG->dirroot . '/mod/zoomyt/classes/youtube_service.php');
@@ -72,7 +81,7 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
         }
 
         // Find recordings that need to be synced.
-        $recordings = $this->get_pending_recordings();
+        $recordings = $this->get_pending_recordings($instanceid);
         mtrace('Found ' . count($recordings) . ' recordings to process.');
 
         $processed = 0;
@@ -128,25 +137,34 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
     /**
      * Get recordings that need to be synced to YouTube.
      *
+     * @param int|null $instanceid Optional specific zoom instance ID.
      * @return array Array of recording objects.
      */
-    protected function get_pending_recordings(): array {
+    protected function get_pending_recordings(?int $instanceid = null): array {
         global $DB;
 
         // Find Zoom recordings that haven't been uploaded to YouTube yet.
+        $params = [];
+        $instancefilter = '';
+        if ($instanceid !== null) {
+            $instancefilter = 'AND z.id = :instanceid';
+            $params['instanceid'] = $instanceid;
+        }
+
         $sql = "SELECT zmr.*, z.id as zoomid, z.course, z.name as session_name,
                        zmd.start_time as session_time
                 FROM {zoomyt_meeting_recordings} zmr
                 JOIN {zoomyt} z ON z.id = zmr.zoomid
-                JOIN {zoomyt_meeting_details} zmd ON zmd.meetinguuid = zmr.meetinguuid
+                JOIN {zoomyt_meeting_details} zmd ON zmd.uuid = zmr.meetinguuid
                 LEFT JOIN {zoomyt_videos} zyv ON zyv.recordingid = zmr.id
                 WHERE zyv.id IS NULL
                   AND zmr.recordingtype IN ('active_speaker', 'shared_screen_with_speaker_view', 
                                              'shared_screen_with_gallery_view', 'gallery_view')
                   AND zmr.showrecording = 1
+                  $instancefilter
                 ORDER BY zmr.recordingstart ASC";
 
-        $allrecordings = $DB->get_records_sql($sql, [], 0, 50);
+        $allrecordings = $DB->get_records_sql($sql, $params, 0, 50);
 
         // Group by meeting UUID and prioritize recording types.
         $bymeeting = [];
@@ -196,15 +214,15 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
 
         mtrace('Processing recording: ' . $recording->name . ' (ID: ' . $recording->id . ')');
 
-        // Get course category.
-        $course = $DB->get_record('course', ['id' => $recording->course], 'id, category', MUST_EXIST);
-
-        // Get YouTube service for this course.
-        $ytservice = \mod_zoomyt\youtube_service::get_instance_for_course($recording->course);
+        // Get YouTube service for this activity (checks activity -> category -> site).
+        $ytservice = \mod_zoomyt\youtube_service::get_instance_for_activity($recording->zoomid);
         if (!$ytservice || !$ytservice->is_configured()) {
-            mtrace('  YouTube not configured for course ' . $recording->course . ', skipping.');
+            mtrace('  YouTube not configured for activity ' . $recording->zoomid . ', skipping.');
             return;
         }
+
+        // Get course for visibility settings.
+        $course = $DB->get_record('course', ['id' => $recording->course], 'id, category', MUST_EXIST);
 
         // Create pending video record.
         $video = new \stdClass();
@@ -315,39 +333,72 @@ class sync_recordings_to_youtube extends \core\task\scheduled_task {
         // Get download URL from Zoom.
         $downloadurl = $recording->externalurl;
 
-        // Add access token if needed.
-        if (strpos($downloadurl, 'access_token') === false) {
-            // TODO: May need to authenticate with Zoom to get download access.
+        // Get Zoom access token for authenticated download.
+        $service = \zoomyt_webservice();
+        $accesstoken = $service->get_download_access_token();
+
+        // Append access token to URL if not already present.
+        if (!empty($accesstoken) && strpos($downloadurl, 'access_token') === false) {
+            $separator = (strpos($downloadurl, '?') !== false) ? '&' : '?';
+            $downloadurl .= $separator . 'access_token=' . $accesstoken;
         }
 
-        // Download the file.
+        mtrace('  Download URL: ' . substr($downloadurl, 0, 100) . '...');
+        mtrace('  Access token present: ' . (!empty($accesstoken) ? 'yes (' . strlen($accesstoken) . ' chars)' : 'no'));
+
+        // Use Moodle's download_file_content which handles file downloads properly.
         $curl = new \curl();
         $curl->setopt([
             'CURLOPT_FOLLOWLOCATION' => true,
-            'CURLOPT_MAXREDIRS' => 5,
+            'CURLOPT_MAXREDIRS' => 10,
+            'CURLOPT_TIMEOUT' => 3600, // 1 hour timeout for large files.
         ]);
 
-        $fp = fopen($localpath, 'w');
-        if (!$fp) {
-            throw new \moodle_exception('cannot_create_file', 'zoomyt', '', $localpath);
-        }
-
-        $curl->setopt(['CURLOPT_FILE' => $fp]);
-        $curl->get($downloadurl);
-        fclose($fp);
+        // Download to file using Moodle's method.
+        $result = $curl->download_one($downloadurl, null, [
+            'filepath' => $localpath,
+            'timeout' => 3600,
+            'followlocation' => true,
+            'maxredirs' => 10,
+        ]);
 
         if ($curl->get_errno()) {
-            unlink($localpath);
-            throw new \moodle_exception('download_failed', 'zoomyt', '', $curl->error);
+            if (file_exists($localpath)) {
+                unlink($localpath);
+            }
+            throw new \moodle_exception('download_failed', 'zoomyt', '', 'CURL error: ' . $curl->error);
         }
 
         $info = $curl->get_info();
+        mtrace('  HTTP response: ' . $info['http_code']);
+
         if ($info['http_code'] !== 200) {
-            unlink($localpath);
+            // Read the error response if file exists and is small.
+            if (file_exists($localpath)) {
+                $filesize = filesize($localpath);
+                if ($filesize > 0 && $filesize < 10000) {
+                    $errorcontent = file_get_contents($localpath);
+                    mtrace('  Error response: ' . substr($errorcontent, 0, 500));
+                }
+                unlink($localpath);
+            }
             throw new \moodle_exception('download_failed', 'zoomyt', '', 'HTTP ' . $info['http_code']);
         }
 
-        mtrace('  Downloaded ' . round(filesize($localpath) / 1048576, 2) . ' MB');
+        if (!file_exists($localpath)) {
+            throw new \moodle_exception('download_failed', 'zoomyt', '', 'File was not created');
+        }
+
+        $filesize = filesize($localpath);
+        mtrace('  Downloaded ' . round($filesize / 1048576, 2) . ' MB (' . $filesize . ' bytes)');
+
+        if ($filesize < 1000) {
+            // File is suspiciously small, might be an error page.
+            $content = file_get_contents($localpath);
+            mtrace('  Warning: File is very small. Content: ' . substr($content, 0, 500));
+            unlink($localpath);
+            throw new \moodle_exception('download_failed', 'zoomyt', '', 'Downloaded file is too small (' . $filesize . ' bytes)');
+        }
     }
 
     /**

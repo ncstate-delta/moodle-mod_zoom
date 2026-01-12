@@ -57,15 +57,72 @@ if ($action === 'togglevisibility' && $videoid) {
     redirect(new moodle_url('/mod/zoomyt/manage_recordings.php', ['id' => $id]));
 }
 
+// Handle sync recordings action - run both get_meeting_reports and get_meeting_recordings tasks.
+if ($action === 'syncrecordings') {
+    require_sesskey();
+    require_once($CFG->dirroot . '/mod/zoomyt/classes/task/get_meeting_reports.php');
+    require_once($CFG->dirroot . '/mod/zoomyt/classes/task/get_meeting_recordings.php');
+
+    $messages = [];
+    $errors = [];
+
+    // First, sync meeting reports (session data).
+    try {
+        $task = new \mod_zoomyt\task\get_meeting_reports();
+        $task->execute_for_instance($zoom->id);
+        $messages[] = get_string('sync_reports_success', 'zoomyt');
+    } catch (Exception $e) {
+        $errors[] = get_string('sync_reports_error', 'zoomyt', $e->getMessage());
+    }
+
+    // Then, sync recordings.
+    try {
+        $task = new \mod_zoomyt\task\get_meeting_recordings();
+        $task->execute_for_instance($zoom->id);
+        $messages[] = get_string('sync_recordings_success', 'zoomyt');
+    } catch (Exception $e) {
+        $errors[] = get_string('sync_recordings_error', 'zoomyt', $e->getMessage());
+    }
+
+    foreach ($messages as $msg) {
+        \core\notification::success($msg);
+    }
+    foreach ($errors as $err) {
+        \core\notification::error($err);
+    }
+
+    redirect(new moodle_url('/mod/zoomyt/manage_recordings.php', ['id' => $id]));
+}
+
+// Handle sync to YouTube action.
+if ($action === 'syncyoutube') {
+    require_sesskey();
+    require_once($CFG->dirroot . '/mod/zoomyt/classes/task/sync_recordings_to_youtube.php');
+
+    try {
+        $task = new \mod_zoomyt\task\sync_recordings_to_youtube();
+        // Run just for this specific zoom instance.
+        $task->execute_for_instance($zoom->id);
+        \core\notification::success(get_string('sync_youtube_success', 'zoomyt'));
+    } catch (Exception $e) {
+        \core\notification::error(get_string('sync_youtube_error', 'zoomyt', $e->getMessage()));
+    }
+    redirect(new moodle_url('/mod/zoomyt/manage_recordings.php', ['id' => $id]));
+}
+
 // Get all videos for this activity.
 require_once($CFG->dirroot . '/mod/zoomyt/classes/output/video_gallery.php');
 $videos = \mod_zoomyt\output\video_gallery::get_all_videos_for_management($zoom->id);
 
 // Get Zoom meeting recordings that haven't been synced yet.
-$sql = "SELECT zmd.*, zmr.id as recordingid, zmr.recordingtype, zmr.recordingstart
+// Use CONCAT to create a unique key for each row (uuid + recordingid).
+$sql = "SELECT CONCAT(zmd.uuid, '-', COALESCE(zmr.id, 0)) as uniquekey,
+               zmd.uuid, zmd.meeting_id, zmd.start_time, zmd.end_time, 
+               zmd.duration, zmd.topic, zmd.total_minutes, zmd.participants_count, zmd.zoomid,
+               zmr.id as recordingid, zmr.recordingtype, zmr.recordingstart
         FROM {zoomyt_meeting_details} zmd
         JOIN {zoomyt} z ON z.id = zmd.zoomid
-        LEFT JOIN {zoomyt_meeting_recordings} zmr ON zmr.meetinguuid = zmd.meetinguuid
+        LEFT JOIN {zoomyt_meeting_recordings} zmr ON zmr.meetinguuid = zmd.uuid
         WHERE z.id = ?
         ORDER BY zmd.start_time DESC";
 $meetings = $DB->get_records_sql($sql, [$zoom->id]);
@@ -73,7 +130,7 @@ $meetings = $DB->get_records_sql($sql, [$zoom->id]);
 // Group meetings by UUID.
 $meetingdata = [];
 foreach ($meetings as $meeting) {
-    $uuid = $meeting->meetinguuid;
+    $uuid = $meeting->uuid;
     if (!isset($meetingdata[$uuid])) {
         $meetingdata[$uuid] = [
             'uuid' => $uuid,
@@ -97,6 +154,29 @@ echo $OUTPUT->heading(get_string('manage_recordings', 'zoomyt'));
 // Back link.
 $backurl = new moodle_url('/mod/zoomyt/view.php', ['id' => $cm->id]);
 echo html_writer::tag('p', html_writer::link($backurl, '&laquo; ' . get_string('back')));
+
+// Sync action buttons.
+$syncrecordingsurl = new moodle_url('/mod/zoomyt/manage_recordings.php', [
+    'id' => $id,
+    'action' => 'syncrecordings',
+    'sesskey' => sesskey(),
+]);
+$syncyoutubeurl = new moodle_url('/mod/zoomyt/manage_recordings.php', [
+    'id' => $id,
+    'action' => 'syncyoutube',
+    'sesskey' => sesskey(),
+]);
+
+echo html_writer::start_div('mb-3');
+echo html_writer::link($syncrecordingsurl,
+    '<i class="fa fa-refresh"></i> ' . get_string('sync_recordings_button', 'zoomyt'),
+    ['class' => 'btn btn-outline-primary mr-2']
+);
+echo html_writer::link($syncyoutubeurl,
+    '<i class="fa fa-youtube-play"></i> ' . get_string('sync_youtube_button', 'zoomyt'),
+    ['class' => 'btn btn-outline-danger']
+);
+echo html_writer::end_div();
 
 // YouTube Videos Section.
 echo $OUTPUT->heading(get_string('video_gallery', 'zoomyt'), 3);
@@ -190,7 +270,7 @@ if (empty($meetingdata)) {
     $table->head = [
         get_string('name'),
         get_string('date'),
-        get_string('duration'),
+        get_string('duration', 'zoomyt'),
         get_string('zoom_recording_status', 'zoomyt'),
     ];
     $table->attributes['class'] = 'table table-striped';

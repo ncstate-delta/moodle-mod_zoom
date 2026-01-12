@@ -15,12 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * YouTube OAuth callback handler for category-level channel connection.
+ * YouTube OAuth callback handler for activity-level channel connection.
  *
- * Handles the OAuth flow for connecting a YouTube channel to a category.
+ * Handles the OAuth flow for connecting a YouTube channel to an individual activity.
  * Uses site-wide YouTube API credentials.
  *
- * The category ID is passed via the OAuth state parameter to avoid issues
+ * The activity ID (cmid) is passed via the OAuth state parameter to avoid issues
  * with Google's redirect URI validation (which requires exact matches).
  *
  * @package    mod_zoomyt
@@ -30,53 +30,54 @@
 
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/mod/zoomyt/classes/youtube_service.php');
-require_once($CFG->dirroot . '/mod/zoomyt/classes/category_settings.php');
 
-// Get parameters - categoryid can come from URL or from state parameter.
-$categoryid = optional_param('categoryid', 0, PARAM_INT);
+// Get parameters - id (cmid) can come from URL or from state parameter.
+$cmid = optional_param('id', 0, PARAM_INT);
 $action = optional_param('action', '', PARAM_ALPHA);
 $code = optional_param('code', '', PARAM_RAW);
 $state = optional_param('state', '', PARAM_RAW);
 $error = optional_param('error', '', PARAM_RAW);
 
 // The redirect URI must be clean (no query parameters) to match Google's registered URI.
-$redirecturi = (new moodle_url('/mod/zoomyt/youtube_oauth.php'))->out(false);
+$redirecturi = (new moodle_url('/mod/zoomyt/youtube_oauth_activity.php'))->out(false);
 
 // Get site-wide YouTube credentials (always use these).
 $siteconfig = get_config('zoomyt');
 $clientid = $siteconfig->youtube_client_id ?? '';
 $clientsecret = $siteconfig->youtube_client_secret ?? '';
 
-// If we have a code (OAuth callback), extract category ID from state.
+// If we have a code (OAuth callback), extract activity ID from state.
 if (!empty($code) && !empty($state)) {
-    // State format: sesskey_cat_categoryid
-    $stateparts = explode('_cat_', $state);
+    // State format: sesskey_activity_cmid
+    $stateparts = explode('_activity_', $state);
     if (count($stateparts) === 2) {
-        $categoryid = (int) $stateparts[1];
+        $cmid = (int) $stateparts[1];
     }
 }
 
-// Category ID is required.
-if (empty($categoryid)) {
-    throw new moodle_exception('missingparam', '', '', 'categoryid');
+// Course module ID is required.
+if (empty($cmid)) {
+    throw new moodle_exception('missingparam', '', '', 'id');
 }
 
-// Get the category.
-$category = $DB->get_record('course_categories', ['id' => $categoryid], '*', MUST_EXIST);
-$context = context_coursecat::instance($categoryid);
+// Get the course module and activity.
+$cm = get_coursemodule_from_id('zoomyt', $cmid, 0, false, MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+$zoom = $DB->get_record('zoomyt', ['id' => $cm->instance], '*', MUST_EXIST);
+$context = context_module::instance($cm->id);
 
 // Require login and capability.
-require_login();
-require_capability('mod/zoomyt:managecategorysettings', $context);
+require_login($course, false, $cm);
+require_capability('mod/zoomyt:addinstance', $context);
 
 // Set up the page.
 $PAGE->set_context($context);
-$PAGE->set_url('/mod/zoomyt/youtube_oauth.php', ['categoryid' => $categoryid]);
-$PAGE->set_pagelayout('admin');
+$PAGE->set_url('/mod/zoomyt/youtube_oauth_activity.php', ['id' => $cmid]);
+$PAGE->set_pagelayout('incourse');
 $PAGE->set_title(get_string('youtube_connect', 'zoomyt'));
-$PAGE->set_heading($category->name);
+$PAGE->set_heading($course->fullname);
 
-$returnurl = new moodle_url('/mod/zoomyt/categorysettings.php', ['categoryid' => $categoryid]);
+$returnurl = new moodle_url('/course/modedit.php', ['update' => $cmid]);
 
 // Check credentials.
 if (empty($clientid) || empty($clientsecret)) {
@@ -84,22 +85,18 @@ if (empty($clientid) || empty($clientsecret)) {
     redirect($returnurl);
 }
 
-// Get category settings manager.
-$settingsmanager = new \mod_zoomyt\category_settings($categoryid);
-
 // Handle disconnect action.
 if ($action === 'disconnect') {
     require_sesskey();
 
-    // Clear YouTube channel settings for this category.
-    $settings = $settingsmanager->get_raw_settings();
-    if ($settings) {
-        $updatedata = new stdClass();
-        $updatedata->yt_channel_id = '';
-        $updatedata->yt_channel_name = '';
-        $updatedata->yt_refresh_token = '';
-        $settingsmanager->save_settings($updatedata);
-    }
+    // Clear YouTube channel settings for this activity.
+    $DB->update_record('zoomyt', (object)[
+        'id' => $zoom->id,
+        'yt_use_category' => 1,
+        'yt_channel_id' => '',
+        'yt_channel_name' => '',
+        'yt_refresh_token' => '',
+    ]);
 
     \core\notification::success(get_string('youtube_disconnected', 'zoomyt'));
     redirect($returnurl);
@@ -114,7 +111,7 @@ if (!empty($error)) {
 // Handle OAuth callback with code.
 if (!empty($code)) {
     // Verify state - should start with current sesskey.
-    $expectedprefix = sesskey() . '_cat_';
+    $expectedprefix = sesskey() . '_activity_';
     if (strpos($state, $expectedprefix) !== 0) {
         \core\notification::error(get_string('youtube_oauth_state_mismatch', 'zoomyt'));
         redirect($returnurl);
@@ -129,11 +126,6 @@ if (!empty($code)) {
             $clientsecret
         );
 
-        // Prepare update data.
-        $updatedata = new stdClass();
-        $updatedata->yt_refresh_token = $tokens->refresh_token;
-        $updatedata->inherit_youtube = 0; // Now using own channel.
-
         // Get channel info.
         $credentials = (object)[
             'yt_client_id' => $clientid,
@@ -143,26 +135,20 @@ if (!empty($code)) {
 
         // Store access token temporarily for channel lookup.
         $cache = \cache::make('mod_zoomyt', 'oauth');
-        $cache->set('yt_category_' . $categoryid . '_accesstoken', $tokens->access_token);
-        $cache->set('yt_category_' . $categoryid . '_expires', time() + ($tokens->expires_in ?? 3600) - 60);
+        $cache->set('yt_activity_' . $zoom->id . '_accesstoken', $tokens->access_token);
+        $cache->set('yt_activity_' . $zoom->id . '_expires', time() + ($tokens->expires_in ?? 3600) - 60);
 
-        $ytservice = new \mod_zoomyt\youtube_service($credentials, $categoryid);
+        $ytservice = new \mod_zoomyt\youtube_service($credentials, null, $zoom->id);
         $channel = $ytservice->get_channel_info();
 
-        $updatedata->yt_channel_id = $channel->id;
-        $updatedata->yt_channel_name = $channel->title;
-
-        $settingsmanager->save_settings($updatedata);
-
-        // Log the connection event.
-        $event = \mod_zoomyt\event\youtube_connected::create([
-            'context' => $context,
-            'other' => [
-                'channel_id' => $channel->id,
-                'channel_name' => $channel->title,
-            ],
+        // Update activity with YouTube channel info.
+        $DB->update_record('zoomyt', (object)[
+            'id' => $zoom->id,
+            'yt_use_category' => 0, // Now using own channel.
+            'yt_channel_id' => $channel->id,
+            'yt_channel_name' => $channel->title,
+            'yt_refresh_token' => $tokens->refresh_token,
         ]);
-        $event->trigger();
 
         \core\notification::success(get_string('youtube_connected_success', 'zoomyt', $channel->title));
         redirect($returnurl);
@@ -174,7 +160,7 @@ if (!empty($code)) {
 }
 
 // Start OAuth flow - redirect to Google using site-wide credentials.
-// Pass category ID in the state parameter (not in redirect URI).
-$oauthstate = sesskey() . '_cat_' . $categoryid;
+// Pass activity ID in the state parameter (not in redirect URI).
+$oauthstate = sesskey() . '_activity_' . $cmid;
 $authurl = \mod_zoomyt\youtube_service::get_auth_url($clientid, $redirecturi, $oauthstate);
 redirect($authurl);

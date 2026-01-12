@@ -226,7 +226,7 @@ class webservice {
      * @return self The webservice instance.
      */
     public static function get_instance_for_course(int $courseid): self {
-        $categorysettings = new category_settings($courseid);
+        $categorysettings = category_settings::get_for_course($courseid);
         
         // Use category settings only if they have their own credentials.
         if ($categorysettings->is_using_category_settings()) {
@@ -990,6 +990,45 @@ class webservice {
     }
 
     /**
+     * Get past instances of a meeting.
+     * This returns a list of ended meeting instances for a given meeting ID.
+     *
+     * @param int|string $meetingid The Zoom meeting ID.
+     * @return array Array of past meeting instances.
+     * @throws moodle_exception If API call fails.
+     */
+    public function get_past_meeting_instances($meetingid) {
+        // API endpoint: GET /past_meetings/{meetingId}/instances
+        // Classic: meeting:read:admin.
+        // Granular: meeting:read:list_past_instances:admin.
+        $url = 'past_meetings/' . $meetingid . '/instances';
+        try {
+            $response = $this->make_call($url);
+            return $response->meetings ?? [];
+        } catch (not_found_exception $e) {
+            // No past instances found.
+            return [];
+        }
+    }
+
+    /**
+     * Get details of a past meeting instance.
+     * This returns full details about a specific past meeting.
+     *
+     * @param string $meetinguuid The UUID of the past meeting instance.
+     * @return stdClass Meeting details object.
+     * @throws moodle_exception If API call fails.
+     */
+    public function get_past_meeting_details($meetinguuid) {
+        // API endpoint: GET /past_meetings/{meetingUUID}
+        // Classic: meeting:read:admin.
+        // Granular: meeting:read:past_meeting:admin.
+        $url = 'past_meetings/' . $this->encode_uuid($meetinguuid);
+        $response = $this->make_call($url);
+        return $response;
+    }
+
+    /**
      * Get the meeting invite note that was sent for a specific meeting from Zoom.
      *
      * @param stdClass $zoom The zoom meeting
@@ -1229,7 +1268,8 @@ class webservice {
 
         if (!empty($response->recording_files)) {
             foreach ($response->recording_files as $recording) {
-                $url = $recording->play_url ?? $recording->download_url ?? null;
+                // Use download_url for API downloads, fall back to play_url.
+                $url = $recording->download_url ?? $recording->play_url ?? null;
                 if (!empty($url) && isset($allowedrecordingtypes[$recording->file_type])) {
                     $recordinginfo = new stdClass();
                     $recordinginfo->recordingid = $recording->id;
@@ -1278,7 +1318,8 @@ class webservice {
 
             foreach ($response as $meeting) {
                 foreach ($meeting->recording_files as $recording) {
-                    $url = $recording->play_url ?? $recording->download_url ?? null;
+                    // Use download_url for API downloads, fall back to play_url.
+                    $url = $recording->download_url ?? $recording->play_url ?? null;
                     if (!empty($url) && isset($allowedrecordingtypes[$recording->file_type])) {
                         $recordinginfo = new stdClass();
                         $recordinginfo->recordingid = $recording->id;
@@ -1319,6 +1360,17 @@ class webservice {
         }
 
         return $token;
+    }
+
+    /**
+     * Get the access token for downloading recordings.
+     * This is a public wrapper around get_access_token for download authentication.
+     *
+     * @return string The access token.
+     * @throws moodle_exception
+     */
+    public function get_download_access_token(): string {
+        return $this->get_access_token();
     }
 
     /**

@@ -211,6 +211,78 @@ class get_meeting_reports extends scheduled_task {
     }
 
     /**
+     * Run the task for a specific activity instance.
+     * This is used for manual sync from the manage_recordings page.
+     *
+     * @param int $instanceid The zoom activity instance ID.
+     * @return void
+     */
+    public function execute_for_instance(int $instanceid) {
+        global $DB;
+
+        try {
+            $this->service = zoomyt_webservice();
+        } catch (moodle_exception $exception) {
+            mtrace('Skipping task - ' . $exception->getMessage());
+            return;
+        }
+
+        $this->debuggingenabled = debugging();
+
+        // Get the specific zoom activity.
+        $zoom = $DB->get_record('zoomyt', ['id' => $instanceid]);
+        if (!$zoom) {
+            mtrace('Zoom activity not found with ID: ' . $instanceid);
+            return;
+        }
+
+        mtrace('Fetching meeting reports for: ' . $zoom->name . ' (Meeting ID: ' . $zoom->meeting_id . ')');
+
+        try {
+            // Try to get past instances of this specific meeting.
+            $meetinginstances = $this->service->get_past_meeting_instances($zoom->meeting_id);
+
+            if (empty($meetinginstances)) {
+                mtrace('No past meeting instances found for this meeting.');
+                return;
+            }
+
+            mtrace('Found ' . count($meetinginstances) . ' past meeting instance(s).');
+
+            foreach ($meetinginstances as $instance) {
+                mtrace('Processing instance UUID: ' . $instance->uuid);
+
+                try {
+                    // Fetch full meeting details for this instance.
+                    $meetingdetails = $this->service->get_past_meeting_details($instance->uuid);
+
+                    // Build a meeting object with all required fields.
+                    $meeting = new stdClass();
+                    $meeting->uuid = $meetingdetails->uuid;
+                    $meeting->meeting_id = $zoom->meeting_id;
+                    $meeting->topic = $meetingdetails->topic ?? $zoom->name;
+                    $meeting->start_time = strtotime($meetingdetails->start_time);
+                    $meeting->end_time = strtotime($meetingdetails->end_time);
+                    $meeting->duration = $meetingdetails->duration ?? 0;
+                    $meeting->participants_count = $meetingdetails->participants_count ?? 0;
+                    $meeting->total_minutes = $meetingdetails->total_minutes ?? 0;
+
+                    $this->process_meeting_reports($meeting);
+                    mtrace('Successfully processed meeting instance.');
+                } catch (not_found_exception $e) {
+                    mtrace('Could not fetch details for instance: ' . $e->getMessage());
+                } catch (Exception $e) {
+                    mtrace('Error processing meeting instance: ' . $e->getMessage());
+                }
+            }
+        } catch (not_found_exception $e) {
+            mtrace('Meeting not found in Zoom or no past instances: ' . $e->getMessage());
+        } catch (webservice_exception $e) {
+            mtrace('Zoom API error: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Formats participants array as a record for the database.
      *
      * @param stdClass $participant Unformatted array received from web service API call.

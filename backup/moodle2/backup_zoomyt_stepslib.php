@@ -47,7 +47,8 @@ class backup_activity_structure_step extends \backup_activity_structure_step {
             'option_participants_video', 'option_audio', 'option_mute_upon_entry', 'option_waiting_room',
             'option_authenticated_users', 'option_encryption_type', 'exists_on_zoom', 'alternative_hosts',
             'recordings_visible_default', 'show_schedule', 'show_security', 'show_media', 'option_auto_recording',
-            'registration',
+            'registration', 'show_join_button', 'completionattendance',
+            'yt_use_category', 'yt_channel_id', 'yt_channel_name', 'yt_refresh_token', 'yt_default_visibility',
         ]);
 
         $trackingfields = new backup_nested_element('trackingfields');

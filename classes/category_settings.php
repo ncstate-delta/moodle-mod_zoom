@@ -181,6 +181,7 @@ class category_settings {
             'audio' => $settings->defaultaudiooption ?? null,
             'hostvideo' => $settings->defaulthostvideo ?? null,
             'participantsvideo' => $settings->defaultparticipantsvideo ?? null,
+            'autorecording' => $settings->defaultautorecording ?? null,
         ];
     }
 

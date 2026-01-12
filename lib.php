@@ -46,6 +46,7 @@ function zoomyt_supports($feature) {
     switch ($feature) {
         case FEATURE_BACKUP_MOODLE2:
         case FEATURE_COMPLETION_TRACKS_VIEWS:
+        case FEATURE_COMPLETION_HAS_RULES:
         case FEATURE_GRADE_HAS_GRADE:
         case FEATURE_GROUPINGS:
         case FEATURE_GROUPMEMBERSONLY:
@@ -1372,6 +1373,27 @@ function zoomyt_cm_info_dynamic(cm_info $cm) {
 }
 
 /**
+ * Get the total attendance duration for a user in a Zoom activity.
+ *
+ * @param int $zoomid The Zoom activity ID.
+ * @param int $userid The user ID.
+ * @return int Total attendance duration in seconds.
+ */
+function zoomyt_get_user_total_attendance(int $zoomid, int $userid): int {
+    global $DB;
+
+    // Get all meeting details for this zoom activity.
+    $sql = "SELECT SUM(zmp.duration) as total_duration
+            FROM {zoomyt_meeting_participants} zmp
+            JOIN {zoomyt_meeting_details} zmd ON zmd.id = zmp.detailsid
+            WHERE zmd.zoomid = :zoomid AND zmp.userid = :userid";
+
+    $result = $DB->get_record_sql($sql, ['zoomid' => $zoomid, 'userid' => $userid]);
+
+    return (int) ($result->total_duration ?? 0);
+}
+
+/**
  * Sets view information about a course module.
  *
  * This function is called from cm_info when displaying the module on the course page.
@@ -1380,7 +1402,7 @@ function zoomyt_cm_info_dynamic(cm_info $cm) {
  * @param cm_info $cm
  */
 function zoomyt_cm_info_view(cm_info $cm) {
-    global $CFG, $DB;
+    global $CFG, $DB, $USER;
 
     require_once($CFG->dirroot . '/mod/zoomyt/locallib.php');
 
@@ -1394,30 +1416,48 @@ function zoomyt_cm_info_view(cm_info $cm) {
         return;
     }
 
-    // Get meeting state from Zoom.
-    [$inprogress, $available, $finished] = zoomyt_get_state($moduleinstance);
+    // Check user's role for different early access times.
+    $context = context_module::instance($cm->id);
+    $isteacher = has_capability('mod/zoomyt:addinstance', $context);
+
+    // Check if user is the host.
+    $zoomuserid = zoomyt_get_user_id(false);
+    $ishost = ($zoomuserid === $moduleinstance->host_id);
+
+    // Get meeting state from Zoom with user role context.
+    [$inprogress, $available, $finished] = zoomyt_get_state($moduleinstance, $ishost, $isteacher);
 
     // Build the button HTML.
     $viewurl = new moodle_url('/mod/zoomyt/view.php', ['id' => $cm->id]);
 
     if ($available && !$finished) {
-        // Meeting is available to join.
-        $buttonhtml = html_writer::link(
-            $viewurl,
-            get_string('joinnow', 'zoomyt'),
-            ['class' => 'btn btn-primary mt-2']
+        // Meeting is available to join - link directly to launch meeting in new tab.
+        $launchurl = new moodle_url('/mod/zoomyt/loadmeeting.php', ['id' => $cm->id]);
+        $buttonhtml = html_writer::div(
+            html_writer::link(
+                $launchurl,
+                get_string('joinnow', 'zoomyt'),
+                ['class' => 'btn btn-primary', 'target' => '_blank']
+            ),
+            'zoomyt-join-button mt-2'
         );
     } else {
-        // Meeting not yet available or already finished.
-        $buttonhtml = html_writer::link(
-            $viewurl,
-            get_string('meetingnotyetavailable', 'zoomyt'),
-            ['class' => 'btn btn-outline-secondary mt-2']
+        // Meeting not yet available or already finished - link to activity page.
+        $buttonhtml = html_writer::div(
+            html_writer::link(
+                $viewurl,
+                get_string('meetingnotyetavailable', 'zoomyt'),
+                ['class' => 'btn btn-outline-secondary disabled']
+            ),
+            'zoomyt-join-button mt-2'
         );
     }
 
-    // Append the button after the content.
-    $cm->set_after_link($buttonhtml);
+    // Get the formatted intro/description.
+    $intro = format_module_intro('zoomyt', $moduleinstance, $cm->id);
+
+    // Set content to include intro plus the button below it.
+    $cm->set_content($intro . $buttonhtml);
 }
 
 /**

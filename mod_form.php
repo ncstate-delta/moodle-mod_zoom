@@ -407,7 +407,7 @@ class mod_zoomyt_mod_form extends moodleform_mod {
             get_string('showjoinbutton', 'zoomyt'),
             get_string('showjoinbuttondesc', 'zoomyt')
         );
-        $mform->setDefault('show_join_button', 0);
+        $mform->setDefault('show_join_button', $config->defaultshowjoinbutton ?? 1);
         $mform->addHelpButton('show_join_button', 'showjoinbutton', 'zoomyt');
 
         // Add registration widget.
@@ -594,6 +594,25 @@ class mod_zoomyt_mod_form extends moodleform_mod {
         $mform->addHelpButton('option_jbh', 'option_jbh', 'zoomyt');
         $mform->disabledIf('option_jbh', 'webinar', 'checked');
 
+        // Add join before start time setting for students.
+        // Build options: '' = use default, -1 = anytime (same as teachers), 0 = no early access, 5-60 minutes.
+        $joinbeforeoptions = [
+            '' => get_string('usedefault', 'zoomyt'),
+            '-1' => get_string('anytime', 'zoomyt'),
+            '0' => get_string('noearlyaccess', 'zoomyt'),
+        ];
+        for ($i = 5; $i <= 60; $i += 5) {
+            $joinbeforeoptions[$i] = $i . ' ' . get_string('mins');
+        }
+        $mform->addElement(
+            'select',
+            'joinbeforestart',
+            get_string('joinbeforestart', 'zoomyt'),
+            $joinbeforeoptions
+        );
+        $mform->setDefault('joinbeforestart', '');
+        $mform->addHelpButton('joinbeforestart', 'joinbeforestart', 'zoomyt');
+
         // Add authenticated users widget.
         $mform->addElement(
             'advcheckbox',
@@ -679,9 +698,28 @@ class mod_zoomyt_mod_form extends moodleform_mod {
                 $options[ZOOM_AUTORECORDING_CLOUD] = get_string('autorecording_cloud', 'mod_zoomyt');
             }
 
-            if ($config->recordingoption === ZOOM_AUTORECORDING_USERDEFAULT) {
-                $defaultsetting = $recordingsettings->auto_recording;
+            // Determine default: check category first, then global.
+            $defaultsetting = ZOOM_AUTORECORDING_NONE;
+
+            // Check category-level setting first.
+            global $CFG;
+            require_once($CFG->dirroot . '/mod/zoomyt/classes/category_settings.php');
+            $courseid = $this->current->course;
+            if (!empty($courseid)) {
+                $categorysettings = \mod_zoomyt\category_settings::get_for_course($courseid);
+                $meetingdefaults = $categorysettings->get_meeting_defaults();
             } else {
+                $meetingdefaults = new \stdClass();
+            }
+
+            if (!empty($meetingdefaults->autorecording)) {
+                // Use category default.
+                $defaultsetting = $meetingdefaults->autorecording;
+            } else if ($config->recordingoption === ZOOM_AUTORECORDING_USERDEFAULT) {
+                // Fall back to user's Zoom account setting.
+                $defaultsetting = $recordingsettings->auto_recording ?? ZOOM_AUTORECORDING_NONE;
+            } else {
+                // Fall back to global setting.
                 $defaultsetting = $config->recordingoption;
             }
 
@@ -806,6 +844,9 @@ class mod_zoomyt_mod_form extends moodleform_mod {
         // Add host id (will error if user does not have an account on Zoom).
         $mform->addElement('hidden', 'host_id', $hostuserid);
         $mform->setType('host_id', PARAM_ALPHANUMEXT);
+
+        // Add YouTube integration settings.
+        $this->add_youtube_settings($mform, $config);
 
         // Add standard grading elements.
         $this->standard_grading_coursemodule_elements();
@@ -1196,5 +1237,213 @@ class mod_zoomyt_mod_form extends moodleform_mod {
         }
 
         return $errors;
+    }
+
+    /**
+     * Add YouTube integration settings to the form.
+     *
+     * @param MoodleQuickForm $mform The form object.
+     * @param stdClass $config Plugin configuration.
+     */
+    protected function add_youtube_settings($mform, $config) {
+        global $COURSE;
+
+        // Check if site-wide YouTube credentials are configured.
+        $siteconfig = get_config('zoomyt');
+        $hascredentials = !empty($siteconfig->youtube_client_id) && !empty($siteconfig->youtube_client_secret);
+
+        if (!$hascredentials) {
+            // No site-wide credentials - don't show YouTube settings.
+            return;
+        }
+
+        // Get inherited channel info.
+        require_once(__DIR__ . '/classes/category_settings.php');
+        $courseid = $this->current->course;
+        if (empty($courseid)) {
+            // No course ID yet - can't determine category settings.
+            return;
+        }
+        $categorysettings = \mod_zoomyt\category_settings::get_for_course($courseid);
+        $rawsettings = $categorysettings->get_raw_settings();
+
+        // Determine the inherited channel (category or site-wide).
+        $inheritedchannel = null;
+        $inheritedfrom = null;
+
+        // Check if category has its own channel (not inheriting YouTube).
+        if (!empty($rawsettings) && empty($rawsettings->inherit_youtube) && !empty($rawsettings->yt_channel_name)) {
+            $inheritedchannel = $rawsettings->yt_channel_name;
+            $inheritedfrom = 'category';
+        } else if (!empty($siteconfig->youtube_default_channel_name)) {
+            // Use site-wide default.
+            $inheritedchannel = $siteconfig->youtube_default_channel_name;
+            $inheritedfrom = 'site';
+        }
+
+        // Add YouTube settings header.
+        $mform->addElement('header', 'youtube_header', get_string('youtube_activity_header', 'zoomyt'));
+        $mform->setExpanded('youtube_header', false);
+
+        // Option to use category/site channel or activity-specific channel.
+        $mform->addElement(
+            'advcheckbox',
+            'yt_use_category',
+            get_string('yt_use_inherited', 'zoomyt'),
+            get_string('yes')
+        );
+        $mform->setDefault('yt_use_category', 1);
+        $mform->addHelpButton('yt_use_category', 'yt_use_inherited', 'zoomyt');
+
+        // Build the inherited channel display (shown when checkbox is checked).
+        if ($inheritedchannel) {
+            if ($inheritedfrom === 'category') {
+                $inheritedhtml = \html_writer::tag('span',
+                    get_string('yt_channel_connected', 'zoomyt', $inheritedchannel) .
+                    ' (' . get_string('fromcategory', 'zoomyt') . ')',
+                    ['class' => 'text-success']
+                );
+            } else {
+                $inheritedhtml = \html_writer::tag('span',
+                    get_string('yt_channel_connected', 'zoomyt', $inheritedchannel) .
+                    ' (' . get_string('fromsite', 'zoomyt') . ')',
+                    ['class' => 'text-success']
+                );
+            }
+        } else {
+            $inheritedhtml = \html_writer::tag('span',
+                get_string('yt_no_channel_configured', 'zoomyt'),
+                ['class' => 'text-muted']
+            );
+        }
+        $mform->addElement('static', 'yt_inherited_info', get_string('yt_current_channel', 'zoomyt'), $inheritedhtml);
+        $mform->hideIf('yt_inherited_info', 'yt_use_category', 'notchecked');
+
+        // Activity-specific YouTube channel display and connection (shown when checkbox is unchecked).
+        if ($this->_instance) {
+            // Editing existing activity.
+            $cm = get_coursemodule_from_instance('zoomyt', $this->_instance, 0, false, MUST_EXIST);
+            $currentinstance = $this->current;
+
+            // Check if activity has its own channel connected.
+            if (!empty($currentinstance->yt_channel_id)) {
+                // Has activity-level channel connected - show it with disconnect/change options.
+                $activityhtml = \html_writer::tag('span',
+                    get_string('yt_channel_connected', 'zoomyt', $currentinstance->yt_channel_name),
+                    ['class' => 'text-success mr-2']
+                );
+
+                $disconnecturl = new \moodle_url('/mod/zoomyt/youtube_oauth_activity.php', [
+                    'id' => $cm->id,
+                    'action' => 'disconnect',
+                    'sesskey' => sesskey(),
+                ]);
+                $activityhtml .= \html_writer::link($disconnecturl,
+                    get_string('youtube_disconnect', 'zoomyt'),
+                    ['class' => 'btn btn-sm btn-outline-danger ml-2']
+                );
+
+                $connecturl = new \moodle_url('/mod/zoomyt/youtube_oauth_activity.php', ['id' => $cm->id]);
+                $activityhtml .= ' ';
+                $activityhtml .= \html_writer::link($connecturl,
+                    get_string('yt_change_channel', 'zoomyt'),
+                    ['class' => 'btn btn-sm btn-outline-secondary']
+                );
+            } else {
+                // No activity-level channel - show connect button.
+                $activityhtml = \html_writer::tag('span',
+                    get_string('yt_activity_channel_not_connected', 'zoomyt'),
+                    ['class' => 'text-muted mr-2']
+                );
+
+                $connecturl = new \moodle_url('/mod/zoomyt/youtube_oauth_activity.php', ['id' => $cm->id]);
+                $activityhtml .= \html_writer::link($connecturl,
+                    get_string('youtube_connect', 'zoomyt'),
+                    ['class' => 'btn btn-sm btn-primary ml-2']
+                );
+            }
+
+            $mform->addElement('static', 'yt_activity_channel', get_string('yt_current_channel', 'zoomyt'), $activityhtml);
+            $mform->hideIf('yt_activity_channel', 'yt_use_category', 'checked');
+        } else {
+            // Creating new activity - show message to save first.
+            $mform->addElement('static', 'yt_connect_note', get_string('yt_current_channel', 'zoomyt'),
+                \html_writer::tag('em', get_string('yt_save_activity_first', 'zoomyt'),
+                    ['class' => 'text-muted']));
+            $mform->hideIf('yt_connect_note', 'yt_use_category', 'checked');
+        }
+
+        // Hidden fields for YouTube channel data (preserved on form submit).
+        $mform->addElement('hidden', 'yt_channel_id');
+        $mform->setType('yt_channel_id', PARAM_TEXT);
+
+        $mform->addElement('hidden', 'yt_channel_name');
+        $mform->setType('yt_channel_name', PARAM_TEXT);
+
+        $mform->addElement('hidden', 'yt_refresh_token');
+        $mform->setType('yt_refresh_token', PARAM_RAW);
+
+        // YouTube visibility setting for this activity (only when using own channel).
+        $visibilityoptions = [
+            'unlisted' => get_string('youtube_visibility_unlisted', 'zoomyt'),
+            'public' => get_string('youtube_visibility_public', 'zoomyt'),
+            'private' => get_string('youtube_visibility_private', 'zoomyt'),
+        ];
+        $mform->addElement('select', 'yt_default_visibility', get_string('yt_activity_visibility', 'zoomyt'), $visibilityoptions);
+        $mform->setDefault('yt_default_visibility', 'unlisted');
+        $mform->addHelpButton('yt_default_visibility', 'yt_activity_visibility', 'zoomyt');
+        $mform->hideIf('yt_default_visibility', 'yt_use_category', 'checked');
+    }
+
+    /**
+     * Add custom completion rules.
+     *
+     * @return array Array of string IDs of added items.
+     */
+    public function add_completion_rules() {
+        $mform = $this->_form;
+
+        // Minimum attendance time for completion.
+        $group = [];
+        $group[] = $mform->createElement('text', 'completionattendance', '', ['size' => 5]);
+        $group[] = $mform->createElement('static', 'completionattendancelabel', '', get_string('minutes'));
+        $mform->addGroup($group, 'completionattendancegroup', get_string('completionattendance', 'zoomyt'), ' ', false);
+        $mform->setType('completionattendance', PARAM_INT);
+        $mform->addHelpButton('completionattendancegroup', 'completionattendance', 'zoomyt');
+        $mform->setDefault('completionattendance', 0);
+
+        // Disable if completion is disabled.
+        $mform->disabledIf('completionattendance', 'completion', 'eq', COMPLETION_DISABLED);
+
+        return ['completionattendancegroup'];
+    }
+
+    /**
+     * Called during validation.
+     *
+     * @param array $data Input data (not yet validated)
+     * @return bool True if one or more rules is enabled, false if none are.
+     */
+    public function completion_rule_enabled($data) {
+        return !empty($data['completionattendance']);
+    }
+
+    /**
+     * Return submitted data if properly submitted or returns NULL if validation fails.
+     *
+     * @return object|null Submitted data; NULL if not valid or not submitted.
+     */
+    public function get_data() {
+        $data = parent::get_data();
+        if (!$data) {
+            return $data;
+        }
+
+        // Ensure completionattendance is set.
+        if (empty($data->completionattendance)) {
+            $data->completionattendance = 0;
+        }
+
+        return $data;
     }
 }

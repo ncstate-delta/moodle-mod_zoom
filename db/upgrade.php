@@ -1312,5 +1312,189 @@ function xmldb_zoomyt_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2025050904, 'zoomyt');
     }
 
+    if ($oldversion < 2026011112) {
+        // Add completionattendance field to zoomyt table for custom completion rules.
+        $table = new xmldb_table('zoomyt');
+        $field = new xmldb_field('completionattendance', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'registration');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2026011112, 'zoomyt');
+    }
+
+    if ($oldversion < 2026011113) {
+        // Add granular inheritance fields to zoomyt_category_settings table.
+        $table = new xmldb_table('zoomyt_category_settings');
+
+        // inherit_zoom - Whether to inherit Zoom API settings.
+        $field = new xmldb_field('inherit_zoom', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'inherit');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // inherit_meeting_defaults - Whether to inherit default meeting settings.
+        $field = new xmldb_field('inherit_meeting_defaults', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'inherit_zoom');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // inherit_youtube - Whether to inherit YouTube settings.
+        $field = new xmldb_field('inherit_youtube', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'inherit_meeting_defaults');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Migrate existing data: if inherit=0, set all granular fields to 0.
+        $DB->execute("UPDATE {zoomyt_category_settings} SET inherit_zoom = 0, inherit_meeting_defaults = 0, inherit_youtube = 0 WHERE inherit = 0");
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2026011113, 'zoomyt');
+    }
+
+    if ($oldversion < 2026011116) {
+        // Add activity-level YouTube fields to zoomyt table.
+        $table = new xmldb_table('zoomyt');
+
+        // yt_use_category - Use category/site YouTube channel.
+        $field = new xmldb_field('yt_use_category', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'completionattendance');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // yt_channel_id - Activity's own YouTube channel ID.
+        $field = new xmldb_field('yt_channel_id', XMLDB_TYPE_CHAR, '50', null, null, null, null, 'yt_use_category');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // yt_channel_name - Activity's own YouTube channel name.
+        $field = new xmldb_field('yt_channel_name', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'yt_channel_id');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // yt_refresh_token - Activity's own YouTube OAuth refresh token.
+        $field = new xmldb_field('yt_refresh_token', XMLDB_TYPE_TEXT, null, null, null, null, null, 'yt_channel_name');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // yt_default_visibility - Activity's YouTube visibility setting.
+        $field = new xmldb_field('yt_default_visibility', XMLDB_TYPE_CHAR, '20', null, null, null, 'unlisted', 'yt_refresh_token');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2026011116, 'zoomyt');
+    }
+
+    if ($oldversion < 2026011118) {
+        // Add joinbeforestart field to zoomyt table (activity level).
+        $table = new xmldb_table('zoomyt');
+        $field = new xmldb_field('joinbeforestart', XMLDB_TYPE_INTEGER, '5', null, null, null, null, 'yt_default_visibility');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add joinbeforestart field to zoomyt_category_settings table (category level).
+        $table = new xmldb_table('zoomyt_category_settings');
+        $field = new xmldb_field('joinbeforestart', XMLDB_TYPE_INTEGER, '5', null, null, null, null, 'defaultjoinbeforehost');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2026011118, 'zoomyt');
+    }
+
+    if ($oldversion < 2026011119) {
+        // Add defaultautorecording field to zoomyt_category_settings table.
+        $table = new xmldb_table('zoomyt_category_settings');
+        $field = new xmldb_field('defaultautorecording', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'joinbeforestart');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2026011119, 'zoomyt');
+    }
+
+    if ($oldversion < 2026011128) {
+        // Increase UUID field length in zoomyt_meeting_details from 30 to 128 characters.
+        // Zoom UUIDs can be longer when double-encoded.
+        // Must drop the unique key first, then change field, then recreate key.
+
+        $table = new xmldb_table('zoomyt_meeting_details');
+        $field = new xmldb_field('uuid', XMLDB_TYPE_CHAR, '128', null, XMLDB_NOTNULL, null, null, null);
+
+        // Drop the unique key on uuid first.
+        $key = new xmldb_key('uuid_unique', XMLDB_KEY_UNIQUE, ['uuid']);
+        if ($dbman->find_key_name($table, $key)) {
+            $dbman->drop_key($table, $key);
+        }
+
+        // Now change the field precision.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->change_field_precision($table, $field);
+        }
+
+        // Recreate the unique key.
+        $dbman->add_key($table, $key);
+
+        // Also increase UUID field in zoomyt_meeting_participants.
+        // This field has an index, not a unique key.
+        $table = new xmldb_table('zoomyt_meeting_participants');
+        $field = new xmldb_field('uuid', XMLDB_TYPE_CHAR, '128', null, null, null, null, 'zoomuserid');
+
+        // Drop the index first.
+        $index = new xmldb_index('uuid', XMLDB_INDEX_NOTUNIQUE, ['uuid']);
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Change the field.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->change_field_precision($table, $field);
+        }
+
+        // Recreate the index.
+        $dbman->add_index($table, $index);
+
+        // Also increase meetinguuid field in zoomyt_meeting_recordings.
+        // This table doesn't have an index on meetinguuid, so we can change it directly.
+        $table = new xmldb_table('zoomyt_meeting_recordings');
+        $field = new xmldb_field('meetinguuid', XMLDB_TYPE_CHAR, '128', null, XMLDB_NOTNULL, null, null, 'zoomid');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->change_field_precision($table, $field);
+        }
+
+        // Also increase meetinguuid field in zoomyt_videos.
+        // Must drop the index first, then change field, then recreate index.
+        $table = new xmldb_table('zoomyt_videos');
+        $field = new xmldb_field('meetinguuid', XMLDB_TYPE_CHAR, '128', null, XMLDB_NOTNULL, null, null, 'recordingid');
+
+        // Drop the index on meetinguuid first.
+        $index = new xmldb_index('meetinguuid_idx', XMLDB_INDEX_NOTUNIQUE, ['meetinguuid']);
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Change the field.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->change_field_precision($table, $field);
+        }
+
+        // Recreate the index.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2026011128, 'zoomyt');
+    }
+
     return true;
 }
