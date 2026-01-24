@@ -230,7 +230,7 @@ The plugin includes several scheduled tasks:
 | Task | Schedule | Description |
 |------|----------|-------------|
 | `update_meetings` | Daily 4:30 AM | Sync meeting data from Zoom |
-| `get_meeting_reports` | Every 6 hours | Fetch attendance reports |
+| `get_meeting_reports` | Every 2 hours | Fetch attendance reports |
 | `get_meeting_recordings` | Every 3 hours | Fetch recording information from Zoom |
 | `sync_recordings_to_youtube` | Every 2 hours | Upload recordings to YouTube |
 | `delete_meeting_recordings` | Daily midnight | Delete old Zoom recordings |
@@ -311,7 +311,7 @@ The following UI and UX improvements are planned for future releases:
 
 See [CHANGES.md](CHANGES.md) for detailed version history.
 
-**Current Version**: v1.6.24
+**Current Version**: v1.6.25
 
 ## License
 
