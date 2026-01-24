@@ -311,7 +311,7 @@ The following UI and UX improvements are planned for future releases:
 
 See [CHANGES.md](CHANGES.md) for detailed version history.
 
-**Current Version**: v1.6.23
+**Current Version**: v1.6.24
 
 ## License
 
