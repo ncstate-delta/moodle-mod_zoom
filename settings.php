@@ -732,11 +732,13 @@ if ($ADMIN->fulltree) {
     ));
 
     // YouTube Client Secret (site-wide).
-    $settings->add(new admin_setting_configpasswordunmask(
+    // Using configtext instead of configpasswordunmask for better compatibility.
+    $settings->add(new admin_setting_configtext(
         'zoomyt/youtube_client_secret',
         get_string('youtube_client_secret', 'zoomyt'),
         get_string('youtube_client_secret_desc', 'zoomyt'),
-        ''
+        '',
+        PARAM_RAW
     ));
 
     // Site-wide default YouTube channel connection.
@@ -827,11 +829,13 @@ if ($ADMIN->fulltree) {
     ));
 
     // Webhook secret token.
-    $settings->add(new admin_setting_configpasswordunmask(
+    // Using configtext instead of configpasswordunmask for better compatibility.
+    $settings->add(new admin_setting_configtext(
         'zoomyt/webhook_secret',
         get_string('webhook_secret', 'zoomyt'),
         get_string('webhook_secret_desc', 'zoomyt'),
-        ''
+        '',
+        PARAM_RAW
     ));
 
     // Temporary storage settings.
