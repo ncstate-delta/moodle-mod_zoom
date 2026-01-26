@@ -800,6 +800,40 @@ if ($ADMIN->fulltree) {
         $deleteoptions
     ));
 
+    // Webhook Settings.
+    $settings->add(new admin_setting_heading(
+        'zoomyt/webhooksettings',
+        get_string('webhook_settings', 'zoomyt'),
+        get_string('webhook_settings_desc', 'zoomyt')
+    ));
+
+    // Webhook enabled checkbox.
+    $settings->add(new admin_setting_configcheckbox(
+        'zoomyt/webhook_enabled',
+        get_string('webhook_enabled', 'zoomyt'),
+        get_string('webhook_enabled_desc', 'zoomyt'),
+        0,
+        1,
+        0
+    ));
+
+    // Display the webhook endpoint URL for reference.
+    $webhookurl = $CFG->wwwroot . '/mod/zoomyt/webhook.php';
+    $settings->add(new admin_setting_heading(
+        'zoomyt/webhook_url_display',
+        get_string('webhook_url', 'zoomyt'),
+        html_writer::tag('code', $webhookurl, ['class' => 'text-monospace']) .
+        '<br><small class="text-muted">' . get_string('webhook_url_desc', 'zoomyt') . '</small>'
+    ));
+
+    // Webhook secret token.
+    $settings->add(new admin_setting_configpasswordunmask(
+        'zoomyt/webhook_secret',
+        get_string('webhook_secret', 'zoomyt'),
+        get_string('webhook_secret_desc', 'zoomyt'),
+        ''
+    ));
+
     // Temporary storage settings.
     $settings->add(new admin_setting_heading(
         'zoomyt/storagesettings',

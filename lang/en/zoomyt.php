@@ -669,3 +669,13 @@ $string['yt_current_channel'] = 'Current channel';
 $string['yt_save_activity_first'] = 'Save the activity first, then you can connect a YouTube channel.';
 $string['yt_activity_visibility'] = 'YouTube visibility';
 $string['yt_activity_visibility_help'] = 'The default visibility for videos uploaded from this activity to YouTube.';
+
+// Webhook strings.
+$string['webhook_settings'] = 'Webhook Settings';
+$string['webhook_settings_desc'] = 'Configure Zoom webhooks for real-time updates. When enabled, Zoom will notify Moodle immediately when meetings end or recordings are ready, instead of waiting for scheduled tasks.';
+$string['webhook_enabled'] = 'Enable webhooks';
+$string['webhook_enabled_desc'] = 'When enabled, Moodle will process incoming webhook events from Zoom for immediate attendance and recording updates.';
+$string['webhook_url'] = 'Webhook Endpoint URL';
+$string['webhook_url_desc'] = 'Enter this URL in your Zoom App\'s Event Subscriptions settings.';
+$string['webhook_secret'] = 'Webhook Secret Token';
+$string['webhook_secret_desc'] = 'The Secret Token from your Zoom App\'s Feature settings. This is used to verify that webhook requests are genuinely from Zoom.';

@@ -197,6 +197,42 @@ Teachers can manually trigger sync from the **Manage Recordings** page:
 - **Check for Zoom Recordings**: Immediately fetch new cloud recordings
 - **Sync to YouTube**: Immediately upload pending recordings
 
+### Real-Time Updates with Webhooks (Optional)
+
+For immediate updates instead of waiting for scheduled tasks, you can configure Zoom webhooks:
+
+#### Setting Up Webhooks
+
+1. In your Zoom App Marketplace, go to your Server-to-Server OAuth app
+2. Navigate to **Feature** → **Event Subscriptions**
+3. Click **Add Event Subscription**
+4. Set the **Event notification endpoint URL** to:
+   ```
+   https://your-moodle-site/mod/zoomyt/webhook.php
+   ```
+5. Subscribe to these events:
+   - `meeting.ended` - Triggers immediate attendance report fetch
+   - `recording.completed` - Triggers immediate recording fetch
+   - (Optional) `meeting.participant_joined` / `meeting.participant_left`
+6. Save and copy the **Secret Token**
+
+#### Configuring Moodle
+
+1. Go to **Site Administration** → **Plugins** → **Zoom YT**
+2. Scroll to **Webhook Settings**
+3. Enable webhooks
+4. Enter the **Secret Token** from your Zoom app
+
+#### Benefits
+
+| Without Webhooks | With Webhooks |
+|------------------|---------------|
+| Attendance updates every 2 hours | Attendance updates within seconds |
+| Recordings detected every 3 hours | Recordings detected immediately |
+| YouTube upload waits for next sync | YouTube upload starts right away |
+
+> **Note**: Webhooks require your Moodle server to be publicly accessible via HTTPS. Scheduled tasks remain as a fallback if webhooks fail.
+
 ## Completion by Attendance
 
 The plugin supports custom completion rules based on meeting attendance:
@@ -311,7 +347,7 @@ The following UI and UX improvements are planned for future releases:
 
 See [CHANGES.md](CHANGES.md) for detailed version history.
 
-**Current Version**: v1.6.25
+**Current Version**: v1.7.0
 
 ## License
 

@@ -614,3 +614,13 @@ $string['yt_current_channel'] = 'Chaîne actuelle';
 $string['yt_save_activity_first'] = 'Enregistrez d\'abord l\'activité, puis vous pourrez connecter une chaîne YouTube.';
 $string['yt_activity_visibility'] = 'Visibilité YouTube';
 $string['yt_activity_visibility_help'] = 'La visibilité par défaut pour les vidéos téléchargées depuis cette activité vers YouTube.';
+
+// Webhook strings.
+$string['webhook_settings'] = 'Paramètres des Webhooks';
+$string['webhook_settings_desc'] = 'Configurez les webhooks Zoom pour des mises à jour en temps réel. Lorsqu\'il est activé, Zoom notifiera Moodle immédiatement lorsque les réunions se terminent ou que les enregistrements sont prêts.';
+$string['webhook_enabled'] = 'Activer les webhooks';
+$string['webhook_enabled_desc'] = 'Lorsqu\'il est activé, Moodle traitera les événements webhook entrants de Zoom pour des mises à jour immédiates de présence et d\'enregistrement.';
+$string['webhook_url'] = 'URL du Point de Terminaison Webhook';
+$string['webhook_url_desc'] = 'Entrez cette URL dans les paramètres d\'Abonnements aux Événements de votre application Zoom.';
+$string['webhook_secret'] = 'Jeton Secret du Webhook';
+$string['webhook_secret_desc'] = 'Le Jeton Secret des paramètres de Fonctionnalités de votre application Zoom. Ceci est utilisé pour vérifier que les requêtes webhook proviennent vraiment de Zoom.';
