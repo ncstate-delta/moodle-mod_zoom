@@ -200,6 +200,21 @@ class get_meeting_recordings extends scheduled_task {
 
                 $record->id = $DB->insert_record('zoomyt_meeting_recordings', $record);
                 mtrace('Recording id: ' . $recordingid . ' (' . $recordingtype . ') added to the database');
+
+                // Log the recording discovered event.
+                $cm = get_coursemodule_from_instance('zoomyt', $zoom->id, $zoom->course, false, IGNORE_MISSING);
+                if ($cm) {
+                    $context = \context_module::instance($cm->id);
+                    \mod_zoomyt\event\recording_discovered::create([
+                        'context' => $context,
+                        'objectid' => $record->id,
+                        'other' => [
+                            'meeting_name' => $zoom->name,
+                            'recording_type' => $recordingtype,
+                            'recording_id' => $recordingid,
+                        ],
+                    ])->trigger();
+                }
             }
         }
     }

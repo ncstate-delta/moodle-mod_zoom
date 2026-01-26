@@ -677,6 +677,23 @@ class get_meeting_reports extends scheduled_task {
                     // At least one new record inserted.
                     $recordupdated = true;
                     $this->debugmsg('Inserted record ' . $recordid);
+
+                    // Log attendance event for identified users only.
+                    if (!empty($participant['userid'])) {
+                        $cm = get_coursemodule_from_instance('zoomyt', $zoomrecord->id, $zoomrecord->course, false, IGNORE_MISSING);
+                        if ($cm) {
+                            $context = \context_module::instance($cm->id);
+                            \mod_zoomyt\event\attendance_recorded::create([
+                                'context' => $context,
+                                'objectid' => $recordid,
+                                'relateduserid' => $participant['userid'],
+                                'other' => [
+                                    'meeting_name' => $zoomrecord->name,
+                                    'duration' => round($participant['duration'] / 60), // Convert to minutes.
+                                ],
+                            ])->trigger();
+                        }
+                    }
                 }
             }
 

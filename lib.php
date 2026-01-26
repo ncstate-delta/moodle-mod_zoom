@@ -134,6 +134,20 @@ function zoomyt_add_instance(stdClass $zoom, ?mod_zoomyt_mod_form $mform = null)
     zoomyt_calendar_item_update($zoom);
     zoomyt_grade_item_update($zoom);
 
+    // Log the meeting creation event.
+    $cm = get_coursemodule_from_instance('zoomyt', $zoom->id, $zoom->course, false, IGNORE_MISSING);
+    if ($cm) {
+        $context = context_module::instance($cm->id);
+        \mod_zoomyt\event\meeting_created::create([
+            'context' => $context,
+            'objectid' => $zoom->id,
+            'other' => [
+                'meeting_name' => $zoom->name,
+                'meeting_id' => $zoom->meeting_id,
+            ],
+        ])->trigger();
+    }
+
     return $zoom->id;
 }
 
@@ -214,6 +228,20 @@ function zoomyt_update_instance(stdClass $zoom, ?mod_zoomyt_mod_form $mform = nu
 
     zoomyt_calendar_item_update($zoom);
     zoomyt_grade_item_update($zoom);
+
+    // Log the meeting update event.
+    $cm = get_coursemodule_from_instance('zoomyt', $zoom->id, $zoom->course, false, IGNORE_MISSING);
+    if ($cm) {
+        $context = context_module::instance($cm->id);
+        \mod_zoomyt\event\meeting_updated::create([
+            'context' => $context,
+            'objectid' => $zoom->id,
+            'other' => [
+                'meeting_name' => $zoom->name,
+                'meeting_id' => $zoom->meeting_id,
+            ],
+        ])->trigger();
+    }
 
     return true;
 }

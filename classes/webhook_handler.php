@@ -221,6 +221,23 @@ class webhook_handler {
             return ['status' => 200, 'body' => ['message' => 'Meeting not tracked']];
         }
 
+        // Get context for event logging.
+        $cm = get_coursemodule_from_instance('zoomyt', $zoom->id, $zoom->course);
+        if ($cm) {
+            $context = \context_module::instance($cm->id);
+            
+            // Log the webhook event.
+            \mod_zoomyt\event\webhook_meeting_ended::create([
+                'context' => $context,
+                'objectid' => $zoom->id,
+                'other' => [
+                    'meeting_name' => $topic,
+                    'meeting_id' => $meetingid,
+                    'uuid' => $uuid,
+                ],
+            ])->trigger();
+        }
+
         // Queue the report fetch task to run immediately.
         // We use an ad-hoc task to avoid blocking the webhook response.
         require_once($CFG->dirroot . '/mod/zoomyt/classes/task/get_meeting_reports.php');
@@ -261,6 +278,23 @@ class webhook_handler {
         if (!$zoom) {
             $this->log("Meeting {$meetingid} not found in Moodle");
             return ['status' => 200, 'body' => ['message' => 'Meeting not tracked']];
+        }
+
+        // Get context for event logging.
+        $cm = get_coursemodule_from_instance('zoomyt', $zoom->id, $zoom->course);
+        if ($cm) {
+            $context = \context_module::instance($cm->id);
+            
+            // Log the webhook event.
+            \mod_zoomyt\event\webhook_recording_ready::create([
+                'context' => $context,
+                'objectid' => $zoom->id,
+                'other' => [
+                    'meeting_name' => $topic,
+                    'meeting_id' => $meetingid,
+                    'uuid' => $uuid,
+                ],
+            ])->trigger();
         }
 
         // Queue the recording fetch task.

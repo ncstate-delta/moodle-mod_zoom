@@ -679,3 +679,11 @@ $string['webhook_url'] = 'Webhook Endpoint URL';
 $string['webhook_url_desc'] = 'Enter this URL in your Zoom App\'s Event Subscriptions settings.';
 $string['webhook_secret'] = 'Webhook Secret Token';
 $string['webhook_secret_desc'] = 'The Secret Token from your Zoom App\'s Feature settings. This is used to verify that webhook requests are genuinely from Zoom.';
+
+// Event strings.
+$string['event_attendance_recorded'] = 'Attendance recorded';
+$string['event_webhook_meeting_ended'] = 'Webhook: Meeting ended';
+$string['event_webhook_recording_ready'] = 'Webhook: Recording ready';
+$string['event_recording_discovered'] = 'Recording discovered';
+$string['event_meeting_created'] = 'Meeting created';
+$string['event_meeting_updated'] = 'Meeting updated';

@@ -624,3 +624,11 @@ $string['webhook_url'] = 'URL du Point de Terminaison Webhook';
 $string['webhook_url_desc'] = 'Entrez cette URL dans les paramètres d\'Abonnements aux Événements de votre application Zoom.';
 $string['webhook_secret'] = 'Jeton Secret du Webhook';
 $string['webhook_secret_desc'] = 'Le Jeton Secret des paramètres de Fonctionnalités de votre application Zoom. Ceci est utilisé pour vérifier que les requêtes webhook proviennent vraiment de Zoom.';
+
+// Event strings.
+$string['event_attendance_recorded'] = 'Présence enregistrée';
+$string['event_webhook_meeting_ended'] = 'Webhook: Réunion terminée';
+$string['event_webhook_recording_ready'] = 'Webhook: Enregistrement prêt';
+$string['event_recording_discovered'] = 'Enregistrement découvert';
+$string['event_meeting_created'] = 'Réunion créée';
+$string['event_meeting_updated'] = 'Réunion mise à jour';
