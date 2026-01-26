@@ -742,7 +742,8 @@ if ($ADMIN->fulltree) {
     ));
 
     // Site-wide default YouTube channel connection.
-    $currentchannelname = get_config('zoomyt', 'youtube_default_channel_name');
+    $zoomytconfig = get_config('zoomyt');
+    $currentchannelname = $zoomytconfig->youtube_default_channel_name ?? '';
     $manageurl = new moodle_url('/mod/zoomyt/youtube_oauth_site.php');
     if (!empty($currentchannelname)) {
         $channelhtml = html_writer::tag('span',
@@ -756,7 +757,9 @@ if ($ADMIN->fulltree) {
             get_string('youtube_site_channel_not_connected', 'zoomyt'),
             ['class' => 'text-muted mr-2']
         );
-        if (!empty($config->youtube_client_id) && !empty($config->youtube_client_secret)) {
+        $hasclientid = !empty($zoomytconfig->youtube_client_id);
+        $hasclientsecret = !empty($zoomytconfig->youtube_client_secret);
+        if ($hasclientid && $hasclientsecret) {
             $channelhtml .= html_writer::link($manageurl, get_string('youtube_connect', 'zoomyt'),
                 ['class' => 'btn btn-sm btn-primary']);
         } else {
