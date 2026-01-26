@@ -50,7 +50,26 @@ class webhook_handler {
      * @return array Response with 'status' (HTTP code) and 'body' (response data).
      */
     public function process(string $rawbody, array $headers): array {
-        // Check if webhooks are enabled.
+        // Decode the JSON body first - needed for URL validation check.
+        $payload = json_decode($rawbody);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $this->log('Invalid JSON in webhook body');
+            return ['status' => 400, 'body' => ['error' => 'Invalid JSON']];
+        }
+
+        // Handle URL validation challenge BEFORE checking if webhooks are enabled.
+        // This is required because Zoom sends the validation challenge when you first
+        // configure the webhook, before you can save the "enabled" setting in Moodle.
+        if (isset($payload->event) && $payload->event === 'endpoint.url_validation') {
+            // URL validation only requires the secret token, not full webhook enablement.
+            if (empty($this->secrettoken)) {
+                $this->log('URL validation received but no secret token configured');
+                return ['status' => 401, 'body' => ['error' => 'Secret token not configured']];
+            }
+            return $this->handle_url_validation($payload);
+        }
+
+        // For all other events, check if webhooks are enabled.
         if (!$this->enabled) {
             $this->log('Webhook received but webhooks are disabled');
             return ['status' => 200, 'body' => ['message' => 'Webhooks disabled']];
@@ -60,18 +79,6 @@ class webhook_handler {
         if (empty($this->secrettoken)) {
             $this->log('Webhook received but no secret token configured');
             return ['status' => 401, 'body' => ['error' => 'Webhook not configured']];
-        }
-
-        // Decode the JSON body.
-        $payload = json_decode($rawbody);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            $this->log('Invalid JSON in webhook body');
-            return ['status' => 400, 'body' => ['error' => 'Invalid JSON']];
-        }
-
-        // Handle URL validation challenge (sent when webhook is first configured).
-        if (isset($payload->event) && $payload->event === 'endpoint.url_validation') {
-            return $this->handle_url_validation($payload);
         }
 
         // Verify the webhook signature.
