@@ -85,7 +85,7 @@ class mobile {
             'templates' => [
                 [
                     'id' => 'main',
-                    'html' => $OUTPUT->render_from_template("mod_zoom/mobile_view_page_$versionname", $data),
+                    'html' => $OUTPUT->render_from_template("mod_zoom/mobileapp/view_page_$versionname", $data),
                 ],
             ],
             'javascript' => "this.loadMeeting = function(result) { window.open(result.joinurl, '_system'); };",
