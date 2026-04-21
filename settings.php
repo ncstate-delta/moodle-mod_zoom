@@ -50,7 +50,8 @@ if ($hassiteconfig && $ADMIN->fulltree) {
             'zoom/connectionstatus',
             $OUTPUT->notification(
                 get_string('connectionstatus', 'mod_zoom') . ': ' . get_string($status, 'mod_zoom') . $errormessage,
-                $notifyclass
+                $notifyclass,
+                false
             ),
             ''
         ));
@@ -350,7 +351,8 @@ if ($hassiteconfig && $ADMIN->fulltree) {
     if (empty($CFG->allowattachments)) {
         $sendicalnotificationshelp .= $OUTPUT->notification(
             get_string('sendicalnotifications_warning', 'mod_zoom'),
-            notification::NOTIFY_WARNING
+            notification::NOTIFY_WARNING,
+            false
         );
     }
 
