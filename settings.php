@@ -32,7 +32,7 @@ if ($hassiteconfig && $ADMIN->fulltree) {
     require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
     // Test whether connection works and display result to user.
-    if (!CLI_SCRIPT && $PAGE->url == $CFG->wwwroot . '/' . $CFG->admin . '/settings.php?section=modsettingzoom') {
+    if (!CLI_SCRIPT && $PAGE->url == $CFG->wwwroot . '/' . $CFG->admin . '/settings.php?section=' . $settings->name) {
         $status = 'connectionfailed';
         $notifyclass = notification::NOTIFY_ERROR;
         $errormessage = '';
