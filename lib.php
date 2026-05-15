@@ -48,7 +48,6 @@ function zoom_supports($feature) {
         case FEATURE_COMPLETION_TRACKS_VIEWS:
         case FEATURE_GRADE_HAS_GRADE:
         case FEATURE_GROUPINGS:
-        case FEATURE_GROUPMEMBERSONLY:
         case FEATURE_MOD_INTRO:
         case FEATURE_SHOW_DESCRIPTION:
             return true;
