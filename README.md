@@ -4,6 +4,16 @@
 plugin offers tight integration with Moodle, supporting meeting creation,
 synchronization, grading and backup/restore.
 
+## Try in Moodle Playground
+
+Click the badge below to open the `main` branch instantly in [Moodle Playground](https://moodle-playground.com) with `mod_zoom` pre-installed. The playground boots a full Moodle 5.2 site with a demo course (`ZOOMDEMO01`) that contains a stub Zoom activity so you can preview the activity view, the `mod_form`, and the plugin's admin settings without any local setup. Every same-repo pull request also automatically generates a playground preview link appended to the PR description so reviewers can test changes in a live Moodle instance.
+
+**Note:** the Zoom REST API is not reachable from the Playground sandbox. The Join / Start buttons will not work and you cannot create real meetings — this preview is intended for UI and admin-settings inspection only.
+
+<a href="https://moodle-playground.com/?blueprint-url=https://raw.githubusercontent.com/ncstate-delta/moodle-mod_zoom/refs/heads/main/blueprint.json" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/ateeducacion/action-moodle-playground-pr-preview/refs/heads/main/assets/playground-preview-button.svg" alt="Preview in Moodle Playground" width="200"></a>
+
+The PR preview links are produced by the [ateeducacion/action-moodle-playground-pr-preview](https://github.com/ateeducacion/action-moodle-playground-pr-preview) GitHub Action, configured via `blueprint.json` at the repository root.
+
 ## Prerequisites
 
 This plugin is designed for Educational or Business Zoom accounts.
